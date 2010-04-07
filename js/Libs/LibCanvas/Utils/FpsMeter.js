@@ -1,7 +1,7 @@
 
-LibCanvas.FpsMeter = new Class({
+LibCanvas.Utils.FpsMeter = new Class({
 	initialize : function (framesMax) {
-		this.trace = new LibCanvas.Trace();
+		this.trace = new LibCanvas.Utils.Trace();
 		this.genTime   = [];
 		this.prevTime  = null;
 		this.framesMax = framesMax;

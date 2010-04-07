@@ -1,5 +1,5 @@
 
-LibCanvas.ImagePreloader = new Class({
+LibCanvas.Utils.ImagePreloader = new Class({
 	initialize: function (images) {
 		this.count = {
 			errors : 0,

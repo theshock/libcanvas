@@ -1,7 +1,7 @@
 
 LibCanvas.Canvas2D = new Class({
 	initialize : function (elem) {
-		this.traceElem  = new LibCanvas.Trace();
+		this.traceElem  = new LibCanvas.Utils.Trace();
 		this.interval   = null;
 		this.ctx    = elem.getContext('2d-libcanvas');
 		this.elems  = [];
@@ -51,7 +51,7 @@ LibCanvas.Canvas2D = new Class({
 		return this;
 	},
 	fpsMeter : function (frames) {
-		this.fpsMeter = new LibCanvas.FpsMeter(frames);
+		this.fpsMeter = new LibCanvas.Utils.FpsMeter(frames);
 		return this;
 	},
 	frame : function () {

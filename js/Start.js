@@ -3,11 +3,10 @@
  * @license LGPL
  */
 
+var App = {};
 
 window.addEvent('domready', function () {
-	var mouseTrace = new LibCanvas.Trace();
-
-	var imPr = new LibCanvas.ImagePreloader({
+	var imPr = new LibCanvas.Utils.ImagePreloader({
 		'ufo' : 'ufo320x320.jpg'
 	});
 				
@@ -15,7 +14,6 @@ window.addEvent('domready', function () {
 		.setFps(50)
 		.fpsMeter(20)
 		.start(function () {
-			mouseTrace.trace(this.mouse.debug());
 
 			// Bg color is dark green
 			this.ctx.fillAll('#030');
@@ -30,7 +28,7 @@ window.addEvent('domready', function () {
 						from : this.mouse.dot,
 						size : [160, 160]
 					})
-				})
+				});
 
 				// Draw red circle under mouse
 				this.ctx.save()
@@ -41,5 +39,6 @@ window.addEvent('domready', function () {
 					}))
 					.restore();
 			}
+			
 		});
 });

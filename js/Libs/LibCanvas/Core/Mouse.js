@@ -100,16 +100,20 @@ LibCanvas.Mouse = new Class({
 					mouse.lastMouseDown.push(elem);
 				// If mouseuped on this elem and last mousedown was on this elem - click
 				} else if (type == 'mouseup' && mouse.lastMouseDown.contains(elem)) {
-					this.event('click', e);
+					elem.event('click', e);
 				}
-				this.event(type, e);
+				elem.event(type, e);
+			} else {
 			// If mouse move out of this element, but not out of canvas
-			} else if (type == 'mousemove') {
-				var index = mouse.lastMouseMove.indexOf(elem);
-				if (index >= 0) {
-					mouse.lastMouseMove[index].event('mouseout', e)
-					mouse.lastMouseMove.remove(index);
+				if (type == 'mousemove') {
+					var index = mouse.lastMouseMove.indexOf(elem);
+					if (index >= 0) {
+						mouse.lastMouseMove[index].event('mouseout', e)
+						mouse.lastMouseMove.remove(index);
+						return this;
+					}
 				}
+				elem.event('away:' + type, e);
 			}
 		}
 		return this;

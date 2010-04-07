@@ -2,13 +2,15 @@
 
 window.LibCanvas = window.$lc = {};
 window.LibCanvas.Shapes = {};
+window.LibCanvas.Utils  = {};
 
 
 (function () {
 	// Changing HTMLCanvasElement.prototype.getContext, so we
 	// can create our own contexts by LibCanvas.addCanvasContext(name, ctx);
 	var newCtxs = {};
-	var oldGetContext = HTMLCanvasElement.prototype.getContext;
+	
+	HTMLCanvasElement.prototype.getOriginalContext = HTMLCanvasElement.prototype.getContext;
 
 	HTMLCanvasElement.prototype.getContext = function (type) {
 		var ctx;
@@ -21,7 +23,7 @@ window.LibCanvas.Shapes = {};
 				ctx = new newCtxs[type](this);
 			} else {
 				try {
-					ctx = oldGetContext.apply(this, arguments);
+					ctx = this.getOriginalContext.apply(this, arguments);
 				} catch (e) {
 					throw (!e.toString().test(/NS_ERROR_ILLEGAL_VALUE/)) ? e :
 						'Wrong Context Type : "' + type + '"';
@@ -32,7 +34,6 @@ window.LibCanvas.Shapes = {};
 		return this.contextsList[type];
 	};
 
-	HTMLCanvasElement.prototype.getOriginalContext = oldGetContext;
 
 	LibCanvas.addCanvasContext = function (name, ctx) {
 		newCtxs[name] = ctx;

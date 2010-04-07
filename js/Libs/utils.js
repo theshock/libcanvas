@@ -1,14 +1,28 @@
-
+/**
+ * Cast degrees to radians
+ * (90).degree() == Math.PI/2
+ */
+Number.prototype.degree = function () {
+	return this * Math.PI / 180;
+};
+/**
+ * Cast radians to degrees
+ * (Math.PI/2).getDegree() == 90
+ */
+Number.prototype.getDegree = function () {
+	return this / Math.PI * 180;
+};
 
 Number.prototype.between = function (n1, n2, equals) {
 	return (n1 <= n2) && (
 		(equals == 'L'   && this == n1) ||
 		(equals == 'R'   && this == n2) ||
 		(  this  > n1    && this  < n2) ||
-		([true, 'LR'].contains(equals) && [n1, n2].contains(this))
+		([true, 'LR', 'RL'].contains(equals) && [n1, n2].contains(this))
 	);
 };
 
+// String
 String.prototype.repeat = function (times) {
 	var s = this;
 	new Number(times).times(function (t) {
@@ -40,6 +54,7 @@ String.prototype.replaceAll = function (find, replace) {
 	return this.split(find).join(replace);
 };
 
+// Array
 Array.prototype.remove = function (index) {
 	this.splice(index, 1);
 	return this;
@@ -61,21 +76,5 @@ Array.prototype.firstReal = function () {
 		}
 	}
 	return null;
-};
-
-
-/**
- * Cast degrees to radians
- * (90).degree() == Math.PI/2
- */
-Number.prototype.degree = function () {
-	return this * Math.PI / 180;
-};
-/**
- * Cast radians to degrees
- * (Math.PI/2).getDegree() == 90
- */
-Number.prototype.getDegree = function () {
-	return this / Math.PI * 180;
 };
 

@@ -1,5 +1,5 @@
 
-LibCanvas.Trace = new Class({
+LibCanvas.Utils.Trace = new Class({
 	initialize : function (object) {
 		if (arguments.length == 1) {
 			if (!this.trace) {
@@ -163,5 +163,5 @@ LibCanvas.Trace = new Class({
 });
 
 window.trace = function (msg) {
-	new LibCanvas.Trace(msg);
+	new LibCanvas.Utils.Trace(msg);
 };
