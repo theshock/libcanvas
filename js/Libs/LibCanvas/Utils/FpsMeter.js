@@ -13,8 +13,8 @@ LibCanvas.Utils.FpsMeter = new Class({
 			if (this.genTime.length > this.framesMax) {
 				this.genTime.shift();
 			}
-			this.output();
 		}
+		this.output();
 		this.prevTime = $time();
 		return this;
 	},
@@ -23,6 +23,8 @@ LibCanvas.Utils.FpsMeter = new Class({
 			var fps = 1000 / this.genTime.average();
 			fps = fps.round(fps > 2 ? 0 : fps > 1 ? 1 : 2);
 			this.trace.trace('FPS: ' + fps);
+		} else {
+			this.trace.trace('FPS: counting');
 		}
 		return this;
 	}

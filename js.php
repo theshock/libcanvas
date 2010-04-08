@@ -4,7 +4,12 @@
 	$files = array_merge (
 		glob('./js/Libs/*.js'),
 		glob('./js/Libs/LibCanvas/*.js'),
+		glob('./js/Libs/LibCanvas/Core/*.js'),
+		glob('./js/Libs/LibCanvas/Utils/*.js'),
 		glob('./js/Libs/LibCanvas/Shapes/*.js'),
+
+		glob('./js/App/*.js'),
+
 		glob('./js/*.js')
 	);
 	foreach ($files as $js) {

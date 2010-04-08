@@ -12,10 +12,17 @@ LibCanvas.Utils.ImagePreloader = new Class({
 		this.number    = this
 			.createImages(images)
 			.getLength();
+
+		this.readyfuncs = [];
 	},
 	onProcessed : function (type) {
 		this.count[type]++;
 		this.ready = (++this.processed == this.number);
+		if (this.ready) {
+			this.readyfuncs.each(function (fn) {
+				fn(this.images);
+			}.bind(this));
+		}
 		return this;
 	},
 	getInfo : function () {
@@ -50,5 +57,13 @@ LibCanvas.Utils.ImagePreloader = new Class({
 				});
 			});
 		return h;
+	},
+	ready : function (fn) {
+		if (this.ready) {
+			fn(this.images);
+		} else {
+			this.readyfuncs.push(fn);
+		}
+		return this;
 	}
 });

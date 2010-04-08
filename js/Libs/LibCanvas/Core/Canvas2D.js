@@ -8,10 +8,14 @@ LibCanvas.Canvas2D = new Class({
 		this.images = {};
 		this.fps    = 20;
 		this.cfg    = {
-			autoClear : true,
-			autoDraw  : true
+			autoClear   : true,
+			autoDraw    : true,
+			background  : false,
+			images      : null,
+			progressBar : null
 		};
 
+		this.progressBar = null;
 		this.mouse = new LibCanvas.Mouse(this);
 	},
 	setImages  : function (images) {
@@ -31,6 +35,11 @@ LibCanvas.Canvas2D = new Class({
 		}
 		return this;
 	},
+	setBackground : function (bg) {
+		return this.setConfig({
+			background : bg
+		});
+	},
 	addElement : function (elem) {
 		this.checkElem(elem);
 		elem.setCanvas(this);
@@ -38,15 +47,21 @@ LibCanvas.Canvas2D = new Class({
 		this.elems.push(elem);
 		return this;
 	},
+	rmElement : function (elem) {
+		if (this.elems) {
+			this.elems.erase(elem);
+		}
+		return this;
+	},
 	checkElem : function (elem) {
-		if (!elem instanceof CanvasElem) {
-			throw 'Wrong interface, element should instaceof CanvasElem';
+		if (typeof elem.setCanvas != 'function') {
+			throw 'No setCanvas method';
 		}
 		return this;
 	},
 	drawAll : function () {
-		this.elems.each(function () {
-			this.draw();
+		this.elems.each(function (elem) {
+			elem.draw();
 		});
 		return this;
 	},
@@ -55,21 +70,46 @@ LibCanvas.Canvas2D = new Class({
 		return this;
 	},
 	frame : function () {
-		this.ctx.save();
-
-		if (this.cfg.autoClear) {
-			this.ctx.clearAll();
-		}
 		if (this.fpsMeter) {
 			this.fpsMeter.frame();
 		}
-		if (this.fn) {
-			this.fn.call(this);
+
+		if (!this.cfg.images || (this.imagePreloader && this.imagePreloader.isReady())) {
+			if (this.progressBar) {
+				this.rmElement(this.progressBar);
+				this.progressBar = null;
+			}
+
+			this.ctx.save();
+			if (this.cfg.autoClear) {
+				this.ctx.clearAll();
+			}
+			if (this.cfg.background) {
+				this.ctx.fillAll(this.cfg.background);
+			}
+			if (this.fn) {
+				this.fn.call(this);
+			}
+			if (this.cfg.autoDraw) {
+				this.drawAll();
+			}
+			this.ctx.restore();
+		} else {
+			if (!this.imagePreloader) {
+				this.imagePreloader = new LibCanvas.Utils.ImagePreloader(this.cfg.images)
+					.ready(function (images) {
+						this.setImages(images);
+					}.bind(this));
+			}
+			if (this.cfg.progressBar && !this.progressBar) {
+				this.progressBar = new LibCanvas.Utils.ProgressBar()
+					.setStyle(this.cfg.progressBar)
+				this.addElement(this.progressBar);
+			}
+			this.progressBar
+				.setProgress(this.imagePreloader.getProgress())
+				.draw();
 		}
-		if (this.cfg.autoDraw) {
-			this.drawAll();
-		}
-		this.ctx.restore();
 		return this;
 	},
 	trace : function () {

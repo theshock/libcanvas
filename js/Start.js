@@ -3,42 +3,36 @@
  * @license LGPL
  */
 
-var App = {};
-
 window.addEvent('domready', function () {
-	var imPr = new LibCanvas.Utils.ImagePreloader({
-		'ufo' : 'ufo320x320.jpg'
-	});
-				
+	var mouse = new LibCanvas.Utils.Trace();
 	new LibCanvas.Canvas2D($$('canvas')[0])
 		.setFps(50)
 		.fpsMeter(20)
+		.setConfig({
+			background : '#EFEBE7',
+			images     : {
+				'circle-standart'  : 'icons/circle-gray.png',
+				'circle-hover'     : 'icons/circle-green.png',
+				'circle-active'    : 'icons/circle-red.png',
+				'circle-tab'       : 'icons/circle-big.png',
+
+				'octagon-standart' : 'icons/octagon-gray.png',
+				'octagon-hover'    : 'icons/octagon-green.png',
+				'octagon-active'   : 'icons/octagon-red.png',
+				'octagon-tab'      : 'icons/octagon-big.png',
+
+				'square-standart'  : 'icons/square-gray.png',
+				'square-hover'     : 'icons/square-green.png',
+				'square-active'    : 'icons/square-red.png',
+				'square-tab'       : 'icons/square-big.png',
+			},
+			progressBar : App.progressBarStyle
+		})
+		.addElement(new App.EventsTester(
+			new LibCanvas.Shapes.Circle(720, 480, 85)
+		))
+		.addElement(new App.TabSwitcher())
 		.start(function () {
-
-			// Bg color is dark green
-			this.ctx.fillAll('#030');
-
-			// if image downloaded ad mouse is in canvas
-			if (imPr.ready && this.mouse.inCanvas) {
-				// Drawing image under mouse
-				this.ctx.drawImage({
-					image : imPr.images['ufo'],
-					crop  : [80, 80, 160, 160],
-					draw  : new LibCanvas.Shapes.Rectangle({
-						from : this.mouse.dot,
-						size : [160, 160]
-					})
-				});
-
-				// Draw red circle under mouse
-				this.ctx.save()
-					.set('fillStyle', 'red')
-					.fill(new LibCanvas.Shapes.Circle({
-						center : this.mouse.dot,
-						radius : 5
-					}))
-					.restore();
-			}
-			
+			mouse.trace('Mouse: ' + this.mouse.debug());
 		});
 });
