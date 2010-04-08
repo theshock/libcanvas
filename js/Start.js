@@ -1,5 +1,5 @@
 /**
- * @author Shock
+ * @author Shock, greedykid, Nutochka
  * @license LGPL
  */
 
