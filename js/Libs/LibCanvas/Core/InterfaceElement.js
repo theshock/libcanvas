@@ -14,6 +14,23 @@ LibCanvas.InterfaceElement = new Class({
 	getShape : function () {
 		return this.shape;
 	},
+	/**
+	 * events :
+	 *
+	 * click
+	 *
+	 * mouseover
+	 * mousemove
+	 * mouseout
+	 * mouseup
+	 * mousedown
+	 *
+	 * away:mouseover
+	 * away:mousemove
+	 * away:mouseout
+	 * away:mouseup
+	 * away:mousedown
+	 */
 	event : function (type, e) {
 		if (type == 'mouseover') {
 			this.hover = true;

@@ -24,3 +24,4 @@ window.addEvent('domready', function () {
 			mouse.trace('Mouse: ' + this.mouse.debug());
 		});
 });
+

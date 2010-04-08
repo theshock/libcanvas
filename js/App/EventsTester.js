@@ -12,6 +12,23 @@ App.EventsTester = new Class({
 	getShape : function () {
 		return this.shape;
 	},
+	/**
+	 * events :
+	 *
+	 * click
+	 *
+	 * mouseover
+	 * mousemove
+	 * mouseout
+	 * mouseup
+	 * mousedown
+	 *
+	 * away:mouseover
+	 * away:mousemove
+	 * away:mouseout
+	 * away:mouseup
+	 * away:mousedown
+	 */
 	event : function (type, e) {
 		this.traces = this.traces || {};
 		this.traces[type] = this.traces[type] || new LibCanvas.Utils.Trace();
