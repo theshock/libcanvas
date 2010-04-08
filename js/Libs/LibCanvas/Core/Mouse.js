@@ -5,7 +5,7 @@ LibCanvas.Mouse = new Class({
 		this.dot = new LibCanvas.Dot();
 		this.x = null;
 		this.y = null;
-
+		
 		this.canvas = canvas;
 		this.elem   = canvas.ctx.canvas;
 
@@ -29,19 +29,23 @@ LibCanvas.Mouse = new Class({
 		return this;
 	},
 	expandEvent : function (e) {
-		e.offsetX = e.offsetX || e.layerX - e.target.offsetLeft;
-		e.offsetY = e.offsetY || e.layerY - e.target.offsetTop;
+		if (!$chk(e.offsetX)) {
+			e.offsetX = e.offsetX || e.layerX - e.target.offsetLeft;
+			e.offsetY = e.offsetY || e.layerY - e.target.offsetTop;
+		}
 		return e;
 	},
 	setEvents : function () {
 		var mouse = this;
 		$(this.canvas.ctx.canvas).addEvents({
 			mousemove : function (e) {
+				try {
 				e = mouse.expandEvent(e.event);
 				mouse.setCoords(e.offsetX, e.offsetY);
 				mouse.event('mousemove', e);
 				// previous status for away:mouseover event
 				mouse.mouseIsOut = false;
+				} catch (e) { trace(e)}
 			},
 			mouseout : function (e) {
 				mouse.setCoords();
