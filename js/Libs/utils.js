@@ -53,6 +53,10 @@ String.prototype.nl2br = function () {
 String.prototype.replaceAll = function (find, replace) {
 	return this.split(find).join(replace);
 };
+String.prototype.begins = function (w, caseInsensitive) {
+	return (caseInsensitive) ? w == this.substr(0, w.length) :
+		w.toLowerCase() == this.substr(0, w.length).toLowerCase();
+};
 
 // Array
 Array.prototype.remove = function (index) {

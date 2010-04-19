@@ -5,23 +5,31 @@
  */
 
 window.addEvent('domready', function () {
-	// I'd like to know current mouse coord
-	var mouse = new LibCanvas.Utils.Trace();
-	
 	new LibCanvas.Canvas2D($$('canvas')[0])
-		.setFps(50)
-		.fpsMeter(20)
+		.setFps(60)
+		.fpsMeter(30)
 		.setConfig({
 			background  : '#EFEBE7',
-			images      : App.imagesList,
-			progressBar : App.progressBarStyle
+			images      : App.imagesList
 		})
-		.addElement(new App.EventsTester(
-			new LibCanvas.Shapes.Circle(720, 480, 85)
-		))
-		.addElement(new App.TabSwitcher())
 		.start(function () {
-			mouse.trace('Mouse: ' + this.mouse.debug());
+			new LibCanvas.Utils.ProjectiveTexture(this.images['testImage0'])
+				.setContext(this.ctx.canvas.getContext('2d'))
+				.setQuality(64, 4)
+				.render([
+				  [  0,   0],
+				  [200, 100],
+				  [  0, 600],
+				  [200, 500]
+				])
+			new LibCanvas.Utils.ProjectiveTexture(this.images['testImage0'])
+				.setContext(this.ctx.canvas.getContext('2d'))
+				.setQuality(64, 4)
+				.render([
+				  [800,   0],
+				  [600, 100],
+				  [800, 600],
+				  [600, 500]
+				])
 		});
 });
-

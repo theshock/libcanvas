@@ -231,17 +231,17 @@ LibCanvas.Context2D = new Class({
 		var a   = arguments;
 		var cal = a.callee;
 		if (a.length == 3) {
-			return cal({
+			return cal.call(this, {
 				image : a[0],
 				from  : [a[1], a[2]]
 			});
 		} else if (a.length == 5) {
-			return cal({
+			return cal.call(this, {
 				image : a[0],
 				draw  : [a[1], a[2], a[3], a[4]]
 			});
 		} else if (a.length == 9) {
-			return cal({
+			return cal.call(this, {
 				image : a[0],
 				crop  : [a[1], a[2], a[3], a[4]],
 				draw  : [a[5], a[6], a[7], a[8]]

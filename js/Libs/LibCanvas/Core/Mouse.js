@@ -89,37 +89,57 @@ LibCanvas.Mouse = new Class({
 
 		// Move throw all subscribed element
 		for (var i = 0; i < this.subscribers.length; i++) {
+			var evs  = [];
 			var elem = this.subscribers[i];
 			// If mouse is now over this element
 			if (this.inCanvas && elem.getShape().hasDot(mouse.dot)) {
 				if (type == 'mousemove') {
 					// Mouse move firstly on this element
 					if (!mouse.lastMouseMove.contains(elem)) {
-						elem.event('mouseover', e);
+						evs.push([elem, 'mouseover']);
 						mouse.lastMouseMove.push(elem);
 					}
 				} else if (type == 'mousedown') {
 					mouse.lastMouseDown.push(elem);
 				// If mouseuped on this elem and last mousedown was on this elem - click
 				} else if (type == 'mouseup' && mouse.lastMouseDown.contains(elem)) {
-					elem.event('click', e);
+						
+					evs.push([elem, 'click']);
 				}
-				elem.event(type, e);
+				evs.push([elem, type]);
 			// If mouse move out of this element, but not out of canvas
 			} else {
 				if (this.mouseIsOut) {
-					elem.event('away:mouseover', e);
+					evs.push([elem, 'away:mouseover']);
 				}
+				var mouseout = false;
 				if (['mousemove', 'mouseout'].contains(type)) {
 					var index = mouse.lastMouseMove.indexOf(elem);
 					if (index >= 0) {
-						mouse.lastMouseMove[index].event('mouseout', e)
+						evs.push([mouse.lastMouseMove[index], 'mouseout']);
 						mouse.lastMouseMove.remove(index);
-						continue;
+						mouseout = true;
 					}
 				}
-				elem.event('away:' + type, e);
+				if (!mouseout) {
+					evs.push([elem, 'away:' + type]);
+				}
 			}
+			evs.each(function (elem) {
+				if ($type(elem[0].event) == 'function') {
+					elem[0].event.call(elem[0], elem[1], e);
+				} else if (typeof(elem[0].event) == 'object') {
+					if (elem[1].begins('away')) {
+						if (typeof elem[0].event.away == 'object' &&
+							elem[0].event.away[elem[1].substr(5)]) {
+							elem[0].event.away[elem[1].substr(5)]
+								.call(elem[0], elem[1], e);
+						}
+					} else if (elem[0].event[elem[1]]) {
+						elem[0].event[elem[1]].call(elem[0], elem[1], e);
+					}
+				}
+			});
 		}
 		return this;
 	}

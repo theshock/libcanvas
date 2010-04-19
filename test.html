@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>MouseMove Test</title>
+		<script type="text/javascript" src="js/Libs/mootools.js"></script>
+	</head>
+	<body>
+	  <div id="canvas" style="width:800px;height:600px;background:black;"></div>
+	  <div id="data"></div>
+	</body>
+	<script type="text/javascript">
+		$('canvas').addEvents({
+			mousemove : function (e) {
+				e = e.event;
+				$('data').innerHTML = (
+					(e.offsetX || e.layerX - e.target.offsetLeft)
+						+ '.' +
+					(e.offsetY || e.layerY - e.target.offsetTop)
+				);
+			},
+			mouseout : function (e) {
+				$('data').innerHTML = 'out of canvas';
+			}
+		});
+	</script>
+</html>

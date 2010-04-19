@@ -16,7 +16,7 @@ LibCanvas.Canvas2D = new Class({
 		};
 
 		this.progressBar = null;
-		this.mouse = new LibCanvas.Mouse(this);
+		this.mouse = null;
 	},
 	setImages  : function (images) {
 		this.images = images;
@@ -57,6 +57,10 @@ LibCanvas.Canvas2D = new Class({
 		if (typeof elem.setCanvas != 'function') {
 			throw 'No setCanvas method';
 		}
+		return this;
+	},
+	listenMouse : function () {
+		this.mouse = new LibCanvas.Mouse(this);
 		return this;
 	},
 	drawAll : function () {
@@ -106,9 +110,11 @@ LibCanvas.Canvas2D = new Class({
 					.setStyle(this.cfg.progressBar)
 				this.addElement(this.progressBar);
 			}
-			this.progressBar
-				.setProgress(this.imagePreloader.getProgress())
-				.draw();
+			if (this.progressBar) {
+				this.progressBar
+					.setProgress(this.imagePreloader.getProgress())
+					.draw();
+			}
 		}
 		return this;
 	},
