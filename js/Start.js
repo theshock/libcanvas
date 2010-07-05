@@ -5,34 +5,29 @@
  */
 
 window.addEvent('domready', function () {
-	new LibCanvas.Canvas2D($$('canvas')[0])
+	var canvas = new LibCanvas.Canvas2D($$('canvas')[0])
 		.setFps(60)
 		.fpsMeter(15)
 		.setConfig({
 			background : '#EFEBE7',
 			images     : App.imagesList
 		})
-		.listenMouse()
-		.addElement(
-			new App.TestElem(
+		.listenMouse();
+	for (var i = 50; i--;) {
+		var testElem = new App.TestElem()
+			.setShape(
 				new LibCanvas.Shapes.Rectangle(
-					50, 50, 100, 100
+					$random(5, 750),
+					$random(5, 550),
+					$random(5, 50),
+					$random(5, 50)
 				)
-			).setZIndex(2)
-		)
-		.addElement(
-			new App.TestElem(
-				new LibCanvas.Shapes.Rectangle(
-					100, 100, 100, 100
-				)
-			).setZIndex(4)
-		)
-		.addElement(
-			new App.TestElem(
-				new LibCanvas.Shapes.Circle(
-					125, 125, 50
-				)
-			).setZIndex(3)
-		)
-		.start();
+			)
+			.setZIndex($random(5, 50))
+			.listenMouse()
+			.draggable(1)
+			.clickable()
+		canvas.addElement(testElem);
+	}
+	canvas.start();
 });

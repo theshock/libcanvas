@@ -14,6 +14,9 @@ LibCanvas.Shape = new Class({
 			throw 'Not a LibCanvas.Dot in Circle.hasDot';
 		}
 	},
+	move : function (a) {
+		throw 'Abstract Method Shape.move called';
+	},
 	set : function (a) {
 		throw 'Abstract Method Shape.set called';
 	},

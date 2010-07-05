@@ -1,6 +1,7 @@
 
 
 window.LibCanvas = window.$lc = {};
+window.LibCanvas.Inner  = {};
 window.LibCanvas.Shapes = {};
 window.LibCanvas.Utils  = {};
 window.LibCanvas.Interfaces  = {};

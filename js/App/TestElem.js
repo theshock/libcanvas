@@ -1,36 +1,23 @@
 window.App = window.App || {};
 
 App.TestElem = new Class({
-	Extends : LibCanvas.Interfaces.Draggable,
+	Extends : LibCanvas.Interfaces.Drawable,
+	Implements : [
+		LibCanvas.Interfaces.MouseListener,
+		LibCanvas.Interfaces.Draggable,
+		LibCanvas.Interfaces.Clickable
+	],
 	style : {
 		standart : ["#f99", "#600"],
 		hover    : ["#9f9", "#060"],
 		active   : ["#99f", "#006"]
 	},
-	setCanvas : function (canvas) {
-		this.parent(canvas);
-		this.bind('mousedown', function () {
-			this.zIndex += 1;
-		}.bind(this));
-	},
-	getZIndex : function () {
-		return this.zIndex || 0;
-	},
-	setZIndex : function (zIndex) {
-		this.zIndex = zIndex;
-		return this;
-	},
-	drawActive : function () {
-		this.drawMain('active');
-	},
-	drawHover : function () {
-		this.drawMain('hover');
-	},
-	drawStandart : function () {
-		this.drawMain('standart');
-	},
-	drawMain : function (type) {
+	draw : function () {
 		var coord = this.shape.from || this.shape;
+		
+		var type = this.active ? "active" :
+			this.hover  ? "hover" : "standart";
+
 		this.canvas.ctx
 			.fill(this.shape, this.style[type][0])
 			.stroke(this.shape, this.style[type][1])

@@ -27,7 +27,7 @@ LibCanvas.Utils.ImagePreloader = new Class({
 	},
 	getInfo : function () {
 		var stat = "Images preloaded: {loaded}; Errors: {errors}; Aborts: {aborts}"
-			.template(this.count);
+			.substitute(this.count);
 		var ready = this.ready ? "Image preloading has completed;\n" : '';
 		return ready + stat;
 	},
