@@ -5,8 +5,8 @@ LibCanvas.Canvas2D = new Class({
 		this.interval   = null;
 		this.ctx    = elem.getContext('2d-libcanvas');
 		this.elems  = [];
-		this.images = {};
 		this.fps    = 20;
+		this.images = {};
 		this.cfg    = {
 			autoClear   : true,
 			autoDraw    : true,
@@ -18,10 +18,6 @@ LibCanvas.Canvas2D = new Class({
 		this.progressBar = null;
 		this.mouse = null;
 	},
-	setImages  : function (images) {
-		this.images = images;
-		return this;
-	},
 	setFps : function (fps) {
 		this.fps = fps;
 		if (this.interval) {
@@ -29,16 +25,17 @@ LibCanvas.Canvas2D = new Class({
 		}
 		return this;
 	},
-	setConfig : function (n) {
+	config : function (n) {
 		for (var i in n) {
-			this.cfg[i] = n[i];
+			if (i == 'fps') {
+				this.setFps(n[i]);
+			} else if (i == 'fpsMeter') {
+				this.fpsMeter(n[i]);
+			} else {
+				this.cfg[i] = n[i];
+			}
 		}
 		return this;
-	},
-	setBackground : function (bg) {
-		return this.setConfig({
-			background : bg
-		});
 	},
 	addElement : function (elem) {
 		this.checkElem(elem);
@@ -104,7 +101,7 @@ LibCanvas.Canvas2D = new Class({
 			if (!this.imagePreloader) {
 				this.imagePreloader = new LibCanvas.Utils.ImagePreloader(this.cfg.images)
 					.ready(function (images) {
-						this.setImages(images);
+						this.images = images;
 					}.bind(this));
 			}
 			if (this.cfg.progressBar && !this.progressBar) {
