@@ -111,7 +111,7 @@ LibCanvas.Shapes.Rectangle = new Class({
 		toY : function () {
 			if (this.to.y === null) {
 				if (this.size.h !== null && this.from.y !== null) {
-					this.to.y = this.from.y + this.size.w;
+					this.to.y = this.from.y + this.size.h;
 				} else {
 					return false;
 				}
