@@ -6,7 +6,7 @@
  * http://acko.net/files/projective/index.html
  */
 
-LibCanvas.Utils.ProjectiveTexture = new Class({
+LibCanvas.Inner.ProjectiveTexture = new Class({
 	initialize : function (image) {
 		if (typeof image == 'string') {
 			this.image = new Image;

@@ -270,10 +270,13 @@ LibCanvas.Context2D = new Class({
 		}
 	},
 	projectiveImage : function (arg) {
-		new LibCanvas.Utils.ProjectiveTexture(arg.image)
+		var drawTo = new LibCanvas.Shapes.Polygon([
+			arg.draw[0], arg.draw[1], arg.draw[3], arg.draw[2]
+		]);
+		new LibCanvas.Inner.ProjectiveTexture(arg.image)
 			.setContext(this.ctx2d)
 			.setQuality(arg.patchSize, arg.limit)
-			.render(arg.draw);
+			.render(drawTo);
 		return this;
 	},
 	putImageData : function () {

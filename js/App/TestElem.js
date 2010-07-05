@@ -5,7 +5,9 @@ App.TestElem = new Class({
 	Implements : [
 		LibCanvas.Interfaces.MouseListener,
 		LibCanvas.Interfaces.Draggable,
-		LibCanvas.Interfaces.Clickable
+		LibCanvas.Interfaces.Clickable,
+		LibCanvas.Interfaces.Linkable,
+		LibCanvas.Interfaces.Droppable
 	],
 	style : {
 		standart : ["#f99", "#600"],

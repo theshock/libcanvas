@@ -17,18 +17,18 @@ LibCanvas.Interfaces.Draggable = new Class({
 var moveListener = function () {
 	if (this.isDraggable && this.prevMouseCoord) {
 		var mouse = this.canvas.mouse;
-		this.shape.move(
-			this.prevMouseCoord.diff(mouse.dot)
-		);
+		var move  = this.prevMouseCoord.diff(mouse.dot);
+		this.shape.move(move);
+		this.bind('moveDrag', [move]);
 		this.prevMouseCoord.set(mouse.dot)
 	}
 };
 
 var initDraggable = function () {
 	var draggable = this;
-	var listen = function () {
+	var dragFn = function () {
 		moveListener.call(draggable);
-	};
+	}.bind(this);
 
 	var startDrag = ['mousedown'];
 	var dragging  = ['mousemove', 'away:mousemove'];
@@ -36,14 +36,19 @@ var initDraggable = function () {
 
 	return this
 		.bind(startDrag, function () {
+			draggable.bind('startDrag');
 			draggable.prevMouseCoord = new LibCanvas.Dot(
 				draggable.canvas.mouse.dot
 			);
-			draggable.bind(dragging, listen);
+			draggable.bind(dragging, dragFn);
 		})
 		.bind(stopDrag, function () {
-			draggable.unbind(dragging, listen);
-			delete draggable.prevMouseCoord;
+			if ($chk(draggable.prevMouseCoord)) {
+				draggable
+					.bind('stopDrag')
+					.unbind(dragging, dragFn);
+				delete draggable.prevMouseCoord;
+			}
 		});
 };
 
