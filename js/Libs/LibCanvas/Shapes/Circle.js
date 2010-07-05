@@ -40,6 +40,11 @@ LibCanvas.Shapes.Circle = new Class({
 			(dot.y - this.y).pow(2)
 		).sqrt() <= this.radius;
 	},
+	move : function (distance) {
+		this.x += distance.x;
+		this.y += distance.y;
+		return this;
+	},
 	draw : function (ctx, type) {
 		ctx.beginPath()
 			.arc({

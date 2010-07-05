@@ -64,9 +64,11 @@ LibCanvas.Canvas2D = new Class({
 		return this;
 	},
 	drawAll : function () {
-		this.elems.each(function (elem) {
-			elem.draw();
-		});
+		this.elems
+			.sortByZIndex(true)
+			.each(function (elem) {
+				elem.draw();
+			});
 		return this;
 	},
 	fpsMeter : function (frames) {

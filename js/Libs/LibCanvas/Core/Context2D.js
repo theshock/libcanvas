@@ -27,14 +27,20 @@ var office = {
 		return new LibCanvas.Shapes.Rectangle(0, 0, this.width, this.height);
 	},
 	fillStroke : function (type, args) {
-		if (args.length == 1 && args[0] instanceof LibCanvas.Shape) {
+		if (args.length >= 1 && args[0] instanceof LibCanvas.Shape) {
+			if (args[1]) {
+				this.save().set(type + 'Style', args[1]);
+			}
 			args[0].draw(this, type);
+			if (args[1]) {
+				this.restore();
+			}
 		} else {
-			if (args.length) {
+			if (args.length && args[0]) {
 				this.save().set(type + 'Style', args[0]);
 			}
 			this.original(type);
-			if (args.length) {
+			if (args.length && args[0]) {
 				this.restore();
 			}
 		}
@@ -131,6 +137,8 @@ LibCanvas.Context2D = new Class({
 		var a = arguments;
 		var circle, angle, acw;
 		if (a.length == 6) {
+			return this.original('arc', a);
+			// Optimization ?
 			circle = new LibCanvas.Shapes.Circle(x, y, r);
 			angle  = {
 				start : startAngle,
@@ -229,23 +237,8 @@ LibCanvas.Context2D = new Class({
 	},
 	drawImage : function () {
 		var a   = arguments;
-		var cal = a.callee;
-		if (a.length == 3) {
-			return cal.call(this, {
-				image : a[0],
-				from  : [a[1], a[2]]
-			});
-		} else if (a.length == 5) {
-			return cal.call(this, {
-				image : a[0],
-				draw  : [a[1], a[2], a[3], a[4]]
-			});
-		} else if (a.length == 9) {
-			return cal.call(this, {
-				image : a[0],
-				crop  : [a[1], a[2], a[3], a[4]],
-				draw  : [a[5], a[6], a[7], a[8]]
-			});
+		if ([3, 5, 9].contains(a.length)) {
+                    return this.original('drawImage', a);
 		}
 		a = a[0];
 		if (a.from) {
@@ -275,6 +268,13 @@ LibCanvas.Context2D = new Class({
 		} else {
 			throw 'Wrong Args in Context.drawImage';
 		}
+	},
+	projectiveImage : function (arg) {
+		new LibCanvas.Utils.ProjectiveTexture(arg.image)
+			.setContext(this.ctx2d)
+			.setQuality(arg.patchSize, arg.limit)
+			.render(arg.draw);
+		return this;
 	},
 	putImageData : function () {
 		var a = arguments;

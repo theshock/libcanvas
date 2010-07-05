@@ -40,12 +40,12 @@ LibCanvas.Mouse = new Class({
 		$(this.canvas.ctx.canvas).addEvents({
 			mousemove : function (e) {
 				try {
-				e = mouse.expandEvent(e.event);
-				mouse.setCoords(e.offsetX, e.offsetY);
-				mouse.event('mousemove', e);
-				// previous status for away:mouseover event
-				mouse.mouseIsOut = false;
-				} catch (e) { trace(e)}
+					e = mouse.expandEvent(e.event);
+					mouse.setCoords(e.offsetX, e.offsetY);
+					mouse.event('mousemove', e);
+					// previous status for away:mouseover event
+					mouse.mouseIsOut = false;
+				} catch (e) {trace(e)}
 			},
 			mouseout : function (e) {
 				mouse.setCoords();
@@ -80,67 +80,85 @@ LibCanvas.Mouse = new Class({
 		this.subscribers.erase(elem);
 		return this;
 	},
+	overElem : function (elem) {
+		return this.inCanvas && elem.getShape().hasDot(this.dot);
+	},
+	getOverSubscribers : function () {
+		var mouse = this;
+		var elements = {
+			over : [],
+			out  : []
+		};
+		var maxOverMouseZ = 0;
+		this.subscribers
+			.sortByZIndex()
+			.each(function (elem) {
+				var z = elem.getZIndex ? elem.getZIndex() : 0;
+				if (z >= maxOverMouseZ && mouse.overElem(elem)) {
+					maxOverMouseZ = z;
+					elements.over.push(elem);
+				} else {
+					elements.out.push(elem);
+				}
+			});
+		return elements;
+
+	},
+	callEvent : function (elem, event, e) {
+		if ($type(elem.event) == 'function') {
+			elem.event.call(elem, event, e);
+		} else if (typeof(elem.event) == 'object') {
+			if (event.begins('away')) {
+				if (typeof elem.event.away == 'object' &&
+					elem.event.away[event.substr(5)]) {
+					elem.event.away[event.substr(5)]
+						.call(elem, event, e);
+				}
+			} else if (elem.event[event]) {
+				elem.event[event].call(elem, event, e);
+			}
+		}
+	},
 	event : function (type, e) {
 		var mouse = this;
+		var subscribers = this.getOverSubscribers();
 		
 		if (type == 'mousedown') {
 			mouse.lastMouseDown = [];
 		}
 
-		// Move throw all subscribed element
-		for (var i = 0; i < this.subscribers.length; i++) {
-			var evs  = [];
-			var elem = this.subscribers[i];
-			// If mouse is now over this element
-			if (this.inCanvas && elem.getShape().hasDot(mouse.dot)) {
-				if (type == 'mousemove') {
-					// Mouse move firstly on this element
-					if (!mouse.lastMouseMove.contains(elem)) {
-						evs.push([elem, 'mouseover']);
-						mouse.lastMouseMove.push(elem);
-					}
-				} else if (type == 'mousedown') {
-					mouse.lastMouseDown.push(elem);
-				// If mouseuped on this elem and last mousedown was on this elem - click
-				} else if (type == 'mouseup' && mouse.lastMouseDown.contains(elem)) {
-						
-					evs.push([elem, 'click']);
-				}
-				evs.push([elem, type]);
-			// If mouse move out of this element, but not out of canvas
-			} else {
-				if (this.mouseIsOut) {
-					evs.push([elem, 'away:mouseover']);
-				}
-				var mouseout = false;
-				if (['mousemove', 'mouseout'].contains(type)) {
-					var index = mouse.lastMouseMove.indexOf(elem);
-					if (index >= 0) {
-						evs.push([mouse.lastMouseMove[index], 'mouseout']);
-						mouse.lastMouseMove.remove(index);
-						mouseout = true;
-					}
-				}
-				if (!mouseout) {
-					evs.push([elem, 'away:' + type]);
+		subscribers.over.each(function (elem) {
+			// Mouse move firstly on this element
+			if (type == 'mousemove' && !mouse.lastMouseMove.contains(elem)) {
+				mouse.callEvent(elem, 'mouseover', e);
+				mouse.lastMouseMove.push(elem);
+			} else if (type == 'mousedown') {
+				mouse.lastMouseDown.push(elem);
+			// If mouseuped on this elem and last mousedown was on this elem - click
+			} else if (type == 'mouseup' && mouse.lastMouseDown.contains(elem)) {
+				mouse.callEvent(elem, 'click', e);
+			}
+			mouse.callEvent(elem, type, e);
+		});
+
+		subscribers.out.each(function (elem) {
+			if (this.mouseIsOut) {
+				mouse.callEvent(elem, 'away:mouseover', e);
+			}
+			var mouseout = false;
+			if (['mousemove', 'mouseout'].contains(type)) {
+				var index = mouse.lastMouseMove.indexOf(elem);
+				if (index >= 0) {
+					mouse.callEvent(mouse.lastMouseMove[index], 'mouseout', e);
+					mouse.lastMouseMove.remove(index);
+					mouseout = true;
 				}
 			}
-			evs.each(function (elem) {
-				if ($type(elem[0].event) == 'function') {
-					elem[0].event.call(elem[0], elem[1], e);
-				} else if (typeof(elem[0].event) == 'object') {
-					if (elem[1].begins('away')) {
-						if (typeof elem[0].event.away == 'object' &&
-							elem[0].event.away[elem[1].substr(5)]) {
-							elem[0].event.away[elem[1].substr(5)]
-								.call(elem[0], elem[1], e);
-						}
-					} else if (elem[0].event[elem[1]]) {
-						elem[0].event[elem[1]].call(elem[0], elem[1], e);
-					}
-				}
-			});
-		}
+			if (!mouseout) {
+				mouse.callEvent(elem, 'away:' + type, e);
+			}
+		});
+
 		return this;
 	}
 });

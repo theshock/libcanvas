@@ -81,4 +81,13 @@ Array.prototype.firstReal = function () {
 	}
 	return null;
 };
-
+Array.prototype.sortByZIndex = function (reverse) {
+	var getZ = function (elem) {
+		return elem.getZIndex ? elem.getZIndex() : 0;
+	};
+	this.sort(function ($0, $1) {
+		var result = getZ($1) - getZ($0) >= 0 ? 1 : -1;
+		return reverse ? -result : result;
+	});
+	return this;
+};

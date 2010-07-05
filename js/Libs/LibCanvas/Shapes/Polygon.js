@@ -43,5 +43,10 @@ LibCanvas.Shapes.Polygon = new Class({
 		ctx[type]();
 		return this;
 	},
+	move : function (distance) {
+		this.each(function (dot) {
+			dot.move(distance);
+		});
+	},
 	each : Array.prototype.each
 });

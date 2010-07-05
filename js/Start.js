@@ -7,29 +7,32 @@
 window.addEvent('domready', function () {
 	new LibCanvas.Canvas2D($$('canvas')[0])
 		.setFps(60)
-		.fpsMeter(30)
+		.fpsMeter(15)
 		.setConfig({
-			background  : '#EFEBE7',
-			images      : App.imagesList
+			background : '#EFEBE7',
+			images     : App.imagesList
 		})
-		.start(function () {
-			new LibCanvas.Utils.ProjectiveTexture(this.images['testImage0'])
-				.setContext(this.ctx.canvas.getContext('2d'))
-				.setQuality(64, 4)
-				.render([
-				  [  0,   0],
-				  [200, 100],
-				  [  0, 600],
-				  [200, 500]
-				])
-			new LibCanvas.Utils.ProjectiveTexture(this.images['testImage0'])
-				.setContext(this.ctx.canvas.getContext('2d'))
-				.setQuality(64, 4)
-				.render([
-				  [800,   0],
-				  [600, 100],
-				  [800, 600],
-				  [600, 500]
-				])
-		});
+		.listenMouse()
+		.addElement(
+			new App.TestElem(
+				new LibCanvas.Shapes.Rectangle(
+					50, 50, 100, 100
+				)
+			).setZIndex(2)
+		)
+		.addElement(
+			new App.TestElem(
+				new LibCanvas.Shapes.Rectangle(
+					100, 100, 100, 100
+				)
+			).setZIndex(4)
+		)
+		.addElement(
+			new App.TestElem(
+				new LibCanvas.Shapes.Circle(
+					125, 125, 50
+				)
+			).setZIndex(3)
+		)
+		.start();
 });

@@ -37,6 +37,7 @@ LibCanvas.Shapes.Rectangle = new Class({
 		if (!this.countElse()) {
 			throw 'WrongArgumentsCount in Rectangle'
 		}
+
 		return this;
 	},
 	countElse : function () {
@@ -122,6 +123,13 @@ LibCanvas.Shapes.Rectangle = new Class({
 		dot = this.checkDot(arguments);
 		return dot.x.between(this.from.x, this.to.x, 1)
 			&& dot.y.between(this.from.y, this.to.y, 1);
+	},
+	move : function (distance) {
+		this.from.x += distance.x;
+		this.from.y += distance.y;
+		this.to.x   += distance.x;
+		this.to.y   += distance.y;
+		return this;
 	},
 	draw : function (ctx, type) {
 		ctx.original(type + 'Rect', 

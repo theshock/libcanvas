@@ -3,6 +3,7 @@
 window.LibCanvas = window.$lc = {};
 window.LibCanvas.Shapes = {};
 window.LibCanvas.Utils  = {};
+window.LibCanvas.Interfaces  = {};
 
 
 (function () {

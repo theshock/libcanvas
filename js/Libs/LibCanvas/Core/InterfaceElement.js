@@ -39,28 +39,26 @@ LibCanvas.InterfaceElement = new Class({
 	 * away:mousedown
 	 */
 	callBinds : function (type, e) {
-		if (this.binds[type]) {
-			this.binds[type].each(function (fn) {
-				fn(e);
-			});
-		}
+		try {
+			(this.binds[type] || [])
+				.each(function (fn) {
+					fn(e);
+				});
+		} catch (ignored) {}
 		return this;
 	},
 	event : {
 		mouseover : function (type, e) {
 			this.hover = true;
-			this.callBinds(type, e);
-			return this;
+			return this.callBinds(type, e);
 		},
 		mouseout  : function (type, e) {
 			this.hover = false;
-			this.callBinds(type, e);
-			return this;
+			return this.callBinds(type, e);
 		},
 		mousedown  : function (type, e) {
 			this.active = true;
-			this.callBinds(type, e);
-			return this;
+			return this.callBinds(type, e);
 		},
 		mouseup : deactivateEvent,
 		away : {
@@ -80,6 +78,12 @@ LibCanvas.InterfaceElement = new Class({
 		return this;
 	},
 	bind : function (event, fn) {
+		if ($type(event) == 'array') {
+			event.each(function (e) {
+				this.bind(e, fn)
+			}.bind(this));
+			return this;
+		}
 		var ename = event;
 		if (event.begins('away')) {
 			ename = event.substr(5);
@@ -102,6 +106,12 @@ LibCanvas.InterfaceElement = new Class({
 		return this;
 	},
 	unbind : function (event, fn) {
+		if ($type(event) == 'array') {
+			event.each(function (e) {
+				this.unbind(e, fn)
+			}.bind(this));
+			return this;
+		}
 		if (this.binds[event]) {
 			if (fn) {
 				this.binds[event].erase(fn);

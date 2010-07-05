@@ -18,8 +18,8 @@ LibCanvas.Utils.ProjectiveTexture = new Class({
 		this.limit = 4;
 	},
 	setQuality : function (patchSize, limit) {
-		this.patchSize = patchSize;
-		this.limit = limit;
+		this.patchSize = patchSize || 64;
+		this.limit = limit || 4;
 		return this;
 	},
 	setContext : function (ctx) {
