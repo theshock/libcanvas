@@ -49,6 +49,8 @@ LibCanvas.Shapes.Rectangle = new Class({
 		}
 		this.width  = this.size.w;
 		this.height = this.size.h;
+		this.x      = this.from.x;
+		this.y      = this.from.y;
 		this[0] = this.from.x;
 		this[1] = this.from.y;
 		this[2] = this.size.w;
@@ -129,6 +131,8 @@ LibCanvas.Shapes.Rectangle = new Class({
 		this.from.y += distance.y;
 		this.to.x   += distance.x;
 		this.to.y   += distance.y;
+		this.x      += distance.x;
+		this.y      += distance.y;
 		return this;
 	},
 	draw : function (ctx, type) {

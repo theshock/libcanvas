@@ -18,6 +18,13 @@ LibCanvas.Canvas2D = new Class({
 		this.progressBar = null;
 		this.mouse = null;
 	},
+	getImage : function (name) {
+		if (this.images[name]) {
+			return this.images[name];
+		} else {
+			throw 'No image "' + name + '"';
+		}
+	},
 	setFps : function (fps) {
 		this.fps = fps;
 		if (this.interval) {
@@ -41,13 +48,11 @@ LibCanvas.Canvas2D = new Class({
 		this.checkElem(elem);
 		elem.setCanvas(this);
 		this.elems = this.elems || [];
-		this.elems.push(elem);
+		this.elems.include(elem);
 		return this;
 	},
 	rmElement : function (elem) {
-		if (this.elems) {
-			this.elems.erase(elem);
-		}
+		(this.elems || []).erase(elem);
 		return this;
 	},
 	checkElem : function (elem) {
@@ -100,8 +105,9 @@ LibCanvas.Canvas2D = new Class({
 		} else {
 			if (!this.imagePreloader) {
 				this.imagePreloader = new LibCanvas.Utils.ImagePreloader(this.cfg.images)
-					.ready(function (images) {
-						this.images = images;
+					.ready(function (preloader) {
+						this.images = preloader.images;
+						log(preloader.getInfo());
 					}.bind(this));
 			}
 			if (this.cfg.progressBar && !this.progressBar) {

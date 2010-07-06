@@ -39,23 +39,31 @@ LibCanvas.Mouse = new Class({
 			return mouse.expandEvent(e.event);
 		};
 		$(this.canvas.ctx.canvas).addEvents({
+			/* bug in Linux Google Chrome 5.0.356.0 dev
+			 * if moving mouse while some text is selected
+			 * mouse becomes disable.
+			 */
 			mousemove : function (e) {
 				e = exp(e);
 				mouse.setCoords(e.offsetX, e.offsetY);
 				mouse.events.event('mousemove', e);
 				mouse.isOut = false;
+				return false;
 			},
 			mouseout : function (e) {
 				e = exp(e);
 				mouse.setCoords(/* null */);
 				mouse.events.event('mouseout', e);
 				mouse.isOut = true;
+				return false;
 			},
 			mousedown : function (e) {
 				mouse.events.event('mousedown', exp(e));
+				return false;
 			},
 			mouseup : function (e) {
 				mouse.events.event('mouseup'  , exp(e));
+				return false;
 			}
 		});
 		return this;

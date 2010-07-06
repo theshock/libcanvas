@@ -7,7 +7,7 @@ LibCanvas.Inner.MouseEvents = new Class({
 		this.dot   = mouse.dot;
 	},
 	subscribe : function (elem) {
-		this.subscribers.push(elem);
+		this.subscribers.include(elem);
 		return this;
 	},
 	unsubscribe : function (elem) {
@@ -61,7 +61,6 @@ LibCanvas.Inner.MouseEvents = new Class({
 		if (type == 'mousedown') {
 			mouse.lastMouseDown = [];
 		}
-
 		subscribers.over.each(function (elem) {
 			// Mouse move firstly on this element
 			if (type == 'mousemove' && !mouse.lastMouseMove.contains(elem)) {
@@ -72,8 +71,6 @@ LibCanvas.Inner.MouseEvents = new Class({
 			// If mouseuped on this elem and last mousedown was on this elem - click
 			} else if (type == 'mouseup' && mouse.lastMouseDown.contains(elem)) {
 				mouse.callEvent(elem, 'click', e);
-			} else if (type == 'mouseout') {
-				mouse.callEvent(elem, 'away:mouseout', e);
 			}
 			mouse.callEvent(elem, type, e);
 		});
@@ -84,10 +81,12 @@ LibCanvas.Inner.MouseEvents = new Class({
 			}
 			var mouseout = false;
 			if (['mousemove', 'mouseout'].contains(type)) {
-				var index = mouse.lastMouseMove.indexOf(elem);
-				if (index >= 0) {
-					mouse.callEvent(mouse.lastMouseMove[index], 'mouseout', e);
-					mouse.lastMouseMove.remove(index);
+				if (mouse.lastMouseMove.contains(elem)) {
+					mouse.callEvent(elem, 'mouseout', e);
+					if (type == 'mouseout') {
+						mouse.callEvent(elem, 'away:mouseout', e);
+					}
+					mouse.lastMouseMove.erase(elem);
 					mouseout = true;
 				}
 			}

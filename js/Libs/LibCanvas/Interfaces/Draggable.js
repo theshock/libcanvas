@@ -3,13 +3,11 @@
 
 LibCanvas.Interfaces.Draggable = new Class({
 	isDraggable : null,
-	draggable : function (on) {
+	draggable : function (stopDrag) {
 		if (this.isDraggable === null) {
-			this.bind('canvasSetted', function () {
-				initDraggable.call(this);
-			}.bind(this));
+			this.bind('canvasSetted', initDraggable.bind(this));
 		}
-		this.isDraggable = !!on;
+		this.isDraggable = !stopDrag;
 		return this;
 	}
 });

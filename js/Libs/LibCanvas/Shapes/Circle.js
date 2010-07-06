@@ -26,11 +26,14 @@ LibCanvas.Shapes.Circle = new Class({
 			} else {
 			throw 'Wrong Arguments In Circle';
 		}
-		if (!this.center) {
-			//this.center = new LibCanvas.Dot();
-		}
-		//this.center.set(this.x, this.y);
+		this.updateCenter();
 		this.radius = this.r;
+	},
+	updateCenter : function () {
+		if (!this.center) {
+			this.center = new LibCanvas.Dot();
+		}
+		this.center.set(this.x, this.y);
 	},
 	hasDot : function (dot) {
 		dot = this.checkDot(arguments);
@@ -43,6 +46,7 @@ LibCanvas.Shapes.Circle = new Class({
 	move : function (distance) {
 		this.x += distance.x;
 		this.y += distance.y;
+		this.updateCenter();
 		return this;
 	},
 	draw : function (ctx, type) {

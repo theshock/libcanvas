@@ -17,18 +17,18 @@ LibCanvas.Utils.ImagePreloader = new Class({
 	},
 	onProcessed : function (type) {
 		this.count[type]++;
-		this.ready = (++this.processed == this.number);
-		if (this.ready) {
+		this.processed++;
+		if (this.isReady()) {
 			this.readyfuncs.each(function (fn) {
-				fn(this.images);
+				fn(this);
 			}.bind(this));
 		}
 		return this;
 	},
 	getInfo : function () {
-		var stat = "Images preloaded: {loaded}; Errors: {errors}; Aborts: {aborts}"
+		var stat = "Images loaded: {loaded}; Errors: {errors}; Aborts: {aborts}"
 			.substitute(this.count);
-		var ready = this.ready ? "Image preloading has completed;\n" : '';
+		var ready = this.isReady() ? "Image preloading has completed;\n" : '';
 		return ready + stat;
 	},
 	getProgress : function () {
@@ -37,30 +37,31 @@ LibCanvas.Utils.ImagePreloader = new Class({
 	isReady : function () {
 		return (this.number == this.processed);
 	},
-	createImages : function (images) {
-		var $this = this;
-		var h = new Hash(images)
-		h.each(function (img, key) {
-				$this.images[key] = new Element('img', {
-					src : img
-				})
-				.addEvents({
-					load  : function() {
-						$this.onProcessed('loaded');
-					},
-					error : function() {
-						$this.onProcessed('errors');
-					},
-					abort : function() {
-						$this.onProcessed('aborts');
-					}
-				});
+	createEvent : function (type) {
+		return (function () {
+			this.onProcessed(type);
+		}).bind(this);
+	},
+	createImage : function (img, key) {
+		this.images[key] = new Element('img', {
+				src : img
+			})
+			.addEvents({
+				load  : this.createEvent('loaded'),
+				error : this.createEvent('errors'),
+				abort : this.createEvent('aborts')
 			});
-		return h;
+	},
+	createImages : function (images) {
+		images = new Hash(images);
+		images.each(
+			this.createImage.bind(this)
+		);
+		return images;
 	},
 	ready : function (fn) {
-		if (this.ready) {
-			fn(this.images);
+		if (this.isReady()) {
+			fn(this);
 		} else {
 			this.readyfuncs.push(fn);
 		}

@@ -236,11 +236,14 @@ LibCanvas.Context2D = new Class({
 		return this.original('createImageData', arguments);
 	},
 	drawImage : function () {
-		var a   = arguments;
+		var a = arguments;
 		if ([3, 5, 9].contains(a.length)) {
                     return this.original('drawImage', a);
 		}
 		a = a[0];
+		if (!a.image) {
+			throw 'No image';
+		}
 		if (a.from) {
 			var from = a.from instanceof LibCanvas.Dot ?
 				a.from : new LibCanvas.Dot(a.from);
@@ -254,7 +257,7 @@ LibCanvas.Context2D = new Class({
 			if (a.crop) {
 				var crop = a.crop instanceof LibCanvas.Shapes.Rectangle ?
 						a.crop : new LibCanvas.Shapes.Rectangle(a.crop);
-					
+
 					return this.original('drawImage', [
 						a.image,
 						crop.from.x, crop.from.y, crop.width, crop.height,
