@@ -9,6 +9,15 @@ LibCanvas.Interfaces.Bindable = new Class({
 		}
 		return this;
 	},
+	callBind : function (event, fn, args) {
+		var result = fn.apply(this, args);
+		if (typeof result == 'string') {
+			result = result.toLowerCase();
+			if (result == 'unbind') {
+				this.unbind(event, fn);
+			}
+		}
+	},
 	bind : function (event, fn) {
 		if ($type(event) == 'array') {
 			event.each(function (e) {
@@ -23,34 +32,28 @@ LibCanvas.Interfaces.Bindable = new Class({
 			this.binds[event]
 				.include(fn);
 			if (event in this.autoBinds) {
-				fn.apply(this, this.autoBinds[event])
+				this.callBind(event, fn, this.autoBinds[event]);
 			}
 		} else if (event in this.binds) {
 			var args = fn;
 			this.binds[event].each(function (fn) {
-				fn.apply(this, args);
+				this.callBind(event, fn, args);
 			}.bind(this));
 		}
 		return this;
 	},
 	unbind : function (event, fn) {
 		if ($type(event) == 'array') {
-			event.each(
-				this.unbind.bind(this)
-			);
+			event.each(function (e) {
+				this.unbind(e, fn);
+			}.bind(this));
 			return this;
 		}
 
-		var deleteEvent = false;
 		if (!fn) {
-			deleteEvent = true;
+			this.binds[event] = [];
 		} else if (event in this.binds) {
-			deleteEvent = !this
-				.binds[event]
-				.erase(fn);
-		}
-		if (deleteEvent) {
-			delete this.binds[event];
+			this.binds[event].erase(fn);
 		}
 		return this;
 	}
