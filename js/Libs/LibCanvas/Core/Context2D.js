@@ -55,8 +55,56 @@ var office = {
 				new LibCanvas.Dot(args[0]);
 		}
 		return this.original(func, [dot.x, dot.y]);
+	},
+	makeRect : function (obj) {
+		return obj instanceof LibCanvas.Shapes.Rectangle ?
+			obj : new LibCanvas.Shapes.Rectangle(obj);
+	},
+	createImageCacheData : function (a) {
+		var draw = office.makeRect(a.draw);
+		var crop = a.crop ? office.makeRect(a.crop) : null;
+		return {
+			src : a.image.getAttribute('src') || '',
+			image : a.image,
+			crop : crop ? {
+				x : crop.from.x,
+				y : crop.from.y,
+				w : crop.width,
+				h : crop.height
+			} : null,
+			draw : {
+				x : 0,
+				y : 0,
+				w : draw.width,
+				h : draw.height
+			}
+		};
+	},
+	getImageCache : function (data) {
+		var src = imageCache[data.src];
+		if (src) {
+			for (var i = src.length; i--;) {
+				if ($equals(src[i].data, data)) {
+					return src[i].cache;
+				}
+			}
+		}
+		return false;
+	},
+	putImageCache : function (data, cache) {
+		data = office.createImageCacheData(data);
+		var src = imageCache[data.src];
+		if (!src) {
+			src = imageCache[data.src] = [];
+		}
+		src.push({
+			data  : data,
+			cache : cache
+		});
 	}
 };
+
+var imageCache = {};
 
 LibCanvas.Context2D = new Class({
 	initialize : function (canvas) {
@@ -235,6 +283,29 @@ LibCanvas.Context2D = new Class({
 	createImageData : function () {
 		return this.original('createImageData', arguments);
 	},
+	cachedDrawImage : function (a) {
+		if (!a.image || !a.draw) {
+			return this.drawImage.apply(this, arguments);
+		}
+		var data = office.createImageCacheData(a);
+		var cache = office.getImageCache(data);
+		if (!cache) {
+			var canvas = new Element('canvas', {
+				width  : data.draw.w,
+				height : data.draw.h
+			});
+			canvas.getContext('2d-libcanvas')
+				.drawImage(data);
+			office.putImageCache(data, canvas);
+			cache = canvas;
+		}
+		var draw = office.makeRect(a.draw);
+		var result = {
+			image : cache,
+			from  : draw
+		}
+		return this.drawImage(result);
+	},
 	drawImage : function () {
 		var a = arguments;
 		if ([3, 5, 9].contains(a.length)) {
@@ -245,28 +316,25 @@ LibCanvas.Context2D = new Class({
 			throw 'No image';
 		}
 		if (a.from) {
-			var from = a.from instanceof LibCanvas.Dot ?
-				a.from : new LibCanvas.Dot(a.from);
-
+			var from = $chk(a.from.x) && $chk(a.from.y) ? a.from :
+				a.from instanceof LibCanvas.Dot ?
+					a.from : new LibCanvas.Dot(a.from);
 			return this.original('drawImage', [
 				a.image, from.x, from.y
 			])
 		} else if (a.draw) {
-			var draw = a.draw instanceof LibCanvas.Shapes.Rectangle ?
-				a.draw : new LibCanvas.Shapes.Rectangle(a.draw);
+			var draw = office.makeRect(a.draw);
 			if (a.crop) {
-				var crop = a.crop instanceof LibCanvas.Shapes.Rectangle ?
-						a.crop : new LibCanvas.Shapes.Rectangle(a.crop);
-
-					return this.original('drawImage', [
-						a.image,
-						crop.from.x, crop.from.y, crop.width, crop.height,
-						draw.from.x, draw.from.y, draw.width, draw.height
-					])
+				var crop = office.makeRect(a.crop);
+				return this.original('drawImage', [
+					a.image,
+					crop.from.x, crop.from.y, crop.width, crop.height,
+					draw.from.x, draw.from.y, draw.width, draw.height
+				])
 			} else {
 				return this.original('drawImage', [
 					a.image, draw.from.x, draw.from.y, draw.width, draw.height
-				])
+				]);
 			}
 		} else {
 			throw 'Wrong Args in Context.drawImage';
@@ -296,7 +364,7 @@ LibCanvas.Context2D = new Class({
 				put.from = a[1] instanceof LibCanvas.Dot ? a[1] :
 					new LibCanvas.Dot(a[1]);
 			} else {
-				put.from = new LibCanvas.Dor(a[1], a[2]);
+				put.from = new LibCanvas.Dot(a[1], a[2]);
 			}
 		}
 		return this.original('putImageData', [

@@ -3,6 +3,10 @@
 
 LibCanvas.Interfaces.Draggable = new Class({
 	isDraggable : null,
+	dragStart : null,
+	returnToStart : function (speed) {
+		return this.moveTo(this.dragStart, speed);
+	},
 	draggable : function (stopDrag) {
 		if (this.isDraggable === null) {
 			this.bind('canvasSetted', initDraggable.bind(this));
@@ -15,7 +19,7 @@ LibCanvas.Interfaces.Draggable = new Class({
 var moveListener = function () {
 	if (this.isDraggable && this.prevMouseCoord) {
 		var mouse = this.canvas.mouse;
-		var move  = this.prevMouseCoord.diff(mouse.dot);
+			var move  = this.prevMouseCoord.diff(mouse.dot);
 		this.shape.move(move);
 		this.bind('moveDrag', [move]);
 		this.prevMouseCoord.set(mouse.dot)
@@ -23,9 +27,8 @@ var moveListener = function () {
 };
 
 var initDraggable = function () {
-	var draggable = this;
 	var dragFn = function () {
-		moveListener.call(draggable);
+		moveListener.call(this);
 	}.bind(this);
 
 	var startDrag = ['mousedown'];
@@ -34,18 +37,23 @@ var initDraggable = function () {
 
 	return this
 		.bind(startDrag, function () {
-			draggable.bind('startDrag');
-			draggable.prevMouseCoord = new LibCanvas.Dot(
-				draggable.canvas.mouse.dot
-			);
-			draggable.bind(dragging, dragFn);
+			if (this.isDraggable) {
+				this.bind('startDrag');
+				this.dragStart = new LibCanvas.Dot(
+					this.getCoords()
+				);
+				this.prevMouseCoord = new LibCanvas.Dot(
+					this.canvas.mouse.dot
+				);
+				this.bind(dragging, dragFn);
+			}
 		})
 		.bind(stopDrag, function () {
-			if ($chk(draggable.prevMouseCoord)) {
-				draggable
+			if (this.isDraggable && this.prevMouseCoord) {
+				this
 					.bind('stopDrag')
 					.unbind(dragging, dragFn);
-				delete draggable.prevMouseCoord;
+				delete this.prevMouseCoord;
 			}
 		});
 };

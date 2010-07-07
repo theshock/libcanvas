@@ -10,13 +10,13 @@ LibCanvas.Shapes.Rectangle = new Class({
 		this.size = {};
 		this.from = {};
 		this.to   = {};
-		if ($chk(a[0]) && [a[0].size, a[0].from, a[0].to, a[0].fromX, a[0].width].firstReal() !== null ) {
+		if ($chk(a[0]) && [a[0].size, a[0].from, a[0].to, a[0].fromX, a[0].width, a[0].w, a[0].x].firstReal() !== null ) {
 			a[0].size = a[0].size || {};
-			this.size.w = [ a[0].width,  a[0].size.w, a[0].size[0] ].firstReal();
-			this.size.h = [ a[0].height, a[0].size.h, a[0].size[1] ].firstReal();
+			this.size.w = [ a[0].w, a[0].width,  a[0].size.w, a[0].size[0] ].firstReal();
+			this.size.h = [ a[0].h, a[0].height, a[0].size.h, a[0].size[1] ].firstReal();
 			a[0].from = a[0].from || {};
-			this.from.x = [ a[0].fromX, a[0].from.x, a[0].from[0] ].firstReal();
-			this.from.y = [ a[0].fromY, a[0].from.y, a[0].from[1] ].firstReal();
+			this.from.x = [ a[0].x, a[0].fromX, a[0].from.x, a[0].from[0] ].firstReal();
+			this.from.y = [ a[0].y, a[0].fromY, a[0].from.y, a[0].from[1] ].firstReal();
 			a[0].to   = a[0].to   || {};
 			this.to.x   = [ a[0].toX, a[0].to.x, a[0].to[0] ].firstReal();
 			this.to.y   = [ a[0].toY, a[0].to.y, a[0].to[1] ].firstReal();

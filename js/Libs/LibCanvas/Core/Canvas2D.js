@@ -107,7 +107,7 @@ LibCanvas.Canvas2D = new Class({
 				this.imagePreloader = new LibCanvas.Utils.ImagePreloader(this.cfg.images)
 					.ready(function (preloader) {
 						this.images = preloader.images;
-						log(preloader.getInfo());
+						$log(preloader.getInfo());
 					}.bind(this));
 			}
 			if (this.cfg.progressBar && !this.progressBar) {

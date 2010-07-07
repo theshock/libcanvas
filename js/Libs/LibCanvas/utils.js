@@ -96,8 +96,28 @@ Array.implement({
 	}
 });
 
-var log = function () {
+var $log = function () {
 	try {
 		console.log.apply(console, arguments);
 	} catch (e) {}
+};
+
+var $equals = function (obj1, obj2) {
+	var plain = function (obj) {
+		return typeof obj != 'object' ||
+			[false, 'element', 'textnode', 'whitespace']
+				.contains($type(obj));
+	}
+	if (obj1 == obj2) {
+		return true;
+	} else if (plain(obj1) || plain(obj2)) {
+		return obj1 == obj2;
+	} else {
+		for (var i in obj1) {
+			if (!(i in obj2) || !$equals(obj1[i], obj2[i])) {
+				return false;
+			}
+		}
+	}
+	return true;
 };

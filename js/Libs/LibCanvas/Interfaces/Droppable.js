@@ -4,12 +4,19 @@ LibCanvas.Interfaces.Droppable = new Class({
 		if (this.drops === null) {
 			this.drops = [];
 			this.bind('stopDrag', function () {
-				var mouseDot = this.canvas.mouse.dot;
-				this.drops.each(function (obj) {
-					if(obj.getShape().hasDot(mouseDot)) {
-						this.bind('dropped', [obj]);
-					}
-				}.bind(this));
+				var dropped = false;
+				var mouse = this.canvas.mouse;
+				if (mouse.inCanvas) {
+					this.drops.each(function (obj) {
+						if(obj.getShape().hasDot(mouse.dot)) {
+							dropped = true;
+							this.bind('dropped', [obj]);
+						}
+					}.bind(this));
+				}
+				if (!dropped) {
+					this.bind('dropped', [null]);
+				}
 			}.bind(this));
 		}
 		this.drops.push(obj);
