@@ -12,13 +12,7 @@ LibCanvas.Interfaces.Linkable = new Class({
 	link : function (obj) {
 		if (this.links === null) {
 			this.links = [];
-			var origMove = this.getShape().move;
-			var linkable = this;
-			this.getShape().move = function (move) {
-				origMove.apply(linkable.getShape(), arguments);
-				linkable.bind('shapeMoved', [move]);
-			};
-			this.bind('shapeMoved', function (move) {
+			this.getShape().bind('moved', function (move) {
 				this.moveLinks(move);
 			}.bind(this));
 		}

@@ -47,7 +47,7 @@ LibCanvas.Shapes.Circle = new Class({
 		this.x += distance.x;
 		this.y += distance.y;
 		this.updateCenter();
-		return this;
+		return this.parent(distance);
 	},
 	draw : function (ctx, type) {
 		ctx.beginPath()

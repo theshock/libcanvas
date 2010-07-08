@@ -133,7 +133,7 @@ LibCanvas.Shapes.Rectangle = new Class({
 		this.to.y   += distance.y;
 		this.x      += distance.x;
 		this.y      += distance.y;
-		return this;
+		return this.parent(distance);
 	},
 	draw : function (ctx, type) {
 		ctx.original(type + 'Rect', 

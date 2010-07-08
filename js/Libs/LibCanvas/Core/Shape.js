@@ -1,5 +1,6 @@
 
 LibCanvas.Shape = new Class({
+	Implements: [LibCanvas.Interfaces.Bindable],
 	initialize : function () {
 		if (arguments.length > 0) {
 			this.set.apply(this, arguments);
@@ -14,8 +15,9 @@ LibCanvas.Shape = new Class({
 			throw 'Not a LibCanvas.Point in Circle.hasPoint';
 		}
 	},
-	move : function (a) {
-		throw 'Abstract Method Shape.move called';
+	move : function (distance) {
+		this.bind('moved', [distance]);
+		return this;
 	},
 	set : function (a) {
 		throw 'Abstract Method Shape.set called';

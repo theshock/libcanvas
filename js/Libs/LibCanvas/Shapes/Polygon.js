@@ -47,6 +47,7 @@ LibCanvas.Shapes.Polygon = new Class({
 		this.each(function (point) {
 			point.move(distance);
 		});
+		return this.parent(distance);
 	},
 	each : Array.prototype.each
 });

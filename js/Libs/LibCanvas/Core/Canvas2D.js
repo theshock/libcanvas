@@ -1,12 +1,19 @@
+(function () {
 
+var framesRendered = 0;
+var framesTrace;
 LibCanvas.Canvas2D = new Class({
 	initialize : function (elem) {
+		framesTrace = new LibCanvas.Utils.Trace;
+
+		this.elem       = elem;
 		this.traceElem  = new LibCanvas.Utils.Trace();
 		this.interval   = null;
 		this.ctx    = elem.getContext('2d-libcanvas');
 		this.elems  = [];
 		this.fps    = 20;
 		this.images = {};
+		this.updateFrame = true;
 		this.cfg    = {
 			autoClear   : true,
 			autoDraw    : true,
@@ -17,6 +24,10 @@ LibCanvas.Canvas2D = new Class({
 
 		this.progressBar = null;
 		this.mouse = null;
+	},
+	update : function () {
+		this.updateFrame = true;
+		return this;
 	},
 	getImage : function (name) {
 		if (this.images[name]) {
@@ -82,46 +93,61 @@ LibCanvas.Canvas2D = new Class({
 			this.fpsMeter.frame();
 		}
 
-		if (!this.cfg.images || (this.imagePreloader && this.imagePreloader.isReady())) {
-			if (this.progressBar) {
-				this.rmElement(this.progressBar);
-				this.progressBar = null;
-			}
-
-			this.ctx.save();
-			if (this.cfg.autoClear) {
-				this.ctx.clearAll();
-			}
-			if (this.cfg.background) {
-				this.ctx.fillAll(this.cfg.background);
-			}
-			if (this.fn) {
-				this.fn.call(this);
-			}
-			if (this.cfg.autoDraw) {
-				this.drawAll();
-			}
-			this.ctx.restore();
-		} else {
-			if (!this.imagePreloader) {
-				this.imagePreloader = new LibCanvas.Utils.ImagePreloader(this.cfg.images)
-					.ready(function (preloader) {
-						this.images = preloader.images;
-						$log(preloader.getInfo());
-					}.bind(this));
-			}
-			if (this.cfg.progressBar && !this.progressBar) {
-				this.progressBar = new LibCanvas.Utils.ProgressBar()
-					.setStyle(this.cfg.progressBar)
-				this.addElement(this.progressBar);
-			}
-			if (this.progressBar) {
-				this.progressBar
-					.setProgress(this.imagePreloader.getProgress())
-					.draw();
+		if (this.cfg.autoDraw == 'onRequest') {
+			if (this.updateFrame) {
+				this.updateFrame = false;
+			} else {
+				return this;
 			}
 		}
+
+		framesTrace.trace("Frames rendered: " + ++framesRendered);
+
+		this.imagesReady() ? this.render() : this.showProgress();
 		return this;
+	},
+	showProgress : function () {
+		if (!this.imagePreloader) {
+			this.imagePreloader = new LibCanvas.Utils.ImagePreloader(this.cfg.images)
+				.ready(function (preloader) {
+					this.images = preloader.images;
+					$log(preloader.getInfo());
+				}.bind(this));
+		}
+		if (this.cfg.progressBar && !this.progressBar) {
+			this.progressBar = new LibCanvas.Utils.ProgressBar()
+				.setStyle(this.cfg.progressBar)
+			this.addElement(this.progressBar);
+		}
+		if (this.progressBar) {
+			this.progressBar
+				.setProgress(this.imagePreloader.getProgress())
+				.draw();
+		}
+	},
+	imagesReady : function () {
+		return !this.cfg.images || (this.imagePreloader && this.imagePreloader.isReady());
+	},
+	render : function () {
+		if (this.progressBar) {
+			this.rmElement(this.progressBar);
+			this.progressBar = null;
+		}
+
+		this.ctx.save();
+		if (this.cfg.autoClear) {
+			this.ctx.clearAll();
+		}
+		if (this.cfg.background) {
+			this.ctx.fillAll(this.cfg.background);
+		}
+		if (this.fn) {
+			this.fn.call(this);
+		}
+		if (this.cfg.autoDraw) {
+			this.drawAll();
+		}
+		this.ctx.restore();
 	},
 	trace : function () {
 		this.traceElem.trace.apply(this.traceElem, arguments);
@@ -144,3 +170,5 @@ LibCanvas.Canvas2D = new Class({
 		return this;
 	}
 });
+
+})();

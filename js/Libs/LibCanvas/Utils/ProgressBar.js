@@ -97,10 +97,14 @@ LibCanvas.Utils.ProgressBar = new Class({
 		return b.restore().canvas;
 	},
 	setProgress : function (progress) {
+		this.canvas.update();
 		this.progress = progress;
 		return this;
 	},
 	setStyle : function (newStyle) {
+		if (this.canvas) {
+			this.canvas.update();
+		}
 		this.style = newStyle;
 		return this.preRender();
 	},
