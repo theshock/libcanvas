@@ -14,6 +14,9 @@
 		</style>
 	</head>
 	<body>
+		<div style="display:none" id="cachedInput">
+			Cached: <input type="checkbox" checked="checked"/>
+		</div>
 		<canvas width="960" height="600" class="main"></canvas>
 		<ul>
 			<li><a href="?draggable">Draggable</a></li>
@@ -21,6 +24,7 @@
 			<li><a href="?linkable">Linkable</a></li>
 			<li><a href="?moveable">Moveable</a></li>
 			<li><a href="?de">Desktop Environment</a></li>
+			<li><a href="?cachedImage">Cached image draw</a></li>
 		</ul>
 	</body>
 </html>

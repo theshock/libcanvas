@@ -132,6 +132,11 @@ App.Start = {
 				this.canvas[method](elements[i]);
 			}
 		}.bind(this);
+	},
+	cachedImage : function () {
+		this.canvas.addElement(
+			new App.ImageDrawer()
+		);
 	}
 };
 
