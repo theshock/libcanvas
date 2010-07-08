@@ -2,7 +2,7 @@
 LibCanvas.Mouse = new Class({
 	initialize : function (canvas) {
 		this.inCanvas = false;
-		this.dot = new LibCanvas.Dot();
+		this.point = new LibCanvas.Point();
 		this.x = null;
 		this.y = null;
 		
@@ -23,7 +23,7 @@ LibCanvas.Mouse = new Class({
 			this.y = null;
 			this.inCanvas = false;
 		}
-		this.dot.set(this.x, this.y);
+		this.point.set(this.x, this.y);
 		return this;
 	},
 	expandEvent : function (e) {

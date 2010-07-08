@@ -11,18 +11,18 @@ LibCanvas.Interfaces.Moveable = new Class({
 		$clear(this.moving.interval);
 		return this;
 	},
-	moveTo    : function (dot, speed) {
+	moveTo    : function (point, speed) {
 		this.stopMoving();
 		this.moving.speed = speed = (speed || this.moving.speed);
 		if (!speed) {
 			this.getShape().move(
-				this.getCoords().diff(dot)
+				this.getCoords().diff(point)
 			);
 			return this;
 		}
 		this.moving.interval = function () {
 			var move = {}, pixelsPerFn = speed / 20;
-			var diff = this.getCoords().diff(dot);
+			var diff = this.getCoords().diff(point);
 			var distance = Math.sqrt(diff.x * diff.x + diff.y * diff.y);
 			if (distance > pixelsPerFn) {
 				move.x = diff.x * (pixelsPerFn / distance);

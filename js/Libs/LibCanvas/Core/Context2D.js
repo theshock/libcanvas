@@ -47,14 +47,14 @@ var office = {
 		
 		return this;
 	},
-	originalDot : function (func, args) {
-		var dot = args[0];
-		if (!(args[0] instanceof LibCanvas.Dot)) {
-			dot = (args.length == 2) ?
-				new LibCanvas.Dot(args) :
-				new LibCanvas.Dot(args[0]);
+	originalPoint : function (func, args) {
+		var point = args[0];
+		if (!(args[0] instanceof LibCanvas.Point)) {
+			point = (args.length == 2) ?
+				new LibCanvas.Point(args) :
+				new LibCanvas.Point(args[0]);
 		}
-		return this.original(func, [dot.x, dot.y]);
+		return this.original(func, [point.x, point.y]);
 	},
 	makeRect : function (obj) {
 		return obj instanceof LibCanvas.Shapes.Rectangle ?
@@ -174,11 +174,11 @@ LibCanvas.Context2D = new Class({
 	clip : function () {
 		return this.original('clip');
 	},
-	moveTo : function (dot) {
-		return office.originalDot.call(this, 'moveTo', arguments);
+	moveTo : function (point) {
+		return office.originalPoint.call(this, 'moveTo', arguments);
 	},
-	lineTo : function (dot) {
-		return office.originalDot.call(this, 'lineTo', arguments);
+	lineTo : function (point) {
+		return office.originalPoint.call(this, 'lineTo', arguments);
 	},
 
 	arc : function (x, y, r, startAngle, endAngle, anticlockwise) {
@@ -241,10 +241,10 @@ LibCanvas.Context2D = new Class({
 		return this.original('rotate', arguments);
 	},
 	translate : function () {
-		return office.originalDot.call(this, 'translate', arguments);
+		return office.originalPoint.call(this, 'translate', arguments);
 	},
 	scale : function () {
-		return office.originalDot.call(this, 'scale', arguments);
+		return office.originalPoint.call(this, 'scale', arguments);
 	},
 	transform : function () {
 		// @todo Beauty arguments
@@ -317,8 +317,8 @@ LibCanvas.Context2D = new Class({
 		}
 		if (a.from) {
 			var from = $chk(a.from.x) && $chk(a.from.y) ? a.from :
-				a.from instanceof LibCanvas.Dot ?
-					a.from : new LibCanvas.Dot(a.from);
+				a.from instanceof LibCanvas.Point ?
+					a.from : new LibCanvas.Point(a.from);
 			return this.original('drawImage', [
 				a.image, from.x, from.y
 			])
@@ -356,15 +356,15 @@ LibCanvas.Context2D = new Class({
 		if (a.length == 1 && typeof a == 'object') {
 			a = a[0];
 			put.image = a.image;
-			put.from  = a.from instanceof LibCanvas.Dot ? a.from :
-				new LibCanvas.Dot(a.from);
+			put.from  = a.from instanceof LibCanvas.Point ? a.from :
+				new LibCanvas.Point(a.from);
 		} else if (a.length >= 2) {
 			put.image = a[0];
 			if (a.length == 2) {
-				put.from = a[1] instanceof LibCanvas.Dot ? a[1] :
-					new LibCanvas.Dot(a[1]);
+				put.from = a[1] instanceof LibCanvas.Point ? a[1] :
+					new LibCanvas.Point(a[1]);
 			} else {
-				put.from = new LibCanvas.Dot(a[1], a[2]);
+				put.from = new LibCanvas.Point(a[1], a[2]);
 			}
 		}
 		return this.original('putImageData', [
@@ -397,18 +397,18 @@ LibCanvas.Context2D = new Class({
 		}
 		return pixels
 	},
-	getPixel : function (arg/* {rectangle, dot} */) {
+	getPixel : function (arg/* {rectangle, point} */) {
 		var rect = !arg.rectangle ? office.getFullRect.call(this) :
 			arg.rectangle instanceof LibCanvas.Shapes.Rectangle ?
 			arg.rectangle : new LibCanvas.Shapes.Rectangle
-		var dot = arg.dot ?
-			(arg.dot instanceof LibCanvas.Dot ? arg.dot : new LibCanvas.Dot(arg.dot)) :
-			(arg instanceof LibCanvas.Dot ? arg : new LibCanvas.Dot(
+		var point = arg.point ?
+			(arg.point instanceof LibCanvas.Point ? arg.point : new LibCanvas.Point(arg.point)) :
+			(arg instanceof LibCanvas.Point ? arg : new LibCanvas.Point(
 				$type(arg) == 'array' ? arg : arguments
 			))
 
 		var data = this.getImageData.call(this, rect).data;
-		var i = (dot.y * rect.width + dot.x) * 4;
+		var i = (point.y * rect.width + point.x) * 4;
 		return {
 			r : data[i],
 			g : data[i+1],

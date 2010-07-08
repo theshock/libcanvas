@@ -5,13 +5,13 @@ LibCanvas.Shape = new Class({
 			this.set.apply(this, arguments);
 		}
 	},
-	checkDot : function (args) {
+	checkPoint : function (args) {
 		if (args.length == 2) {
-			return new LibCanvas.Dot(args);
-		} else if (args[0] instanceof LibCanvas.Dot) {
+			return new LibCanvas.Point(args);
+		} else if (args[0] instanceof LibCanvas.Point) {
 			return args[0]
 		} else {
-			throw 'Not a LibCanvas.Dot in Circle.hasDot';
+			throw 'Not a LibCanvas.Point in Circle.hasPoint';
 		}
 	},
 	move : function (a) {
@@ -20,8 +20,8 @@ LibCanvas.Shape = new Class({
 	set : function (a) {
 		throw 'Abstract Method Shape.set called';
 	},
-	hasDot : function (a) {
-		throw 'Abstract Method Shape.hasDot called';
+	hasPoint : function (a) {
+		throw 'Abstract Method Shape.hasPoint called';
 	},
 	draw : function (a) {
 		throw 'Abstract Method Shape.draw called';

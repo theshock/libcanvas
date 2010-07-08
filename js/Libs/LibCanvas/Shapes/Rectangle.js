@@ -121,10 +121,10 @@ LibCanvas.Shapes.Rectangle = new Class({
 			return true;
 		}
 	},
-	hasDot : function (dot) {
-		dot = this.checkDot(arguments);
-		return dot.x.between(this.from.x, this.to.x, 1)
-			&& dot.y.between(this.from.y, this.to.y, 1);
+	hasPoint : function (point) {
+		point = this.checkPoint(arguments);
+		return point.x.between(this.from.x, this.to.x, 1)
+			&& point.y.between(this.from.y, this.to.y, 1);
 	},
 	move : function (distance) {
 		this.from.x += distance.x;

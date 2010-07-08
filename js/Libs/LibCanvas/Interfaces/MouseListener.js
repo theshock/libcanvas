@@ -19,7 +19,7 @@
 // Should extends LibCanvas.Interfaces.Drawable
 LibCanvas.Interfaces.MouseListener = new Class({
 	listenMouse : function (stopListen) {
-		return this.bind('canvasSetted', function () {
+		return this.bind('canvasSet', function () {
 			this.canvas.mouse[
 				stopListen ? "unsubscribe" : "subscribe"
 			](this);

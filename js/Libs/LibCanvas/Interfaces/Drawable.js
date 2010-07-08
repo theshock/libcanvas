@@ -3,7 +3,7 @@ LibCanvas.Interfaces.Drawable = new Class({
 	Implements : LibCanvas.Interfaces.Bindable,
 	setCanvas : function (canvas) {
 		this.canvas = canvas;
-		this.autoBind('canvasSetted');
+		this.autoBind('canvasSet');
 		return this;
 	},
 	getShape : function () {

@@ -4,7 +4,7 @@ LibCanvas.Inner.MouseEvents = new Class({
 	lastMouseDown : [],
 	initialize : function (mouse) {
 		this.mouse = mouse;
-		this.dot   = mouse.dot;
+		this.point   = mouse.point;
 	},
 	subscribe : function (elem) {
 		this.subscribers.include(elem);
@@ -15,7 +15,7 @@ LibCanvas.Inner.MouseEvents = new Class({
 		return this;
 	},
 	overElem : function (elem) {
-		return this.mouse.inCanvas && elem.getShape().hasDot(this.dot);
+		return this.mouse.inCanvas && elem.getShape().hasPoint(this.point);
 	},
 	getOverSubscribers : function () {
 		var mouse = this;

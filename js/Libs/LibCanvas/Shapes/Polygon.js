@@ -4,19 +4,19 @@ LibCanvas.Shapes.Polygon = new Class({
 	Extends : LibCanvas.Shape,
 	set : function () {
 		var a = $A(arguments);
-		if ($type(a[0][0]) == 'array' || a[0][0] instanceof LibCanvas.Shapes.Dot) {
+		if ($type(a[0][0]) == 'array' || a[0][0] instanceof LibCanvas.Shapes.Point) {
 			a = a[0]
 		}
 		var polygon = this;
 		a.each(function (elem, index) {
-			polygon[index] = elem instanceof LibCanvas.Dot ?
-				elem : new LibCanvas.Dot(elem);
+			polygon[index] = elem instanceof LibCanvas.Point ?
+				elem : new LibCanvas.Point(elem);
 		});
 		this.length = a.length;
 		return this;
 	},
-	hasDot : function (dot) {
-		dot = this.checkDot(arguments);
+	hasPoint : function (point) {
+		point = this.checkPoint(arguments);
 
 		var polygon = this;
 		var result = false;
@@ -25,9 +25,9 @@ LibCanvas.Shapes.Polygon = new Class({
 			var I = polygon[i];
 			var K = polygon[k];
 			if (
-				(dot.y.between(I.y , K.y, "L") || dot.y.between(K.y , I.y, "L"))
+				(point.y.between(I.y , K.y, "L") || point.y.between(K.y , I.y, "L"))
 					&&
-				 dot.x < (K.x - I.x) * (dot.y -I.y) / (K.y - I.y) + I.x
+				 point.x < (K.x - I.x) * (point.y -I.y) / (K.y - I.y) + I.x
 			) {
 				result = !result;
 			}
@@ -36,16 +36,16 @@ LibCanvas.Shapes.Polygon = new Class({
 	},
 	draw : function (ctx, type) {
 		ctx.beginPath();
-		this.each(function (dot, i) {
-			ctx[i > 0 ? 'lineTo' : 'moveTo'](dot.x, dot.y);
+		this.each(function (point, i) {
+			ctx[i > 0 ? 'lineTo' : 'moveTo'](point.x, point.y);
 		});
 		ctx.closePath();
 		ctx[type]();
 		return this;
 	},
 	move : function (distance) {
-		this.each(function (dot) {
-			dot.move(distance);
+		this.each(function (point) {
+			point.move(distance);
 		});
 	},
 	each : Array.prototype.each

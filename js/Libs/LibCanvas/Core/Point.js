@@ -1,5 +1,5 @@
 
-LibCanvas.Dot = new Class({
+LibCanvas.Point = new Class({
 	initialize : function () {
 		this.isNull = true;
 		this.set.apply(this, arguments);
@@ -18,7 +18,7 @@ LibCanvas.Dot = new Class({
 					y = x.y;
 					x = x.x;
 				} else {
-					throw 'Wrong Arguments In Dot.Set';
+					throw 'Wrong Arguments In Point.Set';
 				}
 			}
 			this.isNull = false;
@@ -35,14 +35,14 @@ LibCanvas.Dot = new Class({
 		this.y += distance.y;
 		return this;
 	},
-	diff : function (dot) {
+	diff : function (point) {
 		if (arguments.length > 1) {
-			dot = new LibCanvas.Dot();
-			dot.set.apply(dot, arguments);
+			point = new LibCanvas.Point();
+			point.set.apply(point, arguments);
 		}
 		return {
-			x : dot.x - this.x,
-			y : dot.y - this.y
+			x : point.x - this.x,
+			y : point.y - this.y
 		};
 	}
 });

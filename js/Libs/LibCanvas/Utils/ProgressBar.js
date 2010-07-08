@@ -1,7 +1,7 @@
 
 LibCanvas.Utils.ProgressBar = new Class({
 	initialize : function () {
-		this.coord = new LibCanvas.Dot;
+		this.coord = new LibCanvas.Point;
 		this.progress = 0;
 	},
 	preRender : function () {

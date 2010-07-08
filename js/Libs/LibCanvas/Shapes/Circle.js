@@ -17,10 +17,10 @@ LibCanvas.Shapes.Circle = new Class({
 				this.x = a.x;
 				this.y = a.y;
 			} else {
-				var dot = a.center instanceof LibCanvas.Dot ?
-					a.center : new LibCanvas.Dot(a.center);
-				this.x = dot.x;
-				this.y = dot.y;
+				var point = a.center instanceof LibCanvas.Point ?
+					a.center : new LibCanvas.Point(a.center);
+				this.x = point.x;
+				this.y = point.y;
 			}
 				this.r = [a.r, a.radius].firstReal();
 			} else {
@@ -31,16 +31,16 @@ LibCanvas.Shapes.Circle = new Class({
 	},
 	updateCenter : function () {
 		if (!this.center) {
-			this.center = new LibCanvas.Dot();
+			this.center = new LibCanvas.Point();
 		}
 		this.center.set(this.x, this.y);
 	},
-	hasDot : function (dot) {
-		dot = this.checkDot(arguments);
+	hasPoint : function (point) {
+		point = this.checkPoint(arguments);
 		// Растояние точки к центру круга меньше радиуса
 		return (
-			(dot.x - this.x).pow(2) +
-			(dot.y - this.y).pow(2)
+			(point.x - this.x).pow(2) +
+			(point.y - this.y).pow(2)
 		).sqrt() <= this.radius;
 	},
 	move : function (distance) {

@@ -9,7 +9,7 @@ LibCanvas.Interfaces.Draggable = new Class({
 	},
 	draggable : function (stopDrag) {
 		if (this.isDraggable === null) {
-			this.bind('canvasSetted', initDraggable.bind(this));
+			this.bind('canvasSet', initDraggable.bind(this));
 		}
 		this.isDraggable = !stopDrag;
 		return this;
@@ -19,10 +19,10 @@ LibCanvas.Interfaces.Draggable = new Class({
 var moveListener = function () {
 	if (this.isDraggable && this.prevMouseCoord) {
 		var mouse = this.canvas.mouse;
-			var move  = this.prevMouseCoord.diff(mouse.dot);
+			var move  = this.prevMouseCoord.diff(mouse.point);
 		this.shape.move(move);
 		this.bind('moveDrag', [move]);
-		this.prevMouseCoord.set(mouse.dot)
+		this.prevMouseCoord.set(mouse.point)
 	}
 };
 
@@ -39,11 +39,11 @@ var initDraggable = function () {
 		.bind(startDrag, function () {
 			if (this.isDraggable) {
 				this.bind('startDrag');
-				this.dragStart = new LibCanvas.Dot(
+				this.dragStart = new LibCanvas.Point(
 					this.getCoords()
 				);
-				this.prevMouseCoord = new LibCanvas.Dot(
-					this.canvas.mouse.dot
+				this.prevMouseCoord = new LibCanvas.Point(
+					this.canvas.mouse.point
 				);
 				this.bind(dragging, dragFn);
 			}

@@ -29,7 +29,11 @@ LibCanvas.Interfaces.Linkable = new Class({
 	},
 	unlink : function (obj) {
 		if (this.links !== null) {
-			this.links.erase(obj);
+			if (obj) {
+				this.links.erase(obj);
+			} else {
+				this.links = [];
+			}
 		}
 		return this;
 	}

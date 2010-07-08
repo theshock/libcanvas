@@ -8,7 +8,7 @@ LibCanvas.Interfaces.Droppable = new Class({
 				var mouse = this.canvas.mouse;
 				if (mouse.inCanvas) {
 					this.drops.each(function (obj) {
-						if(obj.getShape().hasDot(mouse.dot)) {
+						if(obj.getShape().hasPoint(mouse.point)) {
 							dropped = true;
 							this.bind('dropped', [obj]);
 						}
