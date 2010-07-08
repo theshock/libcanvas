@@ -4,7 +4,7 @@ LibCanvas.Shapes.Polygon = new Class({
 	Extends : LibCanvas.Shape,
 	set : function () {
 		var a = $A(arguments);
-		if ($type(a[0][0]) == 'array' || a[0][0] instanceof LibCanvas.Shapes.Point) {
+		if ($type(a[0][0]) == 'array' || a[0][0] instanceof LibCanvas.Point) {
 			a = a[0]
 		}
 		var polygon = this;

@@ -8,7 +8,8 @@ LibCanvas.Interfaces.Linkable = new Class({
 		});
 		return this;
 	},
-	link : function (obj, backLink) {
+	// todo : fix recursion while linkin 2 elements between each other
+	link : function (obj) {
 		if (this.links === null) {
 			this.links = [];
 			var origMove = this.getShape().move;
@@ -22,9 +23,6 @@ LibCanvas.Interfaces.Linkable = new Class({
 			}.bind(this));
 		}
 		this.links.include(obj);
-		if (backLink) {
-			obj.link(this);
-		}
 		return this;
 	},
 	unlink : function (obj) {

@@ -5,14 +5,20 @@
  */
 
 window.addEvent('domready', function () {
-	new LibCanvas
+	App.Start.canvas = new LibCanvas
 		.Canvas2D($$('canvas')[0])
 		.config({
-			fps         : 20,
-			fpsMeter    : 10,
+			fps         : 50,
+			fpsMeter    : 75,
 			background  : '#EFEBE7',
 			images      : App.imagesList,
 			progressBar : App.progressBarStyle
 		})
+		.listenMouse()
 		.start();
+	if (App.Start[window.method]) {
+		App.Start[window.method]();
+	} else {
+		App.Start['de']();
+	}
 });

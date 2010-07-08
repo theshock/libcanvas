@@ -5,7 +5,8 @@ LibCanvas.Interfaces.Draggable = new Class({
 	isDraggable : null,
 	dragStart : null,
 	returnToStart : function (speed) {
-		return this.moveTo(this.dragStart, speed);
+		return !this.dragStart ? this :
+			this.moveTo(this.dragStart, speed);
 	},
 	draggable : function (stopDrag) {
 		if (this.isDraggable === null) {
@@ -39,9 +40,11 @@ var initDraggable = function () {
 		.bind(startDrag, function () {
 			if (this.isDraggable) {
 				this.bind('startDrag');
-				this.dragStart = new LibCanvas.Point(
-					this.getCoords()
-				);
+				if (this.getCoords) {
+					this.dragStart = new LibCanvas.Point(
+						this.getCoords()
+					);
+				}
 				this.prevMouseCoord = new LibCanvas.Point(
 					this.canvas.mouse.point
 				);
