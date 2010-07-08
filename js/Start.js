@@ -8,8 +8,9 @@ window.addEvent('domready', function () {
 	App.Start.canvas = new LibCanvas
 		.Canvas2D($$('canvas')[0])
 		.config({
-			fps         : 50,
-			fpsMeter    : 75,
+			autoDraw    : 'onRequest',
+			fps         : 60,
+			fpsMeter    : 60,
 			background  : '#EFEBE7',
 			images      : App.imagesList,
 			progressBar : App.progressBarStyle

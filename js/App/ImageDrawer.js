@@ -6,6 +6,7 @@ var tr = new LibCanvas.Utils.Trace();
 App.ImageDrawer = new Class({
 	Extends : LibCanvas.Interfaces.Drawable,
 	draw : function () {
+		this.canvas.update();
 		$('cachedInput').style.display = "block";
 		var input = $$('#cachedInput input')[0];
 		var ctx   = this.canvas.ctx;

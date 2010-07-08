@@ -2,6 +2,7 @@
 
 var setValFn = function (name, val) {
 	return function () {
+		this.bind('statusChanged');
 		this[name] = val;
 	}.bind(this);
 };

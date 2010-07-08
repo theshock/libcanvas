@@ -6,12 +6,20 @@ window.App = window.App || {};
 var R = window.$random;
 var S = LibCanvas.Shapes;
 
+var update = function (bind) {
+	return function () {
+		this.canvas.update();
+	}.bind(bind);
+};
+
 App.Start = {
 	create : function (shape, z) {
 		var elem = new App.TestElem()
 			.setShape(shape)
-			.setZIndex(z || 1);
+			.setZIndex(z || 1)
+			.bind('statusChanged', update(this))
 		this.canvas.addElement(elem);
+		shape.bind('moved', update(this));
 		return elem;
 	},
 	randomPoint : function () {
@@ -94,9 +102,19 @@ App.Start = {
 			.moveTo(this.randomPoint(), $random(40, 250))
 			.bind('stopMove', function () {
 				circle.moveTo(this.randomPoint(), $random(40, 250));
-			}.bind(this))
+			}.bind(this));
 	},
 	de : function () {
+		var change = function (act) {
+			return function () {
+				var method = act + "Element";
+				for (var i in elements) {
+					this.canvas[method](elements[i]);
+				}
+				update(this)();
+			}.bind(this);
+		}.bind(this);
+
 		var elements = {};
 		elements.window = this
 			.create(new S.Rectangle([
@@ -108,9 +126,7 @@ App.Start = {
 			]), 60)
 			.listenMouse()
 			.clickable()
-			.bind('click', function () {
-				change('rm');
-			});
+			.bind('click', change('rm'));
 		elements.header = this
 			.createDraggable(new S.Rectangle([
 				250, 100, 400, 50
@@ -121,17 +137,7 @@ App.Start = {
 		this.create(new S.Circle(50, 50, 25), 10)
 			.listenMouse()
 			.clickable()
-			.bind('click', function () {
-				change('add');
-			});
-
-
-		var change = function (act) {
-			var method = act + "Element";
-			for (var i in elements) {
-				this.canvas[method](elements[i]);
-			}
-		}.bind(this);
+			.bind('click', change('add'));
 	},
 	cachedImage : function () {
 		this.canvas.addElement(
