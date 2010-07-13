@@ -238,7 +238,26 @@ LibCanvas.Context2D = new Class({
 	},
 	bezierCurveTo : function () {
 		// @todo Beauty arguments
-		return this.original('bezierCurveTo', arguments);
+		if (arguments.length == 6) {
+			return this.original('bezierCurveTo', arguments);
+		} else {
+			var a = arguments[0];
+			return this.original('bezierCurveTo', [
+				a[1].x, a[1].y, a[2].x, a[2].y, a.p.x, a.p.y
+			]);
+		}
+	},
+	isPointInPath : function (x, y) {
+		var args = arguments;
+		if (args.length == 2) {
+			return this.ctx2d.isPointInPath(x, y);
+		} else {
+			var point = args[0];
+			if (!(args[0] instanceof LibCanvas.Point)) {
+				point = LibCanvas.Point(args[0]);
+			}
+			return this.ctx2d.isPointInPath(point.x, point.y);
+		}		
 	},
 
 	// transformation
@@ -438,11 +457,7 @@ LibCanvas.Context2D = new Class({
 			a : data[i+3] / 255
 		};
 	},
-	
 	// this function is only dublicated as original. maybe, i will change them,
-	isPointInPath : function () {
-		return this.original('isPointInPath', arguments);
-	},
 	createLinearGradient : function () {
 		return this.original('createLinearGradient', arguments);
 	},

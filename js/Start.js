@@ -16,9 +16,6 @@ window.addEvent('domready', function () {
 	canvas.addProcessor('pre',
 		new LibCanvas.Processors.Clearer('#EFEBE7')
 	);
-	canvas.addProcessor('post',
-		new LibCanvas.Processors.BoxBlur
-	);
 
 	canvas.start();
 
@@ -26,7 +23,7 @@ window.addEvent('domready', function () {
 	if (App.Start[window.method]) {
 		App.Start[window.method]();
 	} else {
-		App.Start['deSmall']();
+		App.Start['de']();
 	}
 	
 });

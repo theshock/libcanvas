@@ -17,7 +17,7 @@
 		<div style="display:none" id="cachedInput">
 			Cached: <input type="checkbox" checked="checked"/>
 		</div>
-		<canvas width="240" height="150" class="main"></canvas>
+		<canvas width="960" height="600" class="main"></canvas>
 		<ul>
 			<li><a href="?draggable">Draggable</a></li>
 			<li><a href="?droppable">Droppable</a></li>

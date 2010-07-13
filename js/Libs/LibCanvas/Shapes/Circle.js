@@ -26,12 +26,12 @@ LibCanvas.Shapes.Circle = new Class({
 			} else {
 			throw 'Wrong Arguments In Circle';
 		}
-		this.updateCenter();
+		this.updateCenter(point);
 		this.radius = this.r;
 	},
-	updateCenter : function () {
+	updateCenter : function (point) {
 		if (!this.center) {
-			this.center = new LibCanvas.Point();
+			this.center = point ? point : new LibCanvas.Point();
 		}
 		this.center.set(this.x, this.y);
 	},
