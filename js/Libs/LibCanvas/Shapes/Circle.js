@@ -8,45 +8,41 @@ LibCanvas.Shapes.Circle = new Class({
 			a = a[0];
 		}
 
+		var setCenter = function () {
+			if (!this.center) {
+				this.center = new LibCanvas.Point;
+			}
+			this.center.set.apply(
+				this.center, arguments
+			);
+		}.bind(this);
+
 		if (a.length && a.length >= 3) {
-			this.x = a[0];
-			this.y = a[1];
-			this.r = a[2];
+			setCenter(a[0], a[1]);
+			this.radius = a[2];
 		} else if (typeof a == 'object') {
 			if ($chk(a.x) && $chk(a.y)) {
-				this.x = a.x;
-				this.y = a.y;
+				setCenter(a.x, a.y);
+			} else if (a.center instanceof LibCanvas.Point) {
+				this.center = a.center;
 			} else {
-				var point = a.center instanceof LibCanvas.Point ?
-					a.center : new LibCanvas.Point(a.center);
-				this.x = point.x;
-				this.y = point.y;
+				setCenter(a.center);
 			}
-				this.r = [a.r, a.radius].firstReal();
-			} else {
+			this.radius = [a.r, a.radius].firstReal();
+		} else {
 			throw 'Wrong Arguments In Circle';
 		}
-		this.updateCenter(point);
-		this.radius = this.r;
-	},
-	updateCenter : function (point) {
-		if (!this.center) {
-			this.center = point ? point : new LibCanvas.Point();
-		}
-		this.center.set(this.x, this.y);
 	},
 	hasPoint : function (point) {
 		point = this.checkPoint(arguments);
 		// Растояние точки к центру круга меньше радиуса
 		return (
-			(point.x - this.x).pow(2) +
-			(point.y - this.y).pow(2)
+			(point.x - this.center.x).pow(2) +
+			(point.y - this.center.y).pow(2)
 		).sqrt() <= this.radius;
 	},
 	move : function (distance) {
-		this.x += distance.x;
-		this.y += distance.y;
-		this.updateCenter();
+		this.center.move(distance);
 		return this.parent(distance);
 	},
 	draw : function (ctx, type) {

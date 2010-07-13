@@ -224,7 +224,7 @@ LibCanvas.Context2D = new Class({
 			throw 'Wrong Argumentss In CanvasContext.Arc';
 		}
 		return this.original('arc', [
-			circle.x, circle.y, circle.r, angle.start, angle.end, acw
+			circle.center.x, circle.center.y, circle.radius, angle.start, angle.end, acw
 		]);
 	},
 

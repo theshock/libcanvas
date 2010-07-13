@@ -25,6 +25,7 @@
 			<li><a href="?moveable">Moveable</a></li>
 			<li><a href="?de">Desktop Environment</a></li>
 			<li><a href="?cachedImage">Cached image draw</a></li>
+			<li><a href="?pathDrawer">Path drawer</a></li>
 		</ul>
 	</body>
 </html>

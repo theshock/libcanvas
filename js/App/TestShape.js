@@ -15,6 +15,7 @@ App.ControllPoint = new Class({
 		LibCanvas.Interfaces.MouseListener,
 		LibCanvas.Interfaces.Draggable,
 	],
+	zIndex : 10,
 	initialize : function (point, color) {
 		this.shape = new LibCanvas.Shapes.Circle({
 			center : point,
@@ -35,11 +36,15 @@ App.TestPath = new Class({
 	Implements : [
 		LibCanvas.Interfaces.MouseListener,
 		LibCanvas.Interfaces.Draggable,
+		LibCanvas.Interfaces.Clickable,
 	],
+	zIndex : 5,
 	draw : function () {
+		var color = this.active ? '#900' :
+			this.hover  ? '#f09' : '#f90';
 		this.canvas.ctx
 			.set('lineWidth', 3)
-			.stroke(this.path, '#f60');
+			.stroke(this.shape, color);
 	}
 });
 
@@ -112,7 +117,11 @@ App.TestShape = new Class({
 				new App.TestPath()
 					.setShape(this.path)
 					.listenMouse()
-					//.draggable()
+					.draggable()
+					.clickable()
+					.bind('statusChanged', function () {
+						this.canvas.update();
+					})
 					.bind('moveDrag', function () {
 						this.canvas.update();
 					})
@@ -127,7 +136,6 @@ App.TestShape = new Class({
 		var inPath = function (index) {
 			return this.path.hasPoint(this.cps[index]) ? 'yes' : 'no';
 		}.bind(this);
-		ctx.set('lineWidth', 3).stroke(this.path, '#f60');
 		ts[0].trace('Dot 0 in apple: ' + inPath('drag1'));
 		ts[1].trace('Dot 1 in apple: ' + inPath('drag2'));
 		ts[2].trace('Dot 2 in apple: ' + inPath('drag3'));

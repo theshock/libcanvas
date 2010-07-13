@@ -36,20 +36,27 @@ LibCanvas.Shapes.Path = new Class({
 		return this;
 	},
 	move : function (distance) {
+		var moved = [];
+		var move = function (a) {
+			if (!moved.contains(a)) {
+				a.move(distance);
+				moved.push(a);
+			}
+		};
 		this.builder.parts.each(function (part) {
 			var a = part.args[0];
 			switch(part.method) {
 				case 'moveTo':
 				case 'lineTo':
-					a.move(distance);
+					move(a);
 					break;
 				case 'bezierCurveTo':
 					['p1', 'p2', 'to'].each(function (prop) {
-						a[prop].move(distance);
+						move(a[prop]);
 					});
 					break;
 				case 'arc':
-					a.circle.move(distance);
+					move(a.circle);
 					break;
 			}
 		});
@@ -87,7 +94,6 @@ LibCanvas.Shapes.Path.Builder = new Class({
 				to : args[2]
 			};
 		}
-		var x = args.to;
 		for (var i in args) {
 			args[i] = this.checkPoint(args[i]);
 		}
