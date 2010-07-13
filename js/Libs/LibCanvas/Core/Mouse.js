@@ -7,7 +7,7 @@ LibCanvas.Mouse = new Class({
 		this.y = null;
 		
 		this.canvas = canvas;
-		this.elem   = canvas.ctx.canvas;
+		this.elem   = canvas.origElem;
 
 		this.events = new LibCanvas.Inner.MouseEvents(this);
 
@@ -38,7 +38,7 @@ LibCanvas.Mouse = new Class({
 		var exp = function (e) {
 			return mouse.expandEvent(e.event);
 		};
-		$(this.canvas.ctx.canvas).addEvents({
+		$(this.elem).addEvents({
 			/* bug in Linux Google Chrome 5.0.356.0 dev
 			 * if moving mouse while some text is selected
 			 * mouse becomes disable.

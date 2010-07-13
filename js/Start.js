@@ -5,21 +5,28 @@
  */
 
 window.addEvent('domready', function () {
-	App.Start.canvas = new LibCanvas
-		.Canvas2D($$('canvas')[0])
-		.config({
-			autoDraw    : 'onRequest',
-			fps         : 60,
-			fpsMeter    : 60,
-			background  : '#EFEBE7',
-			images      : App.imagesList,
-			progressBar : App.progressBarStyle
-		})
-		.listenMouse()
-		.start();
+	
+	var canvas = new LibCanvas.Canvas2D($$('canvas')[0]);
+	canvas.autoUpdate = 'onRequest';
+	canvas.fps        = 60;
+	canvas.listenMouse().fpsMeter(10);
+	canvas.preloadImages    = App.imagesList;
+	canvas.progressBarStyle = App.progressBarStyle;
+
+	canvas.addProcessor('pre',
+		new LibCanvas.Processors.Clearer('#EFEBE7')
+	);
+	canvas.addProcessor('post',
+		new LibCanvas.Processors.BoxBlur
+	);
+
+	canvas.start();
+
+	App.Start.canvas = canvas;
 	if (App.Start[window.method]) {
 		App.Start[window.method]();
 	} else {
-		App.Start['de']();
+		App.Start['deSmall']();
 	}
+	
 });

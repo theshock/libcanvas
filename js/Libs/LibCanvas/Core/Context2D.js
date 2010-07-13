@@ -120,7 +120,12 @@ LibCanvas.Context2D = new Class({
 		this.height = this.canvas.height;
 	},
 	original : function (func, args) {
-		this.ctx2d[func].apply(this.ctx2d, args || []);
+		try {
+			this.ctx2d[func].apply(this.ctx2d, args || []);
+		} catch (e) {
+			new Date().getTime();
+			throw e;
+		}
 		return this;
 	},
 
@@ -368,7 +373,7 @@ LibCanvas.Context2D = new Class({
 			}
 		}
 		return this.original('putImageData', [
-			put.image, put.fom.x, put.from.y
+			put.image, put.from.x, put.from.y
 		]);
 	},
 	getImageData : function (rectangle) {
@@ -385,7 +390,20 @@ LibCanvas.Context2D = new Class({
 		return this.ctx2d.getImageData(rect.from.x, rect.from.y, rect.width, rect.height);
 	},
 	getPixels : function (rectangle) {
-		var data = this.getImageData.apply(this, arguments).data;
+		var args = arguments;
+		var rect;
+		if (args.length == 0) {
+			rect = office.getFullRect.call(this);
+		} else if (args[0] instanceof LibCanvas.Shapes.Rectangle) {
+			rect = args[0];
+		} else {
+			rect = new LibCanvas.Shapes.Rectangle()
+			rect.set.apply(rect, args);
+		}
+		var data = this.getImageData(rect).data;
+
+		var dump = [];
+
 		var pixels = [];
 		for (var i = 0, L = data.length; i < L; i+=4)  {
 			pixels.push({
@@ -394,8 +412,12 @@ LibCanvas.Context2D = new Class({
 				b : data[i+2],
 				a : data[i+3] / 255
 			});
+			if (pixels.length == rect.width) {
+				dump.push(pixels);
+				pixels = [];
+			}
 		}
-		return pixels
+		return dump;
 	},
 	getPixel : function (arg/* {rectangle, point} */) {
 		var rect = !arg.rectangle ? office.getFullRect.call(this) :

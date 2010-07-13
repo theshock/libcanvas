@@ -25,7 +25,7 @@ LibCanvas.Inner.MouseEvents = new Class({
 		};
 		var maxOverMouseZ = 0;
 		this.subscribers
-			.sortByZIndex()
+			.sortBy('getZIndex')
 			.each(function (elem) {
 				if (elem.getZIndex() >= maxOverMouseZ && mouse.overElem(elem)) {
 					maxOverMouseZ = elem.getZIndex();

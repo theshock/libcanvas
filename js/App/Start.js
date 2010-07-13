@@ -134,7 +134,42 @@ App.Start = {
 			.link(elements.close)
 			.link(elements.window);
 
-		this.create(new S.Circle(50, 50, 25), 10)
+		this.create(new S.Circle(10, 10, 5), 2)
+			.listenMouse()
+			.clickable()
+			.bind('click', change('add'));
+	},
+	deSmall : function () {
+		var change = function (act) {
+			return function () {
+				var method = act + "Element";
+				for (var i in elements) {
+					this.canvas[method](elements[i]);
+				}
+				update(this)();
+			}.bind(this);
+		}.bind(this);
+
+		var elements = {};
+		elements.window = this
+			.create(new S.Rectangle([
+				50, 40, 130, 60
+			]), 40);
+		elements.close = this
+			.create(new S.Rectangle([
+				165, 25, 10, 10
+			]), 60)
+			.listenMouse()
+			.clickable()
+			.bind('click', change('rm'));
+		elements.header = this
+			.createDraggable(new S.Rectangle([
+				50, 20, 130, 20
+			]), 50)
+			.link(elements.close)
+			.link(elements.window);
+
+		this.create(new S.Circle(20, 20, 15), 10)
 			.listenMouse()
 			.clickable()
 			.bind('click', change('add'));

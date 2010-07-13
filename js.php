@@ -5,6 +5,8 @@
 		glob('./js/Libs/*.js'),
 		glob('./js/Libs/LibCanvas/*.js'),
 		glob('./js/Libs/LibCanvas/Interfaces/*.js'),
+		glob('./js/Libs/LibCanvas/Inner/Canvas2D/*.js'),
+		glob('./js/Libs/LibCanvas/Processors/*.js'),
 		glob('./js/Libs/LibCanvas/Inner/*.js'),
 		glob('./js/Libs/LibCanvas/Core/*.js'),
 		glob('./js/Libs/LibCanvas/Utils/*.js'),

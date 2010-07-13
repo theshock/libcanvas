@@ -85,12 +85,12 @@ Array.implement({
 			return $random(0, 1) ? 1 : -1;
 		});
 	},
-	sortByZIndex: function (reverse) {
-		var getZ = function (elem) {
-			return elem.getZIndex ? elem.getZIndex() : 0;
-		};
+	sortBy : function (method, reverse) {
+		var get = function (elem) {
+			return elem[method] ? elem[method]() : 0;
+		}
 		return this.sort(function ($0, $1) {
-			var result = getZ($1) - getZ($0) >= 0 ? 1 : -1;
+			var result = get($1) - get($0) >= 0 ? 1 : -1;
 			return reverse ? -result : result;
 		});
 	}

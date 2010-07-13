@@ -2,9 +2,11 @@
 
 window.LibCanvas = window.$lc = {};
 window.LibCanvas.Inner  = {};
+window.LibCanvas.Inner.Canvas2D  = {};
 window.LibCanvas.Shapes = {};
 window.LibCanvas.Utils  = {};
-window.LibCanvas.Interfaces  = {};
+window.LibCanvas.Processors = {};
+window.LibCanvas.Interfaces = {};
 
 
 (function () {
