@@ -13,13 +13,10 @@ LibCanvas.Canvas2D = new Class({
 	initialize : function (elem) {
 		this.origElem = elem;
 		this.origCtx  = elem.getContext('2d-libcanvas');
-		this.interval  = null;
+		this.interval = null;
 
-		this.elem    = new Element("canvas", {
-			width  : elem.width,
-			height : elem.height
-		});
-		this.ctx    = this.elem.getContext('2d-libcanvas');
+		this.elem = this.createBuffer();
+		this.ctx  = this.elem.getContext('2d-libcanvas');
 	},
 
 	updateFrame : true,
@@ -32,6 +29,20 @@ LibCanvas.Canvas2D = new Class({
 	listenMouse : function () {
 		this.mouse = new LibCanvas.Mouse(this);
 		return this;
+	},
+	createBuffer : function (width, height) {
+		var a = arguments;
+		if (a.length == 0) {
+			width = this.origElem.width;
+			height = this.origElem.height;
+		} else if (arguments.length == 1) {
+			width = a[0].width;
+			height = a[0].height;
+		}
+		return new Element("canvas", {
+			width  : width,
+			height : height
+		});
 	},
 
 
