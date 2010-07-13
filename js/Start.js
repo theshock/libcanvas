@@ -9,7 +9,7 @@ window.addEvent('domready', function () {
 	var canvas = new LibCanvas.Canvas2D($$('canvas')[0]);
 	canvas.autoUpdate = 'onRequest';
 	canvas.fps        = 60;
-	canvas.listenMouse().fpsMeter(10);
+	canvas.listenMouse().fpsMeter(30);
 	canvas.preloadImages    = App.imagesList;
 	canvas.progressBarStyle = App.progressBarStyle;
 
@@ -25,5 +25,4 @@ window.addEvent('domready', function () {
 	} else {
 		App.Start['de']();
 	}
-	
 });

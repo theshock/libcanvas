@@ -7,12 +7,14 @@ LibCanvas.Shape = new Class({
 		}
 	},
 	checkPoint : function (args) {
-		if (args.length == 2) {
+		if (args instanceof LibCanvas.Point) {
+			return args;
+		} else if (args.length == 2) {
 			return new LibCanvas.Point(args);
 		} else if (args[0] instanceof LibCanvas.Point) {
-			return args[0]
+			return args[0];
 		} else {
-			throw 'Not a LibCanvas.Point in Circle.hasPoint';
+			throw 'Not a LibCanvas.Point in LibCanvas.Shape.checkPoint';
 		}
 	},
 	move : function (distance) {

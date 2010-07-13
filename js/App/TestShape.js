@@ -15,99 +15,122 @@ App.ControllPoint = new Class({
 		LibCanvas.Interfaces.MouseListener,
 		LibCanvas.Interfaces.Draggable,
 	],
-	initialize : function (point) {
+	initialize : function (point, color) {
 		this.shape = new LibCanvas.Shapes.Circle({
 			center : point,
-			radius : 3
+			radius : 4
 		});
+		this.color = color;
 	},
 	draw : function () {
 		this.canvas.ctx
-			.fill(this.shape, '#0f0')
-			.stroke(this.shape, '#606');
+			.set('lineWidth', 1)
+			.fill(this.shape, this.color)
+			.stroke(this.shape, '#000');
+	}
+});
+
+App.TestPath = new Class({
+	Extends : LibCanvas.Interfaces.Drawable,
+	Implements : [
+		LibCanvas.Interfaces.MouseListener,
+		LibCanvas.Interfaces.Draggable,
+	],
+	draw : function () {
+		this.canvas.ctx
+			.set('lineWidth', 3)
+			.stroke(this.path, '#f60');
 	}
 });
 
 App.TestShape = new Class({
 	Extends : LibCanvas.Interfaces.Drawable,
+	makeCp : function (index, x, y, color) {
+		var p = new LibCanvas.Point(x, y);
+		this.canvas.addElement(
+			new App.ControllPoint(p, color)
+				.listenMouse()
+				.draggable()
+				.bind('moveDrag', function () {
+					this.canvas.update();
+				})
+		);
+		this.cps[index] = p;
+		return p;
+	},
 	draw : function () {
 		var ctx = this.canvas.ctx;
 		
 		if (!this.cps) {
-			this.cps = [
-				new LibCanvas.Point(470, 210),
-				new LibCanvas.Point(480, 200),
-			];
-			this.cps.each(function (point) {
-				this.canvas.addElement(
-					new App.ControllPoint(point)
-						.listenMouse()
-						.draggable()
-				);
-			}.bind(this));
+			this.cps = {};
+			this.makeCp('drag1', 150, 150, '#0f0');
+			this.makeCp('drag2', 165, 150, '#0f0');
+			this.makeCp('drag3', 180, 150, '#0f0');
+			
+			this.path = new LibCanvas.Shapes.Path
+				.Builder()
+				.move(this.makeCp('ls', 511, 205, '#ff0'))
+				.curve({
+					p1 : this.makeCp('lsp1', 496, 202, '#0ff'),
+					p2 : this.makeCp('lsp2', 475, 225, '#f0f'),
+					to : this.makeCp('lf', 477, 242, '#ff0'),
+				})
+				.curve({
+					p1 : this.makeCp('lfp1', 490, 250, '#0ff'),
+					p2 : this.makeCp('lfp2', 519, 220, '#f0f'),
+					to : this.cps['ls'],
+				})
+				.move(this.makeCp('a1', 545, 264, '#ff0'))
+				.curve({
+					p1 : this.makeCp('a2p1', 512, 270, '#0ff'),
+					p2 : this.makeCp('a2p2', 518, 328, '#f0f'),
+					to : this.makeCp('a2', 548, 331, '#ff0')
+				})
+				.curve({
+					p1 : this.makeCp('a3p1', 536, 354, '#0ff'),
+					p2 : this.makeCp('a3p2', 530, 393, '#f0f'),
+					to : this.makeCp('a3', 483, 372, '#ff0')
+				})
+				.curve({
+					p1 : this.makeCp('a4p1', 464, 366, '#0ff'),
+					p2 : this.makeCp('a4p2', 450, 406, '#f0f'),
+					to : this.makeCp('a4', 417, 341, '#ff0')
+				})
+				.curve({
+					p1 : this.makeCp('a5p1', 381, 260, '#0ff'),
+					p2 : this.makeCp('a5p2', 446, 238, '#f0f'),
+					to : this.makeCp('a5', 460, 246, '#ff0')
+				})
+				.curve({
+					p1 : this.makeCp('a6p1', 491, 266, '#0ff'),
+					p2 : this.makeCp('a6p2', 508, 220, '#f0f'),
+					to : this.cps['a1']
+				})
+				.build();
+
+			this.canvas.addElement(
+				new App.TestPath()
+					.setShape(this.path)
+					.listenMouse()
+					//.draggable()
+					.bind('moveDrag', function () {
+						this.canvas.update();
+					})
+			);
+			this.canvas.update();
 		}
 
 		ctx.drawImage({
 			image : this.canvas.getImage('apple'),
 			from  : [400, 200]
 		});
-
-		ts[0].trace(this.cps[0].x + '.' + this.cps[0].y);
-		ts[1].trace(this.cps[1].x + '.' + this.cps[1].y);
-
-		ctx.beginPath()
-			.moveTo(511, 205)
-			.bezierCurveTo({
-				1 : new LibCanvas.Point(496,202),
-				2 : new LibCanvas.Point(475,225),
-				p : new LibCanvas.Point(477,242)
-			})
-			.bezierCurveTo({
-				1 : new LibCanvas.Point(490,250),
-				2 : new LibCanvas.Point(519,220),
-				p : new LibCanvas.Point(511,205)
-			})
-			.moveTo(545, 264)
-			.bezierCurveTo({
-				1 : new LibCanvas.Point(512,270),
-				2 : new LibCanvas.Point(518,328),
-				p : new LibCanvas.Point(548,331)
-			})
-			.bezierCurveTo({
-				1 : new LibCanvas.Point(536,354),
-				2 : new LibCanvas.Point(530,393),
-				p : new LibCanvas.Point(483,372)
-			})
-			.bezierCurveTo({
-				1 : new LibCanvas.Point(464,366),
-				2 : new LibCanvas.Point(450,406),
-				p : new LibCanvas.Point(417,341)
-			})
-			.bezierCurveTo({
-				1 : new LibCanvas.Point(381,260),
-				2 : new LibCanvas.Point(446,238),
-				p : new LibCanvas.Point(460,246)
-			})
-			.bezierCurveTo({
-				1 : new LibCanvas.Point(491,266),
-				2 : new LibCanvas.Point(508,220),
-				p : new LibCanvas.Point(545,264)
-			})
-			.stroke('#f00');
-			/*
-			.bezierCurveTo({
-				cp1 : this.cps[0],
-				cp2 : this.cps[1],
-				p   : new LibCanvas.Point(545,264)
-			})
-
-			.bezierCurveTo({
-				cp1 : this.cps[0],
-				cp2 : this.cps[1],
-				p   : new LibCanvas.Point(511,205)
-			})
-			 **/
-		this.canvas.update();
+		var inPath = function (index) {
+			return this.path.hasPoint(this.cps[index]) ? 'yes' : 'no';
+		}.bind(this);
+		ctx.set('lineWidth', 3).stroke(this.path, '#f60');
+		ts[0].trace('Dot 0 in apple: ' + inPath('drag1'));
+		ts[1].trace('Dot 1 in apple: ' + inPath('drag2'));
+		ts[2].trace('Dot 2 in apple: ' + inPath('drag3'));
 	}
 });
 

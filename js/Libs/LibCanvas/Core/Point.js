@@ -33,6 +33,8 @@ LibCanvas.Point = new Class({
 	move : function (distance) {
 		this.x += distance.x;
 		this.y += distance.y;
+		this[0] = this.x * 1;
+		this[1] = this.y * 1;
 		return this;
 	},
 	diff : function (point) {
