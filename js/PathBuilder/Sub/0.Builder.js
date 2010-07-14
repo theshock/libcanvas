@@ -56,6 +56,8 @@ PathBuilder.Builder = new Class({
 		var p2 = this.moveablePoint('#0ff');
 		var to = this.moveablePoint('#ff0');
 
+		lp.drawable.link(p1.drawable);
+		to.drawable.link(p2.drawable);
 		p1.drawable.setConnected(lp);
 		p2.drawable.setConnected(to);
 
