@@ -3,7 +3,7 @@ PathBuilder.Builder = new Class({
 	init : function () {
 		if (!this.shape) {
 			this.shape = new LibCanvas.Shapes.Path.Builder();
-			this.shape.move(this.moveablePoint('#fc0'))
+			this.shape.move(this.moveablePoint('#fc0'));
 			this.canvas.update();
 		}
 		return this;
@@ -67,11 +67,13 @@ PathBuilder.Builder = new Class({
 	},
 	pop : function () {
 		this.init();
-		(this.points.pop() || []).each(function (point) {
-			this.canvas.rmElement(point.drawable);
-		}.bind(this));
-		this.shape.pop();
-		this.canvas.update();
+		if (this.points.length) {
+			(this.points.pop() || []).each(function (point) {
+				this.canvas.rmElement(point.drawable);
+			}.bind(this));
+			this.shape.pop();
+			this.canvas.update();
+		}
 	},
 	draw : function () {
 		this.init();
