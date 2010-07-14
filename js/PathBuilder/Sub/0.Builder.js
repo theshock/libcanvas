@@ -25,10 +25,10 @@ PathBuilder.Builder = new Class({
 			.setShape(this.lastPoint)
 			.listenMouse()
 			.draggable()
-			.clickable()
+			//.clickable()
 			.setZIndex(++this.lastZ)
 			.bind('moveDrag', canvasUpdate(this))
-			.bind('statusChanged', canvasUpdate(this));
+			//.bind('statusChanged', canvasUpdate(this));
 		this.canvas.addElement(drawable);
 		this.lastPoint.drawable = drawable;
 		return this.lastPoint;
@@ -70,7 +70,7 @@ PathBuilder.Builder = new Class({
 		(this.points.pop() || []).each(function (point) {
 			this.canvas.rmElement(point.drawable);
 		}.bind(this));
-		this.shape.parts.pop();
+		this.shape.pop();
 		this.canvas.update();
 	},
 	draw : function () {
@@ -79,6 +79,7 @@ PathBuilder.Builder = new Class({
 			.save()
 			.set('lineWidth', 3)
 			.stroke(this.shape.build(), '#696')
+			.fill(this.shape.build(), '#ded')
 			.restore();
 	}
 });

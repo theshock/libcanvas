@@ -2,6 +2,7 @@ LibCanvas.Shapes.Path = new Class({
 	Extends : LibCanvas.Shape,
 	set : function (builder) {
 		this.builder = builder;
+		builder.path = this;
 		return this;
 	},
 	getBuffer : function () {
@@ -27,7 +28,11 @@ LibCanvas.Shapes.Path = new Class({
 	},
 	hasPoint : function (point) {
 		var ctx = this.getBuffer().ctx;
-		return this.path(ctx, true).isPointInPath(
+		if (this.builder.changed) {
+			this.builder.changed = false;
+			this.path(ctx, true);
+		}
+		return ctx.isPointInPath(
 			this.checkPoint(arguments)
 		);
 	},
@@ -67,11 +72,18 @@ LibCanvas.Shapes.Path = new Class({
 LibCanvas.Shapes.Path.Builder = new Class({
 	Extends : LibCanvas.Shape,
 	parts : [],
+	changed : true,
 	add : function (method, args) {
+		this.changed = true;
 		this.parts.push({
 			method : method,
 			args : args
 		});
+		return this;
+	},
+	pop : function () {
+		this.changed = true;
+		this.parts.pop();
 		return this;
 	},
 	move : function () {
@@ -162,19 +174,25 @@ LibCanvas.Shapes.Path.Builder = new Class({
 		}.bind(this));
 		return string;
 	},
+	parseString : function (string) {
+		string.split('/').each(function (line) {
+			if (line) {
+				var parts  = line.split(',');
+				var method = parts.shift();
+				parts.each(function (value, i) {
+					parts[i] *= 1;
+				});
+				this[method].apply(this, parts);
+			}
+		}.bind(this));
+	},
 	build : function () {
 		if (arguments.length == 1) {
-			arguments[0].split('/').each(function (line) {
-				if (line) {
-					var parts  = line.split(',');
-					var method = parts.shift();
-					parts.each(function (value, i) {
-						parts[i] *= 1;
-					});
-					this[method].apply(this, parts);
-				}
-			}.bind(this));
+			this.parseString(arguments[0]);
 		}
-		return new LibCanvas.Shapes.Path(this);
+		if (!this.path) {
+			this.path = new LibCanvas.Shapes.Path(this);
+		}
+		return this.path;
 	}
 });
