@@ -3,8 +3,8 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<script type="text/javascript">
-			window.method = "<?= @$_GET['action'] ?: '' ?>";
-			window.arg    = "<?= @$_GET['arg'] ?: '' ?>";
+			window.method = "<?= isset($_REQUEST['action']) ? $_REQUEST['action'] : '' ?>";
+			window.arg    = "<?= isset($_REQUEST['arg']) ? $_REQUEST['arg'] : '' ?>";
 		</script>
 		<script type="text/javascript" src="js.php"></script>
 		<title>Canvas Examples</title>

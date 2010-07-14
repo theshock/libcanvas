@@ -137,15 +137,15 @@ LibCanvas.Shapes.Path.Builder = new Class({
 			var a = part.args[0];
 			switch(part.method) {
 				case 'moveTo':
-					string += 'move,' + a.x + ',' + a.y;
+					string += 'move,' + a.x.round(2) + ',' + a.y.round(2);
 					break;
 				case 'lineTo':
-					string += 'line,' + a.x + ',' + a.y;
+					string += 'line,' + a.x.round(2) + ',' + a.y.round(2);
 					break;
 				case 'bezierCurveTo':
 					string += 'curve,';
 					['p1', 'p2', 'to'].each(function (prop) {
-						string += a[prop].x + ',' + a[prop].y;
+						string += a[prop].x.round(2) + ',' + a[prop].y.round(2);
 						if (prop != 'to') {
 							string += ',';
 						}
@@ -153,9 +153,9 @@ LibCanvas.Shapes.Path.Builder = new Class({
 					break;
 				case 'arc':
 					string += 'arc,';
-					string += a.circle.center.x.round(6) + ',' + a.circle.center.y.round(6) + ',';
-					string += a.circle.radius.round(6) + ',' + a.angle.start.round(6) + ',';
-					string += a.angle.end.round(6) + ',' + (a.acw ? 1 : 0);
+					string += a.circle.center.x.round(2) + ',' + a.circle.center.y.round(2) + ',';
+					string += a.circle.radius.round(2) + ',' + a.angle.start.round(2) + ',';
+					string += a.angle.end.round(2) + ',' + (a.acw ? 1 : 0);
 					break;
 			}
 			string += '/';
