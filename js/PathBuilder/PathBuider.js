@@ -37,9 +37,7 @@ var PathBuilder = new Class({
 			});
 		});
 		links.addButton('show' , function () {
-			if (confirm('Are you sure that you want to view results (you wouldn\'t be able to return to editing)')) {
-				window.location = window.location + '&arg=' + builder.shape.string();
-			}
+			window.open(window.location + '&arg=' + builder.shape.string());
 		});
 
 		this.canvas.update();
