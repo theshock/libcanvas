@@ -24,17 +24,20 @@ PathBuilder.Point = new Class({
 		return this;
 	},
 	draw : function () {
-		var stroke = this.active ? '#093' :
+		var stroke = this.active ? '#039' :
 			this.hover ? '#930' : '#000';
 		var ctx = this.canvas.ctx;
 
-		ctx.save().set('lineWidth', this.active || this.hover ? 2 : 1);
+		var focus = this.active || this.hover;
+
+		ctx.save().set('lineWidth', 1).set('strokeStyle', '#99c');
 
 		this.connections.each(function (connection) {
-			ctx.stroke(connection, '#99c');
+			ctx.stroke(connection, focus ? stroke : null);
 		});
 
 		ctx
+		//	.set('lineWidth', focus ? 2 : 1)
 			.fill(this.shape, this.color)
 			.stroke(this.shape, stroke)
 			.restore();
