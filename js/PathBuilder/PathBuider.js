@@ -37,7 +37,10 @@ var PathBuilder = new Class({
 			});
 		});
 		links.addButton('show' , function () {
-			window.open(window.location + '&arg=' + builder.shape.string());
+			var form = new Element('form', { 'method' : 'POST', 'target' : '_blank', 'action' : 'builder.php' });
+			new Element('input', { 'type' : 'hidden', 'name' : 'arg', 'value' : builder.shape.string() }).inject(form);
+			form.submit();
+			// window.open(window.location + '&arg=' + builder.shape.string());
 		});
 
 		this.canvas.update();
