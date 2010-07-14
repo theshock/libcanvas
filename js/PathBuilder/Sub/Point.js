@@ -28,7 +28,7 @@ PathBuilder.Point = new Class({
 			this.hover ? '#930' : '#000';
 		var ctx = this.canvas.ctx;
 
-		ctx.save().set('lineWidth', 1);
+		ctx.save().set('lineWidth', this.active || this.hover ? 2 : 1);
 
 		this.connections.each(function (connection) {
 			ctx.stroke(connection, '#99c');

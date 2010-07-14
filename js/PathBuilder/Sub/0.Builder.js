@@ -25,10 +25,10 @@ PathBuilder.Builder = new Class({
 			.setShape(this.lastPoint)
 			.listenMouse()
 			.draggable()
-			//.clickable()
+			.clickable()
 			.setZIndex(++this.lastZ)
 			.bind('moveDrag', canvasUpdate(this))
-			//.bind('statusChanged', canvasUpdate(this));
+			.bind('statusChanged', canvasUpdate(this));
 		this.canvas.addElement(drawable);
 		this.lastPoint.drawable = drawable;
 		return this.lastPoint;
