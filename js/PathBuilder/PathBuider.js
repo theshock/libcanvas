@@ -39,7 +39,7 @@ var PathBuilder = new Class({
 		links.addButton('show' , function () {
 			var form = new Element('form', { 'method' : 'POST', 'target' : '_blank', 'action' : 'builder.php' });
 			new Element('input', { 'type' : 'hidden', 'name' : 'arg', 'value' : builder.shape.string() }).inject(form);
-			form.submit();
+			form.inject($$('body')[0]).submit();
 			// window.open(window.location + '&arg=' + builder.shape.string());
 		});
 
