@@ -3,7 +3,8 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<script type="text/javascript">
-			window.method = "<?= $_SERVER['QUERY_STRING'] ?>";
+			window.method = "<?= @$_GET['action'] ?: '' ?>";
+			window.arg    = "<?= @$_GET['arg'] ?: '' ?>";
 		</script>
 		<script type="text/javascript" src="js.php"></script>
 		<title>Canvas Examples</title>
@@ -19,13 +20,14 @@
 		</div>
 		<canvas width="960" height="600" class="main"></canvas>
 		<ul>
-			<li><a href="?draggable">Draggable</a></li>
-			<li><a href="?droppable">Droppable</a></li>
-			<li><a href="?linkable">Linkable</a></li>
-			<li><a href="?moveable">Moveable</a></li>
-			<li><a href="?de">Desktop Environment</a></li>
-			<li><a href="?cachedImage">Cached image draw</a></li>
-			<li><a href="?pathDrawer">Path drawer</a></li>
+			<li><a href="?action=draggable">Draggable</a></li>
+			<li><a href="?action=droppable">Droppable</a></li>
+			<li><a href="?action=linkable">Linkable</a></li>
+			<li><a href="?action=moveable">Moveable</a></li>
+			<li><a href="?action=de">Desktop Environment</a></li>
+			<li><a href="?action=cachedImage">Cached image draw</a></li>
+			<li><a href="?action=pathDrawer">Path drawer</a></li>
+			<li><a href="?action=pathBuilder">Path builder</a></li>
 		</ul>
 	</body>
 </html>

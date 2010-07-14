@@ -74,7 +74,7 @@ LibCanvas.Shapes.Path.Builder = new Class({
 		});
 		return this;
 	},
-	move : function (point) {
+	move : function () {
 		return this.add('moveTo', [
 			this.checkPoint(arguments)
 		]);
@@ -87,6 +87,13 @@ LibCanvas.Shapes.Path.Builder = new Class({
 	curve : function (p1, p2, to) {
 		var args = arguments.length > 1 ?
 			arguments : arguments[0];
+		if (args.length >= 6) {
+			return this.curve(
+				[ args[0], args[1] ],
+				[ args[2], args[3] ],
+				[ args[4], args[5] ]
+			);
+		}
 		if ($chk(args[0])) {
 			args = {
 				p1 : args[0],
@@ -101,35 +108,73 @@ LibCanvas.Shapes.Path.Builder = new Class({
 	},
 	arc : function (circle, angle, acw) {
 		var a = (arguments.length > 1) ?
-			$A(arguments) : $A(arguments[0]);
-		circle = a[0].circle instanceof LibCanvas.Shapes.Circle ? a[0].circle :
-			new LibCanvas.Shapes.Circle(a[0].circle);
-		var ang = a[0].angle;
-		if ($type(a[0].angle) == 'array') {
-			angle = {
-				start : ang[0],
-				end   : ang[1]
-			}
-		} else {
-			angle = {
-				start : [ ang.start, ang.s ].firstReal(),
-				end   : [ ang.end  , ang.e ].firstReal()
-			}
-			if ($chk(ang.size) && !$chk(angle.end)) {
-				angle.end = ang.size + angle.start;
-			}
-			if ($chk(ang.size) && !$chk(angle.start)) {
-				angle.start = angle.end - ang.size;
-			}
+			arguments : arguments[0];
+		if (a.length >= 6) {
+			return this.arc({
+				circle : [ a[0], a[1], a[2] ],
+				angle : [ a[3], a[4] ],
+				acw : a[5]
+			});
 		}
-		acw = !!a[0].anticlockwise || !!a[0].acw;
-		return this.add('arc', [{
-			circle : circle,
-			angle : angle,
-			acw : acw
-		}]);
+		a.circle = a.circle instanceof LibCanvas.Shapes.Circle ? a.circle :
+			new LibCanvas.Shapes.Circle(a.circle);
+		if ($type(a.angle) == 'array') {
+			a.angle = {
+				start : a.angle[0],
+				end   : a.angle[1]
+			};
+		}
+		a.acw = !!a.acw;
+		return this.add('arc', [a]);
+	},
+	hasPoint : function () {
+		var path = this.build();
+		return path.hasPoint.apply(path, arguments);
+	},
+	string : function () {
+		var string = '';
+		this.parts.each(function (part) {
+			var a = part.args[0];
+			switch(part.method) {
+				case 'moveTo':
+					string += 'move,' + a.x + ',' + a.y;
+					break;
+				case 'lineTo':
+					string += 'line,' + a.x + ',' + a.y;
+					break;
+				case 'bezierCurveTo':
+					string += 'curve,';
+					['p1', 'p2', 'to'].each(function (prop) {
+						string += a[prop].x + ',' + a[prop].y;
+						if (prop != 'to') {
+							string += ',';
+						}
+					});
+					break;
+				case 'arc':
+					string += 'arc,';
+					string += a.circle.center.x.round(6) + ',' + a.circle.center.y.round(6) + ',';
+					string += a.circle.radius.round(6) + ',' + a.angle.start.round(6) + ',';
+					string += a.angle.end.round(6) + ',' + (a.acw ? 1 : 0);
+					break;
+			}
+			string += '/';
+		}.bind(this));
+		return string;
 	},
 	build : function () {
+		if (arguments.length == 1) {
+			arguments[0].split('/').each(function (line) {
+				if (line) {
+					var parts  = line.split(',');
+					var method = parts.shift();
+					parts.each(function (value, i) {
+						parts[i] *= 1;
+					});
+					this[method].apply(this, parts);
+				}
+			}.bind(this));
+		}
 		return new LibCanvas.Shapes.Path(this);
 	}
 });

@@ -58,6 +58,9 @@ String.implement({
 
 // Array
 Array.implement({
+	getLast : function () {
+		return this[this.length - 1];
+	},
 	remove: function (index) {
 		this.splice(index, 1);
 		return this;

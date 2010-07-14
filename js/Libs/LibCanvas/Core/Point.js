@@ -1,5 +1,6 @@
 
 LibCanvas.Point = new Class({
+	Implements: [LibCanvas.Interfaces.Bindable],
 	initialize : function () {
 		this.isNull = true;
 		this.set.apply(this, arguments);
@@ -31,10 +32,32 @@ LibCanvas.Point = new Class({
 		return this;
 	},
 	move : function (distance) {
+		this.bind('moved', [distance]);
 		return this.set(
 			this.x + distance.x,
 			this.y + distance.y
 		);
+	},
+	angleTo : function (point) {
+		var diff = this.diff(point);
+		var angle = 0;
+
+		if (diff.y == 0) {
+			angle = diff.x > 0 ? (180).degree() : 0;
+		} else if (diff.x == 0) {
+			angle = diff.y > 0 ? (270).degree() : (90).degree();
+		} else {
+			angle = -Math.atan2(diff.x, diff.y) - (90).degree();
+		}
+
+		while (angle < 0) {
+			angle += (360).degree();
+		}
+		return angle;
+	},
+	distanceTo : function (point) {
+		var diff = this.diff(point);
+		return (diff.x.pow(2) + diff.y.pow(2)).sqrt();
 	},
 	diff : function (point) {
 		if (arguments.length > 1) {

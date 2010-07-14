@@ -12,6 +12,8 @@
 		glob('./js/Libs/LibCanvas/Utils/*.js'),
 		glob('./js/Libs/LibCanvas/Shapes/*.js'),
 
+		glob('./js/PathBuilder/*.js'),
+		glob('./js/PathBuilder/Sub/*.js'),
 		glob('./js/App/*.js'),
 
 		glob('./js/*.js')

@@ -202,7 +202,7 @@ LibCanvas.Context2D = new Class({
 			circle = a[0].circle instanceof LibCanvas.Shapes.Circle ? a[0].circle :
 				new LibCanvas.Shapes.Circle(a[0].circle);
 			var ang = a[0].angle;
-			if ($type(a[0].angle) == 'array') {
+			if ($type(ang) == 'array') {
 				angle = {
 					start : ang[0],
 					end   : ang[1]
@@ -300,7 +300,7 @@ LibCanvas.Context2D = new Class({
 		return this.original('strokeText', arguments);
 	},
 	measureText : function (textToMeasure) {
-		return this.original('measureText', arguments);
+		return this.ctx2d.measureText.apply(this.ctx2d, arguments);
 	},
 
 	// image

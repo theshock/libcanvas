@@ -139,15 +139,18 @@ App.Start = {
 			.clickable()
 			.bind('click', change('add'));
 	},
+	cachedImage : function () {
+		this.canvas.addElement(
+			new App.ImageDrawer()
+		);
+	},
 	pathDrawer : function () {
 		this.canvas.addElement(
 			new App.TestShape()
 		);
 	},
-	cachedImage : function () {
-		this.canvas.addElement(
-			new App.ImageDrawer()
-		);
+	pathBuilder : function () {
+		new PathBuilder(this.canvas);
 	}
 };
 
