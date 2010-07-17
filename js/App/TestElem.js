@@ -27,13 +27,19 @@ App.TestElem = new Class({
 		}
 	},
 	draw : function () {
+		this.canvas.ctx.save();
 		var coord = this.shape.from || this.shape;
 		
 		var type = this.active ? "active" :
 			this.hover  ? "hover" : "standart";
 
+		if (this.lineWidth) {
+			this.canvas.ctx.set('lineWidth', this.lineWidth);
+		}
+
 		this.canvas.ctx
 			.fill(this.shape, this.style[type][0])
-			.stroke(this.shape, this.style[type][1]);
+			.stroke(this.shape, this.style[type][1])
+			.restore();
 	}
 });

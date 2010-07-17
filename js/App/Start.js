@@ -204,7 +204,24 @@ App.Start = {
 				this.canvas.update();
 			}
 		}.bind(this));
-
+	},
+	polygonIntersect : function () {
+		var poly1 = new S.Polygon([200, 200], [400, 200], [400, 400], [300, 500], [200, 500], [300, 300]);
+		var poly2 = new S.Polygon([550, 200], [750, 200], [750, 400], [650, 500], [550, 500], [450, 300]);
+		var elem1 = this.createDraggable(poly1);
+		var elem2 = this.createDraggable(poly2);
+		var check = function () {
+			if (poly1.intersect(poly2)) {
+				elem1.lineWidth = 2;
+				elem2.lineWidth = 2;
+			} else {
+				elem1.lineWidth = 1;
+				elem2.lineWidth = 1;
+			}
+		}
+		check();
+		poly1.bind('moved', check);
+		poly2.bind('moved', check);
 	}
 };
 

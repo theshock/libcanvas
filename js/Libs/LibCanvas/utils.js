@@ -29,7 +29,7 @@ Number.implement({
 			(equals == 'L'   && this == n1) ||
 			(equals == 'R'   && this == n2) ||
 			(  this  > n1    && this  < n2) ||
-			([true, 'LR', 'RL'].contains(equals) && [n1, n2].contains(this))
+			([true, 'LR', 'RL'].contains(equals) && (n1 == this || n2 == this))
 		);
 	}
 });
