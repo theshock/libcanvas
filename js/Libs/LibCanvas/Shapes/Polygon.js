@@ -49,5 +49,11 @@ LibCanvas.Shapes.Polygon = new Class({
 		});
 		return this.parent(distance);
 	},
+	rotate : function (pivot, angle) {
+		this.each(function (point) {
+			point.rotate(pivot, angle);
+		});
+		return this;
+	},
 	each : Array.prototype.each
 });

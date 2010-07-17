@@ -74,12 +74,13 @@ LibCanvas.Point = new Class({
 		var radius   = pivot.distanceTo(this);
 		var sides    = pivot.diff(this);
 		var newAngle = Math.atan2(sides.x, sides.y) - angle;
-		var oldPoint = new LibCanvas.Point(this);
-		this.set({
+		var newCoord = {
 			x : newAngle.sin() * radius + pivot.x,
-			y : newAngle.cos() * radius + pivot.y,
-		});
-		this.bind('moved', [oldPoint.diff(this)]);
+			y : newAngle.cos() * radius + pivot.y
+		};
+		var diff = this.diff(newCoord);
+		this.set(newCoord);
+		this.bind('moved', [diff]);
 		return this;
 	}
 });

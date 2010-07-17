@@ -1,4 +1,7 @@
 // Number
+(function () {
+
+
 Number.implement({
 	/**
 	 * Cast degrees to radians
@@ -30,6 +33,8 @@ Number.implement({
 		);
 	}
 });
+
+})();
 
 // String
 String.implement({

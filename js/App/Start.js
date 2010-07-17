@@ -185,8 +185,26 @@ App.Start = {
 			Da.rotate(D, (3).degree());
 			Db.rotate(D, (2).degree());
 			this.canvas.update();
-		}.bind(this)).periodical(20);
-		
+		}.bind(this)).periodical(25);
+	},
+	polygonRotation : function () {
+		var pivot = new LibCanvas.Point(300, 300);
+		var poly  = new S.Polygon([200, 200], [400, 200], [400, 400], [300, 500], [200, 500], [300, 300]);
+		this.create(poly);
+		var circle = new S.Circle(500, 300, 10);
+		this.createDraggable(circle);
+		circle.bind('moved', function (distance) {
+			if (circle.center.y < 100) {
+				circle.center.y = 100;
+			} else if (circle.center.y > 500) {
+				circle.center.y = 500;
+			} else {
+				circle.center.x = 500;
+				poly.rotate(pivot, (distance.y).degree());
+				this.canvas.update();
+			}
+		}.bind(this));
+
 	}
 };
 
