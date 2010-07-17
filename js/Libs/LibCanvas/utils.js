@@ -14,6 +14,13 @@ Number.implement({
 	getDegree: function () {
 		return this / Math.PI * 180;
 	},
+	normalizeAngle : function () {
+		var num = this;
+		while (num < 0) {
+			num += (360).degree();
+		}
+		return num % (360).degree();
+	},
 	between: function (n1, n2, equals) {
 		return (n1 <= n2) && (
 			(equals == 'L'   && this == n1) ||

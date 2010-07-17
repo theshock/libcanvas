@@ -32,11 +32,12 @@ LibCanvas.Point = new Class({
 		return this;
 	},
 	move : function (distance) {
-		this.bind('moved', [distance]);
-		return this.set(
+		this.set(
 			this.x + distance.x,
 			this.y + distance.y
 		);
+		this.bind('moved', [distance]);
+		return this;
 	},
 	angleTo : function (point) {
 		var diff = this.diff(point);
@@ -68,5 +69,17 @@ LibCanvas.Point = new Class({
 			x : point.x - this.x,
 			y : point.y - this.y
 		};
+	},
+	rotate : function (pivot, angle) {
+		var radius   = pivot.distanceTo(this);
+		var sides    = pivot.diff(this);
+		var newAngle = Math.atan2(sides.x, sides.y) - angle;
+		var oldPoint = new LibCanvas.Point(this);
+		this.set({
+			x : newAngle.sin() * radius + pivot.x,
+			y : newAngle.cos() * radius + pivot.y,
+		});
+		this.bind('moved', [oldPoint.diff(this)]);
+		return this;
 	}
 });

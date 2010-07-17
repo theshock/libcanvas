@@ -151,6 +151,42 @@ App.Start = {
 	},
 	pathBuilder : function () {
 		new PathBuilder(this.canvas);
+	},
+	rotation : function () {
+		var circle = function (x, y, r) {
+			return this.create(
+				new S.Circle({
+					center : new LibCanvas.Point(x, y),
+					radius : r
+				})
+			).getShape();
+		}.bind(this);
+
+		var O  = circle(400, 300, 4).center;
+		var A  = circle(350, 300, 2).center;
+		var B  = circle(300, 350, 3).center;
+		var Aa = circle(365, 300, 1).center;
+		var D  = circle(200, 300, 6).center;
+		var Da = circle(210, 300, 1).center;
+		var Db = circle(200, 320, 2).center;
+		A.bind('moved', function (distance) {
+			Aa.move(distance);
+		});
+		D.bind('moved', function (distance) {
+			Da.move(distance);
+			Db.move(distance);
+		});
+
+		(function () {
+			 A.rotate(O, (1).degree());
+			 B.rotate(O, (0.7).degree());
+			Aa.rotate(A, (3).degree());
+			 D.rotate(O, (0.3).degree());
+			Da.rotate(D, (3).degree());
+			Db.rotate(D, (2).degree());
+			this.canvas.update();
+		}.bind(this)).periodical(20);
+		
 	}
 };
 
