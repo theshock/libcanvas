@@ -162,7 +162,7 @@ App.Start = {
 			).getShape();
 		}.bind(this);
 
-		var O  = circle(400, 300, 4).center;
+		var O  = circle(400, 300, 10).center;
 		var A  = circle(350, 300, 2).center;
 		var B  = circle(300, 350, 3).center;
 		var Aa = circle(365, 300, 1).center;

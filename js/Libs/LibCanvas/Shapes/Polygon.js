@@ -2,15 +2,25 @@
 
 
 var linesIntersect = function (a,b,c,d) {
-	// @todo find bug
-	var x = ((a.x*b.y-b.x*a.y)*(d.x-c.x)-(c.x*d.y-d.x*c.y)*(b.x-a.x))/((a.y-b.y)*(d.x-c.x)-(c.y-d.y)*(b.x-a.x));
-	var y = ((c.y-d.y)*x-(c.x*d.y-d.x*c.y))/(d.x-c.x);
-	x = x.abs();
+	var x,y;
+	if (d.x == c.x) { // DC == vertical line
+		if (b.x == a.x) {
+			return a.x == d.x && (a.y.between(c.y, d.y) || b.x.between(c.y, d.y));
+		}
+		x = d.x;
+		y = b.y + (x-b.x)*(a.y-b.y)/(a.x-b.x);
+	} else {
+		x = ((a.x*b.y - b.x*a.y)*(d.x-c.x)-(c.x*d.y - d.x*c.y)*(b.x-a.x))/((a.y-b.y)*(d.x-c.x)-(c.y-d.y)*(b.x-a.x));
+		y = ((c.y-d.y)*x-(c.x*d.y-d.x*c.y))/(d.x-c.x);
+		x *= -1;
+	}
 	return (x.between(a.x, b.x, 'LR') || x.between(b.x, a.x, 'LR'))
 		&& (y.between(a.y, b.y, 'LR') || y.between(b.y, a.y, 'LR'))
 		&& (x.between(c.x, d.x, 'LR') || x.between(d.x, c.x, 'LR'))
 		&& (y.between(c.y, d.y, 'LR') || y.between(d.y, c.y, 'LR'));
 };
+
+
 
 LibCanvas.Shapes.Polygon = new Class({
 	Extends : LibCanvas.Shape,
