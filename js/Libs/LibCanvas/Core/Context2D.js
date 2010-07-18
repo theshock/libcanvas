@@ -123,7 +123,7 @@ LibCanvas.Context2D = new Class({
 		try {
 			this.ctx2d[func].apply(this.ctx2d, args || []);
 		} catch (e) {
-			new Date().getTime();
+			$log(func, args)
 			throw e;
 		}
 		return this;
@@ -259,6 +259,9 @@ LibCanvas.Context2D = new Class({
 			return this.ctx2d.isPointInPath(point.x, point.y);
 		}		
 	},
+	clip : function () {
+		return this.original('clip');
+	},
 
 	// transformation
 	rotate : function () {
@@ -301,6 +304,111 @@ LibCanvas.Context2D = new Class({
 	},
 	measureText : function (textToMeasure) {
 		return this.ctx2d.measureText.apply(this.ctx2d, arguments);
+	},
+	text : function (cfg) {
+		cfg = $merge({
+			text   : '',
+			color  : null, /* @color */
+			wrap   : 'normal', /* no|normal */
+			to     : null,
+			align  : 'left', /* center|left|right */
+			size   : 16,
+			weigth : 'normal', /* bold|normal */
+			style  : 'normal', /* italic|normal */
+			family : 'sans-serif', /* @fontFamily */
+			lineHeight : null,
+			overflow   : 'visible', /* hidden|visible */
+		}, cfg);
+		this.save();
+		var to = office.makeRect(cfg.to);
+		var lh = (cfg.lineHeight || (cfg.size * 1.15)).round();
+		this.set('font', '{style}{weight}{size}px {family}'
+			.substitute({
+				style  : cfg.style == 'italic' ? 'italic ' : '',
+				weight : cfg.weight == 'bold'  ? 'bold '   : '',
+				size   : cfg.size,
+				family : cfg.family
+			})
+		);
+		var clip = function () {
+			this.beginPath()
+				.moveTo(to.from.x, to.from.y)
+				.lineTo(to.from.x, to.to.y)
+				.lineTo(to.to.x, to.to.y)
+				.lineTo(to.to.x, to.from.y)
+				.lineTo(to.from.x, to.from.y)
+				.closePath()
+				.clip();
+		}.bind(this);
+		if (cfg.color) {
+			this.set('fillStyle', cfg.color);
+		}
+		if (cfg.overflow == 'hidden') {
+			clip();
+		}
+		var x, lines = cfg.text.split('\n');
+		if (cfg.wrap == 'no') {
+			lines.each(function (line, i) {
+				if (cfg.align == 'left') {
+					x = to.from.x;
+				} else {
+					var lineWidth = this.measureText(line).width;
+					if (cfg.align == 'right') {
+						x = to.to.x - lineWidth;
+					} else /* cfg.align == 'center' */ {
+						x = to.from.x + (to.to.x - to.from.x - lineWidth)/2;
+					}
+				}
+				this.fillText(line, x, to.from.y + (i+1)*lh);
+			}.bind(this));
+		} else {
+			var lNum = 0;
+			var start = new Date();
+			lines.each(function (line) {
+				var words = line.match(/.+?\s/g);
+				var L  = '';
+				var Lw = 0;
+				for (var i = 0; i < words.length; i++) {
+					var text = words[i];
+					// @todo too slow. 2-4ms for 50words
+					var wordWidth = this.measureText(text).width;
+					if (!Lw || Lw + wordWidth < to.width) {
+						Lw += wordWidth;
+						L  += text;
+					} else {
+						if (cfg.align == 'left') {
+							x = to.from.x;
+						} else {
+							if (cfg.align == 'right') {
+								x = to.to.x - Lw;
+							} else /* cfg.align == 'center' */ {
+								x = to.from.x + (to.to.x - to.from.x - Lw)/2;
+							}
+						}
+						this.fillText(L, x, to.from.y + (++lNum)*lh);
+						L  = '';
+						Lw = 0;
+					}
+				}
+				if (Lw) {
+					if (cfg.align == 'left') {
+						x = to.from.x;
+					} else {
+						if (cfg.align == 'right') {
+							x = to.to.x - Lw;
+						} else /* cfg.align == 'center' */ {
+							x = to.from.x + (to.to.x - to.from.x - Lw)/2;
+						}
+					}
+					this.fillText(L, x, to.from.y + (++lNum)*lh);
+					L  = '';
+					Lw = 0;
+				}
+
+			}.bind(this));
+			
+		}
+		this.restore();
 	},
 
 	// image

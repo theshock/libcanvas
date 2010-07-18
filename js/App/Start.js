@@ -139,6 +139,19 @@ App.Start = {
 			.clickable()
 			.bind('click', change('add'));
 	},
+	text : function () {
+		var toPoint = new LibCanvas.Point(400, 400);
+		var rect = new S.Rectangle({
+			from : [200, 100],
+			to : toPoint
+		});
+		this.create(rect, 10);
+		this.canvas.addElement(
+			new App.TestText(toPoint)
+				.setShape(rect)
+				.setZIndex(20)
+		);
+	},
 	cachedImage : function () {
 		this.canvas.addElement(
 			new App.ImageDrawer()
