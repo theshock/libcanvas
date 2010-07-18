@@ -82,5 +82,43 @@ LibCanvas.Point = new Class({
 		this.set(newCoord);
 		this.bind('moved', [diff]);
 		return this;
+	},
+	scale : function (x, y) {
+		var scaleMtx = [
+			[x, 0, 0],
+			[0, y, 0],
+			[0, 0, 1]
+		];
+		var newCoord = {
+			x : scaleMtx[0][0] * this.x + scaleMtx[0][1] * this.y,
+			y : scaleMtx[1][0] * this.x + scaleMtx[1][1] * this.y
+		};
+		var diff = this.diff(newCoord);
+		this.set(newCoord);
+		this.bind('moved', [diff]);
+		return this;
+	},
+	alterPos : function (arg, fun) {
+		this.set(
+			(typeof arg == 'object' ? fun(this.x, arg.x) : fun(this.x, arg)),
+			(typeof arg == 'object' ? fun(this.y, arg.y) : fun(this.y, arg))
+		);
+		this.bind('moved', [arg]);
+		return this;
+	},
+	mul : function (arg) {
+		return this.alterPos(arg, function(a, b) {
+			return a * b;
+		});
+	},
+	add : function (arg) {
+		return this.alterPos(arg, function(a, b) {
+			return a + b;
+		});
+	},
+	sub : function (arg) {
+		return this.alterPos(arg, function(a, b) {
+			return a - b;
+		});
 	}
 });
