@@ -306,7 +306,9 @@ LibCanvas.Context2D = new Class({
 		return this.ctx2d.measureText.apply(this.ctx2d, arguments);
 	},
 	text : function (cfg) {
-		var start = new Date();
+		if (!this.ctx2d.fillText) {
+			return this;
+		}
 		cfg = $merge({
 			text   : '',
 			color  : null, /* @color */
@@ -374,7 +376,7 @@ LibCanvas.Context2D = new Class({
 						x = to.from.x + (to.to.x - to.from.x - lineWidth)/2;
 					}
 				}
-				this.fillText(line, getX(cfg.align == 'left' ? 0 : this.measureText(line).width), to.from.y + (i+1)*lh);
+				this.fillText(line, xGet(cfg.align == 'left' ? 0 : this.measureText(line).width), to.from.y + (i+1)*lh);
 			}.bind(this));
 		} else {
 			var lNum = 0;
@@ -406,8 +408,7 @@ LibCanvas.Context2D = new Class({
 			}.bind(this));
 			
 		}
-		this.restore();
-		trace(new Date() - start);
+		return this.restore();
 	},
 
 	// image
