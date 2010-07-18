@@ -306,6 +306,7 @@ LibCanvas.Context2D = new Class({
 		return this.ctx2d.measureText.apply(this.ctx2d, arguments);
 	},
 	text : function (cfg) {
+		var start = new Date();
 		cfg = $merge({
 			text   : '',
 			color  : null, /* @color */
@@ -346,6 +347,20 @@ LibCanvas.Context2D = new Class({
 		if (cfg.overflow == 'hidden') {
 			clip();
 		}
+
+		var xGet = function (lineWidth) {
+			var x;
+			if (cfg.align == 'left') {
+				x = to.from.x;
+			} else {
+				if (cfg.align == 'right') {
+					x = to.to.x - lineWidth;
+				} else /* cfg.align == 'center' */ {
+					x = to.from.x + (to.to.x - to.from.x - lineWidth)/2;
+				}
+			}
+			return x;
+		};
 		var x, lines = cfg.text.split('\n');
 		if (cfg.wrap == 'no') {
 			lines.each(function (line, i) {
@@ -359,56 +374,40 @@ LibCanvas.Context2D = new Class({
 						x = to.from.x + (to.to.x - to.from.x - lineWidth)/2;
 					}
 				}
-				this.fillText(line, x, to.from.y + (i+1)*lh);
+				this.fillText(line, getX(cfg.align == 'left' ? 0 : this.measureText(line).width), to.from.y + (i+1)*lh);
 			}.bind(this));
 		} else {
 			var lNum = 0;
-			var start = new Date();
 			lines.each(function (line) {
 				var words = line.match(/.+?\s/g);
 				var L  = '';
 				var Lw = 0;
-				for (var i = 0; i < words.length; i++) {
-					var text = words[i];
-					// @todo too slow. 2-4ms for 50words
-					var wordWidth = this.measureText(text).width;
-					if (!Lw || Lw + wordWidth < to.width) {
+				for (var i = 0; i <= words.length; i++) {
+					var last = i == words.length;
+					if (!last) {
+						var text = words[i];
+						// @todo too slow. 2-4ms for 50words
+						var wordWidth = this.measureText(text).width;
+					}
+					if (!last && (!Lw || Lw + wordWidth < to.width)) {
 						Lw += wordWidth;
 						L  += text;
-					} else {
-						if (cfg.align == 'left') {
-							x = to.from.x;
-						} else {
-							if (cfg.align == 'right') {
-								x = to.to.x - Lw;
-							} else /* cfg.align == 'center' */ {
-								x = to.from.x + (to.to.x - to.from.x - Lw)/2;
-							}
-						}
-						this.fillText(L, x, to.from.y + (++lNum)*lh);
+					} else if (Lw) {
+						this.fillText(L, xGet(Lw), to.from.y + (++lNum)*lh);
 						L  = '';
 						Lw = 0;
 					}
 				}
 				if (Lw) {
-					if (cfg.align == 'left') {
-						x = to.from.x;
-					} else {
-						if (cfg.align == 'right') {
-							x = to.to.x - Lw;
-						} else /* cfg.align == 'center' */ {
-							x = to.from.x + (to.to.x - to.from.x - Lw)/2;
-						}
-					}
-					this.fillText(L, x, to.from.y + (++lNum)*lh);
+					this.fillText(L, xGet(Lw), to.from.y + (++lNum)*lh);
 					L  = '';
 					Lw = 0;
 				}
-
 			}.bind(this));
 			
 		}
 		this.restore();
+		trace(new Date() - start);
 	},
 
 	// image
