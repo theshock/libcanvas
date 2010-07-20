@@ -153,7 +153,11 @@ LibCanvas.Context2D = new Class({
 
 	// Values
 	set : function (name, value) {
-		this.ctx2d[name] = value;
+		try {
+			this.ctx2d[name] = value;
+		} catch (e) {
+			throw 'Exception while setting «' + name + '» to «' + value + '»: ' + e.message;
+		}
 		return this;
 	},
 	get : function (name) {
@@ -258,9 +262,6 @@ LibCanvas.Context2D = new Class({
 			}
 			return this.ctx2d.isPointInPath(point.x, point.y);
 		}		
-	},
-	clip : function () {
-		return this.original('clip');
 	},
 
 	// transformation
