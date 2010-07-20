@@ -104,6 +104,8 @@ var office = {
 	}
 };
 
+var renderTime = 0;
+
 var imageCache = {};
 
 LibCanvas.Context2D = new Class({
@@ -121,12 +123,21 @@ LibCanvas.Context2D = new Class({
 	},
 	original : function (func, args) {
 		try {
+			var start = Date.now();
 			this.ctx2d[func].apply(this.ctx2d, args || []);
+			renderTime += (Date.now() - start);
 		} catch (e) {
 			$log(func, args)
 			throw e;
 		}
 		return this;
+	},
+	getRenderTime : function (reset) {
+		var rt = renderTime;
+		if (reset) {
+			renderTime = 0;
+		}
+		return rt;
 	},
 
 	// All

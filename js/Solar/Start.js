@@ -4,6 +4,31 @@ window.addEvent('domready', function () {
 	canvas.fps        = 60;
 	canvas.fpsMeter(30);
 
+	var frameRenderTime = 0;
+	var renderTime = {
+		output : [],
+		calcul : []
+	};
+	var timeTrace = [
+		new LibCanvas.Utils.Trace,
+		new LibCanvas.Utils.Trace
+	];
+	canvas.bind('frameRenderStarted', function () {
+		frameRenderTime = Date.now();
+	});
+	canvas.bind('frameRenderFinished', function () {
+		var output = this.ctx.getRenderTime(1);
+		var time   = Date.now() - frameRenderTime;
+		if (renderTime.output.length > 50) {
+			renderTime.output.shift();
+			renderTime.calcul.shift();
+		}
+		renderTime.output.push(output);
+		renderTime.calcul.push(time - output);
+		timeTrace[0].trace('Output: ' + renderTime.output.average().toFixed(5));
+		timeTrace[1].trace('Calcul: ' + renderTime.calcul.average().toFixed(5));
+	});
+
 	canvas.addProcessor('pre',
 		new LC.Processors.Clearer('black')
 	).start();
