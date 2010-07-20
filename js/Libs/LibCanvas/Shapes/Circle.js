@@ -41,6 +41,16 @@ LibCanvas.Shapes.Circle = new Class({
 			(point.y - this.center.y).pow(2)
 		).sqrt() <= this.radius;
 	},
+	scale : function (factor) {
+		this.center.scale(factor, factor);
+		return this;
+	},
+	intersect : function (obj) {
+		if (obj instanceof LibCanvas.Shapes.Circle) {
+			return this.center.distanceTo(obj.center) < this.radius + obj.radius;
+		}
+		return false;
+	},
 	move : function (distance) {
 		this.center.move(distance);
 		return this.parent(distance);
