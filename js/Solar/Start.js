@@ -11,6 +11,7 @@ window.addEvent('domready', function () {
 	};
 	var timeTrace = [
 		new LibCanvas.Utils.Trace,
+		new LibCanvas.Utils.Trace,
 		new LibCanvas.Utils.Trace
 	];
 	canvas.bind('frameRenderStarted', function () {
@@ -25,8 +26,11 @@ window.addEvent('domready', function () {
 		}
 		renderTime.output.push(output);
 		renderTime.calcul.push(time - output);
-		timeTrace[0].trace('Output: ' + renderTime.output.average().toFixed(5));
-		timeTrace[1].trace('Calcul: ' + renderTime.calcul.average().toFixed(5));
+		var outputAv = renderTime.output.average();
+		var calculAv = renderTime.calcul.average();
+		timeTrace[0].trace('Output: ' + outputAv.toFixed(1));
+		timeTrace[1].trace('Calcul: ' + calculAv.toFixed(1));
+		timeTrace[2].trace('Output of Time: ' + (outputAv / (outputAv+calculAv) * 100).round() + '%');
 	});
 
 	canvas.addProcessor('pre',
