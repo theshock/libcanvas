@@ -31,13 +31,19 @@ LibCanvas.Point = new Class({
 		this.length = 2;
 		return this;
 	},
-	move : function (distance) {
+	move : function (distance, reverse) {
+		var sign = function (num) {
+			return num * (reverse ? -1 : 1);
+		};
 		this.set(
-			this.x + distance.x,
-			this.y + distance.y
+			this.x + sign(distance.x),
+			this.y + sign(distance.y)
 		);
 		this.bind('moved', [distance]);
 		return this;
+	},
+	moveTo : function (newCoord) {
+		return this.move(this.diff(newCoord));
 	},
 	angleTo : function (point) {
 		var diff = this.diff(point);
@@ -74,51 +80,28 @@ LibCanvas.Point = new Class({
 		var radius   = pivot.distanceTo(this);
 		var sides    = pivot.diff(this);
 		var newAngle = Math.atan2(sides.x, sides.y) - angle;
-		var newCoord = {
+		return this.moveTo({
 			x : newAngle.sin() * radius + pivot.x,
 			y : newAngle.cos() * radius + pivot.y
-		};
-		var diff = this.diff(newCoord);
-		this.set(newCoord);
-		this.bind('moved', [diff]);
-		return this;
+		});
 	},
-	scale : function (x, y) {
-		var scaleMtx = [
-			[x, 0, 0],
-			[0, y, 0],
-			[0, 0, 1]
-		];
-		var newCoord = {
-			x : scaleMtx[0][0] * this.x + scaleMtx[0][1] * this.y,
-			y : scaleMtx[1][0] * this.x + scaleMtx[1][1] * this.y
-		};
-		var diff = this.diff(newCoord);
-		this.set(newCoord);
-		this.bind('moved', [diff]);
-		return this;
+	scale : function (power, point) {
+		point = point || { x : 0, y : 0 };
+		var diff = this.diff(point);
+		return this.moveTo({
+			x : point.x - diff.x  * (typeof power == 'object' ? power.x : power),
+			y : point.y - diff.y  * (typeof power == 'object' ? power.y : power)
+		});
 	},
-	alterPos : function (arg, fun) {
-		this.set(
-			(typeof arg == 'object' ? fun(this.x, arg.x) : fun(this.x, arg)),
-			(typeof arg == 'object' ? fun(this.y, arg.y) : fun(this.y, arg))
+	alterPos : function (arg, fn) {
+		return this.moveTo(
+			fn(this.x, typeof arg == 'object' ? arg.x : arg),
+			fn(this.y, typeof arg == 'object' ? arg.y : arg)
 		);
-		this.bind('moved', [arg]);
-		return this;
 	},
 	mul : function (arg) {
 		return this.alterPos(arg, function(a, b) {
 			return a * b;
-		});
-	},
-	add : function (arg) {
-		return this.alterPos(arg, function(a, b) {
-			return a + b;
-		});
-	},
-	sub : function (arg) {
-		return this.alterPos(arg, function(a, b) {
-			return a - b;
 		});
 	}
 });
