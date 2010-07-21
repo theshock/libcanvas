@@ -75,11 +75,22 @@ LibCanvas.Point = new Class({
 			y : point.y - this.y
 		};
 	},
-	rotate : function (angle, pivot) {
+	rotate : function (angle, pivot, withCache) {
 		pivot = pivot || { x : 0, y : 0 };
+		var useCache = withCache && this.lastAngleCache;
 		var radius   = pivot.distanceTo(this);
-		var sides    = pivot.diff(this);
-		var newAngle = Math.atan2(sides.x, sides.y) - angle;
+
+		var newAngle;
+		if (useCache) {
+			newAngle = this.lastAngleCache - angle;
+		} else {
+			var sides = pivot.diff(this);
+			newAngle = Math.atan2(sides.x, sides.y) - angle;
+		}
+		if (withCache) {
+			this.lastAngleCache = newAngle;
+		}
+
 		return this.moveTo({
 			x : newAngle.sin() * radius + pivot.x,
 			y : newAngle.cos() * radius + pivot.y
