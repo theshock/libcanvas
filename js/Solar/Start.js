@@ -4,7 +4,7 @@ window.addEvent('domready', function () {
 	canvas.fps        = 60;
 	canvas.fpsMeter(30);
 
-	//LibCanvas.Utils.RenderTime(canvas);
+	LibCanvas.Utils.RenderTime(canvas);
 
 	canvas.addProcessor('pre',
 		new LC.Processors.Clearer('black')

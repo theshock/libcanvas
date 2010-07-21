@@ -23,7 +23,8 @@ Solar.Planet = new Class({
 	dayMovement : function (part) {
 		this.position.rotate(
 			this.getDayAngle()*part,
-			this.system.star.position
+			this.system.star.position,
+			true
 		);
 		return this;
 	},
