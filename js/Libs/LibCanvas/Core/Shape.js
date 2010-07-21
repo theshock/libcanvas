@@ -28,7 +28,7 @@ LibCanvas.Shape = new Class({
 		throw 'Abstract Method Shape.hasPoint called';
 	},
 	draw : function (ctx, type) {
-		this.processPath(ctx, true)[type]();
+		this.processPath(ctx)[type]();
 		return this;
 	}
 });
