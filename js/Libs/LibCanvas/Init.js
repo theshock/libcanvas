@@ -4,7 +4,9 @@ window.LibCanvas = {
 	},
 	Shapes  : {},
 	Utils   : {},
-	Engines : {},
+	Engines : {
+		TopDown : {}
+	},
 	Processors : {},
 	Interfaces : {}
 };

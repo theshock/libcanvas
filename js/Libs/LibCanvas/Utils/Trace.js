@@ -163,5 +163,12 @@ LibCanvas.Utils.Trace = new Class({
 });
 
 window.trace = function (msg) {
-	new LibCanvas.Utils.Trace(msg);
+	if (arguments) {
+		$A(arguments).each(function (a) {
+			new LibCanvas.Utils.Trace(a);
+		});
+	} else {
+		new LibCanvas.Utils.Trace();
+	}
+	
 };
