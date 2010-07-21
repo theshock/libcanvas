@@ -45,13 +45,17 @@ LibCanvas.Shapes.Circle = new Class({
 		this.center.move(distance);
 		return this.parent(distance);
 	},
-	draw : function (ctx, type) {
-		ctx.beginPath()
-			.arc({
-				circle : this,
-				angle  : [0, (360).degree()]
-			});
-		ctx[type]();
-		return this;
+	processPath : function (ctx, noWrap) {
+		if (!noWrap) {
+			ctx.beginPath();
+		}
+		ctx.arc({
+			circle : this,
+			angle  : [0, (360).degree()]
+		});
+		if (!noWrap) {
+			ctx.closePath();
+		}
+		return ctx;
 	}
 });

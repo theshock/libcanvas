@@ -37,13 +37,14 @@ LibCanvas.Shapes.Line = new Class({
 		this.from.move(distance);
 		return this.parent(distance);
 	},
-	draw : function (ctx, type) {
-		ctx
-			.beginPath()
-			.moveTo(this.from)
-			.lineTo(this.to)
-			.closePath();
-		ctx[type]();
-		return this;
+	processPath : function (ctx, noWrap) {
+		if (!noWrap) {
+			ctx.beginPath();
+		}
+		ctx.moveTo(this.from).lineTo(this.to);
+		if (!noWrap) {
+			ctx.closePath();
+		}
+		return ctx;
 	}
 });

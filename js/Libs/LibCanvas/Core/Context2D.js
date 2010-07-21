@@ -191,7 +191,10 @@ LibCanvas.Context2D = new Class({
 	closePath : function () {
 		return this.original('closePath');
 	},
-	clip : function () {
+	clip : function (shape) {
+		if (shape && $type(shape.processPath) == 'function') {
+			shape.processPath(this);
+		}
 		return this.original('clip');
 	},
 	moveTo : function (point) {

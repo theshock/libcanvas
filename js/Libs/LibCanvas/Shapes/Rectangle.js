@@ -140,5 +140,20 @@ LibCanvas.Shapes.Rectangle = new Class({
 			[this.from.x, this.from.y, this.size.w, this.size.h]
 		);
 		return this;
+	},
+	processPath : function (ctx, noWrap) {
+		if (!noWrap) {
+			ctx.beginPath();
+		}
+		ctx
+			.moveTo(this.from.x, this.from.y)
+			.lineTo(this.to.x, this.from.y)
+			.lineTo(this.to.x, this.to.y)
+			.lineTo(this.from.x, this.to.y)
+			.lineTo(this.from.x, this.from.y);
+		if (!noWrap) {
+			ctx.closePath();
+		}
+		return ctx;
 	}
 });

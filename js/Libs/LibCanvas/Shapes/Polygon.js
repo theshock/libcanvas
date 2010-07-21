@@ -56,14 +56,17 @@ LibCanvas.Shapes.Polygon = new Class({
 		});
 		return result;
 	},
-	draw : function (ctx, type) {
-		ctx.beginPath();
+	processPath : function (ctx, noWrap) {
+		if (!noWrap) {
+			ctx.beginPath();
+		}
 		this.each(function (point, i) {
 			ctx[i > 0 ? 'lineTo' : 'moveTo'](point.x, point.y);
 		});
-		ctx.closePath();
-		ctx[type]();
-		return this;
+		if (!noWrap) {
+			ctx.closePath();
+		}
+		return ctx;
 	},
 	move : function (distance) {
 		this.each(function (point) {

@@ -14,14 +14,14 @@ LibCanvas.Shapes.Path = new Class({
 		}
 		return this.buffer;
 	},
-	path : function (ctx, wrap) {
-		if (wrap) {
+	processPath : function (ctx, noWrap) {
+		if (!noWrap) {
 			ctx.beginPath();
 		}
 		this.builder.parts.each(function (part) {
 			ctx[part.method].apply(ctx, part.args);
 		});
-		if (wrap) {
+		if (!noWrap) {
 			ctx.closePath();
 		}
 		return ctx;
@@ -30,14 +30,14 @@ LibCanvas.Shapes.Path = new Class({
 		var ctx = this.getBuffer().ctx;
 		if (this.builder.changed) {
 			this.builder.changed = false;
-			this.path(ctx, true);
+			this.processPath(ctx);
 		}
 		return ctx.isPointInPath(
 			this.checkPoint(arguments)
 		);
 	},
 	draw : function (ctx, type) {
-		this.path(ctx, true)[type]();
+		this.processPath(ctx)[type]();
 		return this;
 	},
 	move : function (distance) {
