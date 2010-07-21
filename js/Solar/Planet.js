@@ -21,7 +21,10 @@ Solar.Planet = new Class({
 		return (360).degree() / this.period;
 	},
 	dayMovement : function (part) {
-		this.position.rotate(this.system.star.position, this.getDayAngle()*part);
+		this.position.rotate(
+			this.getDayAngle()*part,
+			this.system.star.position
+		);
 		return this;
 	},
 	countPosition : function () {
@@ -32,7 +35,7 @@ Solar.Planet = new Class({
 					x : -this.distance,
 					y : 0
 				})
-				.rotate(center, $random(0, 360).degree())
+				.rotate($random(0, 360).degree(), center)
 		);
 	}
 

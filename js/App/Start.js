@@ -191,12 +191,12 @@ App.Start = {
 		});
 
 		(function () {
-			 A.rotate(O, (1).degree());
-			 B.rotate(O, (0.7).degree());
-			Aa.rotate(A, (3).degree());
-			 D.rotate(O, (0.3).degree());
-			Da.rotate(D, (3).degree());
-			Db.rotate(D, (2).degree());
+			 A.rotate(  (1).degree(), O);
+			 B.rotate((0.7).degree(), O);
+			Aa.rotate(  (3).degree(), A);
+			 D.rotate((0.3).degree(), O);
+			Da.rotate(  (3).degree(), D);
+			Db.rotate(  (2).degree(), D);
 			this.canvas.update();
 		}.bind(this)).periodical(25);
 	},

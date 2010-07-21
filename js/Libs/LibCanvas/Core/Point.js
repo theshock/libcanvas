@@ -68,15 +68,15 @@ LibCanvas.Point = new Class({
 	},
 	diff : function (point) {
 		if (arguments.length > 1) {
-			point = new LibCanvas.Point();
-			point.set.apply(point, arguments);
+			point = new LibCanvas.Point(arguments);
 		}
 		return {
 			x : point.x - this.x,
 			y : point.y - this.y
 		};
 	},
-	rotate : function (pivot, angle) {
+	rotate : function (angle, pivot) {
+		pivot = pivot || { x : 0, y : 0 };
 		var radius   = pivot.distanceTo(this);
 		var sides    = pivot.diff(this);
 		var newAngle = Math.atan2(sides.x, sides.y) - angle;
@@ -85,12 +85,12 @@ LibCanvas.Point = new Class({
 			y : newAngle.cos() * radius + pivot.y
 		});
 	},
-	scale : function (power, point) {
-		point = point || { x : 0, y : 0 };
-		var diff = this.diff(point);
+	scale : function (power, pivot) {
+		pivot = pivot || { x : 0, y : 0 };
+		var diff = this.diff(pivot);
 		return this.moveTo({
-			x : point.x - diff.x  * (typeof power == 'object' ? power.x : power),
-			y : point.y - diff.y  * (typeof power == 'object' ? power.y : power)
+			x : pivot.x - diff.x  * (typeof power == 'object' ? power.x : power),
+			y : pivot.y - diff.y  * (typeof power == 'object' ? power.y : power)
 		});
 	},
 	alterPos : function (arg, fn) {
