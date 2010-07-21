@@ -84,6 +84,7 @@ LibCanvas.Shapes.Polygon = new Class({
 		this.each(function (point) {
 			point.scale(x, y);
 		});
+		return this;
 	},
 	intersect : function (poly) {
 		for (var i = 0; i < poly.length; i++) {
