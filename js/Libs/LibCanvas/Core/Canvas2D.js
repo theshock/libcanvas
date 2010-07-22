@@ -31,18 +31,10 @@ LibCanvas.Canvas2D = new Class({
 		return this;
 	},
 	createBuffer : function (width, height) {
-		var a = arguments;
-		if (a.length == 0) {
-			width = this.origElem.width;
-			height = this.origElem.height;
-		} else if (arguments.length == 1) {
-			width = a[0].width;
-			height = a[0].height;
-		}
-		return new Element("canvas", {
-			width  : width,
-			height : height
-		});
+		return LibCanvas.Buffer.apply(
+			LibCanvas.Buffer, arguments.length ?
+				arguments : [this.origElem.width, this.origElem.height]
+		);
 	},
 
 

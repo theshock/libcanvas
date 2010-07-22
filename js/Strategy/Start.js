@@ -1,38 +1,97 @@
 window.addEvent('domready', function () {
-	var canvas = new LC.Canvas2D($$('canvas')[0]);
-	canvas.autoUpdate = 'onRequest';
-	canvas.fps        = 60;
-	canvas.fpsMeter(30);
+	var hereImage = new Image;
+	hereImage.src = 'images/here.png';
+	hereImage.onload = function () {
+		var carImage = new Image;
+		carImage.src = 'images/car.png';
+		carImage.onload = function () {
+			var canvas = new LibCanvas.Canvas2D($$('canvas')[0]);
+			canvas.autoUpdate = 'onRequest';
+			canvas.fps        = 60;
+			canvas.fpsMeter(30).listenMouse();
 
-	LibCanvas.Utils.RenderTime(canvas);
+			canvas.addProcessor('pre',
+				new LibCanvas.Processors.Clearer('black')
+			).start();
 
-	canvas.addProcessor('pre',
-		new LC.Processors.Clearer('black')
-	).start();
+			var strategy = new LibCanvas.Engines.TopDown();
 
-	var solarSystem = new Solar.System;
-	canvas.addElement(solarSystem);
+			strategy.cellSize(64, 64);
 
-	solarSystem
-		.setZIndex(1)
-		.createStar({
-			radius   : 50,
-			color    : "#e8b832",
-			stroke   : {
-				width : 10,
-				color : "#be2700"
-			}
-		}, new Point(525, 525));
+			strategy.addCells({
+				1 : {
+					fn : '#009',
+					traverse : ['sea', 'air']
+				},
+				2 : {
+					fn : '#c90',
+					traverse : ['land', 'air']
+				},
+				3 : {
+					fn : '#090',
+					traverse : ['land', 'air']
+				}
+			});
 
-	solarSystem
-		.createPlanets({ // radius, distance, period, color, trajectoryColor
-			mercury : [  1.00, 175,    88, '#c0a08b', '#261f1b'],
-			venus   : [  2.42, 198,   225, '#974c15', '#1e0e04'],
-			earth   : [  2.54, 213,   365, '#344eb4', '#0a0f24'],
-			mars    : [  1.36, 233,   687, '#ffb866', '#332414'],
-			jupiter : [ 24.00, 313,  4300, '#f8e8d8', '#322e2b'], // r = 28.56
-			saturn  : [ 20.00, 366, 10832, '#807061', '#191512'], // r = 24.12
-			uranus  : [ 10.22, 443, 30800, '#8ea0ac', '#1d2023'],
-			neptune : [ 10.02, 500, 60190, '#5989dd', '#121c2d']
-		}).twist();
+			strategy.createMap([
+				[1, 1, 1, 1, 1, 1, 1, 2],
+				[1, 1, 2, 2, 2, 2, 2, 2],
+				[2, 2, 2, 2, 3, 3, 3, 3],
+				[3, 3, 3, 3, 3, 3, 3, 3],
+				[3, 3, 3, 1, 1, 1, 3, 3],
+				[3, 3, 1, 1, 3, 1, 3, 3],
+				[3, 3, 1, 3, 3, 3, 3, 3],
+				[3, 3, 3, 3, 3, 3, 3, 3]
+			]);
+
+			strategy.listenMouse();
+
+			strategy.map.update();
+
+			canvas.addElement(strategy);
+
+			var car = new LibCanvas.Engines.TopDown
+				.Unit(strategy, carImage)
+				.setCoord(new LibCanvas.Point(3, 3))
+				.setZIndex(10);
+
+			car.type = 'land';
+
+			var here = new LibCanvas.Engines.TopDown
+				.Unit(strategy, hereImage)
+				.setCoord(new LibCanvas.Point(3, 3))
+				.setZIndex(5);
+
+			here.type = 'land';
+
+			canvas.addElement(car);
+			canvas.addElement(here);
+
+
+			car.bind(['move', 'rotate'], function () {
+				canvas.update();
+			});
+
+			strategy.bind('click', function (event, e) {
+				here.moveTo(strategy.map.getCell({x:e.offsetX, y:e.offsetY}));
+				var step = function () {
+					var diff = car.cellCoord.diff(here.cellCoord);
+					if (!diff.x && !diff.y) {
+						return;
+					}
+					if (diff.x.abs() > diff.y.abs()) {
+						car.rotateTo(diff.x > 0 ? 'right' : 'left', function () {
+							car.move(step);
+						});
+					} else {
+						car.rotateTo(diff.y > 0 ? 'bottom' : 'top', function () {
+							car.move(step);
+						});
+					}
+				};
+				step();
+				canvas.update();
+			});
+		}
+	}
 });

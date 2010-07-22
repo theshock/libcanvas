@@ -6,7 +6,7 @@ LibCanvas.Point = new Class({
 		this.set.apply(this, arguments);
 	},
 	set : function (x, y) {
-		if (x == null) {
+		if (!$chk(x)) {
 			this.x = null;
 			this.y = null;
 			this.isNull = true;
@@ -35,11 +35,15 @@ LibCanvas.Point = new Class({
 		var sign = function (num) {
 			return num * (reverse ? -1 : 1);
 		};
+		var moved = {
+			x : sign(distance.x),
+			y : sign(distance.y)
+		};
 		this.set(
-			this.x + sign(distance.x),
-			this.y + sign(distance.y)
+			this.x + moved.x,
+			this.y + moved.y
 		);
-		this.bind('moved', [distance]);
+		this.bind('moved', [moved]);
 		return this;
 	},
 	moveTo : function (newCoord) {
@@ -105,10 +109,10 @@ LibCanvas.Point = new Class({
 		});
 	},
 	alterPos : function (arg, fn) {
-		return this.moveTo(
-			fn(this.x, typeof arg == 'object' ? arg.x : arg),
-			fn(this.y, typeof arg == 'object' ? arg.y : arg)
-		);
+		return this.moveTo({
+			x: fn(this.x, typeof arg == 'object' ? arg.x : arg),
+			y: fn(this.y, typeof arg == 'object' ? arg.y : arg)
+		});
 	},
 	mul : function (arg) {
 		return this.alterPos(arg, function(a, b) {
