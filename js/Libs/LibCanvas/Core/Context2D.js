@@ -101,11 +101,34 @@ var office = {
 			data  : data,
 			cache : cache
 		});
+	},
+	getRotatedImageCache : function (data) {
+		var index = data.angle.toFixed(4);
+		var cache = rotatedImageCache[index];
+		if (cache) {
+			for (var i = cache.length; i--;) {
+				if (cache[i].image == data.image) {
+					return cache[i].cache;
+				}
+			}
+		}
+		return null;
+	},
+	putRotatedImageCache : function (data, cache) {
+		var index = data.angle.toFixed(4);
+		if (!rotatedImageCache[index]) {
+			rotatedImageCache[index] = [];
+		}
+		rotatedImageCache[index].push({
+			image : data.image,
+			cache : cache
+		});
 	}
 };
 
 var renderTime = 0;
 
+var rotatedImageCache = {};
 var imageCache = {};
 
 LibCanvas.Context2D = new Class({
@@ -437,14 +460,10 @@ LibCanvas.Context2D = new Class({
 		var data = office.createImageCacheData(a);
 		var cache = office.getImageCache(data);
 		if (!cache) {
-			var canvas = new Element('canvas', {
-				width  : data.draw.w,
-				height : data.draw.h
-			});
-			canvas.getContext('2d-libcanvas')
+			cache = LibCanvas.Buffer(data.draw.w, data.draw.h);
+			cache.getContext('2d-libcanvas')
 				.drawImage(data);
-			office.putImageCache(data, canvas);
-			cache = canvas;
+			office.putImageCache(data, cache);
 		}
 		var draw = office.makeRect(a.draw);
 		var result = {
@@ -453,19 +472,59 @@ LibCanvas.Context2D = new Class({
 		}
 		return this.drawImage(result);
 	},
+	rotatedImage : function (data) {
+		var degree = data.angle.normalizeAngle().getDegree().round(5);
+		if (!(degree % 360)) {
+			return this.drawImage(data);
+		}
+		var cache = office.getRotatedImageCache(data);
+		if (!cache) {
+			var diagonal = Math.hypotenuse(data.image.width, data.image.height);
+			cache = LibCanvas.Buffer(diagonal, diagonal);
+			cache.getContext('2d-libcanvas')
+				.translate(diagonal/2, diagonal/2)
+				.rotate(data.angle)
+				.drawImage(data.image, -data.image.width/2, -data.image.height/2);
+			office.putRotatedImageCache(data, cache);
+		}
+		var from;
+		if (data.center) {
+			from = new LibCanvas.Point(data.center);
+			from.x -= cache.width/2;
+			from.y -= cache.height/2;
+		} else {
+			from = {
+				x : (data.from.x || data.from[0] || 0) - (cache.width  - data.image.width )/2,
+				y : (data.from.y || data.from[1] || 0) - (cache.height - data.image.height)/2,
+			};
+		}
+		return this.drawImage({
+			image : cache,
+			from  : from
+		});
+
+	},
 	drawImage : function () {
 		var a = arguments;
 		if ([3, 5, 9].contains(a.length)) {
-                    return this.original('drawImage', a);
+			return this.original('drawImage', a);
 		}
 		a = a[0];
 		if (!a.image) {
 			throw 'No image';
 		}
-		if (a.from) {
-			var from = $chk(a.from.x) && $chk(a.from.y) ? a.from :
-				a.from instanceof LibCanvas.Point ?
-					a.from : new LibCanvas.Point(a.from);
+		var from = a.from || a.center;
+
+		if (from) {
+			from = $chk(from.x) && $chk(from.y) ? from :
+				from instanceof LibCanvas.Point ?
+					from : new LibCanvas.Point(from);
+			if (a.center) {
+				from = {
+					x : from.x - a.image.width/2,
+					y : from.y - a.image.height/2,
+				};
+			}
 			return this.original('drawImage', [
 				a.image, from.x, from.y
 			])

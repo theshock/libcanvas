@@ -136,3 +136,12 @@ var $equals = function (obj1, obj2) {
 	}
 	return true;
 };
+
+Math.hypotenuse = function (cathetus1, cathetus2)  {
+    return (cathetus1.pow(2) + cathetus2.pow(2)).sqrt();
+};
+
+
+Math.cathetus = function (hypotenuse, cathetus2)  {
+    return (hypotenuse.pow(2) - cathetus2.pow(2)).sqrt();
+};

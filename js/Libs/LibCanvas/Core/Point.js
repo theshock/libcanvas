@@ -26,9 +26,6 @@ LibCanvas.Point = new Class({
 			this.x = x * 1;
 			this.y = y * 1;
 		}
-		this[0] = this.x * 1;
-		this[1] = this.y * 1;
-		this.length = 2;
 		return this;
 	},
 	move : function (distance, reverse) {
@@ -68,7 +65,7 @@ LibCanvas.Point = new Class({
 	},
 	distanceTo : function (point) {
 		var diff = this.diff(point);
-		return (diff.x.pow(2) + diff.y.pow(2)).sqrt();
+		return Math.hypotenuse(diff.x, diff.y);
 	},
 	diff : function (point) {
 		if (arguments.length > 1) {
@@ -80,7 +77,7 @@ LibCanvas.Point = new Class({
 		};
 	},
 	rotate : function (angle, pivot, withCache) {
-		pivot = pivot || { x : 0, y : 0 };
+		pivot = pivot || {x : 0, y : 0};
 		var useCache = withCache && this.lastAngleCache;
 		var radius   = pivot.distanceTo(this);
 
@@ -101,7 +98,7 @@ LibCanvas.Point = new Class({
 		});
 	},
 	scale : function (power, pivot) {
-		pivot = pivot || { x : 0, y : 0 };
+		pivot = pivot || {x : 0, y : 0};
 		var diff = this.diff(pivot);
 		return this.moveTo({
 			x : pivot.x - diff.x  * (typeof power == 'object' ? power.x : power),

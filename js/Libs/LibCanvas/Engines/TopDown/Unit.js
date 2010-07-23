@@ -24,7 +24,6 @@ LibCanvas.Engines.TopDown.Unit = new Class({
 			dir == 'right'  ?  90 :
 			dir == 'bottom' ? 180 : 270;
 		var rotate = (angle.degree() - this.angle).normalizeAngle();
-		$log(rotate.getDegree())
 		if (rotate.toFixed(3) == (270).degree().toFixed(3)) {
 			rotate = -(90).degree();
 		}
@@ -124,14 +123,10 @@ LibCanvas.Engines.TopDown.Unit = new Class({
 			y : this.coord.y + (this.image.height / 2)
 		};
 		this.canvas.ctx
-			.save()
-			.translate(center.x, center.y)
-			.rotate(this.angle)
-			.translate(-center.x, -center.y)
-			.drawImage({
+			.rotatedImage({
 				image : this.image,
+				angle : this.angle,
 				from  : this.coord
-			})
-			.restore();
+			});
 	}
 });
