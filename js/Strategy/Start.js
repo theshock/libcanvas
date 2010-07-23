@@ -1,5 +1,6 @@
 window.addEvent('domready', function () {
 	var toSmall = function (image) {
+		return image;
 		var buffer = LibCanvas.Buffer(32, 32);
 		buffer.getContext('2d-libcanvas')
 			.drawImage({
@@ -30,7 +31,7 @@ window.addEvent('domready', function () {
 
 		var strategy = new LibCanvas.Engines.TopDown();
 
-		strategy.cellSize(32, 32);
+		strategy.cellSize(64, 64);
 
 		strategy.addCells({
 			1 : {

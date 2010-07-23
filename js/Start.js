@@ -1,7 +1,7 @@
 /**
  * @author Shock, greedykid, Nutochka
  * @license LGPL
- * @url http://freecr.ru/libcanvas/
+ * @url http://libcanvas.com/
  */
 
 window.addEvent('domready', function () {
@@ -14,7 +14,7 @@ window.addEvent('domready', function () {
 	canvas.progressBarStyle = App.progressBarStyle;
 
 	canvas.addProcessor('pre',
-		new LibCanvas.Processors.Clearer('#EFEBE7')
+		new LibCanvas.Processors.Clearer('#efebe7')
 	);
 
 	canvas.start();

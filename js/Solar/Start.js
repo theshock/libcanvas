@@ -1,3 +1,9 @@
+/**
+ * @author Shock, greedykid, Nutochka
+ * @license LGPL
+ * @url http://libcanvas.com/
+ */
+
 window.addEvent('domready', function () {
 	var canvas = new LC.Canvas2D($$('canvas')[0]);
 	canvas.autoUpdate = 'onRequest';
@@ -11,10 +17,11 @@ window.addEvent('domready', function () {
 	).start();
 
 	var solarSystem = new Solar.System;
-	canvas.addElement(solarSystem);
+	canvas.addElement(
+		solarSystem.setZIndex(1)
+	);
 
 	solarSystem
-		.setZIndex(1)
 		.createStar({
 			radius   : 50,
 			color    : "#e8b832",
