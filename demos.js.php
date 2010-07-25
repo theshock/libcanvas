@@ -3,6 +3,7 @@
 	header('Content-Type:application/x-javascript');
 	$files = array_merge (
 		glob('./demos-js/*.js'),
+		glob('./demos-js/isometric/*.js'),
 		glob('./demos-js/making-interface/*.js'),
 		glob('./demos-js/making-interface/path-builder/*.js'),
 		glob('./demos-js/making-interface/path-builder/sub/*.js'),

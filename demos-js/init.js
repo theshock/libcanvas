@@ -10,6 +10,7 @@ $extend(window, {
 	PathBuider : {},
 	Solar      : {},
 	Solitaire  : {},
+	Isometric  : {},
 	updateCanvas :  function (canvas) {
 		return function () {
 			canvas.update();

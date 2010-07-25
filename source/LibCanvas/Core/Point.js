@@ -43,8 +43,12 @@ LibCanvas.Point = new Class({
 		this.bind('moved', [moved]);
 		return this;
 	},
-	moveTo : function (newCoord) {
-		return this.move(this.diff(newCoord));
+	moveTo : function (newCoord, speed) {
+		if (speed) {
+			return this.animateMoveTo(newCoord, speed);
+		} else {
+			return this.move(this.diff(newCoord));
+		}
 	},
 	angleTo : function (point) {
 		var diff = this.diff(point);
@@ -115,5 +119,25 @@ LibCanvas.Point = new Class({
 		return this.alterPos(arg, function(a, b) {
 			return a * b;
 		});
+	},
+
+	animateMoveTo : function (to, speed) {
+		$clear(this.movingInterval);
+		this.movingInterval = function () {
+			var move = {}, pixelsPerFn = speed / 20;
+			var diff = this.diff(to);
+			var dist = this.distanceTo(to);
+			if (dist > pixelsPerFn) {
+				move.x = diff.x * (pixelsPerFn / dist);
+				move.y = diff.y * (pixelsPerFn / dist);
+			} else {
+				move.x = diff.x;
+				move.y = diff.y;
+				$clear(this.movingInterval);
+				this.bind('stopMove');
+			}
+			this.move(move);
+		}.bind(this).periodical(20);
+		return this;
 	}
 });
