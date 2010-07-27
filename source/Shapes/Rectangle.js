@@ -141,6 +141,9 @@ LibCanvas.Shapes.Rectangle = new Class({
 		);
 		return this;
 	},
+	getCoords : function () {
+		return this.from;
+	},
 	getCenter : function () {
 		return new LibCanvas.Point(
 			this.from.x + this.width  / 2,

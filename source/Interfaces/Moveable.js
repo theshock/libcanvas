@@ -4,9 +4,6 @@ LibCanvas.Interfaces.Moveable = new Class({
 		speed : 0, // pixels per sec
 		to : null
 	},
-	getCoords : function () {
-		throw 'Abstract method "getCoords"';
-	},
 	stopMoving : function () {
 		$clear(this.moving.interval);
 		return this;

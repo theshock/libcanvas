@@ -32,6 +32,9 @@ LibCanvas.Shapes.Line = new Class({
 		// if triangle square is zero - points are on one line
 		return ((fx-px)*(ty-py)-(tx-px)*(fy-py)).round(6) == 0;
 	},
+	getCoords : function () {
+		return this.from;
+	},
 	move : function (distance) {
 		this.to.move(distance);
 		this.from.move(distance);

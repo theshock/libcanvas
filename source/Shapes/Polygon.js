@@ -56,6 +56,9 @@ LibCanvas.Shapes.Polygon = new Class({
 		});
 		return result;
 	},
+	getCoords : function () {
+		return this[0];
+	},
 	processPath : function (ctx, noWrap) {
 		if (!noWrap) {
 			ctx.beginPath();

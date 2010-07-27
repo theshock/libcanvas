@@ -33,6 +33,9 @@ LibCanvas.Shapes.Circle = new Class({
 			throw 'Wrong Arguments In Circle';
 		}
 	},
+	getCoords : function () {
+		return this.center;
+	},
 	hasPoint : function (point) {
 		point = this.checkPoint(arguments);
 		// Растояние точки к центру круга меньше радиуса

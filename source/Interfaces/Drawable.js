@@ -6,6 +6,9 @@ LibCanvas.Interfaces.Drawable = new Class({
 		this.autoBind('canvasSet');
 		return this;
 	},
+	getCoords : function () {
+		return this.shape.getCoords();
+	},
 	getShape : function () {
 		return this.shape;
 	},
