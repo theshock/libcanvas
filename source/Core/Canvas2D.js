@@ -36,8 +36,18 @@ LibCanvas.Canvas2D = new Class({
 		);
 	},
 
+	// post-/pre- procesing
+	processors : { pre: [], post: [] },
+	addProcessor : function (type, processor) {
+		this.processors[type].push(processor);
+		return this;
+	},
+	rmProcessor : function (type, processor) {
+		this.processors[type].erase(processor);
+		return this;
+	},
 
-	// Element : add, rm, draw
+	// Element : add, rm
 	elems : [],
 	addElement : function (elem) {
 		this.elems.include(
@@ -47,14 +57,6 @@ LibCanvas.Canvas2D = new Class({
 	},
 	rmElement : function (elem) {
 		this.elems.erase(elem);
-		return this;
-	},
-	drawAll : function () {
-		this.elems
-			.sortBy('getZIndex', true)
-			.each(function (elem) {
-				elem.draw();
-			});
 		return this;
 	},
 

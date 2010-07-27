@@ -24,22 +24,18 @@ LibCanvas.Inner.Canvas2D.FrameRenderer = new Class({
 			});
 		return this;
 	},
-	processors : { pre: [], post: [] },
-	addProcessor : function (type, processor) {
-		this.processors[type].push(processor);
-		return this;
-	},
-	rmProcessor : function (type, processor) {
-		this.processors[type].erase(processor);
+	drawAll : function () {
+		this.elems
+			.sortBy('getZIndex', true)
+			.each(function (elem) {
+				elem.draw();
+			});
 		return this;
 	},
 	processing : function (type) {
 		this.processors[type].each(function (processor) {
 			processor.process(this);
 		}.bind(this));
-		return this;
-	},
-	postProcessing : function () {
 		return this;
 	},
 	frame : function () {

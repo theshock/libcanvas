@@ -8,6 +8,12 @@ LibCanvas.Shapes.Circle = new Class({
 			a = a[0];
 		}
 
+		if (a.from) {
+			a.center = new LibCanvas.Point(a.from);
+			a.center.x += [a.r, a.radius].firstReal();
+			a.center.y += [a.r, a.radius].firstReal();
+		}
+
 		var setCenter = function () {
 			if (!this.center) {
 				this.center = new LibCanvas.Point;
