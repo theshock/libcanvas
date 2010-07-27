@@ -123,7 +123,7 @@ LibCanvas.Engines.Tile = new Class({
 			});
 		} else if ($type(fn) == 'function') {
 			fn(this.ctx, rect, cell.t);
-		} else {
+		} else if (fn !== null) {
 			this.ctx.fill(rect, fn);
 		}
 		return this;
