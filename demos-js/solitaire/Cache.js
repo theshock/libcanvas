@@ -1,4 +1,0 @@
-Solitaire.Cache = {
-	ClosedDraw : {},
-	OpenedDraw : {}
-};
