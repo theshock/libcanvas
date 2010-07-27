@@ -1,4 +1,3 @@
-
 LibCanvas.Canvas2D = new Class({
 	Implements: [
 		LibCanvas.Inner.Canvas2D.FrameRenderer,

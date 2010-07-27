@@ -102,11 +102,15 @@ LibCanvas.Engines.Tile = new Class({
 	getCell : function (point) {
 		var x = (point.x / (this.width  + this.margin)).floor();
 		var y = (point.y / (this.height + this.margin)).floor();
-		return {
-			t : this.matrix[y][x],
-			x : x,
-			y : y
-		};
+		if (this.matrix[y] && this.matrix[y][x]) {
+			return {
+				t : this.matrix[y][x],
+				x : x,
+				y : y
+			};
+		} else {
+			return null;
+		}
 	},
 	drawCell : function (cell /*{t,x,y}*/) {
 		var rect = this.getRect(cell);
