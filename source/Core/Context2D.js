@@ -144,6 +144,9 @@ LibCanvas.Context2D = new Class({
 		this.width  = this.canvas.width;
 		this.height = this.canvas.height;
 	},
+	getFullRectangle : function () {
+		return new LibCanvas.Shapes.Rectangle(0, 0, this.width, this.height);
+	},
 	original : function (func, args) {
 		try {
 			var start = Date.now();
