@@ -1,6 +1,5 @@
 (function () {
 
-
 LibCanvas.Interfaces.Draggable = new Class({
 	isDraggable : null,
 	dragStart : null,
@@ -31,6 +30,8 @@ var initDraggable = function () {
 	var dragFn = function () {
 		moveListener.call(this);
 	}.bind(this);
+
+	this.listenMouse();
 
 	var startDrag = ['mousedown'];
 	var dragging  = ['mousemove', 'away:mousemove'];
