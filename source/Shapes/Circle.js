@@ -17,7 +17,7 @@ LibCanvas.Shapes.Circle = new Class({
 	Extends : LibCanvas.Shape,
 	set : function () {
 		var a = $A(arguments);
-		if (a[0] && (a[0].center || $chk(a[0].x) || $chk(a[0][0]))) {
+		if (a[0] && (a[0].from || a[0].center || $chk(a[0].x) || $chk(a[0][0]))) {
 			a = a[0];
 		}
 
