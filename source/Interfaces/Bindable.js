@@ -41,9 +41,9 @@ LibCanvas.Interfaces.Bindable = new Class({
 			this.binds[event]
 				.include(fn);
 			if (event in this.autoBinds) {
-				this.autoBinds.each(function (args) {
+				this.autoBinds[event].each(function (args) {
 					this.callBind(event, fn, args);
-				});
+				}.bind(this));
 			}
 		} else if (event in this.binds) {
 			var args = fn;
