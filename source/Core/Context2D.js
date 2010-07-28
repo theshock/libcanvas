@@ -115,7 +115,10 @@ var office = {
 		});
 	},
 	getRotatedImageCache : function (data, length) {
-		var index = data.angle.normalizeAngle().detDegree().toFixed(length);
+		var index = data.angle
+			.normalizeAngle()
+			.getDegree()
+			.toFixed(length);
 		var cache = rotatedImageCache[index];
 		if (cache) {
 			for (var i = cache.length; i--;) {
@@ -127,8 +130,10 @@ var office = {
 		return null;
 	},
 	putRotatedImageCache : function (data, cache, length) {
-		var index = data.angle.normalizeAngle().detDegree().toFixed(length);
-		$log(++cached, index);
+		var index = data.angle
+			.normalizeAngle()
+			.getDegree()
+			.toFixed(length);
 		if (!rotatedImageCache[index]) {
 			rotatedImageCache[index] = [];
 		}
@@ -139,10 +144,7 @@ var office = {
 	}
 };
 
-var cached = 0;
-
 var renderTime = 0;
-
 var rotatedImageCache = {};
 var imageCache = {};
 
