@@ -1,3 +1,14 @@
+/*
+---
+description: Useful tool which provides windows with user-defined debug information
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+provides: [LibCanvas.Utils.Trace]
+*/
 
 LibCanvas.Utils.Trace = new Class({
 	initialize : function (object) {

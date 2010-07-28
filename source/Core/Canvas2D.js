@@ -1,3 +1,21 @@
+/*
+---
+description: LibCanvas.Canvas2D wraps around native <canvas>.
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+requires:
+- LibCanvas.Inner.Canvas2D.FrameRenderer
+- LibCanvas.Inner.Canvas2D.FpsMeter
+- LibCanvas.Inner.Canvas2D.DownloadingProgress
+- LibCanvas.Interfaces.Bindable
+
+provides: [LibCanvas.Canvas2D]
+*/
+
 LibCanvas.Canvas2D = new Class({
 	Implements: [
 		LibCanvas.Inner.Canvas2D.FrameRenderer,

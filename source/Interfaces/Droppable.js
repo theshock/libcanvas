@@ -1,3 +1,15 @@
+/*
+---
+description: Abstract class for droppable canvas objects
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+provides: [LibCanvas.Interfaces.Droppable]
+*/ 
+
 LibCanvas.Interfaces.Droppable = new Class({
 	drops : null,
 	drop : function (obj) {

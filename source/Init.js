@@ -1,8 +1,16 @@
-/**
- * @author Shock, greedykid, Nutochka
- * @license LGPL
- * @url http://libcanvas.com/
- */
+/*
+---
+description: LibCanvas initialization
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+- Anna Shurubey aka Nutochka <nutochka1@i.ua>
+- Nikita Baksalyar <nikita@baksalyar.ru>
+
+provides: [LibCanvas]
+*/
 
 window.LibCanvas = {
 	Inner : {

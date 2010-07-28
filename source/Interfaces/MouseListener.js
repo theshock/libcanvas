@@ -1,3 +1,15 @@
+/*
+---
+description: Canvas mouse listener
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+provides: [LibCanvas.Interfaces.MouseListener]
+*/ 
+
 /**
  * events :
  *

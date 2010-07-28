@@ -1,3 +1,18 @@
+/*
+---
+description: Helper for building tile maps (e.g. for Tetris or ur's favorite Dune II - http://en.wikipedia.org/wiki/Tile_engine)
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+requires:
+- LibCanvas.Interfaces.Bindable
+
+provides: [LibCanvas.Engines.Tile]
+*/
+
 LibCanvas.Engines.Tile = new Class({
 	Implements : [LibCanvas.Interfaces.Bindable],
 	tiles : {},

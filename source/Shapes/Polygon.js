@@ -1,3 +1,18 @@
+/*
+---
+description: Provides user-defined concave polygon as canvas object
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+requires:
+- LibCanvas.Shape
+
+provides: [LibCanvas.Shapes.Polygon]
+*/
+
 (function (){
 
 

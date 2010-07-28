@@ -1,3 +1,18 @@
+/*
+---
+description: Provides a user-defined path (similar to vector graphics) as canvas object
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+requires:
+- LibCanvas.Shape
+
+provides: [LibCanvas.Shapes.Path]
+*/
+
 LibCanvas.Shapes.Path = new Class({
 	Extends : LibCanvas.Shape,
 	set : function (builder) {

@@ -1,3 +1,15 @@
+/*
+---
+description: Provides interface for clickable canvas objects
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+provides: [LibCanvas.Interfaces.Clickable]
+*/ 
+
 (function () {
 
 var setValFn = function (name, val) {

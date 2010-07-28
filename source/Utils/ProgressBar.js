@@ -1,3 +1,14 @@
+/*
+---
+description: Provides progress bar canvas object
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+provides: [LibCanvas.Utils.ProgressBar]
+*/
 
 LibCanvas.Utils.ProgressBar = new Class({
 	initialize : function () {

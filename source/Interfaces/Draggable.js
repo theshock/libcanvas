@@ -1,3 +1,15 @@
+/*
+---
+description: When object implements LibCanvas.Interfaces.Draggable interface dragging made possible
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+provides: [LibCanvas.Interfaces.Draggable]
+*/ 
+
 (function () {
 
 LibCanvas.Interfaces.Draggable = new Class({

@@ -1,3 +1,15 @@
+/*
+---
+description: Stopwatch
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+provides: [LibCanvas.Utils.StopWatch]
+*/
+
 LibCanvas.Utils.StopWatch = new Class({
 	Implements : [LibCanvas.Interfaces.Bindable],
 	time : 0,

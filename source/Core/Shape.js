@@ -1,3 +1,17 @@
+/*
+---
+description: Abstract class LibCanvas.Shape defines interface for drawable canvas objects.
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+requires:
+- LibCanvas.Interfaces.Bindable
+
+provides: [LibCanvas.Shape]
+*/
 
 LibCanvas.Shape = new Class({
 	Implements: [LibCanvas.Interfaces.Bindable],

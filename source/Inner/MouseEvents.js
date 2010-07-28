@@ -1,3 +1,15 @@
+/*
+---
+description: Class which contains several basic mouse events 
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+provides: [LibCanvas.Inner.MouseEvents]
+*/
+
 LibCanvas.Inner.MouseEvents = new Class({
 	subscribers : [],
 	lastMouseMove : [],

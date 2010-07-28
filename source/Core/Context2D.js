@@ -1,3 +1,15 @@
+/*
+---
+description: LibCanvas.Context2D adds new canvas' context '2d-libcanvas'.
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+provides: [LibCanvas.Context2D]
+*/
+
 (function () {
 
 var office = {

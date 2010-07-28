@@ -1,3 +1,14 @@
+/*
+---
+description: A mouse control abstraction class
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+provides: [LibCanvas.Mouse]
+*/
 
 LibCanvas.Mouse = new Class({
 	initialize : function (canvas) {

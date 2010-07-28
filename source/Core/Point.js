@@ -1,3 +1,17 @@
+/*
+---
+description: A X/Y point coordinates encapsulating class
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+requires:
+- LibCanvas.Interfaces.Bindable
+
+provides: [LibCanvas.Point]
+*/
 
 LibCanvas.Point = new Class({
 	Implements: [LibCanvas.Interfaces.Bindable],

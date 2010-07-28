@@ -1,10 +1,16 @@
+/*
+---
+description: Provides projective textures rendering (more info: http://acko.net/files/projective/index.html)
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+provides: [LibCanvas.Inner.ProjectiveTexture]
+*/
+
 (function () {
-
-
-/**
- * For more information read:
- * http://acko.net/files/projective/index.html
- */
 
 LibCanvas.Inner.ProjectiveTexture = new Class({
 	initialize : function (image) {

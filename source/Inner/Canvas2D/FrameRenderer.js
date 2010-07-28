@@ -1,3 +1,15 @@
+/*
+---
+description: Private class for inner usage in LibCanvas.Canvas2D
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+provides: [LibCanvas.Inner.Canvas2D.FrameRenderer]
+*/
+
 LibCanvas.Inner.Canvas2D.FrameRenderer = new Class({
 	checkAutoDraw : function () {
 		if (this.autoUpdate == 'onRequest') {

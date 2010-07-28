@@ -1,3 +1,18 @@
+/*
+---
+description: Provides line as a canvas object
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+requires:
+- LibCanvas.Shape
+
+provides: [LibCanvas.Shapes.Line]
+*/
+
 LibCanvas.Shapes.Line = new Class({
 	Extends : LibCanvas.Shape,
 	set : function (from, to) {

@@ -1,3 +1,14 @@
+/*
+---
+description: Abstract class for drawable canvas objects
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+provides: [LibCanvas.Interfaces.Drawable]
+*/ 
 
 LibCanvas.Interfaces.Drawable = new Class({
 	Implements : LibCanvas.Interfaces.Bindable,

@@ -1,3 +1,14 @@
+/*
+---
+description: Provides images preloader
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+provides: [LibCanvas.Utils.ImagePreloader]
+*/
 
 LibCanvas.Utils.ImagePreloader = new Class({
 	initialize: function (images) {

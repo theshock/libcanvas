@@ -1,3 +1,15 @@
+/*
+---
+description: Counting assets downloading progress
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+provides: [LibCanvas.Inner.Canvas2D.DownloadingProgress]
+*/
+
 LibCanvas.Inner.Canvas2D.DownloadingProgress = new Class({
 	preloadImages : null,
 	progressBarStyle : null,

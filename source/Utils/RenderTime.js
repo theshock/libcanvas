@@ -1,3 +1,15 @@
+/*
+---
+description: Utility class for render time calculation
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+provides: [LibCanvas.Utils.RenderTime]
+*/
+
 LibCanvas.Utils.RenderTime = function (canvas) {
 	var frameRenderTime = 0;
 	var renderTime = {

@@ -1,4 +1,17 @@
+/*
+---
+description: Provides rectangle as canvas object
 
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+requires:
+- LibCanvas.Shape
+
+provides: [LibCanvas.Shapes.Rectangle]
+*/
 
 LibCanvas.Shapes.Rectangle = new Class({
 	Extends : LibCanvas.Shape,

@@ -1,3 +1,15 @@
+/*
+---
+description: Made possible link between two canvas objects
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+provides: [LibCanvas.Interfaces.Linkable]
+*/ 
+
 LibCanvas.Interfaces.Linkable = new Class({
 	links : null,
 	moveLinks : function (move) {

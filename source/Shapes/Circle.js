@@ -1,4 +1,17 @@
+/*
+---
+description: Provides circle as a canvas object
 
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+requires:
+- LibCanvas.Shape
+
+provides: [LibCanvas.Shapes.Circle]
+*/
 
 LibCanvas.Shapes.Circle = new Class({
 	Extends : LibCanvas.Shape,

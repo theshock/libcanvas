@@ -1,3 +1,14 @@
+/*
+---
+description: Provides interface for binding events to objects
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+provides: [LibCanvas.Interfaces.Bindable]
+*/ 
 
 LibCanvas.Interfaces.Bindable = new Class({
 	binds : {},

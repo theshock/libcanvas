@@ -1,3 +1,14 @@
+/*
+---
+description: Provides FPS indicator
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+provides: [LibCanvas.Utils.FpsMeter]
+*/
 
 LibCanvas.Utils.FpsMeter = new Class({
 	initialize : function (framesMax) {

@@ -1,3 +1,15 @@
+/*
+---
+description: Provides interface for moveable objects
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+provides: [LibCanvas.Interfaces.Moveable]
+*/ 
+
 LibCanvas.Interfaces.Moveable = new Class({
 	moving : {
 		interval : null,

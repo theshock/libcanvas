@@ -1,3 +1,37 @@
+/*
+---
+description: Extends native prototypes with several useful functions
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+provides:
+- Number.degree
+- Number.getDegree
+- Number.normalizeAngle
+- Number.between
+- String.repeat
+- String.safeHTML
+- String.nl2br
+- String.replaceAll
+- String.begins
+- Array.getLast
+- Array.remove
+- Array.sum
+- Array.remove
+- Array.average
+- Array.firstReal
+- Array.shuffle
+- Array.sortBy
+- $log
+- $equals
+- Math.hypotenuse
+- Math.cathetus
+- parseUri
+*/
+
 // Number
 (function () {
 
