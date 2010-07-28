@@ -3,8 +3,17 @@ LibCanvas.Interfaces.Bindable = new Class({
 	binds : {},
 	autoBinds : {},
 	autoBind : function (event, args) {
+		if ($type(event) == 'array') {
+			event.each(function (e) {
+				this.autoBind(e, args);
+			}.bind(this));
+			return this;
+		}
 		if ($type(args) != 'function') {
-			this.autoBinds[event] = args;
+			if (!this.autoBinds[event]) {
+				this.autoBinds[event] = [];
+			}
+			this.autoBinds[event].push(args);
 			this.bind(event, args);
 		}
 		return this;
@@ -32,7 +41,9 @@ LibCanvas.Interfaces.Bindable = new Class({
 			this.binds[event]
 				.include(fn);
 			if (event in this.autoBinds) {
-				this.callBind(event, fn, this.autoBinds[event]);
+				this.autoBinds.each(function (args) {
+					this.callBind(event, fn, args);
+				});
 			}
 		} else if (event in this.binds) {
 			var args = fn;
