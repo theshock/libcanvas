@@ -115,7 +115,7 @@ var office = {
 		});
 	},
 	getRotatedImageCache : function (data) {
-		var index = data.angle.toFixed(4);
+		var index = data.angle.normalizeAngle().toFixed(3);
 		var cache = rotatedImageCache[index];
 		if (cache) {
 			for (var i = cache.length; i--;) {
@@ -127,7 +127,7 @@ var office = {
 		return null;
 	},
 	putRotatedImageCache : function (data, cache) {
-		var index = data.angle.toFixed(4);
+		var index = data.angle.normalizeAngle().toFixed(3);
 		if (!rotatedImageCache[index]) {
 			rotatedImageCache[index] = [];
 		}
@@ -489,20 +489,19 @@ LibCanvas.Context2D = new Class({
 		}
 		return this.drawImage(result);
 	},
-	rotatedImage : function (data) {
-		var degree = data.angle.normalizeAngle().getDegree().round(5);
-		if (!(degree % 360)) {
+	rotatedImage : function (data, noCache) {
+		if (!(data.angle.normalizeAngle().getDegree().round(3) % 360)) {
 			return this.drawImage(data);
 		}
-		var cache = office.getRotatedImageCache(data);
-		if (!cache) {
+		var cache = noCache || office.getRotatedImageCache(data);
+		if (noCache || !cache) {
 			var diagonal = Math.hypotenuse(data.image.width, data.image.height);
 			cache = LibCanvas.Buffer(diagonal, diagonal);
 			cache.getContext('2d-libcanvas')
 				.translate(diagonal/2, diagonal/2)
 				.rotate(data.angle)
 				.drawImage(data.image, -data.image.width/2, -data.image.height/2);
-			office.putRotatedImageCache(data, cache);
+			!noCache || office.putRotatedImageCache(data, cache);
 		}
 		var from;
 		if (data.center) {
