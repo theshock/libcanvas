@@ -20,6 +20,9 @@ LibCanvas.Interfaces.Moveable = new Class({
 		$clear(this.moving.interval);
 		return this;
 	},
+	getCoords : function () {
+		return this.shape.getCoords();
+	},
 	moveTo    : function (point, speed) {
 		this.stopMoving();
 		this.moving.speed = speed = (speed || this.moving.speed);

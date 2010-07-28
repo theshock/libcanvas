@@ -75,7 +75,7 @@ LibCanvas.Mouse = new Class({
 		return this;
 	},
 	getOffset : function(elem) {
-		var top=0, left=0
+		var top = 0, left = 0;
 		if (elem.getBoundingClientRect) {
 			var box = elem.getBoundingClientRect();
 
@@ -98,11 +98,11 @@ LibCanvas.Mouse = new Class({
 			return { top: Math.round(top), left: Math.round(left) };
 		} else {
 			while(elem) {
-				top = top + parseInt(elem.offsetTop)
-				left = left + parseInt(elem.offsetLeft)
-				elem = elem.offsetParent
+				top  = top  + parseInt(elem.offsetTop);
+				left = left + parseInt(elem.offsetLeft);
+				elem = elem.offsetParent;
 			}
-			return {top: top, left: left}
+			return {top: top, left: left};
 		}
 	},
 	expandEvent : function (e) {

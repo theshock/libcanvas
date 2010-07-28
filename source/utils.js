@@ -144,6 +144,45 @@ Array.implement({
 	}
 });
 
+// <image> tag
+$extend(HTMLImageElement.prototype, {
+	sprite : function () {
+		if (!this.isLoaded()) {
+			$log('Image not loaded in Image.sprite: ', this);
+			throw 'Image not loaded in Image.sprite, logged';
+		}
+		var buf;
+		if (arguments.length) {
+			var rect = new LibCanvas.Shapes.Rectangle;
+			rect.set.apply(rect, arguments);
+			var index = [rect.from.x,rect.from.y,rect.width,rect.height].join('.');
+			this.spriteCache = this.spriteCache || {};
+			buf = this.spriteCache[index]
+			if (!buf) {
+				buf = LibCanvas.Buffer(rect.width, rect.height);
+				buf.getContext('2d-libcanvas').drawImage({
+					image : this,
+					crop  : rect,
+					draw  : [0,0,rect.width,rect.height]
+				});
+				this.spriteCache[index] = buf;
+			}
+
+		} else {
+			buf = LibCanvas.Buffer(this.width, this.height);
+			buf.getContext('2d-libcanvas').drawImage(this, 0, 0);
+		}
+		return buf;
+	},
+	isLoaded : function () {
+		if (!this.complete) {
+			return false;
+		}
+		return !$defined(this.naturalWidth) || this.naturalWidth; // browsers
+	}
+});
+
+// else
 var $log = function () {
 	try {
 		console.log.apply(console, arguments);
