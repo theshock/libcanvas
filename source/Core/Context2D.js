@@ -161,9 +161,9 @@ LibCanvas.Context2D = new Class({
 	},
 	original : function (func, args) {
 		try {
-			var start = Date.now();
+			var start = new Date;
 			this.ctx2d[func].apply(this.ctx2d, args || []);
-			renderTime += (Date.now() - start);
+			renderTime += (new Date - start);
 		} catch (e) {
 			$log(func, args)
 			throw e;
