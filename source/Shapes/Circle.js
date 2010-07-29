@@ -57,14 +57,11 @@ LibCanvas.Shapes.Circle = new Class({
 	},
 	hasPoint : function (point) {
 		point = this.checkPoint(arguments);
-		// Растояние точки к центру круга меньше радиуса
-		return (
-			(point.x - this.center.x).pow(2) +
-			(point.y - this.center.y).pow(2)
-		).sqrt() <= this.radius;
+		return this.center.distanceTo(point) <= this.radius;
+			
 	},
 	scale : function (factor) {
-		this.center.scale(factor, factor);
+		this.center.scale(factor);
 		return this;
 	},
 	intersect : function (obj) {

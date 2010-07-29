@@ -52,11 +52,12 @@ Number.implement({
 		return this / Math.PI * 180;
 	},
 	normalizeAngle : function () {
-		var num = this;
-		while (num < 0) {
-			num += (360).degree();
+		var num  = this;
+		var d360 = (360).degree();
+		if (num < 0) {
+			num = num % d360 + d360 ;
 		}
-		return num % (360).degree();
+		return num % d360;
 	},
 	between: function (n1, n2, equals) {
 		return (n1 <= n2) && (

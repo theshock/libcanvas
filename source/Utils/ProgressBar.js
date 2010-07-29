@@ -65,7 +65,7 @@ LibCanvas.Utils.ProgressBar = new Class({
 		var prog   = this.progress;
 		var c = this.coord;
 
-		this.lib.canvas.ctx.drawImage({
+		this.libcanvas.ctx.drawImage({
 			image : line,
 			crop  : [0, 0 , width * prog, height],
 			draw  : [c.x+1, c.y+1, width * prog, height]
