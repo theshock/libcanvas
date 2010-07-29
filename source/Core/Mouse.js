@@ -111,11 +111,11 @@ LibCanvas.Mouse = new Class({
 			var offset = this.getOffset(e.target);
 			e.offsetX = event.page.x - offset.left;
 			e.offsetY = event.page.y - offset.top;
-			e.offset = {
-				x : e.offsetX,
-				y : e.offsetY
-			};
 		}
+		e.offset = {
+			x : e.offsetX,
+			y : e.offsetY
+		};
 		return e;
 	},
 	setEvents : function () {
