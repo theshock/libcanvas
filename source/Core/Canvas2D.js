@@ -26,11 +26,11 @@ LibCanvas.Canvas2D = new Class({
 
 	fps      : 20,
 	autoDraw : true,
+	interval : null,
 
 	initialize : function (elem) {
 		this.origElem = elem;
 		this.origCtx  = elem.getContext('2d-libcanvas');
-		this.interval = null;
 
 		this.elem = this.createBuffer();
 		this.ctx  = this.elem.getContext('2d-libcanvas');

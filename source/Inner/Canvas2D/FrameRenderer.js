@@ -29,11 +29,7 @@ LibCanvas.Inner.Canvas2D.FrameRenderer = new Class({
 		return this;
 	},
 	show : function () {
-		this.origCtx
-			.drawImage({
-				image : this.elem,
-				from : [0, 0]
-			});
+		this.origCtx.drawImage(this.elem, 0, 0);
 		return this;
 	},
 	drawAll : function () {
