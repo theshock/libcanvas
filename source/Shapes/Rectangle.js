@@ -139,8 +139,13 @@ LibCanvas.Shapes.Rectangle = new Class({
 	},
 	hasPoint : function (point) {
 		point = this.checkPoint(arguments);
-		return point.x.between(this.from.x, this.to.x, 1)
-			&& point.y.between(this.from.y, this.to.y, 1);
+		if (!$chk(point.x)) {
+			$log(arguments[0].isNull
+		)
+		} else {
+			return point.x.between(this.from.x, this.to.x, 1)
+				&& point.y.between(this.from.y, this.to.y, 1);
+		}
 	},
 	move : function (distance) {
 		this.from.x += distance.x;
