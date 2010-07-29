@@ -69,7 +69,7 @@ LibCanvas.Canvas2D = new Class({
 	elems : [],
 	addElement : function (elem) {
 		this.elems.include(
-			elem.setCanvas(this)
+			elem.setLibcanvas(this)
 		);
 		return this;
 	},

@@ -17,7 +17,7 @@ LibCanvas.Interfaces.Droppable = new Class({
 			this.drops = [];
 			this.bind('stopDrag', function () {
 				var dropped = false;
-				var mouse = this.canvas.mouse;
+				var mouse = this.libcanvas.mouse;
 				if (mouse.inCanvas) {
 					this.drops.each(function (obj) {
 						if(obj.getShape().hasPoint(mouse.point)) {

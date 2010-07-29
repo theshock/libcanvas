@@ -12,9 +12,9 @@ provides: [LibCanvas.Interfaces.Drawable]
 
 LibCanvas.Interfaces.Drawable = new Class({
 	Implements : LibCanvas.Interfaces.Bindable,
-	setCanvas : function (canvas) {
-		this.canvas = canvas;
-		this.autoBind('canvasSet');
+	setLibcanvas : function (libcanvas) {
+		this.libcanvas = libcanvas;
+		this.autoBind('libcanvasSet');
 		return this;
 	},
 	getCoords : function () {

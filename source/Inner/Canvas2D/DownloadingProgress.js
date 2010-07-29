@@ -34,7 +34,7 @@ LibCanvas.Inner.Canvas2D.DownloadingProgress = new Class({
 		}
 		if (this.progressBar) {
 			this.progressBar
-				.setCanvas(this)
+				.setLibcanvas(this)
 				.setProgress(this.imagePreloader.getProgress())
 				.draw();
 		}

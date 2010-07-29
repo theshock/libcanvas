@@ -10,7 +10,7 @@ authors:
 provides: [LibCanvas.Utils.RenderTime]
 */
 
-LibCanvas.Utils.RenderTime = function (canvas) {
+LibCanvas.Utils.RenderTime = function (libcanvas) {
 	var frameRenderTime = 0;
 	var renderTime = {
 		output : [],
@@ -21,12 +21,12 @@ LibCanvas.Utils.RenderTime = function (canvas) {
 		new LibCanvas.Utils.Trace,
 		new LibCanvas.Utils.Trace
 	];
-	canvas.bind('frameRenderStarted', function () {
-		frameRenderTime = Date.now();
+	libcanvas.bind('frameRenderStarted', function () {
+		frameRenderTime = new Date();
 	});
-	canvas.bind('frameRenderFinished', function () {
+	libcanvas.bind('frameRenderFinished', function () {
 		var output = this.ctx.getRenderTime(1);
-		var time   = Date.now() - frameRenderTime;
+		var time   = new Date() - frameRenderTime;
 		if (renderTime.output.length > 50) {
 			renderTime.output.shift();
 			renderTime.calcul.shift();

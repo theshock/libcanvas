@@ -16,8 +16,8 @@ LibCanvas.Utils.ProgressBar = new Class({
 		this.progress = 0;
 	},
 	preRender : function () {
-		if (this.canvas && this.style) {
-			var htmlElem = this.canvas.ctx.canvas;
+		if (this.libcanvas && this.style) {
+			var htmlElem = this.libcanvas.ctx.canvas;
 			this.coord.set(
 				(htmlElem.width -this.style['width'] )/2,
 				(htmlElem.height-this.style['height'])/2
@@ -26,8 +26,8 @@ LibCanvas.Utils.ProgressBar = new Class({
 		}
 		return this;
 	},
-	setCanvas : function (canvas) {
-		this.canvas = canvas;
+	setLibcanvas : function (libcanvas) {
+		this.libcanvas = libcanvas;
 		return this.preRender();
 	},
 	createBuffer : function () {
@@ -50,7 +50,7 @@ LibCanvas.Utils.ProgressBar = new Class({
 			size : [s['width'], s['height']]
 		});
 
-		this.canvas.ctx
+		this.libcanvas.ctx
 			.fillAll(s['bgColor'])
 			.set('fillStyle', s['barBgColor'])
 			.fill(pbRect)
@@ -65,7 +65,7 @@ LibCanvas.Utils.ProgressBar = new Class({
 		var prog   = this.progress;
 		var c = this.coord;
 
-		this.canvas.ctx.drawImage({
+		this.lib.canvas.ctx.drawImage({
 			image : line,
 			crop  : [0, 0 , width * prog, height],
 			draw  : [c.x+1, c.y+1, width * prog, height]
@@ -108,22 +108,24 @@ LibCanvas.Utils.ProgressBar = new Class({
 		return b.restore().canvas;
 	},
 	setProgress : function (progress) {
-		this.canvas.update();
+		if (this.libcanvas) {
+			this.libcanvas.update();
+		}
 		this.progress = progress;
 		return this;
 	},
 	setStyle : function (newStyle) {
-		if (this.canvas) {
-			this.canvas.update();
+		if (this.libcanvas) {
+			this.libcanvas.update();
 		}
 		this.style = newStyle;
 		return this.preRender();
 	},
 	draw : function () {
-		this.canvas.ctx.save();
+		this.libcanvas.ctx.save();
 		this.drawBorder()
 		    .drawLine();
-		this.canvas.ctx.restore();
+		this.libcanvas.ctx.restore();
 		return this;
 	}
 });

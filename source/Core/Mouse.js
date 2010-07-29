@@ -11,7 +11,7 @@ provides: [LibCanvas.Mouse]
 */
 
 LibCanvas.Mouse = new Class({
-	initialize : function (canvas, noTouch) {
+	initialize : function (libcanvas, noTouch) {
 		this.inCanvas = false;
 		this.point = new LibCanvas.Point();
 		this.x = null;
@@ -19,8 +19,8 @@ LibCanvas.Mouse = new Class({
 
 		noTouch || this.initTouch();
 
-		this.canvas = canvas;
-		this.elem   = canvas.origElem;
+		this.libcanvas = libcanvas;
+		this.elem      = libcanvas.origElem;
 
 		this.events = new LibCanvas.Inner.MouseEvents(this);
 

@@ -51,6 +51,9 @@ LibCanvas.Shapes.Rectangle = new Class({
 			throw 'WrongArgumentsCount in Rectangle'
 		}
 
+		this.from = new LibCanvas.Point(this.from);
+		this.to   = new LibCanvas.Point(this.to);
+
 		return this;
 	},
 	countElse : function () {
