@@ -11,46 +11,37 @@ provides: [LibCanvas.Utils.StopWatch]
 */
 
 LibCanvas.Utils.StopWatch = new Class({
-	Implements : [LibCanvas.Interfaces.Bindable],
-	time : 0,
-	interval : null,
+	startTime : 0,
+	time      : 0,
 	initialize : function (autoStart) {
-		if (autoStart) {
-			this.start();
-		}
+		autoStart && this.start();
 	},
 	start : function () {
-		this.bind('started');
-		this.interval = function () {
-			this.time++;
-			this.bind('change');
-		}.bind(this).periodical(100);
-		return this;
-	},
-	pause : function (restartIn) {
-		this.bind('paused');
-		$clear(this.interval);
-		if (restartIn) {
-			this.start.bind(this).delay(1000 * restartIn);
-		}
+		this.startTime = new Date();
 		return this;
 	},
 	stop : function () {
-		this.bind('stopped');
-		this.pause();
-		this.time = 0;
+		this.startTime = 0;
+		this.time      = 0;
 		return this;
 	},
-	getTime : function () {
-		var ms, s, m, h, t = this.time;
-		var round = Math.round;
-		if (this.time < 600) {
-			return (t / 10).toFixed(1);
+	getTime : function (micro) {
+		var d2 = function (num) {
+			return num < 10 ? '0' + num : num;
+		};
+
+		var t = this.time + (new Date - this.startTime);
+
+		if (micro) {
+			return t;
+		}
+		var s = (t / 1000).round();
+		var m = (s / 60).round();
+		var h = (m / 60).round();
+		if (s < 60) {
+			return d2((t / 1000).toFixed(1));
 		} else {
-			m = t / 600;
-			h = round(m / 60);
-			m = (m % 60).toFixed(1);
-			return h ? h+':'+m : m;
+			return h + ':' + d2(m) + ':' + d2(s % 60);
 		}
 	}
 });

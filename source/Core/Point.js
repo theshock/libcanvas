@@ -96,6 +96,9 @@ LibCanvas.Point = new Class({
 	},
 	rotate : function (angle, pivot, withCache) {
 		pivot = pivot || {x : 0, y : 0};
+		if (pivot.x == this.x && pivot.y == this.y) {
+			return this;
+		}
 		var useCache = withCache && this.lastAngleCache;
 		var radius   = pivot.distanceTo(this);
 
