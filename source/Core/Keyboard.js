@@ -10,8 +10,6 @@ authors:
 provides: [LibCanvas.Mouse]
 */
 
-window.LibCanvas = window.LibCanvas || {};
-
 (function () {
 
 var keyStates = {};

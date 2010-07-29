@@ -17,7 +17,7 @@ LibCanvas.Mouse = new Class({
 		this.x = null;
 		this.y = null;
 
-		noTouch || this.initTouch();
+		//noTouch || this.initTouch();
 
 		this.libcanvas = libcanvas;
 		this.elem      = libcanvas.origElem;

@@ -89,7 +89,7 @@ LibCanvas.Point = new Class({
 		if (arguments.length > 1) {
 			point = new LibCanvas.Point(arguments);
 		}
-		return {
+		return !point ? {x:0,y:0} : {
 			x : point.x - this.x,
 			y : point.y - this.y
 		};
