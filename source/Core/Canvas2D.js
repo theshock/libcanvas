@@ -47,6 +47,14 @@ LibCanvas.Canvas2D = new Class({
 		this.mouse = new LibCanvas.Mouse(this);
 		return this;
 	},
+	keyboard: null,
+	getKey : function (key) {
+		return this.keyboard.keyboard(key);
+	},
+	listenKeyboard : function () {
+		this.keyboard = new LibCanvas.Keyboard(this);
+		return this;
+	},
 	createBuffer : function (width, height) {
 		return LibCanvas.Buffer.apply(
 			LibCanvas.Buffer, arguments.length ?
