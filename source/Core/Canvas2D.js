@@ -51,8 +51,8 @@ LibCanvas.Canvas2D = new Class({
 	getKey : function (key) {
 		return this.keyboard.keyboard(key);
 	},
-	listenKeyboard : function () {
-		this.keyboard = new LibCanvas.Keyboard(this);
+	listenKeyboard : function (preventDefault) {
+		this.keyboard = new LibCanvas.Keyboard(this, preventDefault);
 		return this;
 	},
 	createBuffer : function (width, height) {
