@@ -13,6 +13,7 @@ provides: [LibCanvas.Utils.StopWatch]
 LibCanvas.Utils.StopWatch = new Class({
 	startTime : 0,
 	time      : 0,
+	traceElem : null,
 	initialize : function (autoStart) {
 		autoStart && this.start();
 	},
@@ -43,5 +44,12 @@ LibCanvas.Utils.StopWatch = new Class({
 		} else {
 			return h + ':' + d2(m) + ':' + d2(s % 60);
 		}
+	},
+	trace : function (micro) {
+		if (!this.traceElem) {
+			this.traceElem = new LibCanvas.Utils.Trace;
+		}
+		this.traceElem.trace(this.getTime(micro));
+		return this;
 	}
 });

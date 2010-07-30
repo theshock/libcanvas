@@ -19,8 +19,8 @@ LibCanvas.Engines.Tile = new Class({
 	rects : {},
 	first : true,
 
-	width  : 0,
-	height : 0,
+	cellWidth  : 0,
+	cellHeight : 0,
 	margin : 0,
 	initialize : function (canvas) {
 		this.elem = canvas;
@@ -76,9 +76,9 @@ LibCanvas.Engines.Tile = new Class({
 		}
 		return this;
 	},
-	setSize : function (width, height, margin) {
-		this.width  = width;
-		this.height = height;
+	setSize : function (cellWidth, cellHeight, margin) {
+		this.cellWidth  = cellWidth;
+		this.cellHeight = cellHeight;
 		this.margin = margin;
 		return this;
 	},
@@ -105,19 +105,25 @@ LibCanvas.Engines.Tile = new Class({
 				var index = cell.x + '.' + cell.y;
 				this.rects[index] = new LibCanvas.Shapes.Rectangle({
 					from : [
-						(this.width  + this.margin) * cell.x,
-						(this.height + this.margin) * cell.y,
+						(this.cellWidth  + this.margin) * cell.x,
+						(this.cellHeight + this.margin) * cell.y,
 					],
-					size : [this.width, this.height]
+					size : [this.cellWidth, this.cellHeight]
 				});
 			});
 		}
 		return this.rects[cell.x + '.' + cell.y];
 	},
-	getCell : function (point) {
-		var x = (point.x / (this.width  + this.margin)).floor();
-		var y = (point.y / (this.height + this.margin)).floor();
-		if (this.matrix[y] && this.matrix[y][x]) {
+	getCell : function (point, blockCoord) {
+		var x,y;
+		if (blockCoord) {
+			x = point.x.floor();
+			y = point.y.floor();
+		} else {
+			x = (point.x / (this.cellWidth  + this.margin)).floor();
+			y = (point.y / (this.cellHeight + this.margin)).floor();
+		}
+		if (this.matrix[y] && $chk(this.matrix[y][x])) {
 			return {
 				t : this.matrix[y][x],
 				x : x,
@@ -155,5 +161,11 @@ LibCanvas.Engines.Tile = new Class({
 			}
 		}
 		return this;
+	},
+	width : function () {
+		return (this.matrix[0] && this.matrix[0].length) || 0;
+	},
+	height : function () {
+		return this.matrix.length || 0;
 	}
 });

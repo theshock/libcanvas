@@ -16,7 +16,7 @@ var keyStates = {};
 var bindings  = {};
 
 LibCanvas.Keyboard = new Class({
-	initialize : function (canvas) {
+	initialize : function (canvas, preventDefault) {
 		var keyEvent = (function (setTo) {
 			return function (evt, ctx) {
 				keyStates[evt.key] = setTo;
@@ -36,6 +36,12 @@ LibCanvas.Keyboard = new Class({
 		// Input
 		window.addEvent('keydown', keyEvent(true));
 		window.addEvent('keyup',   keyEvent(false));
+
+		if (preventDefault) {
+			window.addEvent('keydown',  $lambda(false));
+			window.addEvent('keypress', $lambda(false));
+			window.addEvent('keyup',    $lambda(false));
+		}
 	},
 	keyboard : function (keyName) {
 		if (keyStates[keyName]) {

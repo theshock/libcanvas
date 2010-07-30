@@ -211,12 +211,12 @@ var $equals = function (obj1, obj2) {
 };
 
 Math.hypotenuse = function (cathetus1, cathetus2)  {
-    return (cathetus1.pow(2) + cathetus2.pow(2)).sqrt();
+    return (cathetus1*cathetus1 + cathetus2*cathetus2).sqrt();
 };
 
 
 Math.cathetus = function (hypotenuse, cathetus2)  {
-    return (hypotenuse.pow(2) - cathetus2.pow(2)).sqrt();
+    return (hypotenuse*hypotenuse - cathetus2*cathetus2).sqrt();
 };
 
 // parseUri 1.2.2
