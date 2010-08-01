@@ -114,18 +114,13 @@ LibCanvas.Engines.Tile = new Class({
 		}
 		return this.rects[cell.x + '.' + cell.y];
 	},
-	getCell : function (point, blockCoord) {
-		var x,y;
-		if (blockCoord) {
-			x = point.x.floor();
-			y = point.y.floor();
-		} else {
-			x = (point.x / (this.cellWidth  + this.margin)).floor();
-			y = (point.y / (this.cellHeight + this.margin)).floor();
-		}
-		if (this.matrix[y] && $chk(this.matrix[y][x])) {
+	getCell : function (point) {
+		var x = parseInt(point.x / (this.cellWidth  + this.margin));
+		var y = parseInt(point.y / (this.cellHeight + this.margin));
+		var my = this.matrix[y];
+		if (my && $chk(my[x])) {
 			return {
-				t : this.matrix[y][x],
+				t : my[x],
 				x : x,
 				y : y
 			};

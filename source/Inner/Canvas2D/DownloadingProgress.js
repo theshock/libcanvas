@@ -26,7 +26,7 @@ LibCanvas.Inner.Canvas2D.DownloadingProgress = new Class({
 				.ready(function (preloader) {
 					this.images = preloader.images;
 					$log(preloader.getInfo());
-					this.bind('ready');
+					this.autoBind('ready');
 				}.bind(this));
 		}
 		if (this.progressBarStyle && !this.progressBar) {

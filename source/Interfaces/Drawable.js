@@ -15,6 +15,9 @@ LibCanvas.Interfaces.Drawable = new Class({
 	setLibcanvas : function (libcanvas) {
 		this.libcanvas = libcanvas;
 		this.autoBind('libcanvasSet');
+		this.libcanvas.bind('ready', function () {
+			this.autoBind('libcanvasReady');
+		}.bind(this));
 		return this;
 	},
 	getCoords : function () {

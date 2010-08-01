@@ -161,11 +161,21 @@ $extend(HTMLImageElement.prototype, {
 			buf = this.spriteCache[index]
 			if (!buf) {
 				buf = LibCanvas.Buffer(rect.width, rect.height);
+				var bigBuf = LibCanvas.Buffer(this.width*2, this.height*2);
+				for (var y = 0; y < 2; y++) {
+					for (var x = 0; x < 2; x++) {
+						bigBuf.getContext('2d-libcanvas').drawImage({
+							image : this,
+							from : [this.width*x,this.height*y]
+						});
+					}
+				}
 				buf.getContext('2d-libcanvas').drawImage({
-					image : this,
+					image : bigBuf,
 					crop  : rect,
 					draw  : [0,0,rect.width,rect.height]
 				});
+				bigBuf.getContext('2d-libcanvas').clearAll();
 				this.spriteCache[index] = buf;
 			}
 
