@@ -36,13 +36,16 @@ provides:
 (function () {
 
 
+var degreesCache = {};
+
 Number.implement({
 	/**
 	 * Cast degrees to radians
 	 * (90).degree() == Math.PI/2
 	 */
 	degree: function () {
-		return this * Math.PI / 180;
+		return this in degreesCache ? degreesCache[this] :
+			this * Math.PI / 180;
 	},
 	/**
 	 * Cast radians to degrees
@@ -67,6 +70,10 @@ Number.implement({
 			([true, 'LR', 'RL'].contains(equals) && (n1 == this || n2 == this))
 		);
 	}
+});
+
+[0, 45, 90, 135, 180].each(function (degree) {
+	degreesCache[degree] = degree.degree();
 });
 
 })();
@@ -145,12 +152,22 @@ Array.implement({
 	}
 });
 
+Array.range = function (from, to, shift) {
+	var result = [];
+	shift = shift || 1;
+	do {
+		result.push(from);
+		from += shift;
+	} while (from < to);
+	return result;
+};
+
 // <image> tag
 $extend(HTMLImageElement.prototype, {
 	sprite : function () {
 		if (!this.isLoaded()) {
-			$log('Image not loaded in Image.sprite: ', this);
-			throw 'Image not loaded in Image.sprite, logged';
+			$log('Not loaded in Image.sprite: ', this);
+			throw 'Not loaded in Image.sprite, logged';
 		}
 		var buf;
 		if (arguments.length) {

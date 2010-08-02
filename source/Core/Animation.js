@@ -22,6 +22,14 @@ LibCanvas.Animation = new Class({
 
 	animations : {},
 	add : function (animation) {
+		if (!animation.frames && animation.line) {
+			animation.frames = [];
+			animation.line.each(function (f) {
+				animation.frames.push({sprite : f, delay : animation.delay});
+			});
+			delete animation.line;
+			return this.add(animation);
+		}
 		this.animations[animation.name] = animation;
 		return this;
 	},

@@ -104,6 +104,9 @@ var office = {
 		return false;
 	},
 	putImageCache : function (data, cache) {
+		if (!cacheSizeTr) cacheSizeTr = new LibCanvas.Utils.Trace;
+		cacheSizeTr.trace('Cache:' + cacheSize++);
+
 		data = office.createImageCacheData(data);
 		var src = imageCache[data.src];
 		if (!src) {
@@ -130,7 +133,9 @@ var office = {
 		return null;
 	},
 	putRotatedImageCache : function (data, cache, length) {
-		Asteroids.DC++;
+		if (!cacheSizeTr) cacheSizeTr = new LibCanvas.Utils.Trace;
+		cacheSizeTr.trace('Cache:' + cacheSize++);
+
 		var index = data.angle
 			.normalizeAngle()
 			.getDegree()
@@ -145,6 +150,9 @@ var office = {
 	}
 };
 
+
+var cacheSize = 1;
+var cacheSizeTr = null;
 var renderTime = 0;
 var rotatedImageCache = {};
 var imageCache = {};
