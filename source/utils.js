@@ -170,11 +170,11 @@ $extend(HTMLImageElement.prototype, {
 			throw 'Not loaded in Image.sprite, logged';
 		}
 		var buf;
+		this.spriteCache = this.spriteCache || {};
 		if (arguments.length) {
 			var rect = new LibCanvas.Shapes.Rectangle;
 			rect.set.apply(rect, arguments);
 			var index = [rect.from.x,rect.from.y,rect.width,rect.height].join('.');
-			this.spriteCache = this.spriteCache || {};
 			buf = this.spriteCache[index]
 			if (!buf) {
 				buf = LibCanvas.Buffer(rect.width, rect.height);
@@ -197,8 +197,11 @@ $extend(HTMLImageElement.prototype, {
 			}
 
 		} else {
-			buf = LibCanvas.Buffer(this.width, this.height);
-			buf.getContext('2d-libcanvas').drawImage(this, 0, 0);
+			buf = this.spriteCache[0];
+			if (!buf) {
+				this.spriteCache[0] = buf = LibCanvas.Buffer(this.width, this.height);
+				buf.getContext('2d-libcanvas').drawImage(this, 0, 0);
+			}
 		}
 		return buf;
 	},

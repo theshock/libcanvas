@@ -156,5 +156,8 @@ LibCanvas.Point = new Class({
 			this.move(move);
 		}.bind(this).periodical(20);
 		return this;
+	},
+	clone : function () {
+		return new LibCanvas.Point(this);
 	}
 });
