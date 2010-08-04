@@ -62,6 +62,13 @@ Number.implement({
 		}
 		return num % d360;
 	},
+	normalizeDegree : function (base) {
+		return this
+			.getDegree()
+			.round(base || 0)
+			.degree()
+			.normalizeAngle();
+	},
 	between: function (n1, n2, equals) {
 		return (n1 <= n2) && (
 			(equals == 'L'   && this == n1) ||
