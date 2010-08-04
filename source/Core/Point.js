@@ -137,7 +137,15 @@ LibCanvas.Point = new Class({
 			return a * b;
 		});
 	},
-
+	getNeighbour : function (dir) {
+		var to = this.clone();
+		var sh = dir.length < 3;
+		dir.contains(sh ? 't' : 'top')    && to.y--;
+		dir.contains(sh ? 'b' : 'bottom') && to.y++;
+		dir.contains(sh ? 'l' : 'left')   && to.x--;
+		dir.contains(sh ? 'r' : 'right')  && to.x++;
+		return to;
+	},
 	animateMoveTo : function (to, speed) {
 		$clear(this.movingInterval);
 		this.movingInterval = function () {
@@ -156,6 +164,9 @@ LibCanvas.Point = new Class({
 			this.move(move);
 		}.bind(this).periodical(20);
 		return this;
+	},
+	equals : function (to) {
+		return to.x == this.x && to.y == this.y;
 	},
 	clone : function () {
 		return new LibCanvas.Point(this);

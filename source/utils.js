@@ -160,6 +160,9 @@ Array.implement({
 			var result = get($1) - get($0) >= 0 ? 1 : -1;
 			return reverse ? -result : result;
 		});
+	},
+	clone : function () {
+		return $extend([], this);
 	}
 });
 
