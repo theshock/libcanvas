@@ -69,6 +69,10 @@ Number.implement({
 			(  this  > n1    && this  < n2) ||
 			([true, 'LR', 'RL'].contains(equals) && (n1 == this || n2 == this))
 		);
+	},
+	equals : function (to, accuracy) {
+		$chk(accuracy) || (accuracy = 8);
+		return this.toFixed(accuracy) == to.toFixed(accuracy);
 	}
 });
 
