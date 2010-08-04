@@ -13,6 +13,19 @@ requires:
 provides: [LibCanvas.Point]
 */
 
+(function () {
+
+var shifts = {
+	top    : {x: 0, y:-1},
+	right  : {x: 1, y: 0},
+	bottom : {x: 0, y: 1},
+	left   : {x:-1, y: 0},
+	tl     : {x:-1, y:-1},
+	tr     : {x: 1, y:-1},
+	bl     : {x:-1, y: 1},
+	br     : {x: 1, y: 1}
+};
+
 LibCanvas.Point = new Class({
 	Implements: [LibCanvas.Interfaces.Bindable],
 	initialize : function () {
@@ -139,11 +152,9 @@ LibCanvas.Point = new Class({
 	},
 	getNeighbour : function (dir) {
 		var to = this.clone();
-		var sh = dir.length < 3;
-		dir.contains(sh ? 't' : 'top')    && to.y--;
-		dir.contains(sh ? 'b' : 'bottom') && to.y++;
-		dir.contains(sh ? 'l' : 'left')   && to.x--;
-		dir.contains(sh ? 'r' : 'right')  && to.x++;
+		var s  = shifts[dir];
+		to.x += s.x;
+		to.y += s.y;
 		return to;
 	},
 	animateMoveTo : function (to, speed) {
@@ -172,3 +183,5 @@ LibCanvas.Point = new Class({
 		return new LibCanvas.Point(this);
 	}
 });
+
+})();
