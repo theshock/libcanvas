@@ -1,6 +1,6 @@
 /*
 ---
-description: Provides audio container
+description: Provides audio preloader
 
 license: LGPL
 
@@ -11,42 +11,31 @@ provides: [LibCanvas.Utils.AudioContainer]
 */
 
 LibCanvas.Utils.AudioContainer = new Class({
-	preloader : null,
-	element   : null,
-	stub      : false,
-	initialize : function (preloader, file) {
-		this.preloader = preloader;
-		if (this.preloader.support) {
-			this.element = new Element('audio');
-			this.element.src = this.createSrc(file);
-			this.element.load();
-		} else {
-			this.stub = true;
+	support : false,
+	initialize: function (files) {
+		this.checkSupport();
+		var audio = {};
+		for (var i in files) {
+			audio[i] = new LibCanvas.Utils.AudioElement(this, files[i]);
 		}
-		this.getClone();
+		this.audio = audio;
 	},
-	createSrc : function (file) {
-		return file.replace(/\*/g, this.preloader.support);
-	},
-	run : function (method, args) {
-		$log(method);
-		!this.stub && this.element.readyState >= 3 &&
-			this.element[method].apply( this.element, args || [] );
+	checkSupport : function () {
+		var elem = document.createElement('audio');
+		var cpt  = elem.canPlayType.bind(elem);
+		this.support = new Boolean(!!cpt);
+		this.support && $extend(this.support, {
+			// codecs
+			ogg : cpt('audio/ogg; codecs="vorbis"'),
+			mp3 : cpt('audio/mpeg;'),
+			wav : cpt('audio/wav; codecs="1"'),
+			m4a : cpt('audio/x-m4a;') || cpt('audio/aac;'),
+			// diff
+			loop : 'loop' in elem
+		});
 		return this;
 	},
-	set : function (name, value) {
-		this.element[name] = value;
-		return this;
-	},
-	clone : null,
-	getClone : function () {
-		var clone = this.clone;
-		this.clone = this.element.clone();
-		return clone || this.element.clone();
-	},
-	playClone : function () {
-		var clone = this.getClone();
-		clone.play();
-		return clone;
+	get : function (index) {
+		return this.audio[index];
 	}
 });

@@ -17,12 +17,19 @@ var bindings  = {};
 
 LibCanvas.Keyboard = new Class({
 	initialize : function (canvas, preventDefault) {
+		var prevent = function (key) {
+			return preventDefault && (
+				 $type(preventDefault) != 'array' ||
+				($type(preventDefault) == 'array' && preventDefault.contains(key))
+			);
+		};
+
 		var keyEvent = (function (setTo) {
 			return function (evt, ctx) {
 				keyStates[evt.key] = setTo;
 				if (setTo == true && bindings) {
 					if (!bindings[evt.key]) {
-						return;
+						return !prevent(evt.key);
 					}
 					bindings[evt.key].each(function (keyBind, i) {
 						if (keyBind[0] == evt.key) {
@@ -30,6 +37,7 @@ LibCanvas.Keyboard = new Class({
 						}
 					});
 				}
+				return !prevent(evt.key);
 			}.bind(this);
 		}.bind(this));
 
@@ -37,11 +45,9 @@ LibCanvas.Keyboard = new Class({
 		window.addEvent('keydown', keyEvent(true));
 		window.addEvent('keyup',   keyEvent(false));
 
-		if (preventDefault) {
-			window.addEvent('keydown',  $lambda(false));
-			window.addEvent('keypress', $lambda(false));
-			window.addEvent('keyup',    $lambda(false));
-		}
+		preventDefault && window.addEvent('keypress', function (evt) {
+			return !prevent(evt.key);
+		});
 	},
 	keyboard : function (keyName) {
 		if (keyStates[keyName]) {
