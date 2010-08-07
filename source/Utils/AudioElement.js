@@ -32,7 +32,7 @@ LibCanvas.Utils.AudioElement = new Class({
 	},
 	cloneAudio : function () {
 		if (window.opera) { // opera 10.60 bug. Fixed in 10.61
-			var audioClone = new Audio;
+			var audioClone = document.create('audio');
 			audioClone.src = this.audio.src;
 		} else {
 			audioClone = this.audio.cloneNode(true);
