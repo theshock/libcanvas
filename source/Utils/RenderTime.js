@@ -10,6 +10,7 @@ authors:
 provides: [LibCanvas.Utils.RenderTime]
 */
 
+// @deprecated
 LibCanvas.Utils.RenderTime = function (libcanvas) {
 	var frameRenderTime = 0;
 	var renderTime = {

@@ -106,7 +106,6 @@ LibCanvas.Utils.AudioElement = new Class({
 				});
 				this.loopBinded = true;
 			}
-			$log(this.getCurrent());
 			this.stop().playNext();
 		}
 		return this;

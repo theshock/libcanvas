@@ -130,8 +130,10 @@ LibCanvas.Utils.Trace = new Class({
 		this.events(true);
 		this.node.setStyle('background', '#300');
 		this.timeout = setTimeout (function () {
-			trace.node.destroy();
-			trace.node = null;
+			if (trace.node) {
+				trace.node.destroy();
+				trace.node = null;
+			}
 		}, 500);
 		return this;
 	},

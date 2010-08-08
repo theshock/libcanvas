@@ -104,9 +104,6 @@ var office = {
 		return false;
 	},
 	putImageCache : function (data, cache) {
-		if (!cacheSizeTr) cacheSizeTr = new LibCanvas.Utils.Trace;
-		cacheSizeTr.trace('Cache:' + cacheSize++);
-
 		data = office.createImageCacheData(data);
 		var src = imageCache[data.src];
 		if (!src) {
@@ -133,9 +130,6 @@ var office = {
 		return null;
 	},
 	putRotatedImageCache : function (data, cache, length) {
-		if (!cacheSizeTr) cacheSizeTr = new LibCanvas.Utils.Trace;
-		cacheSizeTr.trace('Cache:' + cacheSize++);
-
 		var index = data.angle
 			.normalizeAngle()
 			.getDegree()
@@ -150,10 +144,6 @@ var office = {
 	}
 };
 
-
-var cacheSize = 1;
-var cacheSizeTr = null;
-var renderTime = 0;
 var rotatedImageCache = {};
 var imageCache = {};
 
@@ -173,23 +163,14 @@ LibCanvas.Context2D = new Class({
 	getFullRectangle : function () {
 		return new LibCanvas.Shapes.Rectangle(0, 0, this.width, this.height);
 	},
-	original : function (func, args) {
+	original : function (method, args) {
 		try {
-			var start = new Date;
-			this.ctx2d[func].apply(this.ctx2d, args || []);
-			renderTime += (new Date - start);
+			this.ctx2d[method].apply(this.ctx2d, args || []);
 		} catch (e) {
-			$log('error', func, args)
+			$log('context2d.error(method, args)', method, args)
 			throw e;
 		}
 		return this;
-	},
-	getRenderTime : function (reset) {
-		var rt = renderTime;
-		if (reset) {
-			renderTime = 0;
-		}
-		return rt;
 	},
 
 	// All

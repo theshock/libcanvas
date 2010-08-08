@@ -15,7 +15,6 @@ LibCanvas.Buffer = function (width, height) {
 	if (a.length == 1) {
 		width  = a[0].width;
 		height = a[0].height;
-		trace(a.length);
 	} else if (!a.length) {
 		width  = 0;
 		height = 0;
