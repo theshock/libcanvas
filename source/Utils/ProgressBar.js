@@ -59,17 +59,19 @@ LibCanvas.Utils.ProgressBar = new Class({
 		return this;
 	},
 	drawLine : function () {
-		var line = this.line;
-		var width  = line.width  - 2;
-		var height = line.height - 2;
-		var prog   = this.progress;
-		var c = this.coord;
+		if (this.progress > 0) {
+			var line = this.line;
+			var width  = line.width  - 2;
+			var height = line.height - 2;
+			var prog   = this.progress;
+			var c = this.coord;
 
-		this.libcanvas.ctx.drawImage({
-			image : line,
-			crop  : [0, 0 , width * prog, height],
-			draw  : [c.x+1, c.y+1, width * prog, height]
-		});
+			this.libcanvas.ctx.drawImage({
+				image : line,
+				crop  : [0, 0 , width * prog, height],
+				draw  : [c.x+1, c.y+1, width * prog, height]
+			});
+		}
 		return this;
 	},
 	renderLine : function () {

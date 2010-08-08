@@ -100,6 +100,13 @@ LibCanvas.Mouse = new Class({
 				mouse.isOut = false;
 				return false;
 			},
+			touchmove : function (e) {
+				e = exp(e);
+				mouse.setCoords(e.offsetX, e.offsetY);
+				mouse.events.event('mousemove', e);
+				mouse.isOut = false;
+				return false;
+			},
 			mouseout : function (e) {
 				e = exp(e);
 				mouse.setCoords(/* null */);
@@ -107,7 +114,19 @@ LibCanvas.Mouse = new Class({
 				mouse.isOut = true;
 				return false;
 			},
+			touchend : function (e) {
+				e = exp(e);
+				mouse.events.event('mouseup', e);
+				mouse.setCoords(/* null */);
+				mouse.events.event('mouseout', e);
+				mouse.isOut = true;
+				return false;
+			},
 			mousedown : function (e) {
+				mouse.events.event('mousedown', exp(e));
+				return false;
+			},
+			touchstart : function (e) {
 				mouse.events.event('mousedown', exp(e));
 				return false;
 			},

@@ -37,5 +37,11 @@ LibCanvas.Utils.AudioContainer = new Class({
 	},
 	get : function (index) {
 		return this.audio[index];
+	},
+	allAudios : [],
+	mute : function (muted) {
+		this.allAudios.each(function (audio) {
+			audio.muted = muted;
+		})
 	}
 });
