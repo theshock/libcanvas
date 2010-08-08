@@ -127,7 +127,8 @@ LibCanvas.Mouse = new Class({
 				return false;
 			},
 			touchstart : function (e) {
-				mouse.events.event('mousedown', exp(e));
+				alert(1);
+				//mouse.events.event('mousedown', exp(e));
 				return false;
 			},
 			mouseup : function (e) {
