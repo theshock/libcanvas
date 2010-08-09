@@ -269,7 +269,7 @@ Math.cathetus = function (hypotenuse, cathetus2)  {
 
 function parseUri (str) {
 	var	o   = parseUri.options,
-		m   = o.parser[o.strictMode ? "strict" : "loose"].exec(str || window.location),
+		m   = o.parser[o.strictMode ? "strict" : "loose"].exec(str || window.location.href),
 		uri = {},
 		i   = 14;
 
