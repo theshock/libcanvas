@@ -181,5 +181,11 @@ LibCanvas.Shapes.Rectangle = new Class({
 			ctx.closePath();
 		}
 		return ctx;
+	},
+	getRandomPoint : function () {
+		return new LibCanvas.Point(
+			$random(0, this.width),
+			$random(0, this.height)
+		);
 	}
 });

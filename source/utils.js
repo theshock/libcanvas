@@ -51,8 +51,10 @@ Number.implement({
 	 * Cast radians to degrees
 	 * (Math.PI/2).getDegree() == 90
 	 */
-	getDegree: function () {
-		return this / Math.PI * 180;
+	getDegree: function (round) {
+		return arguments.length == 0 ?
+			this / Math.PI * 180 :
+			this.getDegree().round(round);
 	},
 	normalizeAngle : function () {
 		var num  = this;

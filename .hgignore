@@ -3,3 +3,5 @@
 \.chg\..*$
 \.rej$
 \.conflict\~$
+\.git
+\.gitignore
