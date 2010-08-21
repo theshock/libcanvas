@@ -1,3 +1,15 @@
+/*
+---
+description: Stop watch
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+provides: [LibCanvas.Utils.TimeLogger]
+*/
+
 LibCanvas.Utils.TimeLogger = new Class({
 	time : [],
 	last : 0,

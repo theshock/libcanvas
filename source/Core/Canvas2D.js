@@ -11,7 +11,7 @@ requires:
 - LibCanvas.Inner.Canvas2D.FrameRenderer
 - LibCanvas.Inner.Canvas2D.FpsMeter
 - LibCanvas.Inner.Canvas2D.DownloadingProgress
-- LibCanvas.Interfaces.Bindable
+- LibCanvas.Behaviors.Bindable
 
 provides: [LibCanvas.Canvas2D]
 */
@@ -21,7 +21,7 @@ LibCanvas.Canvas2D = new Class({
 		LibCanvas.Inner.Canvas2D.FrameRenderer,
 		LibCanvas.Inner.Canvas2D.FpsMeter,
 		LibCanvas.Inner.Canvas2D.DownloadingProgress,
-		LibCanvas.Interfaces.Bindable
+		LibCanvas.Behaviors.Bindable
 	],
 
 	fps      : 20,

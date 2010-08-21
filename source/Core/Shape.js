@@ -8,13 +8,13 @@ authors:
 - Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
 
 requires:
-- LibCanvas.Interfaces.Bindable
+- LibCanvas.Behaviors.Bindable
 
 provides: [LibCanvas.Shape]
 */
 
 LibCanvas.Shape = new Class({
-	Implements: [LibCanvas.Interfaces.Bindable],
+	Implements: [LibCanvas.Behaviors.Bindable],
 	initialize : function () {
 		if (arguments.length > 0) {
 			this.set.apply(this, arguments);

@@ -7,10 +7,10 @@ license: LGPL
 authors:
 - Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
 
-provides: [LibCanvas.Interfaces.Droppable]
+provides: [LibCanvas.Behaviors.Droppable]
 */ 
 
-LibCanvas.Interfaces.Droppable = new Class({
+LibCanvas.Behaviors.Droppable = new Class({
 	drops : null,
 	drop : function (obj) {
 		if (this.drops === null) {

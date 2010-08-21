@@ -7,7 +7,7 @@ license: LGPL
 authors:
 - Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
 
-provides: [LibCanvas.Interfaces.Clickable]
+provides: [LibCanvas.Behaviors.Clickable]
 */ 
 
 (function () {
@@ -20,7 +20,7 @@ var setValFn = function (name, val) {
 };
 
 // Should extends drawable, implements mouseListener
-LibCanvas.Interfaces.Clickable = new Class({
+LibCanvas.Behaviors.Clickable = new Class({
 	clickable : function () {
 		this.listenMouse();
 

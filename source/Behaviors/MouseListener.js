@@ -7,7 +7,7 @@ license: LGPL
 authors:
 - Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
 
-provides: [LibCanvas.Interfaces.MouseListener]
+provides: [LibCanvas.Behaviors.MouseListener]
 */ 
 
 /**
@@ -28,8 +28,8 @@ provides: [LibCanvas.Interfaces.MouseListener]
  * away:mousedown
  */
 
-// Should extends LibCanvas.Interfaces.Drawable
-LibCanvas.Interfaces.MouseListener = new Class({
+// Should extends LibCanvas.Behaviors.Drawable
+LibCanvas.Behaviors.MouseListener = new Class({
 	listenMouse : function (stopListen) {
 		return this.bind('libcanvasSet', function () {
 			this.libcanvas.mouse[

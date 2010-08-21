@@ -8,7 +8,7 @@ authors:
 - Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
 
 requires:
-- LibCanvas.Interfaces.Bindable
+- LibCanvas.Behaviors.Bindable
 
 provides: [LibCanvas.Point]
 */
@@ -31,7 +31,7 @@ var shifts = {
 };
 
 LibCanvas.Point = new Class({
-	Implements: [LibCanvas.Interfaces.Bindable],
+	Implements: [LibCanvas.Behaviors.Bindable],
 	initialize : function () {
 		this.isNull = true;
 		this.set.apply(this, arguments);

@@ -7,11 +7,11 @@ license: LGPL
 authors:
 - Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
 
-provides: [LibCanvas.Interfaces.Drawable]
+provides: [LibCanvas.Behaviors.Drawable]
 */ 
 
-LibCanvas.Interfaces.Drawable = new Class({
-	Implements : LibCanvas.Interfaces.Bindable,
+LibCanvas.Behaviors.Drawable = new Class({
+	Implements : LibCanvas.Behaviors.Bindable,
 	setLibcanvas : function (libcanvas) {
 		this.libcanvas = libcanvas;
 		this.autoBind('libcanvasSet');

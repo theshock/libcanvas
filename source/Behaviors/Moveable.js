@@ -7,10 +7,10 @@ license: LGPL
 authors:
 - Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
 
-provides: [LibCanvas.Interfaces.Moveable]
+provides: [LibCanvas.Behaviors.Moveable]
 */ 
 
-LibCanvas.Interfaces.Moveable = new Class({
+LibCanvas.Behaviors.Moveable = new Class({
 	moving : {
 		interval : null,
 		speed : 0, // pixels per sec

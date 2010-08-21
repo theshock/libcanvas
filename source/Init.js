@@ -22,7 +22,7 @@ window.LibCanvas = {
 		TopDown : {}
 	},
 	Processors : {},
-	Interfaces : {}
+	Behaviors : {}
 };
 
 

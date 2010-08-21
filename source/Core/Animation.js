@@ -1,5 +1,20 @@
+/*
+---
+description: Provides basic animation for sprites
+
+license: LGPL
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+provides: [LibCanvas.Animation]
+
+requires: 
+  core/1.2.4: 'Class'
+*/
+
 LibCanvas.Animation = new Class({
-	Implements : [LibCanvas.Interfaces.Bindable],
+	Implements : [LibCanvas.Behaviors.Bindable],
 
 	sprites : {},
 	addSprite : function (index, sprite) {

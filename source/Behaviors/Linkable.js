@@ -7,10 +7,10 @@ license: LGPL
 authors:
 - Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
 
-provides: [LibCanvas.Interfaces.Linkable]
+provides: [LibCanvas.Behaviors.Linkable]
 */ 
 
-LibCanvas.Interfaces.Linkable = new Class({
+LibCanvas.Behaviors.Linkable = new Class({
 	links : null,
 	moveLinks : function (move) {
 		(this.links || []).each(function (elem) {

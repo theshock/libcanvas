@@ -1,18 +1,18 @@
 /*
 ---
-description: When object implements LibCanvas.Interfaces.Draggable interface dragging made possible
+description: When object implements LibCanvas.Behaviors.Draggable interface dragging made possible
 
 license: LGPL
 
 authors:
 - Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
 
-provides: [LibCanvas.Interfaces.Draggable]
+provides: [LibCanvas.Behaviors.Draggable]
 */ 
 
 (function () {
 
-LibCanvas.Interfaces.Draggable = new Class({
+LibCanvas.Behaviors.Draggable = new Class({
 	isDraggable : null,
 	dragStart : null,
 	returnToStart : function (speed) {

@@ -11,7 +11,7 @@ provides: [LibCanvas.Utils.AudioElement]
 */
 
 LibCanvas.Utils.AudioElement = new Class({
-	Implements : [LibCanvas.Interfaces.Animatable],
+	Implements : [LibCanvas.Behaviors.Animatable],
 	stub   : true,
 	initialize : function (container, file) {
 		if (container.support) {

@@ -7,10 +7,10 @@ license: LGPL
 authors:
 - Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
 
-provides: [LibCanvas.Interfaces.Bindable]
+provides: [LibCanvas.Behaviors.Bindable]
 */ 
 
-LibCanvas.Interfaces.Bindable = new Class({
+LibCanvas.Behaviors.Bindable = new Class({
 	binds : {},
 	autoBinds : {},
 	autoBind : function (event, args) {
