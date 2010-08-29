@@ -12,7 +12,7 @@ provides: [LibCanvas.Inner.Canvas2D.FpsMeter]
 
 LibCanvas.Inner.Canvas2D.FpsMeter = new Class({
 	fpsMeter : function (frames) {
-		var fpsMeter = new LibCanvas.Utils.FpsMeter(frames || 10);
+		var fpsMeter = new LibCanvas.Utils.FpsMeter(frames || (this.fps ? this.fps / 2 : 10));
 		return this.bind('frameRenderStarted', function () {
 			fpsMeter.frame();
 		});

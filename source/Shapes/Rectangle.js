@@ -187,5 +187,8 @@ LibCanvas.Shapes.Rectangle = new Class({
 			$random(0, this.width),
 			$random(0, this.height)
 		);
+	},
+	clone : function () {
+		return new LibCanvas.Shapes.Rectangle(this);
 	}
 });
