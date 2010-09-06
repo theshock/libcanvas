@@ -50,6 +50,7 @@ LibCanvas.Point = new Class({
 					y = x.y;
 					x = x.x;
 				} else {
+					$log('Wrong Arguments In Point.Set:', arguments);
 					throw 'Wrong Arguments In Point.Set';
 				}
 			}
@@ -82,21 +83,17 @@ LibCanvas.Point = new Class({
 		}
 	},
 	angleTo : function (point) {
-		var diff = this.diff(point);
-		var angle = 0;
+		var angle, diff = point.diff(this);
 
 		if (diff.y == 0) {
-			angle = diff.x > 0 ? (180).degree() : 0;
+			angle = diff.x < 0 ? (180).degree() : 0;
 		} else if (diff.x == 0) {
-			angle = diff.y > 0 ? (270).degree() : (90).degree();
+			angle = diff.y < 0 ? (270).degree() : (90).degree();
 		} else {
-			angle = -Math.atan2(diff.x, diff.y) - (90).degree();
+			angle = Math.atan2(diff.y, diff.x);
 		}
 
-		while (angle < 0) {
-			angle += (360).degree();
-		}
-		return angle;
+		return angle.normalizeAngle();
 	},
 	distanceTo : function (point) {
 		var diff = this.diff(point);
