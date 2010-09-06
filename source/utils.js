@@ -59,10 +59,9 @@ Number.implement({
 	normalizeAngle : function () {
 		var num  = this;
 		var d360 = (360).degree();
-		if (num < 0) {
-			num = num % d360 + d360 ;
-		}
-		return num % d360;
+		num %= d360;
+		(num < 0) && (num += d360);
+		return num;
 	},
 	normalizeDegree : function (base) {
 		return this
@@ -85,7 +84,7 @@ Number.implement({
 	}
 });
 
-[0, 45, 90, 135, 180].each(function (degree) {
+[0, 45, 90, 135, 180, 270, 360].each(function (degree) {
 	degreesCache[degree] = degree.degree();
 });
 
