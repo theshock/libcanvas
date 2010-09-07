@@ -72,6 +72,8 @@ LibCanvas.Point = new Class({
 			this.x + moved.x,
 			this.y + moved.y
 		);
+		this.bind('move', [moved]);
+		// @deprecated
 		this.bind('moved', [moved]);
 		return this;
 	},
