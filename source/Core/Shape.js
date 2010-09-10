@@ -32,6 +32,8 @@ LibCanvas.Shape = new Class({
 		}
 	},
 	move : function (distance) {
+		this.bind('move', [distance]);
+		// @depracated
 		this.bind('moved', [distance]);
 		return this;
 	},
