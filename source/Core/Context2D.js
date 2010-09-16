@@ -219,8 +219,9 @@ LibCanvas.Context2D = new Class({
 
 	// Path
 	beginPath : function (moveTo) {
+		var ret = this.original('beginPath');
 		arguments.length && this.moveTo.apply(this, arguments);
-		return this.original('beginPath');
+		return ret;
 	},
 	closePath : function () {
 		return this.original('closePath');
