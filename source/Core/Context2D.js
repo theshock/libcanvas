@@ -61,10 +61,10 @@ var office = {
 	},
 	originalPoint : function (func, args) {
 		var point = args[0];
-		if (!point || !(point instanceof LibCanvas.Point)) {
+		if (!(args[0] instanceof LibCanvas.Point)) {
 			point = (args.length == 2) ?
 				new LibCanvas.Point(args) :
-				new LibCanvas.Point(point);
+				new LibCanvas.Point(args[0]);
 		}
 		return this.original(func, [point.x, point.y]);
 	},
@@ -307,22 +307,15 @@ LibCanvas.Context2D = new Class({
 		} else {
 			var point = args[0];
 			if (!(args[0] instanceof LibCanvas.Point)) {
-				point = new LibCanvas.Point(args[0]);
+				point = LibCanvas.Point(args[0]);
 			}
 			return this.ctx2d.isPointInPath(point.x, point.y);
 		}		
 	},
 
 	// transformation
-	rotate : function (angle, pivot) {
-		if (pivot && !(pivot instanceof LibCanvas.Point)) {
-			pivot = new LibCanvas.Point(pivot);
-		}
-		pivot && alert([typeof pivot, pivot.x,  pivot.y])
-		pivot && this.translate( pivot.x,  pivot.y);
-		this.ctx2d.rotate(angle);
-		pivot && this.translate(-pivot.x, -pivot.y);
-		return this;
+	rotate : function () {
+		return this.original('rotate', arguments);
 	},
 	translate : function () {
 		return office.originalPoint.call(this, 'translate', arguments);
@@ -482,7 +475,7 @@ LibCanvas.Context2D = new Class({
 		var data = office.createImageCacheData(a);
 		var cache = office.getImageCache(data);
 		if (!cache) {
-			cache = LibCanvas.Buffer(data.draw.width, data.draw.height);
+			cache = LibCanvas.Buffer(data.draw.w, data.draw.h);
 			cache.getContext('2d-libcanvas')
 				.drawImage(data);
 			office.putImageCache(data, cache);
@@ -497,11 +490,11 @@ LibCanvas.Context2D = new Class({
 	rotatedImage : function (data, cacheLength) {
 		var cacheEnabled = cacheLength !== false;
 		cacheLength = (cacheLength || 0) * 1;
-		if (!(data.angle.normalizeAngle().getDegree(3) % 360)) {
+		if (!(data.angle.normalizeAngle().getDegree().round(3) % 360)) {
 			return this.drawImage(data);
 		}
 		var cache = cacheEnabled && office.getRotatedImageCache(data, cacheLength);
-		if (!cache) {
+		if (cacheEnabled && !cache) {
 			var diagonal = Math.hypotenuse(data.image.width, data.image.height);
 			cache = LibCanvas.Buffer(diagonal, diagonal);
 			cache.getContext('2d-libcanvas')
