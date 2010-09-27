@@ -8,7 +8,7 @@ authors:
 - Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
 
 provides: [LibCanvas.Behaviors.Moveable]
-*/ 
+*/
 
 LibCanvas.Behaviors.Moveable = new Class({
 	moving : {
@@ -35,17 +35,19 @@ LibCanvas.Behaviors.Moveable = new Class({
 		this.moving.interval = function () {
 			var move = {}, pixelsPerFn = speed / 20;
 			var diff = this.getCoords().diff(point);
-			var distance = Math.sqrt(diff.x * diff.x + diff.y * diff.y);
+			var distance = Math.hypotenuse(diff.x, diff.y);
 			if (distance > pixelsPerFn) {
 				move.x = diff.x * (pixelsPerFn / distance);
 				move.y = diff.y * (pixelsPerFn / distance);
+				this.getShape().move(move);
 			} else {
 				move.x = diff.x;
 				move.y = diff.y;
+				// @todo change move to diff
+				this.getShape().move(move);
 				this.stopMoving();
 				this.bind('stopMove');
 			}
-			this.getShape().move(move);
 		}.bind(this).periodical(20);
 		return this;
 	}

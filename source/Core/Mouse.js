@@ -26,7 +26,7 @@ LibCanvas.Mouse = new Class({
 
 		this.setEvents();
 	},
-	setCoords : function (x, y, prev) {
+	setCoords : function (x, y) {
 		if (arguments.length == 2) {
 			this.x = x;
 			this.y = y;

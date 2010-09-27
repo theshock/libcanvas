@@ -87,6 +87,7 @@ LibCanvas.Point = new Class({
 	angleTo : function (point) {
 		var angle, diff = point.diff(this);
 
+		// @todo just Math.atan2 ?
 		if (diff.y == 0) {
 			angle = diff.x < 0 ? (180).degree() : 0;
 		} else if (diff.x == 0) {

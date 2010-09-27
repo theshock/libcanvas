@@ -153,8 +153,8 @@ LibCanvas.Shapes.Rectangle = new Class({
 		return this.parent(distance);
 	},
 	draw : function (ctx, type) {
-		ctx.original(type + 'Rect', 
-			[this.from.x, this.from.y, this.size.w, this.size.h]
+		ctx.original(type + 'Rect',
+			[this.from.x, this.from.y, this.getWidth(), this.getHeight()]
 		);
 		return this;
 	},
@@ -163,8 +163,8 @@ LibCanvas.Shapes.Rectangle = new Class({
 	},
 	getCenter : function () {
 		return new LibCanvas.Point(
-			this.from.x + this.width  / 2,
-			this.from.y + this.height / 2
+			this.from.x + this.getWidth()  / 2,
+			this.from.y + this.getHeight() / 2
 		);
 	},
 	processPath : function (ctx, noWrap) {
@@ -184,11 +184,30 @@ LibCanvas.Shapes.Rectangle = new Class({
 	},
 	getRandomPoint : function () {
 		return new LibCanvas.Point(
-			$random(0, this.width),
-			$random(0, this.height)
+			$random(0, this.getWidth()),
+			$random(0, this.getHeight())
 		);
 	},
 	clone : function () {
 		return new LibCanvas.Shapes.Rectangle(this);
-	}
+	},
+
+	getWidth : function () {
+		//return this.width;
+		return this.to.x - this.from.x;
+	},
+	getHeight : function () {
+		//return this.height;
+		return this.to.y - this.from.y;
+	},
+	setWidth : function (width) {
+		// this.width = width;
+		this.to.x = this.from.x + width;
+		return this;
+	},
+	setHeight : function (height) {
+		// this.height = height;
+		this.to.y = this.from.y + height;
+		return this;
+	},
 });

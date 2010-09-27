@@ -18,7 +18,7 @@ var office = {
 		if (style) {
 			this.set(type + 'Style', style);
 		}
-		this[type + 'Rect'](office.getFullRect.call(this));
+		this[type + 'Rect'](this.getFullRectangle());
 		this.restore();
 		return this;
 	},
@@ -33,7 +33,7 @@ var office = {
 			rect.set.apply(rect, args);
 		}
 		return this.original(func,
-			[rect.from.x, rect.from.y, rect.width, rect.height]);
+			[rect.from.x, rect.from.y, rect.getWidth(), rect.getHeight()]);
 	},
 	getFullRect : function () {
 		return new LibCanvas.Shapes.Rectangle(0, 0, this.width, this.height);
@@ -81,14 +81,14 @@ var office = {
 			crop : crop ? {
 				x : crop.from.x,
 				y : crop.from.y,
-				w : crop.width,
-				h : crop.height
+				w : crop.getWidth(),
+				h : crop.getHeight()
 			} : null,
 			draw : {
 				x : 0,
 				y : 0,
-				w : draw.width,
-				h : draw.height
+				w : draw.getWidth(),
+				h : draw.getHeight()
 			}
 		};
 	},
@@ -387,6 +387,7 @@ LibCanvas.Context2D = new Class({
 			})
 		);
 		var clip = function () {
+			// @todo refatoring
 			this.beginPath()
 				.moveTo(to.from.x, to.from.y)
 				.lineTo(to.from.x, to.to.y)
@@ -411,7 +412,7 @@ LibCanvas.Context2D = new Class({
 				if (cfg.align == 'right') {
 					x = to.to.x - lineWidth - cfg.padding[0];
 				} else /* cfg.align == 'center' */ {
-					x = to.from.x + (to.to.x - to.from.x - lineWidth)/2;
+					x = to.from.x + (to.getWidth() - lineWidth)/2;
 				}
 			}
 			return x;
@@ -426,7 +427,7 @@ LibCanvas.Context2D = new Class({
 					if (cfg.align == 'right') {
 						x = to.to.x - lineWidth;
 					} else /* cfg.align == 'center' */ {
-						x = to.from.x + (to.to.x - to.from.x - lineWidth)/2;
+						x = to.from.x + (to.getWidth() - lineWidth)/2;
 					}
 				}
 				this.fillText(line, xGet(cfg.align == 'left' ? 0 : this.measureText(line).width), to.from.y + (i+1)*lh);
@@ -475,6 +476,7 @@ LibCanvas.Context2D = new Class({
 		var data = office.createImageCacheData(a);
 		var cache = office.getImageCache(data);
 		if (!cache) {
+			// cache object
 			cache = LibCanvas.Buffer(data.draw.w, data.draw.h);
 			cache.getContext('2d-libcanvas')
 				.drawImage(data);
@@ -490,11 +492,11 @@ LibCanvas.Context2D = new Class({
 	rotatedImage : function (data, cacheLength) {
 		var cacheEnabled = cacheLength !== false;
 		cacheLength = (cacheLength || 0) * 1;
-		if (!(data.angle.normalizeAngle().getDegree().round(3) % 360)) {
+		if (!(data.angle.normalizeAngle().getDegree(3) % 360)) {
 			return this.drawImage(data);
 		}
 		var cache = cacheEnabled && office.getRotatedImageCache(data, cacheLength);
-		if (cacheEnabled && !cache) {
+		if (!cache) {
 			var diagonal = Math.hypotenuse(data.image.width, data.image.height);
 			cache = LibCanvas.Buffer(diagonal, diagonal);
 			cache.getContext('2d-libcanvas')
@@ -550,12 +552,12 @@ LibCanvas.Context2D = new Class({
 				var crop = office.makeRect(a.crop);
 				return this.original('drawImage', [
 					a.image,
-					crop.from.x, crop.from.y, crop.width, crop.height,
-					draw.from.x, draw.from.y, draw.width, draw.height
+					crop.from.x, crop.from.y, crop.getWidth(), crop.getHeight(),
+					draw.from.x, draw.from.y, draw.getWidth(), draw.getHeight()
 				])
 			} else {
 				return this.original('drawImage', [
-					a.image, draw.from.x, draw.from.y, draw.width, draw.height
+					a.image, draw.from.x, draw.from.y, draw.getWidth(), draw.getHeight()
 				]);
 			}
 		} else {
@@ -597,14 +599,14 @@ LibCanvas.Context2D = new Class({
 		var args = arguments;
 		var rect;
 		if (args.length == 0) {
-			rect = office.getFullRect.call(this);
+			rect = this.getFullRectangle();
 		} else if (args[0] instanceof LibCanvas.Shapes.Rectangle) {
 			rect = args[0];
 		} else {
 			rect = new LibCanvas.Shapes.Rectangle()
 			rect.set.apply(rect, args);
 		}
-		return this.ctx2d.getImageData(rect.from.x, rect.from.y, rect.width, rect.height);
+		return this.ctx2d.getImageData(rect.from.x, rect.from.y, rect.getWidth(), rect.getHeight());
 	},
 	getPixels : function (rectangle) {
 		var args = arguments;
@@ -647,7 +649,7 @@ LibCanvas.Context2D = new Class({
 			))
 
 		var data = this.getImageData.call(this, rect).data;
-		var i = (point.y * rect.width + point.x) * 4;
+		var i = (point.y * rect.getWidth() + point.x) * 4;
 		return {
 			r : data[i],
 			g : data[i+1],
