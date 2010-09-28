@@ -52,9 +52,14 @@ LibCanvas.Behaviors.Bindable = new Class({
 			this.binds[event]
 				.include(fn);
 			if (event in this.autoBinds) {
-				this.autoBinds[event].each(function (args) {
-					this.callBind(event, fn, args);
-				}.bind(this));
+				var ab = this.autoBinds[event];
+				for (var i = 0, l = ab.length; i < l; i++) {
+					this.callBind(event, fn, ab[i]);
+				}
+				// opera bug
+				//this.autoBinds[event].each(function (args) {
+				//	this.callBind(event, fn, args);
+				//}.bind(this));
 			}
 		} else if (event in this.binds) {
 			var args = fn;

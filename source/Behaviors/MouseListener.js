@@ -31,7 +31,9 @@ provides: [LibCanvas.Behaviors.MouseListener]
 // Should extends LibCanvas.Behaviors.Drawable
 LibCanvas.Behaviors.MouseListener = new Class({
 	listenMouse : function (stopListen) {
+			trace(1);
 		return this.bind('libcanvasSet', function () {
+			trace(2);
 			this.libcanvas.mouse[
 				stopListen ? "unsubscribe" : "subscribe"
 			](this);
