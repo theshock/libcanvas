@@ -189,10 +189,10 @@ $extend(HTMLImageElement.prototype, {
 		if (arguments.length) {
 			var rect = new LibCanvas.Shapes.Rectangle;
 			rect.set.apply(rect, arguments);
-			var index = [rect.from.x,rect.from.y,rect.width,rect.height].join('.');
+			var index = [rect.from.x,rect.from.y,rect.getWidth(),rect.getHeight()].join('.');
 			buf = this.spriteCache[index]
 			if (!buf) {
-				buf = LibCanvas.Buffer(rect.width, rect.height);
+				buf = LibCanvas.Buffer(rect.getWidth(), rect.getHeight());
 				var bigBuf = LibCanvas.Buffer(this.width*2, this.height*2);
 				for (var y = 0; y < 2; y++) {
 					for (var x = 0; x < 2; x++) {
@@ -205,7 +205,7 @@ $extend(HTMLImageElement.prototype, {
 				buf.getContext('2d-libcanvas').drawImage({
 					image : bigBuf,
 					crop  : rect,
-					draw  : [0,0,rect.width,rect.height]
+					draw  : [0,0,rect.getWidth(),rect.getHeight()]
 				});
 				bigBuf.getContext('2d-libcanvas').clearAll();
 				this.spriteCache[index] = buf;

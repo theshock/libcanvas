@@ -445,7 +445,7 @@ LibCanvas.Context2D = new Class({
 						// @todo too slow. 2-4ms for 50words
 						var wordWidth = this.measureText(text).width;
 					}
-					if (!last && (!Lw || Lw + wordWidth < to.width)) {
+					if (!last && (!Lw || Lw + wordWidth < to.getWidth())) {
 						Lw += wordWidth;
 						L  += text;
 					} else if (Lw) {
@@ -485,7 +485,7 @@ LibCanvas.Context2D = new Class({
 		var draw = office.makeRect(a.draw);
 		var result = {
 			image : cache,
-			from  : draw
+			from  : draw.from
 		}
 		return this.drawImage(result);
 	},

@@ -13,129 +13,44 @@ requires:
 provides: [LibCanvas.Shapes.Rectangle]
 */
 
+
 LibCanvas.Shapes.Rectangle = new Class({
 	Extends : LibCanvas.Shape,
 	set : function () {
-		var a = $A(arguments);
+		var a = arguments;
 		if ($type(a[0]) == 'array') {
 			a = a[0];
 		}
-		this.size = {};
-		this.from = {};
-		this.to   = {};
-		if ($chk(a[0]) && [a[0].size, a[0].from, a[0].to, a[0].fromX, a[0].width, a[0].w, a[0].x].firstReal() !== null ) {
-			a[0].size = a[0].size || {};
-			this.size.w = [ a[0].w, a[0].width,  a[0].size.w, a[0].size[0] ].firstReal();
-			this.size.h = [ a[0].h, a[0].height, a[0].size.h, a[0].size[1] ].firstReal();
-			a[0].from = a[0].from || {};
-			this.from.x = [ a[0].x, a[0].fromX, a[0].from.x, a[0].from[0] ].firstReal();
-			this.from.y = [ a[0].y, a[0].fromY, a[0].from.y, a[0].from[1] ].firstReal();
-			a[0].to   = a[0].to   || {};
-			this.to.x   = [ a[0].toX, a[0].to.x, a[0].to[0] ].firstReal();
-			this.to.y   = [ a[0].toY, a[0].to.y, a[0].to[1] ].firstReal();
+		if (a.length == 4) {
+			this.from = new LibCanvas.Point(a[0], a[1]);
+			this.to   = this.from.clone().move({x:a[2], y:a[3]});
+		} else if (a.length == 2) {
+			this.from = this.checkPoint(a[0]);
+			this.to   = this.checkPoint(a[1]);
 		} else {
-			if ($type(a[0]) == 4) {
-				a = a[0];
+
+			a = a[0];
+			if (a.from) {
+				this.from = this.checkPoint(a.from);
+			} else if ($chk(a.x) && $chk(a.y)) {
+				this.from = new LibCanvas.Point(a.x, a.y);
 			}
-			if (a.length == 4) {
-				this.from.x = a[0];
-				this.from.y = a[1];
-				this.size.w = a[2];
-				this.size.h = a[3];
-				this.to.x   = null;
-				this.to.y   = null;
+			if (a.to) this.to = this.checkPoint(a.to);
+		
+			if (!a.from || !a.to) {
+				var size = {
+					w : [ a.w, a.width,  a.size && a.size.w, a.size && a.size[0] ].firstReal(),
+					h : [ a.h, a.height, a.size && a.size.h, a.size && a.size[1] ].firstReal()
+				}
+				this.from ?
+					(this.to = this.from.clone().move({x: size.w, y: size.h})) :
+					(this.from = this.to.clone().move({x:-size.w, y:-size.h}));
 			}
+		
 		}
-
-		if (!this.countElse()) {
-			throw 'WrongArgumentsCount in Rectangle'
-		}
-
-		this.from = new LibCanvas.Point(this.from);
-		this.to   = new LibCanvas.Point(this.to);
-
+ 		this.to = this.to.clone();
+		this.from = this.from.clone();
 		return this;
-	},
-	countElse : function () {
-		var funcs = ['width', 'height', 'fromX', 'fromY', 'toX', 'toY'];
-		for (var i = 0; i < funcs.length; i++) {
-			if (!this.countElseFuncs[funcs[i]].call(this)) {
-				return false;
-			}
-		}
-		this.width  = this.size.w;
-		this.height = this.size.h;
-		this.x      = this.from.x;
-		this.y      = this.from.y;
-		this[0] = this.from.x;
-		this[1] = this.from.y;
-		this[2] = this.size.w;
-		this[3] = this.size.h;
-		this.length = 4;
-
-		return true;
-	},
-	countElseFuncs : {
-		width : function () {
-			if (this.size.w === null) {
-				if (this.from.x !== null && this.to.x !== null) {
-					this.size.w = this.to.x - this.from.x;
-				} else {
-					return false;
-				}
-			}
-			return true;
-		},
-		height : function () {
-			if (this.size.h === null) {
-				if (this.from.y !== null && this.to.y !== null) {
-					this.size.h = this.to.y - this.from.y;
-				} else {
-					return false;
-				}
-			}
-			return true;
-		},
-		fromX : function () {
-			if (this.from.x === null) {
-				if (this.size.w !== null && this.to.x !== null) {
-					this.from.x = this.to.x - this.size.w;
-				} else {
-					return false;
-				}
-			}
-			return true;
-		},
-		fromY : function () {
-			if (this.from.y === null) {
-				if (this.size.h !== null && this.to.y !== null) {
-					this.from.y = this.to.y - this.size.w;
-				} else {
-					return false;
-				}
-			}
-			return true;
-		},
-		toX : function () {
-			if (this.to.x === null) {
-				if (this.size.w !== null && this.from.x !== null) {
-					this.to.x = this.from.x + this.size.w;
-				} else {
-					return false;
-				}
-			}
-			return true;
-		},
-		toY : function () {
-			if (this.to.y === null) {
-				if (this.size.h !== null && this.from.y !== null) {
-					this.to.y = this.from.y + this.size.h;
-				} else {
-					return false;
-				}
-			}
-			return true;
-		}
 	},
 	hasPoint : function (point) {
 		point = this.checkPoint(arguments);
@@ -148,8 +63,6 @@ LibCanvas.Shapes.Rectangle = new Class({
 		this.from.y += distance.y || 0;
 		this.to.x   += distance.x || 0;
 		this.to.y   += distance.y || 0;
-		this.x      += distance.x || 0;
-		this.y      += distance.y || 0;
 		return this.parent(distance);
 	},
 	draw : function (ctx, type) {
@@ -193,20 +106,16 @@ LibCanvas.Shapes.Rectangle = new Class({
 	},
 
 	getWidth : function () {
-		//return this.width;
 		return this.to.x - this.from.x;
 	},
 	getHeight : function () {
-		//return this.height;
 		return this.to.y - this.from.y;
 	},
 	setWidth : function (width) {
-		// this.width = width;
 		this.to.x = this.from.x + width;
 		return this;
 	},
 	setHeight : function (height) {
-		// this.height = height;
 		this.to.y = this.from.y + height;
 		return this;
 	},
