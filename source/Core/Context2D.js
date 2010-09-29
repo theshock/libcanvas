@@ -403,14 +403,13 @@ LibCanvas.Context2D = new Class({
 		if (cfg.overflow == 'hidden') {
 			clip();
 		}
-
 		var xGet = function (lineWidth) {
 			var x;
 			if (cfg.align == 'left') {
-				x = to.from.x + cfg.padding[0];
+				x = to.from.x + cfg.padding[1];
 			} else {
 				if (cfg.align == 'right') {
-					x = to.to.x - lineWidth - cfg.padding[0];
+					x = to.to.x - lineWidth - cfg.padding[1];
 				} else /* cfg.align == 'center' */ {
 					x = to.from.x + (to.getWidth() - lineWidth)/2;
 				}
@@ -430,7 +429,7 @@ LibCanvas.Context2D = new Class({
 						x = to.from.x + (to.getWidth() - lineWidth)/2;
 					}
 				}
-				this.fillText(line, xGet(cfg.align == 'left' ? 0 : this.measureText(line).width), to.from.y + (i+1)*lh);
+				this.fillText(line, xGet(cfg.align == 'left' ? 0 : this.measureT2ext(line).width), to.from.y + (i+1)*lh);
 			}.bind(this));
 		} else {
 			var lNum = 0;
@@ -449,13 +448,13 @@ LibCanvas.Context2D = new Class({
 						Lw += wordWidth;
 						L  += text;
 					} else if (Lw) {
-						this.fillText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[1]);
+						this.fillText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
 						L  = '';
 						Lw = 0;
 					}
 				}
 				if (Lw) {
-					this.fillText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[1]);
+					this.fillText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
 					L  = '';
 					Lw = 0;
 				}

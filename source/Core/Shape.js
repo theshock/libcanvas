@@ -29,10 +29,18 @@ LibCanvas.Shape = new Class({
 			return new LibCanvas.Point(args);
 		}
 	},
-	move : function (distance) {
-		this.bind('move', [distance]);
+	move : function (distance, reverse) {
+		var sign = function (num) {
+			return num * (reverse ? -1 : 1);
+		};
+		var moved = {
+			x : sign(distance.x),
+			y : sign(distance.y)
+		};
+
+		this.bind('move', [moved]);
 		// @depracated
-		this.bind('moved', [distance]);
+		this.bind('moved', [moved]);
 		return this;
 	},
 	set : function (a) {

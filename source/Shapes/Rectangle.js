@@ -50,6 +50,21 @@ LibCanvas.Shapes.Rectangle = new Class({
 		}
 		return this;
 	},
+
+	getWidth : function () {
+		return this.to.x - this.from.x;
+	},
+	getHeight : function () {
+		return this.to.y - this.from.y;
+	},
+	setWidth : function (width) {
+		this.to.moveTo({ x : this.from.x + width, y : this.to.y });
+		return this;
+	},
+	setHeight : function (height) {
+		this.to.moveTo({ x : this.to.x, y : this.from.y + height });
+		return this;
+	},
 	hasPoint : function (point) {
 		point = this.checkPoint(arguments);
 		return $chk(point.x) && $chk(point.y)
@@ -59,7 +74,7 @@ LibCanvas.Shapes.Rectangle = new Class({
 	move : function (distance, reverse) {
 		this.from.move(distance, reverse);
 		this. to .move(distance, reverse);
-		return this.parent(distance);
+		return this.parent(distance, reverse);
 	},
 	draw : function (ctx, type) {
 		// fixed Opera bug - cant drawing rectangle with width or height below zero
@@ -79,8 +94,8 @@ LibCanvas.Shapes.Rectangle = new Class({
 	},
 	getCenter : function () {
 		return new LibCanvas.Point(
-			this.from.x + this.getWidth()  / 2,
-			this.from.y + this.getHeight() / 2
+			(this.from.x + this.to.x) / 2,
+			(this.from.y + this.to.y) / 2
 		);
 	},
 	processPath : function (ctx, noWrap) {
@@ -105,24 +120,12 @@ LibCanvas.Shapes.Rectangle = new Class({
 			$random(margin, this.getHeight() - margin)
 		);
 	},
+	equals : function (rect) {
+		return rect.from.equals(this.from) && rect.to.equals(this.to);
+	},
 	clone : function () {
 		return new LibCanvas.Shapes.Rectangle(
 			this.from.clone(), this.to.clone()
 		);
-	},
-
-	getWidth : function () {
-		return this.to.x - this.from.x;
-	},
-	getHeight : function () {
-		return this.to.y - this.from.y;
-	},
-	setWidth : function (width) {
-		this.to.x = this.from.x + width;
-		return this;
-	},
-	setHeight : function (height) {
-		this.to.y = this.from.y + height;
-		return this;
 	},
 });
