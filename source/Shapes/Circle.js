@@ -17,7 +17,9 @@ LibCanvas.Shapes.Circle = new Class({
 	Extends : LibCanvas.Shape,
 	set : function () {
 		var a = $A(arguments);
-		if (a[0] && (a[0].from || a[0].center || $chk(a[0].x) || $chk(a[0][0]))) {
+		if (a[0] && !(a[0] instanceof LibCanvas.Point) &&
+			(a[0].from || a[0].center || $chk(a[0].x) || $chk(a[0][0]))
+		) {
 			a = a[0];
 		}
 
@@ -39,6 +41,10 @@ LibCanvas.Shapes.Circle = new Class({
 		if (a.length && a.length >= 3) {
 			setCenter(a[0], a[1]);
 			this.radius = a[2];
+		} else if (a.length && a.length == 2) {
+			(a[0] instanceof LibCanvas.Point) ?
+				(this.center = a[0]) : setCenter(a[0]);
+			this.radius = a[1];
 		} else if (typeof a == 'object') {
 			if ($chk(a.x) && $chk(a.y)) {
 				setCenter(a.x, a.y);
