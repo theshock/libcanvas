@@ -56,11 +56,9 @@ LibCanvas.Shapes.Rectangle = new Class({
 			&& point.x.between(this.from.x, this.to.x, 1)
 			&& point.y.between(this.from.y, this.to.y, 1);
 	},
-	move : function (distance) {
-		this.from.x += distance.x || 0;
-		this.from.y += distance.y || 0;
-		this.to.x   += distance.x || 0;
-		this.to.y   += distance.y || 0;
+	move : function (distance, reverse) {
+		this.from.move(distance, reverse);
+		this. to .move(distance, reverse);
 		return this.parent(distance);
 	},
 	draw : function (ctx, type) {
