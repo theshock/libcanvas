@@ -48,8 +48,6 @@ LibCanvas.Shapes.Rectangle = new Class({
 			}
 		
 		}
-		// this.to = this.to.clone();
-		// this.from = this.from.clone();
 		return this;
 	},
 	hasPoint : function (point) {
@@ -102,10 +100,11 @@ LibCanvas.Shapes.Rectangle = new Class({
 		}
 		return ctx;
 	},
-	getRandomPoint : function () {
+	getRandomPoint : function (margin) {
+		margin = margin || 0;
 		return new LibCanvas.Point(
-			$random(0, this.getWidth()),
-			$random(0, this.getHeight())
+			$random(margin, this.getWidth()  - margin),
+			$random(margin, this.getHeight() - margin)
 		);
 	},
 	clone : function () {
