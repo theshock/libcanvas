@@ -66,10 +66,12 @@ LibCanvas.Shapes.Rectangle = new Class({
 		return this;
 	},
 	hasPoint : function (point) {
+		var min = Math.min;
+		var max = Math.max;
 		point = this.checkPoint(arguments);
 		return $chk(point.x) && $chk(point.y)
-			&& point.x.between(this.from.x, this.to.x, 1)
-			&& point.y.between(this.from.y, this.to.y, 1);
+			&& point.x.between(min(this.from.x, this.to.x), max(this.from.x, this.to.x), 1)
+			&& point.y.between(min(this.from.y, this.to.y), max(this.from.y, this.to.y), 1);
 	},
 	move : function (distance, reverse) {
 		this.from.move(distance, reverse);
