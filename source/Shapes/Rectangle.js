@@ -48,8 +48,8 @@ LibCanvas.Shapes.Rectangle = new Class({
 			}
 		
 		}
- 		this.to = this.to.clone();
-		this.from = this.from.clone();
+		// this.to = this.to.clone();
+		// this.from = this.from.clone();
 		return this;
 	},
 	hasPoint : function (point) {
@@ -102,7 +102,9 @@ LibCanvas.Shapes.Rectangle = new Class({
 		);
 	},
 	clone : function () {
-		return new LibCanvas.Shapes.Rectangle(this);
+		return new LibCanvas.Shapes.Rectangle(
+			this.from.clone(), this.to.clone()
+		);
 	},
 
 	getWidth : function () {
