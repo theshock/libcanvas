@@ -66,8 +66,15 @@ LibCanvas.Shapes.Rectangle = new Class({
 		return this.parent(distance);
 	},
 	draw : function (ctx, type) {
+		// fixed Opera bug - cant drawing rectangle with width or height below zero
+		var min = Math.min;
+		var abs = Math.abs;
 		ctx.original(type + 'Rect',
-			[this.from.x, this.from.y, this.getWidth(), this.getHeight()]
+			[
+				min(this.from.x, this.to.x),
+				min(this.from.y, this.to.y),
+				abs(this.getWidth()), abs(this.getHeight())
+			]
 		);
 		return this;
 	},
