@@ -16,6 +16,7 @@ window.LibCanvas = {
 	Inner : {
 		Canvas2D : {}
 	},
+	Ui : {},
 	Shapes  : {},
 	Utils   : {},
 	Engines : {

@@ -61,6 +61,11 @@ LibCanvas.Canvas2D = new Class({
 				arguments : [this.origElem.width, this.origElem.height]
 		);
 	},
+	createGrip : function (config) {
+		var grip = new LibCanvas.Ui.Grip(this, config);
+		this.addElement(grip);
+		return grip;
+	},
 
 	// post-/pre- procesing
 	processors : { pre: [], post: [] },
