@@ -19,12 +19,8 @@ LibCanvas.Shapes.Line = new Class({
 		var a = arguments.length == 1 ?
 			arguments[0] : arguments;
 
-		this.from = this.checkPoint([
-			a[0], a.from
-		].firstReal());
-		this.to = this.checkPoint([
-			a[1], a.to
-		].firstReal());
+		this.from = this.checkPoint(a[0] || a.from);
+		this.to   = this.checkPoint(a[1] || a.to);
 		
 		return this;
 	},
@@ -50,8 +46,11 @@ LibCanvas.Shapes.Line = new Class({
 	getCoords : function () {
 		return this.from;
 	},
+	getLength : function () {
+		return this.to.distanceTo(this.from);
+	},
 	move : function (distance) {
-		this.to.move(distance);
+		this. to .move(distance);
 		this.from.move(distance);
 		return this.parent(distance);
 	},
