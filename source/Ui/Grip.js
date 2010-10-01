@@ -45,13 +45,16 @@ LibCanvas.Ui.Grip = new Class({
 		        this.config[type] || null;
 		                  
 	},
-	draw : function () {
-		var ctx    = this.libcanvas.ctx;
-		
+	drawTo : function (ctx) {
 		var fill   = this.getStyle('fill');
 		var	stroke = this.getStyle('stroke');
 		fill   && ctx.fill  (this.getShape(), fill  );
 		stroke && ctx.stroke(this.getShape(), stroke);
+		return this;
+	},
+	draw : function () {
+		this.drawTo(this.libcanvas.ctx);
+		return this;
 	}
 });
 
