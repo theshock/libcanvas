@@ -58,6 +58,7 @@ LibCanvas.Engines.Tile = new Class({
 		this.checkMatrix(matrix);
 		this.matrix    = matrix;
 		this.oldMatrix = this.cloneMatrix(matrix);
+		return this;
 	},
 	cloneMatrix : function (matrix) {
 		var nexMatrix = [];
@@ -131,6 +132,7 @@ LibCanvas.Engines.Tile = new Class({
 	drawCell : function (cell /*{t,x,y}*/) {
 		var rect = this.getRect(cell);
 		var fn   = this.tiles[cell.t];
+		if (!$chk(fn) && $chk(this.tiles['default'])) fn = this.tiles['default'];
 		this.ctx.clearRect(rect);
 		if ($type(fn) == 'element') {
 			this.ctx.cachedDrawImage({
