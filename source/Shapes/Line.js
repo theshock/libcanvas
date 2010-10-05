@@ -63,5 +63,8 @@ LibCanvas.Shapes.Line = new Class({
 			ctx.closePath();
 		}
 		return ctx;
+	},
+	clone : function () {
+		return new LibCanvas.Shapes.Line(this.from.clone(), this.to.clone());
 	}
 });
