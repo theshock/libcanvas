@@ -40,10 +40,11 @@ LibCanvas.Mouse = new Class({
 		return this;
 	},
 	getOffset : function (e) {
-		if (!e.event.offset) {
-			this.expandEvent(e.event);
+		if (e.event) e = e.event;
+		if (!e.offset) {
+			this.expandEvent(e);
 		}
-		return e.event.offset;
+		return e.offset;
 	},
 	createOffset : function(elem) {
 		var top = 0, left = 0;
@@ -96,25 +97,25 @@ LibCanvas.Mouse = new Class({
 			mousemove : function (e) {
 				var offset = mouse.getOffset(e);
 				mouse.setCoords(offset.x, offset.y);
-				mouse.events.event('mousemove', e);
+				mouse.events.event('mousemove', e.event);
 				mouse.isOut = false;
 				return false;
 			},
 			mouseout : function (e) {
 				mouse.getOffset(e);
 				mouse.setCoords(/* null */);
-				mouse.events.event('mouseout', e);
+				mouse.events.event('mouseout', e.event);
 				mouse.isOut = true;
 				return false;
 			},
 			mousedown : function (e) {
 				mouse.getOffset(e);
-				mouse.events.event('mousedown', e);
+				mouse.events.event('mousedown', e.event);
 				return false;
 			},
 			mouseup : function (e) {
 				mouse.getOffset(e);
-				mouse.events.event('mouseup'  , e);
+				mouse.events.event('mouseup'  , e.event);
 				return false;
 			}
 		});
