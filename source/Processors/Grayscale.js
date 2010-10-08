@@ -22,7 +22,6 @@ LibCanvas.Processors.Grayscale = new Class({
 			d[i] = d[i+1] = d[i+2] = value;
 		};
 		var type = this.type;
-		trace(d.length)
 		for (var i = 0; i < d.length; i+=4) {
 			var r = d[i];
 			var g = d[i+1];
