@@ -13,13 +13,12 @@ provides: [LibCanvas.Processors.Grayscale]
 LibCanvas.Processors.Grayscale = new Class({
 	style : null,
 	initialize : function (type) {
-		// luminance average red green blue default
+		// luminance, average, red, green, blue, default
 		this.type = type || 'default';
 	},
 	processPixels : function (data) {
 		var d = data.data;
 		var set = function (i, value) {
-			if (!i) trace(value)
 			d[i] = d[i+1] = d[i+2] = value;
 		};
 		var type = this.type;
