@@ -21,5 +21,7 @@ LibCanvas.Processors.Clearer = new Class({
 		} else {
 			libcanvas.ctx.clearAll();
 		}
-	}
+	},
+	// processCanvas : function (elem) {}
+	// processPixels : function (elem) {}
 });

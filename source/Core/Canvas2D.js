@@ -24,21 +24,27 @@ LibCanvas.Canvas2D = new Class({
 		LibCanvas.Behaviors.Bindable
 	],
 
-	fps      : 20,
-	autoDraw : true,
-	interval : null,
+	fps        : 20,
+	autoUpdate : true,
+	interval   : null,
 
-	initialize : function (elem) {
+	initialize : function (elem, cfg) {
 		this.origElem = elem;
 		this.origCtx  = elem.getContext('2d-libcanvas');
 
-		this.elem = this.createBuffer();
-		this.ctx  = this.elem.getContext('2d-libcanvas');
+		if (cfg && cfg.backBuffer == 'off') {
+			this.elem = this.origElem;
+			this.ctx  = this.origCtx;
+		} else {
+			this.elem = this.createBuffer();
+			this.ctx  = this.elem.getContext('2d-libcanvas');
+		}
 	},
 
 	updateFrame : true,
 	update : function () {
 		this.updateFrame = true;
+		
 		return this;
 	},
 

@@ -42,7 +42,17 @@ LibCanvas.Inner.Canvas2D.FrameRenderer = new Class({
 	},
 	processing : function (type) {
 		this.processors[type].each(function (processor) {
-			processor.process(this);
+			if ('process' in processor) {
+				processor.process(this);
+			} else if ('processCanvas' in processor) {
+				processor.processCanvas(this.elem);
+			} else if ('processPixels' in processor) {
+				this.ctx.putImageData(
+					processor.processCanvas(
+						this.ctx.getImageData()
+					)
+				);
+			}
 		}.bind(this));
 		return this;
 	},
@@ -64,7 +74,9 @@ LibCanvas.Inner.Canvas2D.FrameRenderer = new Class({
 				this.renderProgress();
 			}
 			this.processing('post');
-			this.show();
+			if (this.elem != this.origElem) {
+				this.show();
+			}
 		}
 		return this;
 	}
