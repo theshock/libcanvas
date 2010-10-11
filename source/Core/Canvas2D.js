@@ -43,8 +43,11 @@ LibCanvas.Canvas2D = new Class({
 
 	updateFrame : true,
 	update : function () {
-		this.updateFrame = true;
-		
+		if (this.autoUpdate == 'onRequest') {
+			this.updateFrame = true;
+		} else {
+			this.frame();
+		}
 		return this;
 	},
 
