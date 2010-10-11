@@ -35,7 +35,6 @@ LibCanvas.Processors.Grayscale = new Class({
 				default : set(i, 0.3*r + 0.59*g + 0.11*b); break;
 			}
 		}
-		data.data = d;
 		return data;
 	}
 });
