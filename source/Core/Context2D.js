@@ -156,7 +156,7 @@ LibCanvas.Context2D = new Class({
 			this.canvas = canvas;
 			this.ctx2d  = canvas.getOriginalContext('2d');
 		}
-		// We shouldn't think about size, LibCanvas should think
+		// todo : remove
 		this.width  = this.canvas.width;
 		this.height = this.canvas.height;
 	},
@@ -171,6 +171,17 @@ LibCanvas.Context2D = new Class({
 			throw e;
 		}
 		return this;
+	},
+	getClone : function (width, height) {
+		var canvas = this.canvas;
+		var clone  = LibCanvas.Buffer(
+			width  || canvas.width,
+			height || canvas.height
+		);
+		var ctx = clone.getContext('2d');
+		!arguments.length ? ctx.drawImage(canvas, 0, 0) :
+			ctx.drawImage(canvas, 0, 0, width, height);
+		return clone;
 	},
 
 	// All
@@ -658,13 +669,13 @@ LibCanvas.Context2D = new Class({
 	},
 	// this function is only dublicated as original. maybe, i will change them,
 	createLinearGradient : function () {
-		return this.original('createLinearGradient', arguments);
+		return this.ctx2d.createLinearGradient.apply(this.ctx2d, arguments);
 	},
 	createRadialGradient : function () {
-		return this.original('createRadialGradient', arguments);
+		return this.ctx2d.createRadialGradient.apply(this.ctx2d, arguments);
 	},
 	createPattern : function () {
-		return this.original('createPattern', arguments);
+		return this.ctx2d.createPattern.apply(this.ctx2d, arguments);
 	},
 	drawWindow : function () {
 		return this.original('drawWindow', arguments);
