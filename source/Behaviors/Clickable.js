@@ -14,8 +14,8 @@ provides: [LibCanvas.Behaviors.Clickable]
 
 var setValFn = function (name, val) {
 	return function () {
-		this.bind('statusChanged');
 		this[name] = val;
+		this.bind('statusChanged');
 	}.bind(this);
 };
 
