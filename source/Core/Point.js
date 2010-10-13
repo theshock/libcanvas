@@ -180,8 +180,9 @@ LibCanvas.Point = new Class({
 		}.bind(this).periodical(20);
 		return this;
 	},
-	equals : function (to) {
-		return to.x == this.x && to.y == this.y;
+	equals : function (to, accuracy) {
+		return (arguments.length < 2) ? (to.x == this.x && to.y == this.y) :
+			(this.x.equals(to.x, accuracy) && this.y.equals(to.y, accuracy));
 	},
 	clone : function () {
 		return new LibCanvas.Point(this);
