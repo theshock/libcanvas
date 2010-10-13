@@ -39,8 +39,8 @@ LibCanvas.Shapes.Rectangle = new Class({
 		
 			if (!a.from || !a.to) {
 				var size = {
-					w : [ a.w, a.width,  a.size && a.size.w, a.size && a.size[0] ].firstReal(),
-					h : [ a.h, a.height, a.size && a.size.h, a.size && a.size[1] ].firstReal()
+					w : [ a.w, a.width,  a.size && a.size.w, a.size && a.size[0], a.size && a.size.width  ].firstReal(),
+					h : [ a.h, a.height, a.size && a.size.h, a.size && a.size[1], a.size && a.size.height ].firstReal()
 				}
 				this.from ?
 					(this.to = this.from.clone().move({x: size.w, y: size.h})) :
