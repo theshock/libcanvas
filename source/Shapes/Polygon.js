@@ -118,7 +118,15 @@ LibCanvas.Shapes.Polygon = new Class({
 		}
 		return false;
 	},
-	each : Array.prototype.each
+	each : Array.prototype.each,
+
+	getPoints : function () {
+		var points = {};
+		for (var i = 0; i < this.length; i++) {
+			points[i] = this[i];
+		}
+		return this;
+	}
 });
 
 })();

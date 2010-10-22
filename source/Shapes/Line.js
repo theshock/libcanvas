@@ -66,5 +66,9 @@ LibCanvas.Shapes.Line = new Class({
 	},
 	clone : function () {
 		return new LibCanvas.Shapes.Line(this.from.clone(), this.to.clone());
+	},
+
+	getPoints : function () {
+		return { from : this.from, to : this.to };
 	}
 });

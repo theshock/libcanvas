@@ -130,4 +130,15 @@ LibCanvas.Shapes.Rectangle = new Class({
 			this.from.clone(), this.to.clone()
 		);
 	},
+
+	translate : function (point, fromRect) {
+		var diff = fromRect.from.diff(point);
+		return new LibCanvas.Point({
+			x : (diff.x / fromRect.getWidth() ) * this.getWidth(),
+			y : (diff.y / fromRect.getHeight()) * this.getHeight(),
+		});
+	},
+	getPoints : function () {
+		return { from : this.from, to : this.to };
+	}
 });

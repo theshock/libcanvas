@@ -92,5 +92,12 @@ LibCanvas.Shapes.Circle = new Class({
 			ctx.closePath();
 		}
 		return ctx;
+	},
+	clone : function () {
+		return new LibCanvas.Shapes.Circle(this.center.clone(), this.radius);
+	},
+
+	getPoints : function () {
+		return { center : this.center };
 	}
 });
