@@ -30,7 +30,6 @@ LibCanvas.Utils.Translator = new Class({
 					translate(shape.translated[i], points[i]);
 				}
 			}
-			$log(shape.translated);
 
 		});
 	}
