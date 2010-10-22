@@ -16,7 +16,7 @@ LibCanvas.Mouse = new Class({
 		this.point = new LibCanvas.Point();
 		this.x = null;
 		this.y = null;
-		this.scale = {x:1, y:1};
+		this.scaleData = {x:1, y:1};
 
 		//noTouch || this.initTouch();
 
@@ -28,12 +28,18 @@ LibCanvas.Mouse = new Class({
 		this.setEvents();
 	},
 	setScale : function (x, y) {
-		this.scale = {x:x, y:y};
+		this.scaleData = {x:x, y:y};
+		return this;
+	},
+	scale : function (x, y) {
+		this.scaleData.x *= x;
+		this.scaleData.y *= y;
+		return this;
 	},
 	setCoords : function (x, y) {
 		if (arguments.length == 2) {
-			this.x = x / this.scale.x;
-			this.y = y / this.scale.y;
+			this.x = x / this.scaleData.x;
+			this.y = y / this.scaleData.y;
 			this.inCanvas = true;
 		} else {
 			this.x = null;
