@@ -11,11 +11,12 @@ provides: [LibCanvas.Mouse]
 */
 
 LibCanvas.Mouse = new Class({
-	initialize : function (libcanvas, noTouch) {
+	initialize : function (libcanvas) {
 		this.inCanvas = false;
 		this.point = new LibCanvas.Point();
 		this.x = null;
 		this.y = null;
+		this.scale = {x:1, y:1};
 
 		//noTouch || this.initTouch();
 
@@ -26,10 +27,13 @@ LibCanvas.Mouse = new Class({
 
 		this.setEvents();
 	},
+	setScale : function (x, y) {
+		this.scale = {x:x, y:y};
+	},
 	setCoords : function (x, y) {
 		if (arguments.length == 2) {
-			this.x = x;
-			this.y = y;
+			this.x = x * this.scale.x;
+			this.y = y * this.scale.y;
 			this.inCanvas = true;
 		} else {
 			this.x = null;
