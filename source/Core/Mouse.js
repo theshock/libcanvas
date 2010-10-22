@@ -32,8 +32,8 @@ LibCanvas.Mouse = new Class({
 	},
 	setCoords : function (x, y) {
 		if (arguments.length == 2) {
-			this.x = x * this.scale.x;
-			this.y = y * this.scale.y;
+			this.x = x / this.scale.x;
+			this.y = y / this.scale.y;
 			this.inCanvas = true;
 		} else {
 			this.x = null;
