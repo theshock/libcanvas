@@ -301,11 +301,19 @@ LibCanvas.Context2D = new Class({
 		return this.original('quadraticCurveTo', arguments);
 	},
 	bezierCurveTo : function () {
-		// @todo Beauty arguments
-		if (arguments.length == 6) {
+		var a = arguments;
+		if (a.length == 6) {
 			return this.original('bezierCurveTo', arguments);
 		} else {
-			var a = arguments[0];
+			if (a.length == 3) {
+				a = {
+					to : a[2],
+					p1 : a[0],
+					p2 : a[1]
+				};
+			} else {
+				a = a[0];
+			}
 			return this.original('bezierCurveTo', [
 				a.p1.x, a.p1.y, a.p2.x, a.p2.y, a.to.x, a.to.y
 			]);
