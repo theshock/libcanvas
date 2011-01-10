@@ -1,16 +1,21 @@
 /*
 ---
-description: Provides basic animation for sprites
 
-license: LGPL
+name: "LibCanvas.Animation"
 
-authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+description: "Provides basic animation for sprites"
 
-provides: [LibCanvas.Animation]
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
-requires: 
-  core/1.2.4: 'Class'
+authors: ["Shock <shocksilien@gmail.com>"]
+
+requires:
+- LibCanvas
+- LibCanvas.Behaviors.Bindable
+
+provides: LibCanvas.Animation
+
+...
 */
 
 LibCanvas.Animation = atom.Class({
@@ -52,7 +57,7 @@ LibCanvas.Animation = atom.Class({
 	queue : [],
 	run : function (name, cfg) {
 		if (!name in this.animations) {
-			throw 'No animation "' + name + '"';
+			throw new Error('No animation "' + name + '"');
 		}
 		var args = {
 			name : name,

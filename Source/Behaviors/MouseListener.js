@@ -1,17 +1,25 @@
 /*
 ---
-description: Canvas mouse listener
 
-license: LGPL
+name: "LibCanvas.Behaviors.MouseListener"
 
-authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+description: "Canvas mouse listener"
 
-provides: [LibCanvas.Behaviors.MouseListener]
-*/ 
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+
+authors: ["Shock <shocksilien@gmail.com>"]
+
+requires:
+- LibCanvas
+- LibCanvas.Mouse
+
+provides: LibCanvas.Behaviors.MouseListener
+
+...
+*/
 
 /**
- * events :
+ * Available such events :
  *
  * click
  *

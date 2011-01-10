@@ -1,14 +1,21 @@
 /*
 ---
-description: Provides interface for binding events to objects
 
-license: LGPL
+name: "LibCanvas.Behaviors.Bindable"
 
-authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+description: "Provides interface for binding events to objects."
 
-provides: [LibCanvas.Behaviors.Bindable]
-*/ 
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+
+authors: ["Shock <shocksilien@gmail.com>"]
+
+requires:
+- LibCanvas
+
+provides: LibCanvas.Behaviors.Bindable
+
+...
+*/
 
 LibCanvas.namespace('Behaviors').Bindable = atom.Class({
 	binds : {},
@@ -37,11 +44,11 @@ LibCanvas.namespace('Behaviors').Bindable = atom.Class({
 		}
 	},
 	bind : function (event, fn) {
+		var i, l, ab, b, args;
 		if (Array.isArray(event)) {
-			for (var i = event.length; i--;) this.bind(event[i], fn);
+			for (i = event.length; i--;) this.bind(event[i], fn);
 			return this;
 		}
-		var i, l, ab, b, args;
 		if (typeof fn == 'function') {
 			if (!(event in this.binds)) {
 				this.binds[event] = [];

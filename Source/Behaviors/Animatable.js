@@ -1,13 +1,20 @@
 /*
 ---
-description: Basic abstract class for animatable objects.
 
-license: LGPL
+name: "LibCanvas.Behaviors.Animatable"
 
-authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+description: "Basic abstract class for animatable objects."
 
-provides: [LibCanvas.Animatable]
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+
+authors: ["Shock <shocksilien@gmail.com>"]
+
+requires:
+- LibCanvas
+
+provides: LibCanvas.Behaviors.Animatable
+
+...
 */
 
 LibCanvas.namespace('Behaviors').Animatable = atom.Class({

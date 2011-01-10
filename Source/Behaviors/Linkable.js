@@ -1,14 +1,22 @@
 /*
 ---
-description: Made possible link between two canvas objects
 
-license: LGPL
+name: "LibCanvas.Behaviors.Linkable"
 
-authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+description: "Made possible link between two canvas objects"
 
-provides: [LibCanvas.Behaviors.Linkable]
-*/ 
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+
+authors: ["Shock <shocksilien@gmail.com>"]
+
+requires:
+- LibCanvas
+- LibCanvas.Behaviors.Bindable
+
+provides: LibCanvas.Behaviors.Linkable
+
+...
+*/
 
 LibCanvas.namespace('Behaviors').Linkable = atom.Class({
 	links : null,

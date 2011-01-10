@@ -1,14 +1,22 @@
 /*
 ---
-description: Abstract class for drawable canvas objects
 
-license: LGPL
+name: "LibCanvas.Behaviors.Drawable"
 
-authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+description: "Abstract class for drawable canvas objects"
 
-provides: [LibCanvas.Behaviors.Drawable]
-*/ 
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+
+authors: ["Shock <shocksilien@gmail.com>"]
+
+requires:
+- LibCanvas
+- LibCanvas.Behaviors.Bindable
+
+provides: LibCanvas.Behaviors.Drawable
+
+...
+*/
 
 LibCanvas.namespace('Behaviors').Drawable = atom.Class({
 	Implements: [LibCanvas.Behaviors.Bindable],

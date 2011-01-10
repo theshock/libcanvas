@@ -25,7 +25,7 @@ LibCanvas.namespace('Inner.Canvas2D').DownloadingProgress = atom.Class({
 			this.imagePreloader = new LibCanvas.Utils.ImagePreloader(this.preloadImages)
 				.ready(function (preloader) {
 					this.images = preloader.images;
-					$log(preloader.getInfo());
+					atom.log(preloader.getInfo());
 					this.autoBind('ready');
 					this.update();
 				}.context(this));

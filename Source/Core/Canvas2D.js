@@ -1,19 +1,22 @@
 /*
 ---
-description: LibCanvas.Canvas2D wraps around native <canvas>.
 
-license: LGPL
+name: "LibCanvas.Canvas2D"
 
-authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+description: "LibCanvas.Canvas2D wraps around native <canvas>."
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+
+authors: ["Shock <shocksilien@gmail.com>"]
 
 requires:
+- LibCanvas
 - LibCanvas.Inner.Canvas2D.FrameRenderer
 - LibCanvas.Inner.Canvas2D.FpsMeter
 - LibCanvas.Inner.Canvas2D.DownloadingProgress
 - LibCanvas.Behaviors.Bindable
 
-provides: [LibCanvas.Canvas2D]
+provides: LibCanvas.Canvas2D
 */
 
 LibCanvas.Canvas2D = atom.Class({
@@ -98,9 +101,7 @@ LibCanvas.Canvas2D = atom.Class({
 	// Element : add, rm
 	elems : [],
 	addElement : function (elem) {
-		this.elems.include(
-			elem.setLibcanvas(this)
-		);
+		this.elems.include(elem.setLibcanvas(this));
 		return this;
 	},
 	rmElement : function (elem) {

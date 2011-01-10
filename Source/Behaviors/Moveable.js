@@ -1,13 +1,21 @@
 /*
 ---
-description: Provides interface for moveable objects
 
-license: LGPL
+name: "LibCanvas.Behaviors.Moveable"
 
-authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+description: "Provides interface for moveable objects"
 
-provides: [LibCanvas.Behaviors.Moveable]
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+
+authors: ["Shock <shocksilien@gmail.com>"]
+
+requires:
+- LibCanvas
+- LibCanvas.Behaviors.Bindable
+
+provides: LibCanvas.Behaviors.Moveable
+
+...
 */
 
 LibCanvas.namespace('Behaviors').Moveable = atom.Class({

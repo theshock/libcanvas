@@ -1,14 +1,24 @@
 /*
 ---
-description: Abstract class for droppable canvas objects
 
-license: LGPL
+name: "LibCanvas.Behaviors.Droppable"
 
-authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+description: "Abstract class for droppable canvas objects"
 
-provides: [LibCanvas.Behaviors.Droppable]
-*/ 
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+
+authors: ["Shock <shocksilien@gmail.com>"]
+
+requires:
+- LibCanvas
+- LibCanvas.Behaviors.Bindable
+- LibCanvas.Behaviors.MouseListener
+- LibCanvas.Behaviors.Draggable
+
+provides: LibCanvas.Behaviors.Droppable
+
+...
+*/
 
 LibCanvas.namespace('Behaviors').Droppable = atom.Class({
 	drops : null,

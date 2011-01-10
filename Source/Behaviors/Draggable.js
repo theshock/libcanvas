@@ -1,14 +1,23 @@
 /*
 ---
-description: When object implements LibCanvas.Behaviors.Draggable interface dragging made possible
 
-license: LGPL
+name: "LibCanvas.Behaviors.Draggable"
 
-authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+description: "When object implements LibCanvas.Behaviors.Draggable interface dragging made possible"
 
-provides: [LibCanvas.Behaviors.Draggable]
-*/ 
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+
+authors: ["Shock <shocksilien@gmail.com>"]
+
+requires:
+- LibCanvas
+- LibCanvas.Behaviors.Bindable
+- LibCanvas.Behaviors.MouseListener
+
+provides: LibCanvas.Behaviors.Draggable
+
+...
+*/
 
 (function () {
 

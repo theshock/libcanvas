@@ -41,7 +41,7 @@ var Point = LibCanvas.Point = atom.Class({
 				y = x.y;
 				x = x.x;
 			} else {
-				$log('Wrong Arguments In Point.Set:', arguments);
+				atom.log('Wrong Arguments In Point.Set:', arguments);
 				throw new TypeError('Wrong Arguments In Point.Set')
 			}
 		}
