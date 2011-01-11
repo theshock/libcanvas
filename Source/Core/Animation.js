@@ -1,20 +1,20 @@
 /*
 ---
 
-name: "LibCanvas.Animation"
+name: "Animation"
 
 description: "Provides basic animation for sprites"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Behaviors.Bindable
+	- LibCanvas
+	- Behaviors.Bindable
 
-provides: LibCanvas.Animation
+provides: Animation
 
 ...
 */

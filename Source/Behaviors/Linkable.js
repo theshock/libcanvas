@@ -1,20 +1,20 @@
 /*
 ---
 
-name: "LibCanvas.Behaviors.Linkable"
+name: "Behaviors.Linkable"
 
 description: "Made possible link between two canvas objects"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Behaviors.Bindable
+	- LibCanvas
+	- Behaviors.Bindable
 
-provides: LibCanvas.Behaviors.Linkable
+provides: Behaviors.Linkable
 
 ...
 */

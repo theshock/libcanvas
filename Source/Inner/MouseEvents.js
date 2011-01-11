@@ -1,20 +1,20 @@
 /*
 ---
 
-name: "LibCanvas.Inner.MouseEvents"
+name: "Inner.MouseEvents"
 
 description: "Class which contains several basic mouse events "
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Point
+	- LibCanvas
+	- Point
 
-provides: LibCanvas.Inner.MouseEvents
+provides: Inner.MouseEvents
 
 ...
 */

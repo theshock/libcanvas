@@ -1,7 +1,7 @@
 /*
 ---
 
-name: "LibCanvas.Canvas2D"
+name: "Canvas2D"
 
 description: "LibCanvas.Canvas2D wraps around native <canvas>."
 
@@ -11,14 +11,14 @@ authors:
 - "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Inner.FrameRenderer
-- LibCanvas.Inner.FpsMeter
-- LibCanvas.Inner.DownloadingProgress
-- LibCanvas.Context2d
-- LibCanvas.Behaviors.Bindable
+	- LibCanvas
+	- Context2d
+	- Inner.FrameRenderer
+	- Inner.FpsMeter
+	- Inner.DownloadingProgress
+	- Behaviors.Bindable
 
-provides: LibCanvas.Canvas2D
+provides: Canvas2D
 
 ...
 */

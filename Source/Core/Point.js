@@ -1,21 +1,21 @@
 /*
 ---
 
-name: "LibCanvas.Point"
+name: "Point"
 
 description: "A X/Y point coordinates encapsulating class"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Geometry
-- LibCanvas.Utils.Math
+	- LibCanvas
+	- Geometry
+	- Utils.Math
 
-provides: LibCanvas.Point
+provides: Point
 
 ...
 */

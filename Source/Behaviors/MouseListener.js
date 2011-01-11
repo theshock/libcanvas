@@ -1,20 +1,20 @@
 /*
 ---
 
-name: "LibCanvas.Behaviors.MouseListener"
+name: "Behaviors.MouseListener"
 
 description: "Canvas mouse listener"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Mouse
+	- LibCanvas
+	- Mouse
 
-provides: LibCanvas.Behaviors.MouseListener
+provides: Behaviors.MouseListener
 
 ...
 */

@@ -1,20 +1,20 @@
 /*
 ---
 
-name: "LibCanvas.Geometry"
+name: "Geometry"
 
 description: "Base for such things as Point and Shape"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Bindable
+	- LibCanvas
+	- Bindable
 
-provides: LibCanvas.Geometry
+provides: Geometry
 
 ...
 */

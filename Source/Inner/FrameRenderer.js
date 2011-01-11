@@ -1,21 +1,20 @@
 /*
 ---
 
-name: "LibCanvas.Inner.FrameRenderer"
+name: "Inner.FrameRenderer"
 
 description: "Private class for inner usage in LibCanvas.Canvas2D"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Point
-- LibCanvas.Context2D
+	- LibCanvas
+	- Point
 
-provides: LibCanvas.Inner.FrameRenderer
+provides: Inner.FrameRenderer
 
 ...
 */

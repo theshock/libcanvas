@@ -1,5 +1,6 @@
 /*
 ---
+
 name: "LibCanvas"
 
 description: "LibCanvas initialization"
@@ -7,9 +8,9 @@ description: "LibCanvas initialization"
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
-- Anna Shurubey aka Nutochka <iamnutochka@gmail.com>
-- Nikita Baksalyar <nikita@baksalyar.ru>
+	- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+	- Anna Shurubey aka Nutochka <iamnutochka@gmail.com>
+	- Nikita Baksalyar <nikita@baksalyar.ru>
 
 provides: LibCanvas
 

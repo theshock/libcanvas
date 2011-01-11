@@ -1,19 +1,19 @@
 /*
 ---
 
-name: " LibCanvas.Inner.ProjectiveTexture"
+name: "Inner.ProjectiveTexture"
 
 description: "Provides testing projective textures rendering (more info: http://acko.net/files/projective/index.html)"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
+	- LibCanvas
 
-provides: LibCanvas.Inner.ProjectiveTexture
+provides: Inner.ProjectiveTexture
 
 ...
 */

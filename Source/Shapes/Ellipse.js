@@ -1,21 +1,21 @@
 /*
 ---
 
-name: "LibCanvas.Shapes.Ellipse"
+name: "Shapes.Ellipse"
 
 description: "Provides ellipse as canvas object"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Point
-- LibCanvas.Rectangle
+	- LibCanvas
+	- Point
+	- Shapes.Rectangle
 
-provides: LibCanvas.Shapes.Ellipse
+provides: Shapes.Ellipse
 
 ...
 */

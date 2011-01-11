@@ -1,20 +1,22 @@
 /*
 ---
 
-name: "LibCanvas.Processors.HsbShift"
+name: "Processors.HsbShift"
 
 description: "Shift on of hue|saturation|bright value of all colors"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+	- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
 
 requires:
-- LibCanvas
-- LibCanvas.Processors.Color
+	- LibCanvas
+	- Processors.Color
 
-provides: LibCanvas.Processors.HsbShift
+provides: Processors.HsbShift
+
+...
 */
 
 

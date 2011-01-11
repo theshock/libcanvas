@@ -1,22 +1,22 @@
 /*
 ---
 
-name: "LibCanvas.Context2D"
+name: "Context2D"
 
 description: "LibCanvas.Context2D adds new canvas context '2d-libcanvas'"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Point
-- LibCanvas.Shapes.Rectangle
-- LibCanvas.Shapes.Circle
+	- LibCanvas
+	- Point
+	- Shapes.Rectangle
+	- Shapes.Circle
 
-provides: LibCanvas.Context2D
+provides: Context2D
 
 ...
 */

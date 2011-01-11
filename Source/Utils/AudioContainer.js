@@ -1,20 +1,19 @@
 /*
 ---
 
-name: "LibCanvas.Utils.AudioContainer"
+name: "Utils.AudioContainer"
 
 description: "Provides audio preloader"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Utils.AudioElement
+	- LibCanvas
 
-provides: LibCanvas.Utils.AudioContainer
+provides: Utils.AudioContainer
 
 ...
 */

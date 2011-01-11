@@ -1,27 +1,27 @@
 /*
 ---
 
-name: "LibCanvas.Ui.Grip"
+name: "Ui.Grip"
 
 description: "Provides base ui object"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Behaviors.Bindable
-- LibCanvas.Behaviors.Drawable
-- LibCanvas.Behaviors.Clickable
-- LibCanvas.Behaviors.Draggable
-- LibCanvas.Behaviors.Droppable
-- LibCanvas.Behaviors.Linkable
-- LibCanvas.Behaviors.MouseListener
-- LibCanvas.Behaviors.Moveable
+	- LibCanvas
+	- Behaviors.Bindable
+	- Behaviors.Drawable
+	- Behaviors.Clickable
+	- Behaviors.Draggable
+	- Behaviors.Droppable
+	- Behaviors.Linkable
+	- Behaviors.MouseListener
+	- Behaviors.Moveable
 
-provides: LibCanvas.Ui.Grip
+provides: Ui.Grip
 
 ...
 */

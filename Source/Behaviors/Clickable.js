@@ -1,21 +1,21 @@
 /*
 ---
 
-name: "LibCanvas.Behaviors.Clickable"
+name: "Behaviors.Clickable"
 
 description: "Provides interface for clickable canvas objects"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Behaviors.Bindable
-- LibCanvas.Behaviors.MouseListener
+	- LibCanvas
+	- Behaviors.Bindable
+	- Behaviors.MouseListener
 
-provides: LibCanvas.Behaviors.Clickable
+provides: Behaviors.Clickable
 
 ...
 */

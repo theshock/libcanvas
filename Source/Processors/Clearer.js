@@ -1,20 +1,22 @@
 /*
 ---
 
-name: "LibCanvas.Processors.Clearer"
+name: "Processors.Clearer"
 
 description: "Сleans canvas with specified color"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+	- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
 
 requires:
-- LibCanvas
-- LibCanvas.Context2D
+	- LibCanvas
+	- Context2D
 
-provides: LibCanvas.Processors.Clearer
+provides: Processors.Clearer
+
+...
 */
 
 LibCanvas.namespace('Processors').Clearer = atom.Class({

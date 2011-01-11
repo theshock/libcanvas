@@ -1,19 +1,21 @@
 /*
 ---
 
-name: "LibCanvas.Processors.Color"
+name: "Processors.Color"
 
 description: "Abstract class for works with color"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+	- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
 
 requires:
-- LibCanvas
+	- LibCanvas
 
-provides: LibCanvas.Processors.Color
+provides: Processors.Color
+
+...
 */
 
 new function () {

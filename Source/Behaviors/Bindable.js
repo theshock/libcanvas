@@ -1,19 +1,19 @@
 /*
 ---
 
-name: "LibCanvas.Behaviors.Bindable"
+name: "Behaviors.Bindable"
 
 description: "Provides interface for binding events to objects."
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
+	- LibCanvas
 
-provides: LibCanvas.Behaviors.Bindable
+provides: Behaviors.Bindable
 
 ...
 */

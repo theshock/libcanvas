@@ -1,20 +1,20 @@
 /*
 ---
 
-name: "LibCanvas.Utils.Image"
+name: "Utils.Image"
 
 description: "Provides some Image extensions"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Shapes.Rectangle
+	- LibCanvas
+	- Shapes.Rectangle
 
-provides: LibCanvas.Utils.Image
+provides: Utils.Image
 
 ...
 */

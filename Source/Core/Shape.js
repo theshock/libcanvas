@@ -1,21 +1,21 @@
 /*
 ---
 
-name: "LibCanvas.Shape"
+name: "Shape"
 
 description: "Abstract class LibCanvas.Shape defines interface for drawable canvas objects"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Geometry
-- LibCanvas.Point
+	- LibCanvas
+	- Geometry
+	- Point
 
-provides: LibCanvas.Shape
+provides: Shape
 
 ...
 */

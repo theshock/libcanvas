@@ -1,19 +1,21 @@
 /*
 ---
 
-name: "LibCanvas.Processors.Grayscale"
+name: "Processors.Grayscale"
 
 description: "Grayscale canvas"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+	- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
 
 requires:
-- LibCanvas
+	- LibCanvas
 
-provides: LibCanvas.Processors.Grayscale
+provides: Processors.Grayscale
+
+...
 */
 
 LibCanvas.namespace('Processors').Grayscale = atom.Class({

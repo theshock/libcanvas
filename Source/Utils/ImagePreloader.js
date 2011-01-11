@@ -1,20 +1,20 @@
 /*
 ---
 
-name: "LibCanvas.Utils.ImagePreloader"
+name: "Utils.ImagePreloader"
 
 description: "Provides images preloader"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Shapes.Rectangle
+	- LibCanvas
+	- Shapes.Rectangle
 
-provides: LibCanvas.Utils.ImagePreloader
+provides: Utils.ImagePreloader
 
 ...
 */

@@ -1,20 +1,20 @@
 /*
 ---
 
-name: "LibCanvas.Inner.FpsMeter"
+name: "Inner.FpsMeter"
 
 description: "Constantly calculates frames per seconds rate"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Utils.FpsMeter
+	- LibCanvas
+	- Utils.FpsMeter
 
-provides: LibCanvas.Inner.FpsMeter
+provides: Inner.FpsMeter
 
 ...
 */

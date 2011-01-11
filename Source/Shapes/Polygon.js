@@ -1,21 +1,21 @@
 /*
 ---
 
-name: "LibCanvas.Shapes.Polygon"
+name: "Shapes.Polygon"
 
 description: "Provides user-defined concave polygon as canvas object"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Point
-- LibCanvas.Shape
+	- LibCanvas
+	- Point
+	- Shape
 
-provides: LibCanvas.Shapes.Polygon
+provides: Shapes.Polygon
 
 ...
 */

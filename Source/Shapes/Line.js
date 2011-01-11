@@ -1,21 +1,21 @@
 /*
 ---
 
-name: "LibCanvas.Shapes.Line"
+name: "Shapes.Line"
 
 description: "Provides line as canvas object"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Point
-- LibCanvas.Shape
+	- LibCanvas
+	- Point
+	- Shape
 
-provides: LibCanvas.Shapes.Line
+provides: Shapes.Line
 
 ...
 */

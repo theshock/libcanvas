@@ -1,23 +1,23 @@
 /*
 ---
 
-name: "LibCanvas.Engines.Tile"
+name: "Engines.Tile"
 
 description: "Helper for building tile maps (e.g. for Tetris or ur's favorite Dune II - http://en.wikipedia.org/wiki/Tile_engine)"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Point
-- LibCanvas.Context2D
-- LibCanvas.Shapes.Rectangle
-- LibCanvas.Behaviors.Bindable
+	- LibCanvas
+	- Point
+	- Context2D
+	- Shapes.Rectangle
+	- Behaviors.Bindable
 
-provides: LibCanvas.Engines.Tile
+provides: Engines.Tile
 
 ...
 */

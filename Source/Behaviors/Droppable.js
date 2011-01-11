@@ -1,22 +1,22 @@
 /*
 ---
 
-name: "LibCanvas.Behaviors.Droppable"
+name: "Behaviors.Droppable"
 
 description: "Abstract class for droppable canvas objects"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Behaviors.Bindable
-- LibCanvas.Behaviors.MouseListener
-- LibCanvas.Behaviors.Draggable
+	- LibCanvas
+	- Behaviors.Bindable
+	- Behaviors.MouseListener
+	- Behaviors.Draggable
 
-provides: LibCanvas.Behaviors.Droppable
+provides: Behaviors.Droppable
 
 ...
 */

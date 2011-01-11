@@ -1,20 +1,20 @@
 /*
 ---
 
-name: "LibCanvas.Utils.FpsMeter"
+name: "Utils.FpsMeter"
 
 description: "Provides FPS indicator"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Utils.Trace
+	- LibCanvas
+	- Utils.Trace
 
-provides: LibCanvas.Utils.FpsMeter
+provides: Utils.FpsMeter
 
 ...
 */

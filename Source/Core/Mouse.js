@@ -1,21 +1,21 @@
 /*
 ---
 
-name: "LibCanvas.Mouse"
+name: "Mouse"
 
 description: "A mouse control abstraction class"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Point
-- LibCanvas.Inner.MouseEvents
+	- LibCanvas
+	- Point
+	- Inner.MouseEvents
 
-provides: LibCanvas.Mouse
+provides: Mouse
 
 ...
 */

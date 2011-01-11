@@ -1,19 +1,19 @@
 /*
 ---
 
-name: "LibCanvas.Utils.StopWatch"
+name: "Utils.StopWatch"
 
 description: "StopWatch"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
+	- LibCanvas
 
-provides: LibCanvas.Utils.StopWatch
+provides: Utils.StopWatch
 
 ...
 */

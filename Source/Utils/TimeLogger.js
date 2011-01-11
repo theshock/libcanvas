@@ -1,21 +1,21 @@
 /*
 ---
 
-name: "LibCanvas.Utils.TimeLogger"
+name: "Utils.TimeLogger"
 
 description: "TimeLogger"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Utils.StopWatch
-- LibCanvas.Utils.Trace
+	- LibCanvas
+	- Utils.StopWatch
+	- Utils.Trace
 
-provides: LibCanvas.Utils.TimeLogger
+provides: Utils.TimeLogger
 
 ...
 */

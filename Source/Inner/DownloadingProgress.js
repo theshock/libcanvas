@@ -1,21 +1,21 @@
 /*
 ---
 
-name: "LibCanvas.Inner.DownloadingProgress"
+name: "Inner.DownloadingProgress"
 
 description: "Counting assets downloading progress"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Utils.ImagePreloader
-- LibCanvas.Utils.ProgressBar
+	- LibCanvas
+	- Utils.ImagePreloader
+	- Utils.ProgressBar
 
-provides: LibCanvas.Inner.DownloadingProgress
+provides: Inner.DownloadingProgress
 
 ...
 */

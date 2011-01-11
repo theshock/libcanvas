@@ -1,19 +1,19 @@
 /*
 ---
 
-name: "LibCanvas.Utils.Trace"
+name: "Utils.Trace"
 
 description: "Useful tool which provides windows with user-defined debug information"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
+	- LibCanvas
 
-provides: LibCanvas.Utils.Trace
+provides: Utils.Trace
 
 ...
 */

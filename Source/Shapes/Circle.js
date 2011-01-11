@@ -1,21 +1,21 @@
 /*
 ---
 
-name: "LibCanvas.Shapes.Circle"
+name: "Shapes.Circle"
 
 description: "Provides circle as canvas object"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Point
-- LibCanvas.Shape
+	- LibCanvas
+	- Point
+	- Shape
 
-provides: LibCanvas.Shapes.Circle
+provides: Shapes.Circle
 
 ...
 */

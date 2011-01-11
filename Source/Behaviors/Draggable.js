@@ -1,21 +1,21 @@
 /*
 ---
 
-name: "LibCanvas.Behaviors.Draggable"
+name: "Behaviors.Draggable"
 
 description: "When object implements LibCanvas.Behaviors.Draggable interface dragging made possible"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
-- LibCanvas.Behaviors.Bindable
-- LibCanvas.Behaviors.MouseListener
+	- LibCanvas
+	- Behaviors.Bindable
+	- Behaviors.MouseListener
 
-provides: LibCanvas.Behaviors.Draggable
+provides: Behaviors.Draggable
 
 ...
 */

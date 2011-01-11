@@ -1,19 +1,19 @@
 /*
 ---
 
-name: "LibCanvas.Behaviors.Animatable"
+name: "Behaviors.Animatable"
 
 description: "Basic abstract class for animatable objects."
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas
+	- LibCanvas
 
-provides: LibCanvas.Behaviors.Animatable
+provides: Behaviors.Animatable
 
 ...
 */
