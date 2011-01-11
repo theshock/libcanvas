@@ -1,13 +1,21 @@
 /*
 ---
-description: Stopwatch
 
-license: LGPL
+name: "LibCanvas.Utils.StopWatch"
+
+description: "StopWatch"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+- "Shock <shocksilien@gmail.com>"
 
-provides: [LibCanvas.Utils.StopWatch]
+requires:
+- LibCanvas
+
+provides: LibCanvas.Utils.StopWatch
+
+...
 */
 
 LibCanvas.namespace('Utils').StopWatch = atom.Class({

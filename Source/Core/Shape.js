@@ -1,16 +1,23 @@
 /*
 ---
-description: Abstract class LibCanvas.Shape defines interface for drawable canvas objects.
 
-license: LGPL
+name: "LibCanvas.Shape"
+
+description: "Abstract class LibCanvas.Shape defines interface for drawable canvas objects"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas.Behaviors.Bindable
+- LibCanvas
+- LibCanvas.Geometry
+- LibCanvas.Point
 
-provides: [LibCanvas.Shape]
+provides: LibCanvas.Shape
+
+...
 */
 
 LibCanvas.Shape = atom.Class({
@@ -26,6 +33,8 @@ LibCanvas.Shape = atom.Class({
 		return this.from;
 	},
 	move : function (distance, reverse) {
+		distance = this.invertDirection(distance, reverse);
+		reverse = false;
 		this.from.move(distance, reverse);
 		this. to .move(distance, reverse);
 		return this.parent(distance, reverse);

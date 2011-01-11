@@ -1,11 +1,31 @@
+/*
+---
+
+name: "LibCanvas.Processors.HsbShift"
+
+description: "Shift on of hue|saturation|bright value of all colors"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+requires:
+- LibCanvas
+- LibCanvas.Processors.Color
+
+provides: LibCanvas.Processors.HsbShift
+*/
+
+
 LibCanvas.namespace('Processors').HsbShift = atom.Class({
 	Extends: LibCanvas.Processors.Color,
 	shift : 0,
 	param : 'hue',
 	initialize : function (shift, param) {
 		// hue, sat, bri
-		this.param = param || 'hue';
-		this.shift = shift * 1;
+		this.param =    param || this.param;
+		this.shift = 1*(shift || this.shift);
 		if (this.param == 'hue') {
 			this.shift %= 360;
 			if (this.shift < 0) this.shift += 360;
@@ -20,7 +40,7 @@ LibCanvas.namespace('Processors').HsbShift = atom.Class({
 			key   = { hue: 0, sat: 1, bri: 2 }[param],
 			i, hsb, rgb;
 		for (i = 0; i < d.length; i+=4) {
-			if (['hue', 'sat'].contains(param) && d[i] == d[i+1] && d[i] == d[i+2]) continue;
+			if ((param == 'hue' || param == 'sat') && d[i] == d[i+1] && d[i] == d[i+2]) continue;
 
 			hsb = this.rgbToHsb(d[i], d[i+1], d[i+2]);
 			param == 'hue' ?

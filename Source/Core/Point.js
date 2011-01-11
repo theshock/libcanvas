@@ -1,16 +1,23 @@
 /*
 ---
-description: A X/Y point coordinates encapsulating class
 
-license: LGPL
+name: "LibCanvas.Point"
+
+description: "A X/Y point coordinates encapsulating class"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas.Behaviors.Bindable
+- LibCanvas
+- LibCanvas.Geometry
+- LibCanvas.Utils.Math
 
-provides: [LibCanvas.Point]
+provides: LibCanvas.Point
+
+...
 */
 
 (function () {
@@ -45,16 +52,17 @@ var Point = LibCanvas.Point = atom.Class({
 				throw new TypeError('Wrong Arguments In Point.Set')
 			}
 		}
-		this.x = x === null ? x : Number(x);
-		this.y = y === null ? y : Number(y);
+		this.x = x == null ? x : Number(x);
+		this.y = y == null ? y : Number(y);
 		return this;
 	},
 	move: function (distance, reverse) {
 		distance = this.self.from(distance);
-		var multi = reverse ? -1 : 1;
-		this.x += distance.x * multi;
-		this.y += distance.y * multi;
-		return this.parent(distance, reverse);
+		distance = this.invertDirection(distance, reverse);
+		this.x += distance.x;
+		this.y += distance.y;
+
+		return this.parent(distance, false);
 	},
 	moveTo : function (newCoord, speed) {
 		return speed ?

@@ -1,9 +1,25 @@
+/*
+---
+
+name: "LibCanvas.Processors.Invert"
+
+description: "Invert all canvas colors"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+requires:
+- LibCanvas
+
+provides: LibCanvas.Processors.Invert
+*/
+
 LibCanvas.namespace('Processors').Invert = atom.Class({
 	processPixels : function (data) {
-		var d = data.data;
-		for (var i = 0; i < d.length; i++) {
-			if (i % 4 != 3) d[i] = 255 - d[i];
-		}
+		var d = data.data, i = 0, l = d.length;
+		for (;i < l; i++) if (i % 4 != 3) d[i] = 255 - d[i];
 		return data;
 	}
 });

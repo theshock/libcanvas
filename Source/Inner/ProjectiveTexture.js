@@ -1,13 +1,21 @@
 /*
 ---
-description: Provides projective textures rendering (more info: http://acko.net/files/projective/index.html)
 
-license: LGPL
+name: " LibCanvas.Inner.ProjectiveTexture"
+
+description: "Provides testing projective textures rendering (more info: http://acko.net/files/projective/index.html)"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+- "Shock <shocksilien@gmail.com>"
 
-provides: [LibCanvas.Inner.ProjectiveTexture]
+requires:
+- LibCanvas
+
+provides: LibCanvas.Inner.ProjectiveTexture
+
+...
 */
 
 (function () {
@@ -24,8 +32,8 @@ LibCanvas.namespace('Inner').ProjectiveTexture = atom.Class({
 		this.limit = 4;
 	},
 	setQuality : function (patchSize, limit) {
-		this.patchSize = patchSize || 64;
-		this.limit = limit || 4;
+		this.patchSize = patchSize == null ? 64 : patchSize;
+		this.limit = limit == null ? 4 : limit;
 		return this;
 	},
 	setContext : function (ctx) {
@@ -226,7 +234,7 @@ function getProjectiveTransform(points) {
 Matrix.prototype = {
 	add : function (operand) {
 		if (operand.w != this.w || operand.h != this.h) {
-			throw "Matrix add size mismatch";
+			throw new Error("Matrix add size mismatch");
 		}
 
 		var values = allocate(this.w, this.h);
@@ -256,7 +264,7 @@ Matrix.prototype = {
 		if (+operand !== operand) {
 			// Matrix mult
 			if (operand.h != this.w) {
-				throw "Matrix mult size mismatch";
+				throw new Error("Matrix mult size mismatch");
 			}
 			values = allocate(this.w, this.h);
 			for (y = 0; y < this.h; ++y) {
@@ -283,7 +291,7 @@ Matrix.prototype = {
 	},
 	rowEchelon : function () {
 		if (this.w <= this.h) {
-			throw "Matrix rowEchelon size mismatch";
+			throw new Error("Matrix rowEchelon size mismatch");
 		}
 
 		var temp = cloneValues(this.values);
@@ -333,7 +341,7 @@ Matrix.prototype = {
 		var x, y;
 
 		if (this.w != this.h) {
-			throw "Matrix invert size mismatch";
+			throw new Error("Matrix invert size mismatch");
 		}
 
 		var temp = allocate(this.w * 2, this.h);

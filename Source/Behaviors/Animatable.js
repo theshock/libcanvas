@@ -7,7 +7,8 @@ description: "Basic abstract class for animatable objects."
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
-authors: ["Shock <shocksilien@gmail.com>"]
+authors:
+- "Shock <shocksilien@gmail.com>"
 
 requires:
 - LibCanvas

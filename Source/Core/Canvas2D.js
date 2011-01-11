@@ -7,16 +7,20 @@ description: "LibCanvas.Canvas2D wraps around native <canvas>."
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
-authors: ["Shock <shocksilien@gmail.com>"]
+authors:
+- "Shock <shocksilien@gmail.com>"
 
 requires:
 - LibCanvas
-- LibCanvas.Inner.Canvas2D.FrameRenderer
-- LibCanvas.Inner.Canvas2D.FpsMeter
-- LibCanvas.Inner.Canvas2D.DownloadingProgress
+- LibCanvas.Inner.FrameRenderer
+- LibCanvas.Inner.FpsMeter
+- LibCanvas.Inner.DownloadingProgress
+- LibCanvas.Context2d
 - LibCanvas.Behaviors.Bindable
 
 provides: LibCanvas.Canvas2D
+
+...
 */
 
 LibCanvas.Canvas2D = atom.Class({

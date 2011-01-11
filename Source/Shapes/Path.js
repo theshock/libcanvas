@@ -1,24 +1,31 @@
 /*
 ---
-description: Provides a user-defined path (similar to vector graphics) as canvas object
 
-license: LGPL
+name: "LibCanvas.Shapes.Line"
+
+description: "Provides line as canvas object"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+- "Shock <shocksilien@gmail.com>"
 
 requires:
+- LibCanvas
+- LibCanvas.Point
 - LibCanvas.Shape
 
-provides: [LibCanvas.Shapes.Path]
+provides: LibCanvas.Shapes.Line
+
+...
 */
 
 new function () {
 
-var Point = LibCanvas.Point;
+var LibCanvas = window.LibCanvas, Point = LibCanvas.Point, Shapes = LibCanvas.Shapes;
 
 var Path = LibCanvas.namespace('Shapes').Path = atom.Class({
-	// Extends: LibCanvas.Shape,
+	Extends: LibCanvas.Shape,
 	// todo : refactoring
 	set : function (builder) {
 		this.builder = builder;
@@ -129,7 +136,7 @@ LibCanvas.namespace('Shapes.Path').Builder = atom.Class({
 				acw : a[5]
 			});
 		}
-		a.circle = LibCanvas.Shapes.Circle.from(a.circle);
+		a.circle = Shapes.Circle.from(a.circle);
 		if (Array.isArray(a.angle)) {
 			a.angle = {
 				start : a.angle[0],
@@ -184,7 +191,7 @@ LibCanvas.namespace('Shapes.Path').Builder = atom.Class({
 	},
 	build : function () {
 		if (arguments.length == 1) this.parseString(arguments[0]);
-		if (!this.path) this.path = new LibCanvas.Shapes.Path(this);
+		if (!this.path) this.path = new Path(this);
 		return this.path;
 	}
 });

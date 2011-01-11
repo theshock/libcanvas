@@ -1,13 +1,21 @@
 /*
 ---
-description: A keyboard control abstraction class
 
-license: LGPL
+name: "LibCanvas.Keyboard"
+
+description: "A keyboard control abstraction class"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+- "Shock <shocksilien@gmail.com>"
 
-provides: [LibCanvas.Mouse]
+requires:
+- LibCanvas
+
+provides: LibCanvas.Keyboard
+
+...
 */
 
 (function () {

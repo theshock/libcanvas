@@ -1,3 +1,24 @@
+/*
+---
+
+name: "LibCanvas.Utils.StopWatch"
+
+description: "StopWatch"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+
+authors:
+- "Shock <shocksilien@gmail.com>"
+
+requires:
+- LibCanvas
+
+provides: LibCanvas.Utils.StopWatch
+
+...
+*/
+
+
 LibCanvas.namespace('Utils').Storage = atom.Class({
 	initialize : function () {
 		this.store = this.getStorage();
@@ -9,7 +30,7 @@ LibCanvas.namespace('Utils').Storage = atom.Class({
 	},
 	store : '',
 	setScope : function (name) {
-		var st = this.getStorage();
+		var st = this.store;
 		name += '\0';
 		if (!st[name]) st[name] = {};
 		this.scope = st[name];
@@ -30,7 +51,7 @@ LibCanvas.namespace('Utils').Storage = atom.Class({
 		return this.has(name) ? this.store[name] : null;
 	},
 	set  : function (name, value) {
-		arguments.length == 1 && typeof name == 'object' ?
+		typeof name == 'object' ?
 			atom.extend(this.store, name) : (this.store[name] = value);
 		return this;
 	}

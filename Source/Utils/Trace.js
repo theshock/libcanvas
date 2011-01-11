@@ -1,21 +1,28 @@
 /*
 ---
-description: Useful tool which provides windows with user-defined debug information
 
-license: LGPL
+name: "LibCanvas.Utils.Trace"
+
+description: "Useful tool which provides windows with user-defined debug information"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+- "Shock <shocksilien@gmail.com>"
 
-provides: [LibCanvas.Utils.Trace]
+requires:
+- LibCanvas
+
+provides: LibCanvas.Utils.Trace
+
+...
 */
 
-LibCanvas.namespace('Utils').Trace = atom.Class({
+new function () {
+
+var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
 	initialize : function (object) {
-		if (arguments.length == 1) {
-			if (!this.trace) return new LibCanvas.Trace(object);
-			this.trace(object);
-		}
+		if (arguments.length == 1) this.trace(object);
 		this.stopped = false;
 		return this;
 	},
@@ -28,9 +35,11 @@ LibCanvas.namespace('Utils').Trace = atom.Class({
 		if (!this.blocked) {
 			this.createNode().html(
 				this.dump(object)
-					.safeHTML()
-					.replaceAll('\t', '&nbsp;&nbsp;&nbsp;')
-					.replaceAll('\n', '<br />')
+					.safeHtml()
+					.replaceAll({
+						'\t': '&nbsp;'.repeat(3),
+						'\n': '<br />'
+					})
 				|| 'null'
 			);
 		}
@@ -38,7 +47,7 @@ LibCanvas.namespace('Utils').Trace = atom.Class({
 	},
 	dumpRec : function (obj, level) {
 		var callee = arguments.callee;
-		var html = '';
+		var html = '', type = atom.typeOf(obj);
 		if (level > 5) return '*TOO_DEEP : ' + level + '*';
 		var tabs = '\t'.repeat(level);
 		if (Array.isArray(obj)) {
@@ -47,29 +56,27 @@ LibCanvas.namespace('Utils').Trace = atom.Class({
 				html += tabs + '\t' + key + ': ' + callee(this, 1+(1*level)) + '\n';
 			});
 			html += tabs + ']\n';
-		} else if (atom.isDomElement(obj)) {
+		} else if (type == 'element') {
 			var attr = [], meth = [];
 			for (var i in obj) (typeof(obj[i]) == 'function') ?
 				meth.push(i + '()') : attr.push(i);
 			html += obj.toString() + ' {\n';
-			if (obj.tagName == 'IMG') {
-				try {
-					html += tabs + '\tsrc        : ' + obj.src + '\n';
-					html += tabs + '\tsize       : ' + obj.width + '×' + obj.height + '\n';
-				} catch (ignored) {};
-			}
+			if (obj.tagName == 'IMG') try {
+				html += tabs + '\tsrc        : ' + obj.src + '\n';
+				html += tabs + '\tsize       : ' + obj.width + '×' + obj.height + '\n';
+			} catch (ignored) {}
 			html += tabs + '\tattributes : ' + meth.join(', ') + '\n';
 			html += tabs + '\tmethods    : ' + attr.join(', ') + '\n';
 			html += tabs + '}\n'
-		} else if (typeof obj == 'object') {
+		} else if (type == 'object') {
 			html += '{\n';
 			for (var key in obj) {
 				html += tabs + '\t' + key + ': ' + callee(obj[key], 1+(1*level)) + '\n';
 			}
 			html += tabs + '}';
-		} else if (obj == 'null') {
+		} else if (type == 'null') {
 			html += 'null';
-		} else if (typeof obj === 'boolean') {
+		} else if (type === 'boolean') {
 			html += obj ? 'true' : 'false';
 		} else {
 			html += obj;
@@ -166,7 +173,9 @@ LibCanvas.namespace('Utils').Trace = atom.Class({
 window.trace = function (msg) {
 	if (arguments.length) {
 		Array.from(arguments).forEach(function (a) {
-			new LibCanvas.Utils.Trace(a);
+			new Trace(a);
 		})
-	} else return new LibCanvas.Utils.Trace();
+	} else return new Trace();
 };
+
+}();

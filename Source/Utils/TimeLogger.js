@@ -1,14 +1,27 @@
 /*
 ---
-description: Stop watch
 
-license: LGPL
+name: "LibCanvas.Utils.TimeLogger"
+
+description: "TimeLogger"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+- "Shock <shocksilien@gmail.com>"
 
-provides: [LibCanvas.Utils.TimeLogger]
+requires:
+- LibCanvas
+- LibCanvas.Utils.StopWatch
+- LibCanvas.Utils.Trace
+
+provides: LibCanvas.Utils.TimeLogger
+
+...
 */
+new function () {
+
+var Utils = LibCanvas.Utils;
 
 LibCanvas.namespace('Utils').TimeLogger = atom.Class({
 	time : [],
@@ -17,8 +30,8 @@ LibCanvas.namespace('Utils').TimeLogger = atom.Class({
 	trace: null,
 	initialize : function (last) {
 		if (last) this.last = last;
-		this.sw    = new LibCanvas.Utils.StopWatch();
-		this.trace = new LibCanvas.Utils.Trace();
+		this.sw    = new Utils.StopWatch();
+		this.trace = new Utils.Trace();
 	},
 	from : function () {
 		this.sw.start();
@@ -31,3 +44,5 @@ LibCanvas.namespace('Utils').TimeLogger = atom.Class({
 		this.trace.trace(msg + this.time.average().toFixed(2));
 	}
 });
+
+}();

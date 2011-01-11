@@ -1,13 +1,22 @@
 /*
 ---
-description: Provides audio preloader
 
-license: LGPL
+name: "LibCanvas.Utils.AudioContainer"
+
+description: "Provides audio preloader"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+- "Shock <shocksilien@gmail.com>"
 
-provides: [LibCanvas.Utils.AudioContainer]
+requires:
+- LibCanvas
+- LibCanvas.Utils.AudioElement
+
+provides: LibCanvas.Utils.AudioContainer
+
+...
 */
 
 LibCanvas.namespace('Utils').AudioContainer = atom.Class({

@@ -1,21 +1,27 @@
 /*
 ---
-description: Provides rectangle as canvas object
 
-license: LGPL
+name: "LibCanvas.Shapes.Ellipse"
+
+description: "Provides ellipse as canvas object"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+- "Shock <shocksilien@gmail.com>"
 
 requires:
-- LibCanvas.Shape
+- LibCanvas
+- LibCanvas.Point
+- LibCanvas.Rectangle
 
-provides: [LibCanvas.Shapes.Rectangle]
+provides: LibCanvas.Shapes.Ellipse
+
+...
 */
 
-
 LibCanvas.namespace('Shapes').Ellipse = atom.Class({
-	//Extends: LibCanvas.Shapes.Rectangle,
+	Extends: LibCanvas.Shapes.Rectangle,
 	set : function () {
 		this.parent.apply(this, arguments);
 		var update = function () {
@@ -32,11 +38,7 @@ LibCanvas.namespace('Shapes').Ellipse = atom.Class({
 		return this;
 	},
 	getBufferCtx : function () {
-		if (!this.bufferCtx) {
-			this.bufferCtx = LibCanvas.Buffer(1, 1)
-				.getContext('2d-libcanvas');
-		}
-		return this.bufferCtx;
+		return this.bufferCtx || (this.bufferCtx = LibCanvas.Buffer(1, 1, true).ctx);
 	},
 	hasPoint : function () {
 		var ctx = this.processPath(this.getBufferCtx()); 
@@ -54,22 +56,22 @@ LibCanvas.namespace('Shapes').Ellipse = atom.Class({
 			this.cache = [];
 			for (var i = 12; i--;) this.cache.push(new Point());
 		}
-		var c = this.cache;
-		var kappa = .5522848;
-		var x  = this.from.x;
-		var y  = this.from.y;
-		var xe = this.to.x;
-		var ye = this.to.y;
-		var xm = (xe + x) / 2;
-		var ym = (ye + y) / 2;
-		var ox = (xe - x) / 2 * kappa;
-		var oy = (ye - y) / 2 * kappa;
+		var c = this.cache,
+			angle = this.rotateAngle,
+			kappa = .5522848,
+			x  = this.from.x,
+			y  = this.from.y,
+			xe = this.to.x,
+			ye = this.to.y,
+			xm = (xe + x) / 2,
+			ym = (ye + y) / 2,
+			ox = (xe - x) / 2 * kappa,
+			oy = (ye - y) / 2 * kappa;
 		c[0].set(x, ym - oy); c[ 1].set(xm - ox, y); c[ 2].set(xm, y);
 		c[3].set(xm + ox, y); c[ 4].set(xe, ym -oy); c[ 5].set(xe, ym);
 		c[6].set(xe, ym +oy); c[ 7].set(xm +ox, ye); c[ 8].set(xm, ye);
 		c[9].set(xm -ox, ye); c[10].set(x, ym + oy); c[11].set(x, ym);
 
-		var angle = this.rotateAngle;
 		if (angle) {
 			var center = new Point(xm, ym);
 			for (i = c.length; i--;) c[i].rotate(angle, center);

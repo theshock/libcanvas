@@ -1,13 +1,22 @@
 /*
 ---
-description: Provides images preloader
 
-license: LGPL
+name: "LibCanvas.Utils.ImagePreloader"
+
+description: "Provides images preloader"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+- "Shock <shocksilien@gmail.com>"
 
-provides: [LibCanvas.Utils.ImagePreloader]
+requires:
+- LibCanvas
+- LibCanvas.Shapes.Rectangle
+
+provides: LibCanvas.Utils.ImagePreloader
+
+...
 */
 
 LibCanvas.namespace('Utils').ImagePreloader = atom.Class({
@@ -46,7 +55,8 @@ LibCanvas.namespace('Utils').ImagePreloader = atom.Class({
 	},
 	createImage : function (src, key) {
 		this.number++;
-		return this.images[key] = $('body').create('img', { src : src })
+		return this.images[key] = atom()
+			.create('img', { src : src })
 			.bind({
 				load  : this.createEvent('loaded'),
 				error : this.createEvent('errors'),

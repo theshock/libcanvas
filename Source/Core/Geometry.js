@@ -1,3 +1,23 @@
+/*
+---
+
+name: "LibCanvas.Geometry"
+
+description: "Base for such things as Point and Shape"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+
+authors:
+- "Shock <shocksilien@gmail.com>"
+
+requires:
+- LibCanvas
+- LibCanvas.Bindable
+
+provides: LibCanvas.Geometry
+
+...
+*/
 
 LibCanvas.Geometry = atom.Class({
 	Implements: [LibCanvas.Behaviors.Bindable],
@@ -9,16 +29,15 @@ LibCanvas.Geometry = atom.Class({
 	initialize : function () {
 		if (arguments.length) this.set.apply(this, arguments);
 	},
+	invertDirection: function (distance, reverse) {
+		var multi = reverse ? -1 : 1;
+		return {
+			x : distance.x * multi,
+			y : distance.y * multi
+		};
+	},
 	move : function (distance, reverse) {
-		var sign = function (num) {
-			return num * (reverse ? -1 : 1);
-		};
-		var moved = {
-			x : sign(distance.x),
-			y : sign(distance.y)
-		};
-
-		this.bind('move', [moved]);
+		this.bind('move', [this.invertDirection(distance, reverse)]);
 		return this;
 	}
 });

@@ -1,14 +1,21 @@
 /*
 ---
-description: Every frame cleans canvas with specified color
 
-license: LGPL
+name: "LibCanvas.Processors.Clearer"
+
+description: "Сleans canvas with specified color"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
 - Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
 
-provides: [LibCanvas.Processors.Clearer]
-*/  
+requires:
+- LibCanvas
+- LibCanvas.Context2D
+
+provides: LibCanvas.Processors.Clearer
+*/
 
 LibCanvas.namespace('Processors').Clearer = atom.Class({
 	style : null,

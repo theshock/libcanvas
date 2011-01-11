@@ -7,7 +7,8 @@ description: "Provides basic animation for sprites"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
-authors: ["Shock <shocksilien@gmail.com>"]
+authors:
+- "Shock <shocksilien@gmail.com>"
 
 requires:
 - LibCanvas

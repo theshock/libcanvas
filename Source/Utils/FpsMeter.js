@@ -1,13 +1,22 @@
 /*
 ---
-description: Provides FPS indicator
 
-license: LGPL
+name: "LibCanvas.Utils.FpsMeter"
+
+description: "Provides FPS indicator"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+- "Shock <shocksilien@gmail.com>"
 
-provides: [LibCanvas.Utils.FpsMeter]
+requires:
+- LibCanvas
+- LibCanvas.Utils.Trace
+
+provides: LibCanvas.Utils.FpsMeter
+
+...
 */
 
 LibCanvas.namespace('Utils').FpsMeter = atom.Class({

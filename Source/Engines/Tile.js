@@ -1,16 +1,25 @@
 /*
 ---
-description: Helper for building tile maps (e.g. for Tetris or ur's favorite Dune II - http://en.wikipedia.org/wiki/Tile_engine)
 
-license: LGPL
+name: "LibCanvas.Engines.Tile"
+
+description: "Helper for building tile maps (e.g. for Tetris or ur's favorite Dune II - http://en.wikipedia.org/wiki/Tile_engine)"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+- "Shock <shocksilien@gmail.com>"
 
 requires:
+- LibCanvas
+- LibCanvas.Point
+- LibCanvas.Context2D
+- LibCanvas.Shapes.Rectangle
 - LibCanvas.Behaviors.Bindable
 
-provides: [LibCanvas.Engines.Tile]
+provides: LibCanvas.Engines.Tile
+
+...
 */
 
 LibCanvas.namespace('Engines').Tile = atom.Class({
@@ -48,7 +57,7 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 		this.oldMatrix = matrix.clone();
 		return this;
 	},
-	// todo: check if clone successfull
+	// todo: check if clone is successfull
 	//cloneMatrix : function (matrix) {
 	//	return matrix.clone();
 	//},
@@ -68,7 +77,7 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 	},
 	update : function () {
 		var changed = false, old = this.oldMatrix;
-		this.forEach(function (cell) {
+		this.each(function (cell) {
 			if (this.first || old[cell.y][cell.x] != cell.t) {
 				changed = true;
 				this.drawCell(cell);

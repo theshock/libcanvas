@@ -1,21 +1,29 @@
 /*
 ---
-description: A mouse control abstraction class
 
-license: LGPL
+name: "LibCanvas.Mouse"
+
+description: "A mouse control abstraction class"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+- "Shock <shocksilien@gmail.com>"
 
-provides: [LibCanvas.Mouse]
+requires:
+- LibCanvas
+- LibCanvas.Point
+- LibCanvas.Inner.MouseEvents
+
+provides: LibCanvas.Mouse
+
+...
 */
 
 LibCanvas.Mouse = atom.Class({
 	initialize : function (libcanvas) {
 		this.inCanvas = false;
 		this.point = new LibCanvas.Point();
-
-		//noTouch || this.initTouch();
 
 		this.libcanvas = libcanvas;
 		this.elem      = libcanvas.origElem;

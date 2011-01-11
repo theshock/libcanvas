@@ -1,19 +1,33 @@
 /*
 ---
-description: LibCanvas.Context2D adds new canvas' context '2d-libcanvas'.
 
-license: LGPL
+name: "LibCanvas.Context2D"
+
+description: "LibCanvas.Context2D adds new canvas context '2d-libcanvas'"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+- "Shock <shocksilien@gmail.com>"
 
-provides: [LibCanvas.Context2D]
+requires:
+- LibCanvas
+- LibCanvas.Point
+- LibCanvas.Shapes.Rectangle
+- LibCanvas.Shapes.Circle
+
+provides: LibCanvas.Context2D
+
+...
 */
 
 (function () {
 
 var LibCanvas = window.LibCanvas,
-	Shapes = LibCanvas.namespace('Shapes');
+	Point     = LibCanvas.Point,
+	Shapes    = LibCanvas.namespace('Shapes'),
+	Rectange  = Shapes.Rectangle,
+	Circle    = Shapes.Circle;
 
 
 var office = {
@@ -32,7 +46,7 @@ var office = {
 	},
 	makeRect: function (args) {
 		return args.length ?
-			Shapes.Rectangle.from(args) :
+			Rectangle.from(args) :
 			this.getFullRectangle();
 	},
 	fillStroke : function (type, args) {
@@ -49,12 +63,12 @@ var office = {
 		return this;
 	},
 	originalPoint : function (func, args) {
-		var point = LibCanvas.Point.from(args);
+		var point = Point.from(args);
 		return this.original(func, [point.x, point.y]);
 	},
 	createImageCacheData : function (a) {
-		var draw = Shapes.Rectangle.from(a.draw);
-		var crop = a.crop ? Shapes.Rectangle.from(a.crop) : null;
+		var draw = Rectangle.from(a.draw);
+		var crop = a.crop ? Rectangle.from(a.crop) : null;
 		return {
 			src : a.image.getAttribute('src') || '',
 			image : a.image,
@@ -137,7 +151,7 @@ LibCanvas.Context2D = atom.Class({
 		this.height = this.canvas.height;
 	},
 	getFullRectangle : function () {
-		return new Shapes.Rectangle(0, 0, this.width, this.height);
+		return new Rectangle(0, 0, this.width, this.height);
 	},
 	original : function (method, args) {
 		try {
@@ -180,6 +194,10 @@ LibCanvas.Context2D = atom.Class({
 
 	// Values
 	set : function (name, value) {
+		if (typeof name == 'object') {
+			for (var i in name) this.set(i, name[i]);
+			return this;
+		}
 		try {
 			this.ctx2d[name] = value;
 		} catch (e) {
@@ -226,8 +244,8 @@ LibCanvas.Context2D = atom.Class({
 		if (a.length > 1) {
 			return this.original('arc', a);
 		} else if ('circle' in a[0]) {
-			circle  = Shapes.Circle.from(a[0].circle);
-			angle = Array.isArray(a[0].angle) ?
+			circle = Circle.from(a[0].circle);
+			angle  = Array.isArray(a[0].angle) ?
 				a[0].angle.associate(['start', 'end']) :
 				Object.collect(a[0].angle, ['start', 'end', 'size']);
 			if (Array.isArray(angle)) {
@@ -271,7 +289,7 @@ LibCanvas.Context2D = atom.Class({
 		if (arguments.length == 2) {
 			return this.ctx2d.isPointInPath(x, y);
 		} else {
-			var point = LibCanvas.Point.from(x);
+			var point = Point.from(x);
 			return this.ctx2d.isPointInPath(point.x, point.y);
 		}		
 	},
@@ -286,7 +304,7 @@ LibCanvas.Context2D = atom.Class({
 		return this;
 	},
 	translate : function (point, reverse) {
-		point = LibCanvas.Point.from(
+		point = Point.from(
 			(arguments.length === 1 || reverse === true)
 				? point : arguments
 		);
@@ -347,7 +365,7 @@ LibCanvas.Context2D = atom.Class({
 			padding : [0,0]
 		}, cfg);
 		this.save();
-		var to = cfg.to ? Shapes.Rectangle.from(cfg.to) : this.getFullRectangle();
+		var to = cfg.to ? Rectangle.from(cfg.to) : this.getFullRectangle();
 		var lh = (cfg.lineHeight || (cfg.size * 1.15)).round();
 		this.set('font', '{style}{weight}{size}px {family}'
 			.substitute({
@@ -424,7 +442,7 @@ LibCanvas.Context2D = atom.Class({
 				.drawImage(data);
 			office.putImageCache(data, cache);
 		}
-		var draw = Shapes.Rectangle.from(a.draw);
+		var draw = Rectangle.from(a.draw);
 		var result = {
 			image : cache,
 			from  : draw.from
@@ -449,12 +467,12 @@ LibCanvas.Context2D = atom.Class({
 		}
 		var from;
 		if (data.center) {
-			from = LibCanvas.Point.from(data.center).clone().move({
+			from = Point.from(data.center).clone().move({
 				x : -cache.width /2,
 				y : -cache.height/2
 			});
 		} else {
-			from = LibCanvas.Point.from(data.from).clone().move({
+			from = Point.from(data.from).clone().move({
 				x : from.x - (cache.width  - data.image.width )/2,
 				y : from.y - (cache.height - data.image.height)/2
 			});
@@ -474,7 +492,7 @@ LibCanvas.Context2D = atom.Class({
 
 		this.save();
 		if (from) {
-			from = LibCanvas.Point.from(from);
+			from = Point.from(from);
 			if (a.center) from = {
 				x : from.x - a.image.width/2,
 				y : from.y - a.image.height/2
@@ -490,11 +508,11 @@ LibCanvas.Context2D = atom.Class({
 				a.image, from.x, from.y
 			]);
 		} else if (a.draw) {
-			var draw = Shapes.Rectangle.from(a.draw);
+			var draw = Rectangle.from(a.draw);
 			if (a.angle) this.rotate(a.angle, draw.getCenter());
 
 			if (a.crop) {
-				var crop = Shapes.Rectangle.from(a.crop);
+				var crop = Rectangle.from(a.crop);
 				this.original('drawImage', [
 					a.image,
 					crop.from.x, crop.from.y, crop.getWidth(), crop.getHeight(),
@@ -524,11 +542,10 @@ LibCanvas.Context2D = atom.Class({
 		if (a.length == 1 && typeof a == 'object') {
 			a = a[0];
 			put.image = a.image;
-			put.from  = LibCanvas.Point.from(a.from);
+			put.from  = Point.from(a.from);
 		} else if (a.length >= 2) {
 			put.image = a[0];
-			put.from = (a.length == 2) ?
-				LibCanvas.Point.from(a[1]) : new LibCanvas.Point(a[1], a[2]);
+			put.from = Point.from(a.length > 2 ? [a[1], a[2]] : a[1]);
 		}
 		return this.original('putImageData', [
 			put.image, put.from.x, put.from.y

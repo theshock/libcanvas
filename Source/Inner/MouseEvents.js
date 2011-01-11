@@ -1,13 +1,22 @@
 /*
 ---
-description: Class which contains several basic mouse events 
 
-license: LGPL
+name: "LibCanvas.Inner.MouseEvents"
+
+description: "Class which contains several basic mouse events "
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+- "Shock <shocksilien@gmail.com>"
 
-provides: [LibCanvas.Inner.MouseEvents]
+requires:
+- LibCanvas
+- LibCanvas.Point
+
+provides: LibCanvas.Inner.MouseEvents
+
+...
 */
 
 LibCanvas.namespace('Inner').MouseEvents = atom.Class({
@@ -30,22 +39,20 @@ LibCanvas.namespace('Inner').MouseEvents = atom.Class({
 		return this.mouse.inCanvas && elem.getShape().hasPoint(this.point);
 	},
 	getOverSubscribers : function () {
-		var mouse = this;
 		var elements = {
 			over : [],
 			out  : []
 		};
-		var maxOverMouseZ = 0;
-		this.subscribers
-			.sortBy('getZIndex')
-			.forEach(function (elem) {
-				if (elem.getZIndex() >= maxOverMouseZ && mouse.overElem(elem)) {
-					maxOverMouseZ = elem.getZIndex();
-					elements.over.push(elem);
-				} else {
-					elements.out.push(elem);
-				}
-			});
+		var maxOverMouseZ = 0, sub = this.subscribers.sortBy('getZIndex');
+		for (var i = 0, l = sub.length; i < l; i++) {
+			var elem = sub[i];
+			if (elem.getZIndex() >= maxOverMouseZ && this.overElem(elem)) {
+				maxOverMouseZ = elem.getZIndex();
+				elements.over.push(elem);
+			} else {
+				elements.out.push(elem);
+			}
+		}
 		return elements;
 	},
 	fireEvent : function (elem, event, e) {

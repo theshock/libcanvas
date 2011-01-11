@@ -1,18 +1,37 @@
 /*
 ---
-description: Provides progress bar canvas object
 
-license: LGPL
+name: "LibCanvas.Utils.ProgressBar"
+
+description: "Easy way to draw progress bar"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+- "Shock <shocksilien@gmail.com>"
 
-provides: [LibCanvas.Utils.ProgressBar]
+requires:
+- LibCanvas
+- LibCanvas.Point
+- LibCanvas.Shapes.Rectangle,
+- LibCanvas.Shapes.Polygon,
+
+provides: LibCanvas.Utils.ProgressBar
+
+...
 */
+
+new function () {
+
+var LibCanvas = window.LibCanvas,
+	Buffer    = LibCanvas.Buffer,
+	Rectangle = LibCanvas.Shapes.Rectangle,
+	Polygon   = LibCanvas.Shapes.Polygon,
+	Point     = LibCanvas.Point;
 
 LibCanvas.namespace('Utils').ProgressBar = atom.Class({
 	initialize : function () {
-		this.coord = new LibCanvas.Point;
+		this.coord = new Point;
 		this.progress = 0;
 	},
 	preRender : function () {
@@ -30,29 +49,22 @@ LibCanvas.namespace('Utils').ProgressBar = atom.Class({
 		this.libcanvas = libcanvas;
 		return this.preRender();
 	},
-	createBuffer : function () {
-		return LibCanvas.Buffer(
-			Object.collect(this.style, ['width', 'height'])
-		).getContext('2d-libcanvas');
-	},
 	getBuffer : function () {
-		if (!this.buffer) this.buffer = this.createBuffer();
+		if (!this.buffer) this.buffer = Buffer(this.style.width, this.style.height, true).ctx;
 		return this.buffer;
 	},
 	drawBorder : function () {
 		var s = this.style;
 		
-		var pbRect = new LibCanvas.Shapes.Rectangle({
+		var pbRect = new Rectangle({
 			from : this.coord,
 			size : Object.collect(s, ['width', 'height'])
 		});
 
 		this.libcanvas.ctx
 			.fillAll(s['bgColor'])
-			.set('fillStyle', s['barBgColor'])
-			.fill(pbRect)
-			.set('strokeStyle', s['borderColor'])
-			.stroke(pbRect)
+			.fill   (pbRect, s['barBgColor'])
+			.stroke (pbRect, s['borderColor']);
 		return this;
 	},
 	drawLine : function () {
@@ -72,36 +84,37 @@ LibCanvas.namespace('Utils').ProgressBar = atom.Class({
 		return this;
 	},
 	renderLine : function () {
-		var b = this.getBuffer();
-		var s = this.style;
+		var b = this.getBuffer(), s = this.style;
 
 		// Закрашиваем фон
-		b.save();
-		b.fillAll(s['barColor']);
+		b.save().fillAll(s['barColor']);
 
 		// Если нужны полоски - рисуем
 		if (s['strips']) {
 			b.set('fillStyle', s['stripColor']);
 			// Смещение верхней части полоски относительно нижней
-			var shift = s['stripShift'] || 0;
+			var shift = 1 * s['stripShift'] || 0, stripW = 1*s['stripWidth'];
+			var w = b.canvas.width, h = b.canvas.height;
 			// Рисуем их по очереди , пока на холсте есть место
-			for(var mv = 1; mv < b.canvas.width; mv += s['stripStep']) {
-				b.fill(new LibCanvas.Shapes.Polygon([
-					[1*mv + 1*shift, 0],
-					[1*mv + 1*s['stripWidth'] + 1*shift, 0],
-					[1*mv + 1*s['stripWidth'], 1*b.canvas.height ],
-					[1*mv, 1*b.canvas.height ]
+			for(var mv = 1; mv < w; mv += s['stripStep']) {
+				b.fill(new Polygon([
+					[mv + shift         , 0 ],
+					[mv + shift + stripW, 0 ],
+					[mv         + stripW, h ],
+					[mv                 , h ]
 				]));
 			}
 		}
 
 		// Добавляем поверх линию, если необходимо
 		if (s['blend']) {
-			b.set('globalAlpha', s['blendOpacity'] < 1 ? s['blendOpacity'] : 0.3);
-			b.set('fillStyle',   s['blendColor']);
-			b.fillRect({
-				from : [0, s['blendVAlign']],
-				size : [b.canvas.width, s['blendHeight']]
+			b.set({
+				globalAlpha: s['blendOpacity'] < 1 ? s['blendOpacity'] : 0.3,
+				fillStyle  : s['blendColor']
+			})
+			.fillRect({
+				from : [ 0             , s['blendVAlign'] ],
+				size : [ b.canvas.width, s['blendHeight'] ]
 			});
 		}
 		return b.restore().canvas;
@@ -123,3 +136,5 @@ LibCanvas.namespace('Utils').ProgressBar = atom.Class({
 		return this;
 	}
 });
+
+}();

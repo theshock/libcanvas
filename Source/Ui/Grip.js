@@ -1,14 +1,32 @@
 /*
 ---
-description:
 
-license: LGPL
+name: "LibCanvas.Ui.Grip"
+
+description: "Provides base ui object"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+- "Shock <shocksilien@gmail.com>"
 
-provides: [LibCanvas.Ui.Grio]
+requires:
+- LibCanvas
+- LibCanvas.Behaviors.Bindable
+- LibCanvas.Behaviors.Drawable
+- LibCanvas.Behaviors.Clickable
+- LibCanvas.Behaviors.Draggable
+- LibCanvas.Behaviors.Droppable
+- LibCanvas.Behaviors.Linkable
+- LibCanvas.Behaviors.MouseListener
+- LibCanvas.Behaviors.Moveable
+
+provides: LibCanvas.Ui.Grip
+
+...
 */
+
+
 (function () {
 
 var Beh = LibCanvas.Behaviors;
@@ -39,13 +57,14 @@ LibCanvas.namespace('Ui').Grip = atom.Class({
 		return this;
 	},
 	getStyle : function (type) {
-		return (this.active && this.config.active) ? this.config.active[type] :
-		       (this.hover  && this.config.hover)  ? this.config.hover [type] :
-		                       (this.config[type] || null);
+		var cfg = this.config;
+		return (this.active && cfg.active) ? cfg.active[type] :
+		       (this.hover  && cfg.hover)  ? cfg.hover [type] :
+		                      (cfg[type]  || null);
 	},
 	drawTo : function (ctx) {
-		var fill   = this.getStyle('fill');
-		var	stroke = this.getStyle('stroke');
+		var fill   = this.getStyle('fill'),
+			stroke = this.getStyle('stroke');
 		fill   && ctx.fill  (this.getShape(), fill  );
 		stroke && ctx.stroke(this.getShape(), stroke);
 		return this;

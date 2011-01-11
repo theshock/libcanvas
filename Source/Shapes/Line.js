@@ -1,38 +1,50 @@
 /*
 ---
-description: Provides line as a canvas object
 
-license: LGPL
+name: "LibCanvas.Shapes.Line"
+
+description: "Provides line as canvas object"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+- "Shock <shocksilien@gmail.com>"
 
 requires:
+- LibCanvas
+- LibCanvas.Point
 - LibCanvas.Shape
 
-provides: [LibCanvas.Shapes.Line]
+provides: LibCanvas.Shapes.Line
+
+...
 */
+
+new function () {
+
+var Point = LibCanvas.Point,
+	math = Math,
+	max = math.max,
+	min = math.min;
+
 
 LibCanvas.namespace('Shapes').Line = atom.Class({
 	Extends: LibCanvas.Shape,
-	// todo : refactoring
 	set : function (from, to) {
 		var a = Array.pickFrom(arguments);
 
-		this.from = LibCanvas.Point.from(a[0] || a.from);
-		this.to   = LibCanvas.Point.from(a[1] || a.to);
+		this.from = Point.from(a[0] || a.from);
+		this.to   = Point.from(a[1] || a.to);
 		
 		return this;
 	},
 	hasPoint : function (point) {
-		var max = Math.max;
-		var min = Math.min;
-		var fx = this.from.x;
-		var fy = this.from.y;
-		var tx = this.to.x;
-		var ty = this.to.y;
-		var px = this.point.x;
-		var py = this.point.y;
+		var fx = this.from.x,
+			fy = this.from.y,
+			tx = this.to.x,
+			ty = this.to.y,
+			px = this.point.x,
+			py = this.point.y;
 
 		if (!( px.between(min(fx, tx), max(fx, tx))
 		    && py.between(min(fy, ty), max(fy, ty))
@@ -46,10 +58,10 @@ LibCanvas.namespace('Shapes').Line = atom.Class({
 	},
 	processPath : function (ctx, noWrap) {
 		if (!noWrap) ctx.beginPath();
-
 		ctx.moveTo(this.from).lineTo(this.to);
-		
 		if (!noWrap) ctx.closePath();
 		return ctx;
 	}
 });
+
+}();

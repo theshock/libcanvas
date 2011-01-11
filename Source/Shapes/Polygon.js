@@ -1,18 +1,24 @@
 /*
 ---
-description: Provides user-defined concave polygon as canvas object
 
-license: LGPL
+name: "LibCanvas.Shapes.Polygon"
+
+description: "Provides user-defined concave polygon as canvas object"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+- "Shock <shocksilien@gmail.com>"
 
 requires:
+- LibCanvas
+- LibCanvas.Point
 - LibCanvas.Shape
 
-provides: [LibCanvas.Shapes.Polygon]
-*/
+provides: LibCanvas.Shapes.Polygon
 
+...
+*/
 (function (){
 
 
@@ -41,11 +47,14 @@ LibCanvas.namespace('Shapes').Polygon = atom.Class({
 	Extends: LibCanvas.Shape,
 	points: [],
 	set : function () {
-		this.points = Array.pickFrom(arguments)
-			.map(function (elem) {
-				if (elem) return LibCanvas.Point.from(elem);
-			})
-			.clean();
+		this.points.empty()
+			.append(
+				Array.pickFrom(arguments)
+					.map(function (elem) {
+						if (elem) return Point.from(elem);
+					})
+					.clean()
+			);
 		return this;
 	},
 	get length () {
@@ -106,7 +115,7 @@ LibCanvas.namespace('Shapes').Polygon = atom.Class({
 		return false;
 	},
 	each : function (fn, context) {
-		return this.points.forEach.apply(this.point, arguments);
+		return this.points.forEach(context ? fn.context(context) : fn);
 	},
 
 	getPoints : function () {
