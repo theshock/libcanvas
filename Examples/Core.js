@@ -44,9 +44,25 @@ LibCanvas.Examples = {
 			
 			this.get(app)(canvas, arg);
 		}.context(this));
+
+		return this;
+	},
+	showLinks: function () {
+		var links = [];
+		for (var name in this.registry) {
+			links.push('<li><a href="?app=' + name + '">' + name +'</a></li>');
+		}
+
+		atom().create('div')
+			.html('<ul>' + links.join('\n') + '</ul>')
+			.appendTo('body');
+
+		return this;
 	},
 	autoStart: function () {
-		atom(this.start.context(this));
+		atom(function () {
+			this.start().showLinks();
+		}.context(this));
 		return this;
 	}
 };
