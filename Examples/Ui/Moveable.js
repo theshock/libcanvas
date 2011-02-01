@@ -47,7 +47,7 @@ for (var i = 5; i--;)
 			fill: '#330000'
 		})
 		.listenMouse()
-		.bind('away:mousedown', function (e) {
+		.addEvent('away:mousedown', function (e) {
 			this.moveTo(e.offset, rand(70, 250));
 		});
 
