@@ -1,9 +1,9 @@
 /*
 ---
 
-name: "Utils.StopWatch"
+name: "Utils.Storage"
 
-description: "StopWatch"
+description: "Storage"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
@@ -13,7 +13,7 @@ authors:
 requires:
 	- LibCanvas
 
-provides: Utils.StopWatch
+provides: Utils.Storage
 
 ...
 */
