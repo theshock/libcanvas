@@ -47,14 +47,13 @@ LibCanvas.namespace('Shapes').Polygon = atom.Class({
 	Extends: LibCanvas.Shape,
 	points: [],
 	set : function () {
-		this.points.empty()
-			.append(
-				Array.pickFrom(arguments)
-					.map(function (elem) {
-						if (elem) return Point.from(elem);
-					})
-					.clean()
-			);
+		this.points.empty().append(
+			Array.pickFrom(arguments)
+				.map(function (elem) {
+					if (elem) return Point.from(elem);
+				})
+				.clean()
+		);
 		return this;
 	},
 	get length () {
@@ -92,8 +91,10 @@ LibCanvas.namespace('Shapes').Polygon = atom.Class({
 		return ctx;
 	},
 	move : function (distance, reverse) {
-		this.points.invoke('move', arguments);
-		return this.parent.apply(this, arguments);
+		distance = this.invertDirection(distance, reverse);
+		this.points.invoke('move', distance);
+		this.fireEvent('move', [distance]);
+		return this;
 	},
 	rotate : function (angle, pivot) {
 		this.points.invoke('rotate', arguments);
@@ -120,6 +121,9 @@ LibCanvas.namespace('Shapes').Polygon = atom.Class({
 
 	getPoints : function () {
 		return Array.toHash(this.points);
+	},
+	clone: function () {
+		return new this.self(this.points);
 	}
 });
 
