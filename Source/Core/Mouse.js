@@ -84,11 +84,11 @@ LibCanvas.Mouse = atom.Class({
 				y: 'pageY' in e ? e.pageY : e.clientY + document.scrollTop 
 			};
 			var offset = this.createOffset(e.target);
-			e.offsetX = event.page.x - offset.left;
-			e.offsetY = event.page.y - offset.top;
+			e.offsetX = e.page.x - offset.left;
+			e.offsetY = e.page.y - offset.top;
 			e.offset = new LibCanvas.Point({
-				x: event.page.x - offset.left,
-				y: event.page.y - offset.top
+				x: e.page.x - offset.left,
+				y: e.page.y - offset.top
 			});
 		}
 		return e;

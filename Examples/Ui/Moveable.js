@@ -32,7 +32,7 @@ LibCanvas.Examples.set('Ui.Moveable', function (canvas) {
 	libcanvas.autoUpdate = 'onRequest';
 
 	libcanvas.addProcessor('pre', new LibCanvas.Processors.Clearer());
-for (var i = 5; i--;)
+
 	libcanvas
 		.set({
 			width : width,
