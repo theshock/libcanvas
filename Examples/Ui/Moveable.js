@@ -27,9 +27,18 @@ LibCanvas.Examples.set('Ui.Moveable',
 				.createGrip({
 					shape : this.randomShape('circle'),
 					stroke: '#990000',
-					fill  : '#330000'
+					fill  : '#330000',
+					hover : {
+						stroke: '#ff0000',
+						fill  : '#990000'
+					},
+					active : {
+						stroke: '#00ff00',
+						fill  : '#009900'
+					}
 				})
 				.listenMouse()
+				.clickable()
 				.addEvent('away:mousedown', function (e) {
 					this.moveTo(e.offset, Number.random(70, 250));
 				});

@@ -21,11 +21,11 @@ provides: Behaviors.Clickable
 
 (function () {
 
-var setValFn = function (name, val) {
+var setValFn = function (object, name, val) {
 	return function () {
-		this[name] = val;
-		this.fireEvent('statusChanged');
-	}.context(this);
+		object[name] = val;
+		object.fireEvent('statusChanged');
+	};
 };
 
 // Should extends drawable, implements mouseListener
@@ -33,11 +33,8 @@ LibCanvas.namespace('Behaviors').Clickable = atom.Class({
 	clickable : function () { 
 		this.listenMouse();
 
-		var fn = setValFn.context(this);
-
-		this.hover  = false;
-		this.active = false;
-
+		var fn = setValFn.bind(null, this);
+		
 		this.addEvent('mouseover', fn('hover', true));
 		this.addEvent('mouseout' , fn('hover', false));
 		this.addEvent('mousedown', fn('active', true));
