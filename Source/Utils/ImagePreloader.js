@@ -65,7 +65,7 @@ LibCanvas.namespace('Utils').ImagePreloader = atom.Class({
 	},
 	createImages : function (images) {
 		var imgs = {};
-		for (var i in images) imgs[i] = this.createImage(imgs[i], i);
+		for (var i in images) imgs[i] = this.createImage(images[i], i);
 		return imgs;
 	},
 	ready : function (fn) {
