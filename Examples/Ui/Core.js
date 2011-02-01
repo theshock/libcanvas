@@ -53,6 +53,23 @@ LibCanvas.Examples.Ui = atom.Class({
 		}
 		throw new TypeError('Unknown shape: ' + shape);
 	},
+	createGrip: function (shape, z) {
+		return this.libcanvas
+			.createGrip({
+				shape : shape,
+				stroke: '#990000',
+				fill  : '#330000',
+				hover : {
+					stroke: '#ff0000',
+					fill  : '#990000'
+				},
+				active : {
+					stroke: '#00ff00',
+					fill  : '#009900'
+				}
+			})
+			.setZIndex(z || 0);
+	},
 	createLibcanvas: function(canvas) {
 		var libcanvas = new LibCanvas(canvas, { backBuffer: 'off' });
 		libcanvas.listenMouse();
