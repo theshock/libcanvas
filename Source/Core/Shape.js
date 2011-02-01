@@ -34,10 +34,9 @@ LibCanvas.Shape = atom.Class({
 	},
 	move : function (distance, reverse) {
 		distance = this.invertDirection(distance, reverse);
-		reverse = false;
-		this.from.move(distance, reverse);
-		this. to .move(distance, reverse);
-		return this.parent(distance, reverse);
+		this.from.move(distance);
+		this. to .move(distance);
+		return this.parent(distance);
 	},
 	equals : function (shape) {
 		return shape.from.equals(this.from) && shape.to.equals(this.to);
