@@ -92,7 +92,7 @@ LibCanvas.Canvas2D = atom.Class({
 		return this.keyboard.keyState(key);
 	},
 	listenKeyboard : function (elem) {
-		this.keyboard = LibCanvas.isLibCanvas(elem) ? elem.keyboard
+		this._keyboard = LibCanvas.isLibCanvas(elem) ? elem.keyboard
 			: new LibCanvas.Keyboard(this, /* preventDefault */elem);
 		return this;
 	},
