@@ -34,7 +34,7 @@ LibCanvas.Examples.Ui = atom.Class({
 		libcanvas.start();
 	},
 	createLibcanvas: function(canvas) {
-		var libcanvas = new LibCanvas(canvas);
+		var libcanvas = new LibCanvas(canvas, { backBuffer: 'off' });
 		libcanvas.listenMouse();
 		libcanvas.fps = 50;
 		libcanvas.autoUpdate = 'onRequest';

@@ -33,14 +33,13 @@ var LibCanvas = window.LibCanvas,
 var office = {
 	all : function (type, style) {
 		this.save();
-		if (style)  this.set(type + 'Style', style);
+		if (style) this.set(type + 'Style', style);
 		this[type + 'Rect'](this.getFullRectangle());
 		this.restore();
 		return this;
 	},
 	rect : function (func, args) {
 		var rect = office.makeRect.call(this, args);
-		
 		return this.original(func,
 			[rect.from.x, rect.from.y, rect.getWidth(), rect.getHeight()]);
 	},

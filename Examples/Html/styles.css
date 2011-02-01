@@ -7,7 +7,7 @@ canvas {
 	margin: 12px;
 }
 input {
-	border-color: #000;
+	border: 1px solid #666;
 }
 li, a {
 	color: #090;

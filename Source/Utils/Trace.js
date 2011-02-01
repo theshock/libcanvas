@@ -84,7 +84,7 @@ var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
 		return html;
 	},
 	dump : function (object) {
-		return (this.dumpRec(object, [], 0));
+		return (this.dumpRec(object, 0));
 	},
 	getContainer : function () {
 		var cont = atom('#traceContainer');

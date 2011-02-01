@@ -92,11 +92,11 @@ LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 	renderFrame : function () {
 		if (this.checkAutoDraw()) {
 			this.processing('pre');
-
 			this.isReady() ?
 				this.callFrameFn().drawAll() :
 				this.renderProgress();
 			this.processing('post');
+
 			if (this.elem != this.origElem) this.show();
 			return true;
 		}

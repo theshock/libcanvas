@@ -24,7 +24,7 @@ new function () {
 var LC   = LibCanvas.extract({}),
 	rand = Number.random;
 
-var Moveable = new Class({
+var Moveable = atom.Class({
 	Extends: LibCanvas.Examples.Ui,
 	start: function (libcanvas) {
 		libcanvas
@@ -43,11 +43,6 @@ var Moveable = new Class({
 	}
 });
 
-LibCanvas.Examples.set('Ui.Moveable',
-	new Moveable({
-		width : 400,
-		height: 250
-	})
-);
+LibCanvas.Examples.set('Ui.Moveable', new Moveable());
 
 }();
