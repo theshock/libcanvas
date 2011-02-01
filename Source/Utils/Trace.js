@@ -171,10 +171,9 @@ var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
 });
 
 window.trace = function (msg) {
-	if (arguments.length) {
-		Array.from(arguments).forEach(function (a) {
-			new Trace(a);
-		})
+	var L = arguments.length;
+	if (L) {
+		while (L--) new Trace(arguments[L]);
 	} else return new Trace();
 };
 
