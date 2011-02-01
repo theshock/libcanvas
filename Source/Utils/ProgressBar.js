@@ -13,8 +13,8 @@ authors:
 requires:
 	- LibCanvas
 	- Point
-	- Shapes.Rectangle,
-	- Shapes.Polygon,
+	- Shapes.Rectangle
+	- Shapes.Polygon
 
 provides: Utils.ProgressBar
 
