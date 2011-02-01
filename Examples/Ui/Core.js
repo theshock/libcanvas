@@ -18,6 +18,11 @@ provides: Ui.Core
 ...
 */
 
+new function () {
+
+var LC   = LibCanvas.extract({}),
+	rand = Number.random;
+
 LibCanvas.Examples.Ui = atom.Class({
 	Implements: [atom.Class.Options],
 	options: {
@@ -32,6 +37,21 @@ LibCanvas.Examples.Ui = atom.Class({
 		var libcanvas = this.libcanvas = this.createLibcanvas(canvas);
 		this.start(libcanvas);
 		libcanvas.start();
+	},
+	randomPoint: function (padding) {
+		if (padding == null) padding = 0;
+		return new LC.Point(
+			rand(0+padding, this.options.width -padding),
+			rand(0+padding, this.options.height-padding)
+		);
+	},
+	randomShape: function (shape) {
+		switch(shape) {
+			case 'circle'   : return new LC.Circle   (this.randomPoint(), rand(10,30)); break;
+			case 'rectangle': return new LC.Rectangle(this.randomPoint(), this.randomPoint()); break;
+			case 'triangle' : return new LC.Polygon ([this.randomPoint(), this.randomPoint(), this.randomPoint()]); break;
+		}
+		throw new TypeError('Unknown shape: ' + shape);
 	},
 	createLibcanvas: function(canvas) {
 		var libcanvas = new LibCanvas(canvas, { backBuffer: 'off' });
@@ -48,3 +68,5 @@ LibCanvas.Examples.Ui = atom.Class({
 	},
 	start: atom.Class.abstractMethod
 });
+
+}();
