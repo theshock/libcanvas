@@ -20,6 +20,7 @@ provides: Utils.ImagePreloader
 */
 
 LibCanvas.namespace('Utils').ImagePreloader = atom.Class({
+	Implements: [atom.Class.Events],
 	count : {
 		errors : 0,
 		aborts : 0,
@@ -30,12 +31,11 @@ LibCanvas.namespace('Utils').ImagePreloader = atom.Class({
 	number: 0,
 	initialize: function (images) {
 		this.createImages(images);
-		this.readyfuncs = [];
 	},
 	onProcessed : function (type) {
 		this.count[type]++;
 		this.processed++;
-		if (this.isReady()) this.readyfuncs.invoke(this, this);
+		if (this.isReady()) this.readyEvent('ready', [this]);
 		return this;
 	},
 	getInfo : function () {
@@ -69,7 +69,7 @@ LibCanvas.namespace('Utils').ImagePreloader = atom.Class({
 		return imgs;
 	},
 	ready : function (fn) {
-		this.isReady() ? fn(this) : this.readyfuncs.push(fn);
+		this.addEvent('ready', fn);
 		return this;
 	}
 });

@@ -24,9 +24,15 @@ var LibCanvas = window.LibCanvas = atom.Class({
 	Static: {
 		Buffer: function (width, height, withCtx) {
 			var a = Array.pickFrom(arguments), zero = (width == null || width === true);
-			width   = zero ? 0 : a[0];
-			height  = zero ? 0 : a[1];
-			withCtx = zero ? a[0] : a[2];
+			if (zero || width.width == null || width.height == null) {
+				width   = zero ? 0 : a[0];
+				height  = zero ? 0 : a[1];
+				withCtx = zero ? a[0] : a[2];
+			} else {
+				withCtx = !!height;
+				height  = width.height;
+				width   = width.width
+			}
 			
 			var canvas = atom()
 				.create("canvas", {

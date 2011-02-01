@@ -21,7 +21,7 @@ provides: Inner.FpsMeter
 LibCanvas.namespace('Inner').FpsMeter = atom.Class({
 	fpsMeter : function (frames) {
 		var fpsMeter = new LibCanvas.Utils.FpsMeter(frames || (this.fps ? this.fps / 2 : 10));
-		return this.bind('frameRenderStarted', function () {
+		return this.addEvent('frameRenderStarted', function () {
 			fpsMeter.frame();
 		});
 	}

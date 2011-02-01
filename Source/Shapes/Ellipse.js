@@ -27,8 +27,8 @@ LibCanvas.namespace('Shapes').Ellipse = atom.Class({
 		var update = function () {
 			this.updateCache = true;
 		}.context(this);
-		this.from.bind('move', update);
-		this. to .bind('move', update);
+		this.from.addEvent('move', update);
+		this. to .addEvent('move', update);
 	},
 	rotateAngle : 0,
 	rotate : function (degree) {

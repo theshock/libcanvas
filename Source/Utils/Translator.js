@@ -1,7 +1,7 @@
 /*
 ---
 
-name: "Utils.Trace"
+name: "Utils.Translator"
 
 description: "Unstable: translate shapes (i.e. zoom)"
 

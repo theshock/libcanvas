@@ -15,7 +15,6 @@ requires:
 	- Point
 	- Context2D
 	- Shapes.Rectangle
-	- Behaviors.Bindable
 
 provides: Engines.Tile
 
@@ -23,7 +22,7 @@ provides: Engines.Tile
 */
 
 LibCanvas.namespace('Engines').Tile = atom.Class({
-	Implements: [LibCanvas.Behaviors.Bindable],
+	Implements: [atom.Class.Events],
 	tiles : {},
 	rects : {},
 	first : true,
@@ -85,7 +84,7 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 			}
 		}.context(this));
 		this.first = false;
-		if (changed) this.bind('update');
+		if (changed) this.fireEvent('update');
 		return this;
 	},
 	getRect : function (cell) {

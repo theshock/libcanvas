@@ -12,7 +12,6 @@ authors:
 
 requires:
 	- LibCanvas
-	- Behaviors.Bindable
 
 provides: Behaviors.Moveable
 
@@ -50,7 +49,7 @@ LibCanvas.namespace('Behaviors').Moveable = atom.Class({
 			} else {
 				this.getShape().move(diff);
 				this.stopMoving();
-				this.bind('stopMove');
+				this.fireEvent('stopMove');
 			}
 		}.periodical(20, this);
 		return this;

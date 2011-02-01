@@ -12,7 +12,6 @@ authors:
 
 requires:
 	- LibCanvas
-	- Behaviors.Bindable
 	- Behaviors.MouseListener
 	- Behaviors.Draggable
 
@@ -26,18 +25,18 @@ LibCanvas.namespace('Behaviors').Droppable = atom.Class({
 	drop : function (obj) {
 		if (this.drops === null) {
 			this.drops = [];
-			this.bind('stopDrag', function () {
+			this.addEvent('stopDrag', function () {
 				var dropped = false;
 				var mouse = this.libcanvas.mouse;
 				if (mouse.inCanvas) {
 					this.drops.forEach(function (obj) {
 						if(obj.getShape().hasPoint(mouse.point)) {
 							dropped = true;
-							this.bind('dropped', [obj]);
+							this.fireEvent('dropped', [obj]);
 						}
 					}.context(this));
 				}
-				if (!dropped) this.bind('dropped', [null]);
+				if (!dropped) this.fireEvent('dropped', [null]);
 			}.context(this));
 		}
 		this.drops.push(obj);

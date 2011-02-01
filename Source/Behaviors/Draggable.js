@@ -12,7 +12,6 @@ authors:
 
 requires:
 	- LibCanvas
-	- Behaviors.Bindable
 	- Behaviors.MouseListener
 
 provides: Behaviors.Draggable
@@ -30,7 +29,7 @@ LibCanvas.namespace('Behaviors').Draggable = atom.Class({
 	},
 	draggable : function (stopDrag) {
 		if (this.isDraggable === null) {
-			this.bind('libcanvasSet', initDraggable.bind(this));
+			this.addEvent('libcanvasSet', initDraggable.context(this));
 		}
 		this.isDraggable = !stopDrag;
 		return this;
@@ -42,7 +41,7 @@ var moveListener = function () {
 		var mouse = this.libcanvas.mouse;
 			var move  = this.prevMouseCoord.diff(mouse.point);
 		this.shape.move(move);
-		this.bind('moveDrag', [move]);
+		this.fireEvent('moveDrag', [move]);
 		this.prevMouseCoord.set(mouse.point)
 	}
 };
@@ -57,17 +56,17 @@ var initDraggable = function () {
 	var stopDrag  = ['mouseup', 'away:mouseup', 'away:mouseout'];
 
 	return this
-		.bind(startDrag, function () {
+		.addEvent(startDrag, function () {
 			if (this.isDraggable) {
-				this.bind('startDrag');
+				this.fireEvent('startDrag');
 				if (this.getCoords) this.dragStart = this.getCoords().clone();
 				this.prevMouseCoord = this.libcanvas.mouse.point.clone();
-				this.bind(dragging, dragFn);
+				this.addEvent(dragging, dragFn);
 			}
 		})
-		.bind(stopDrag, function () {
+		.addEvent(stopDrag, function () {
 			if (this.isDraggable && this.prevMouseCoord) {
-				this.bind('stopDrag').unbind(dragging, dragFn);
+				this.fireEvent('stopDrag').removeEvent(dragging, dragFn);
 				delete this.prevMouseCoord;
 			}
 		});

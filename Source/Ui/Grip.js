@@ -12,7 +12,6 @@ authors:
 
 requires:
 	- LibCanvas
-	- Behaviors.Bindable
 	- Behaviors.Drawable
 	- Behaviors.Clickable
 	- Behaviors.Draggable
@@ -48,8 +47,8 @@ LibCanvas.namespace('Ui').Grip = atom.Class({
 		this.setConfig(config);
 		this.setShape(config.shape);
 		
-		this.getShape().bind('move', libcanvas.update);
-		this.bind(['moveDrag', 'statusChanged'], libcanvas.update);
+		this.getShape().addEvent('move', libcanvas.update);
+		this.addEvent(['moveDrag', 'statusChanged'], libcanvas.update);
 	},
 	setConfig : function (config) {
 		atom.extend(this.config, config);

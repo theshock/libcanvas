@@ -63,18 +63,45 @@ LibCanvas.namespace('Shapes').Rectangle = atom.Class({
 		return this;
 	},
 
-	getWidth : function () {
+	get width() {
 		return this.to.x - this.from.x;
 	},
-	getHeight : function () {
+	get height() {
 		return this.to.y - this.from.y;
 	},
-	setWidth : function (width) {
+	set width (width) {
 		this.to.moveTo({ x : this.from.x + width, y : this.to.y });
+	},
+	set height (height) {
+		this.to.moveTo({ x : this.to.x, y : this.from.y + height });
 		return this;
 	},
+	get size () {
+		return {
+			width : this.width,
+			height: this.height
+		};
+	},
+	set size (size) {
+		this.width  = size.width;
+		this.height = size.height;
+	},
+	// @deprecated 
+	getWidth : function () {
+		return this.width;
+	},
+	// @deprecated
+	getHeight : function () {
+		return this.height;
+	},
+	// @deprecated 
+	setWidth : function (width) {
+		this.width = width;
+		return this;
+	},
+	// @deprecated
 	setHeight : function (height) {
-		this.to.moveTo({ x : this.to.x, y : this.from.y + height });
+		this.height = height;
 		return this;
 	},
 	hasPoint : function (point) {

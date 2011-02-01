@@ -23,7 +23,7 @@ provides: Mouse
 LibCanvas.Mouse = atom.Class({
 	initialize : function (libcanvas) {
 		this.inCanvas = false;
-		this.point = new LibCanvas.Point();
+		this.point = new LibCanvas.Point(null, null);
 
 		this.libcanvas = libcanvas;
 		this.elem      = libcanvas.origElem;
@@ -34,10 +34,10 @@ LibCanvas.Mouse = atom.Class({
 	},
 	setCoords : function (x, y) {
 		if (arguments.length == 2) {
-			this.point.moveTo(x, y);
+			this.point.moveTo([x, y]);
 			this.inCanvas = true;
 		} else {
-			this.point.moveTo(null, null);
+			this.point.moveTo([null, null]);
 			this.inCanvas = false;
 		}
 		return this;

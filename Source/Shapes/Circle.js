@@ -49,9 +49,8 @@ LibCanvas.namespace('Shapes').Circle = atom.Class({
 				});
 			}
 		}
-		if (!this.center) throw new TypeError('Wrong Arguments In Circle: Center is null');
-		if (!Object.isReal(this.radius))
-			throw new TypeError('Wrong Arguments In Circle: Radius is null');
+		if (this.center == null) throw new TypeError('center is null');
+		if (this.radius == null) throw new TypeError('radius is null');
 	},
 	getCoords : function () {
 		return this.center;
@@ -70,9 +69,11 @@ LibCanvas.namespace('Shapes').Circle = atom.Class({
 		}
 		return false;
 	},
-	move : function (distance) {
+	move : function (distance, reverse) {
+		distance = this.invertDirection(distance, reverse);
 		this.center.move(distance);
-		return this.parent(distance);
+		this.fireEvent('move', [distance]);
+		return this;
 	},
 	processPath : function (ctx, noWrap) {
 		if (!noWrap) ctx.beginPath();

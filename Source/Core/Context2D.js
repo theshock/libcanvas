@@ -26,7 +26,7 @@ provides: Context2D
 var LibCanvas = window.LibCanvas,
 	Point     = LibCanvas.Point,
 	Shapes    = LibCanvas.namespace('Shapes'),
-	Rectange  = Shapes.Rectangle,
+	Rectangle = Shapes.Rectangle,
 	Circle    = Shapes.Circle;
 
 
@@ -137,6 +137,8 @@ var office = {
 var rotatedImageCache = {};
 var imageCache = {};
 
+var canvasProperties = ['width', 'height'].toKeys();
+
 LibCanvas.Context2D = atom.Class({
 	initialize : function (canvas) {
 		if (canvas instanceof CanvasRenderingContext2D) {
@@ -146,9 +148,12 @@ LibCanvas.Context2D = atom.Class({
 			this.canvas = canvas;
 			this.ctx2d  = canvas.getOriginalContext('2d');
 		}
-		// todo : remove
-		this.width  = this.canvas.width;
-		this.height = this.canvas.height;
+	},
+	get width() {
+		return this.canvas.width;
+	},
+	get height() {
+		return this.canvas.height;
 	},
 	getFullRectangle : function () {
 		return new Rectangle(0, 0, this.width, this.height);
@@ -198,8 +203,10 @@ LibCanvas.Context2D = atom.Class({
 			for (var i in name) this.set(i, name[i]);
 			return this;
 		}
+		var object = (name in canvasProperties) ?
+			'canvas' : 'ctx2d';
 		try {
-			this.ctx2d[name] = value;
+			this[object][name] = value;
 		} catch (e) {
 			throw TypeError('Exception while setting «' + name + '» to «' + value + '»: ' + e.message);
 		}
@@ -365,6 +372,9 @@ LibCanvas.Context2D = atom.Class({
 			padding : [0,0]
 		}, cfg);
 		this.save();
+		if (atom.typeOf(cfg.padding) == 'number') {
+			cfg.padding = [cfg.padding, cfg.padding];
+		}
 		var to = cfg.to ? Rectangle.from(cfg.to) : this.getFullRectangle();
 		var lh = (cfg.lineHeight || (cfg.size * 1.15)).round();
 		this.set('font', '{style}{weight}{size}px {family}'
@@ -382,7 +392,7 @@ LibCanvas.Context2D = atom.Class({
 			var al = cfg.align, pad = cfg.padding[1];
 			return al == 'left'  ? to.from.x + pad :
 			       al == 'right' ? to.to.x - lineWidth - pad :
-			           to.from.x + (to.getWidth() - lineWidth)/2;
+			           to.from.x + (to.width - lineWidth)/2;
 		};
 		var x, lines = cfg.text.split('\n');
 		var measure = function (text) {
@@ -390,7 +400,7 @@ LibCanvas.Context2D = atom.Class({
 		}.context(this);
 		if (cfg.wrap == 'no') {
 			lines.forEach(function (line, i) {
-				this.fillText(line, xGet(cfg.align == 'left' ? 0 : measure(line)), to.from.y + (i+1)*lh);
+				this.fillText(line, xGet(cfg.align == 'left' ? 0 : this.measureText(line).width), to.from.y + (i+1)*lh);
 			}.context(this));
 		} else {
 			var lNum = 0;
@@ -403,15 +413,22 @@ LibCanvas.Context2D = atom.Class({
 					if (!last) {
 						var text = words[i];
 						// @todo too slow. 2-4ms for 50words
-						var wordWidth = measure(text);
+						var wordWidth = this.measureText(text).width;
+						if (!Lw || Lw + wordWidth < to.width) {
+							Lw += wordWidth;
+							L  += text;
+							continue;
+						}
 					}
-					if (!last && (!Lw || Lw + wordWidth < to.getWidth())) {
-						Lw += wordWidth;
-						L  += text;
-					} else if (Lw) {
+					if (Lw) {
 						this.fillText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
-						L  = '';
-						Lw = 0;
+						if (last) {
+							L  = '';
+							Lw = 0;
+						} else {
+							L  = text;
+							Lw = wordWidth;
+						}
 					}
 				}
 				if (Lw) {

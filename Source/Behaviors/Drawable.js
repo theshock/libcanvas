@@ -12,7 +12,6 @@ authors:
 
 requires:
 	- LibCanvas
-	- Behaviors.Bindable
 
 provides: Behaviors.Drawable
 
@@ -20,11 +19,11 @@ provides: Behaviors.Drawable
 */
 
 LibCanvas.namespace('Behaviors').Drawable = atom.Class({
-	Implements: [LibCanvas.Behaviors.Bindable],
+	Implements: [atom.Class.Events],
 	setLibcanvas : function (libcanvas) {
 		this.libcanvas = libcanvas;
-		this.autoBind('libcanvasSet');
-		this.libcanvas.bind('ready', this.autoBind.bind(this, 'libcanvasReady'));
+		this.readyEvent('libcanvasSet');
+		this.libcanvas.addEvent('ready', this.readyEvent.bind(this, 'libcanvasReady'));
 		return this;
 	},
 	getCoords : function () {

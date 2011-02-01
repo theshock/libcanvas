@@ -13,6 +13,7 @@ authors:
 requires:
 	- LibCanvas
 	- Point
+	- Utils.Trace
 
 provides: Inner.FrameRenderer
 
@@ -59,24 +60,24 @@ LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 		return this;
 	},
 	nextFrame : function (time) {
-		this.nft || (this.nft = new LibCanvas.Utils.Trace());
+		if (!this.nft) this.nft = new LibCanvas.Utils.Trace();
 
 		time = Math.max(time, 1000 / this.fps);
 
 		this.nft.trace((1000 / time).round());
-		this.frame.bind(this, time).delay(184);
+		this.frame.delay(time, this);
 	},
 	frameTime : [0],
 	frame : function (time) {
 		this.nextFrame(this.frameTime.average());
 
 		var startTime = Date.now();
-			this.bind('frameRenderStarted');
+			this.fireEvent('frameRenderStarted');
 			this.funcs
 				.sortBy('priority', true)
 				.invoke(this, time);
 			var render = this.renderFrame();
-			this.bind('frameRenderFinished');
+			this.fireEvent('frameRenderFinished');
 		var lastFrameTime = Date.now() - startTime;
 
 		// if no render in this frame - take last rendered frame time

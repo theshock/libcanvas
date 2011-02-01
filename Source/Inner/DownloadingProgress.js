@@ -32,10 +32,10 @@ LibCanvas.namespace('Inner').DownloadingProgress = atom.Class({
 	renderProgress : function () {
 		if (!this.imagePreloader) {
 			this.imagePreloader = new LibCanvas.Utils.ImagePreloader(this.preloadImages)
-				.ready(function (preloader) {
+				.addEvent('ready', function (preloader) {
 					this.images = preloader.images;
 					atom.log(preloader.getInfo());
-					this.autoBind('ready');
+					this.readyEvent('ready');
 					this.update();
 				}.context(this));
 		}

@@ -56,7 +56,7 @@ LibCanvas.namespace('Inner').MouseEvents = atom.Class({
 		return elements;
 	},
 	fireEvent : function (elem, event, e) {
-		elem.bind(event, [event, e]);
+		elem.bind(event, [e, e, event]);
 	},
 	event : function (type, e) {
 		var mouse = this, subscribers = this.getOverSubscribers();

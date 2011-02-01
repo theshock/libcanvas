@@ -20,7 +20,7 @@ provides: Point
 ...
 */
 
-(function () {
+(function (undefined) {
 
 var shifts = {
 	top    : {x: 0, y:-1},
@@ -40,16 +40,24 @@ var shifts = {
 var Point = LibCanvas.Point = atom.Class({
 	Extends: LibCanvas.Geometry,
 	set : function (x, y) {
-		if (arguments.length != 2) {
-			if (0 in x && 1 in x) {
+		var args = arguments;
+		if (atom.typeOf(x) == 'arguments') {
+			args = x;
+			x = args[0];
+			y = args[1];
+		}
+		if (args.length != 2) {
+			var isObject = typeof x == 'object';
+
+			if (x && x[0] !== undefined && x[1] !== undefined) {
 				y = x[1];
 				x = x[0];
-			} else if ('x' in x && 'y' in x) {
+			} else if (x && x.x !== undefined && x.y !== undefined) {
 				y = x.y;
 				x = x.x;
 			} else {
-				atom.log('Wrong Arguments In Point.Set:', arguments);
-				throw new TypeError('Wrong Arguments In Point.Set')
+				//atom.log('Wrong Arguments In Point.Set:', arguments);
+				throw new TypeError('Wrong Arguments In Point.Set: [' + atom.toArray(arguments).join(', ') + ']');
 			}
 		}
 		this.x = x == null ? x : Number(x);
@@ -130,7 +138,7 @@ var Point = LibCanvas.Point = atom.Class({
 				move.x = diff.x;
 				move.y = diff.y;
 				this.movingInterval.stop();
-				this.bind('stopMove');
+				this.fireEvent('stopMove');
 			}
 			this.move(move);
 		}.periodical(20, this);

@@ -8,7 +8,7 @@ description: "LibCanvas.Canvas2D wraps around native <canvas>."
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
-- "Shock <shocksilien@gmail.com>"
+	- "Shock <shocksilien@gmail.com>"
 
 requires:
 	- LibCanvas
@@ -16,7 +16,6 @@ requires:
 	- Inner.FrameRenderer
 	- Inner.FpsMeter
 	- Inner.DownloadingProgress
-	- Behaviors.Bindable
 
 provides: Canvas2D
 
@@ -26,10 +25,10 @@ provides: Canvas2D
 LibCanvas.Canvas2D = atom.Class({
 	Extends: LibCanvas,
 	Implements: [
-		LibCanvas.Inner.Canvas2D.FrameRenderer,
-		LibCanvas.Inner.Canvas2D.FpsMeter,
-		LibCanvas.Inner.Canvas2D.DownloadingProgress,
-		LibCanvas.Behaviors.Bindable
+		LibCanvas.Inner.FrameRenderer,
+		LibCanvas.Inner.FpsMeter,
+		LibCanvas.Inner.DownloadingProgress,
+		atom.Class.Events
 	],
 
 	fps        : 1,
@@ -54,6 +53,16 @@ LibCanvas.Canvas2D = atom.Class({
 		this.update = this.update.context(this);
 	},
 
+	set: function (props) {
+		for (var i in props) {
+			if (this.origElem != this.elem) {
+				this.origElem[i] = props[i];
+			}
+			this.elem[i] = props[i];
+		}
+		return this;
+	},
+
 	updateFrame : true,
 	update : function () {
 		if (this.autoUpdate == 'onRequest') {
@@ -64,13 +73,21 @@ LibCanvas.Canvas2D = atom.Class({
 		return this;
 	},
 
-	mouse : null,
+	_mouse : null,
+	get mouse () {
+		if (this._mouse == null) throw new Error('Mouse is not listened by libcanvas');
+		return this._mouse;
+	},
 	listenMouse : function (elem) {
-		this.mouse = LibCanvas.isLibCanvas(elem) ? elem.mouse
+		this._mouse = LibCanvas.isLibCanvas(elem) ? elem.mouse
 			: new LibCanvas.Mouse(this, /* preventDefault */elem);
 		return this;
 	},
-	keyboard: null,
+	_keyboard : null,
+	get keyboard () {
+		if (this._keyboard == null) throw new Error('Keyboard is not listened by libcanvas');
+		return this._keyboard;
+	},
 	getKey : function (key) {
 		return this.keyboard.keyState(key);
 	},
@@ -80,8 +97,8 @@ LibCanvas.Canvas2D = atom.Class({
 		return this;
 	},
 	createBuffer : function (width, height) {
-		return LibCanvas.Buffer.apply(
-			LibCanvas, arguments.length ? arguments :
+		return LibCanvas.Buffer.apply(LibCanvas,
+			arguments.length ? arguments :
 				Array.collect(this.origElem, ['width', 'height'])
 		);
 	},

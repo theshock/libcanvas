@@ -120,14 +120,16 @@ LibCanvas.namespace('Utils').ProgressBar = atom.Class({
 		return b.restore().canvas;
 	},
 	setProgress : function (progress) {
-		if (this.libcanvas) this.libcanvas.update();
-		this.progress = progress;
+		this.update().progress = progress;
 		return this;
 	},
 	setStyle : function (newStyle) {
-		if (this.libcanvas) this.libcanvas.update();
-		this.style = newStyle;
+		this.update().style = newStyle;
 		return this.preRender();
+	},
+	update: function () {
+		if (this.libcanvas) this.libcanvas.update();
+		return this;
 	},
 	draw : function () {
 		this.libcanvas.ctx.save();

@@ -12,7 +12,6 @@ authors:
 
 requires:
 	- LibCanvas
-	- Behaviors.Bindable
 
 provides: Behaviors.Linkable
 
@@ -31,7 +30,7 @@ LibCanvas.namespace('Behaviors').Linkable = atom.Class({
 	link : function (obj) {
 		if (this.links === null) {
 			this.links = [];
-			this.getShape().bind('move',
+			this.getShape().addEvent('move',
 				this.moveLinks.context(this)
 			);
 		}

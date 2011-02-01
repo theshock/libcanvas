@@ -20,7 +20,7 @@ provides: Geometry
 */
 
 LibCanvas.Geometry = atom.Class({
-	Implements: [LibCanvas.Behaviors.Bindable],
+	Implements: [atom.Class.Events],
 	Static: {
 		from : function (obj) {
 			return obj[0] instanceof this ? obj[0] : obj instanceof this ? obj : new this(obj);
@@ -37,7 +37,7 @@ LibCanvas.Geometry = atom.Class({
 		};
 	},
 	move : function (distance, reverse) {
-		this.bind('move', [this.invertDirection(distance, reverse)]);
+		this.fireEvent('move', [this.invertDirection(distance, reverse)]);
 		return this;
 	}
 });

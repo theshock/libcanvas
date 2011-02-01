@@ -12,7 +12,6 @@ authors:
 
 requires:
 	- LibCanvas
-	- Behaviors.Bindable
 
 provides: Animation
 
@@ -20,7 +19,7 @@ provides: Animation
 */
 
 LibCanvas.Animation = atom.Class({
-	Implements: [LibCanvas.Behaviors.Bindable],
+	Implements: [atom.Class.Events],
 	sprites : {},
 	addSprite : function (index, sprite) {
 		this.sprites[index] = sprite;
@@ -58,7 +57,7 @@ LibCanvas.Animation = atom.Class({
 	queue : [],
 	run : function (name, cfg) {
 		if (!name in this.animations) {
-			throw new Error('No animation "' + name + '"');
+			throw new Error('No animation «' + name + '»');
 		}
 		var args = {
 			name : name,
@@ -107,13 +106,13 @@ LibCanvas.Animation = atom.Class({
 		var aniName = this.current.animation.name;
 		if (frame) {
 			var frameName = frame.name ? 'frame:' + frame.name : 'frame';
-			this.bind('changed', [frameName, aniName]);
-			this.bind(frameName, [frameName, aniName]);
-			Object.isReal(frame.delay) && this.nextFrame.bind(this).delay(frame.delay);
+			this.fireEvent('changed', [frameName, aniName]);
+			this.fireEvent(frameName, [frameName, aniName]);
+			if (frame.delay != null) this.nextFrame.delay(frame.delay, this);
 		} else {
-			this.bind('changed', ['stop:' + aniName]);
-			this.bind('stop:' + aniName, ['stop:' + aniName]);
-			this.bind('stop', [aniName]);
+			this.fireEvent('changed', ['stop:' + aniName]);
+			this.fireEvent('stop:' + aniName, ['stop:' + aniName]);
+			this.fireEvent('stop', [aniName]);
 			this.current = null;
 			this.stopped();
 		}
@@ -124,10 +123,8 @@ LibCanvas.Animation = atom.Class({
 			this.current.animation.frames[this.current.index];
 	},
 	getCfg : function (index) {
-		if (index in this.current.cfg) {
-			return this.current.cfg[index];
-		} else {
-			return this.current.animation[index]
-		}
+		return index in this.current.cfg ?
+			this.current.cfg[index] :
+			this.current.animation[index];
 	}
 });
