@@ -19,6 +19,8 @@ provides: Context.Path
 */
 
 LibCanvas.Examples.set('Context.Path', function (canvas) {
+	var LC = LibCanvas.extract({});
+
 	var context = canvas.getContext('2d-libcanvas');
 
 	// .5 нужно для того, чтобы не блурило
@@ -30,4 +32,5 @@ LibCanvas.Examples.set('Context.Path', function (canvas) {
 		.closePath(20.5, 20.5)
 		.stroke('red')
 
+	context.fill(new LC.Rectangle(50.5, 50.5, 20, 20), 'green');
 });
