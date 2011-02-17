@@ -21,12 +21,13 @@ provides: Context.Path
 LibCanvas.Examples.set('Context.Path', function (canvas) {
 	var context = canvas.getContext('2d-libcanvas');
 
+	// .5 нужно для того, чтобы не блурило
 	context
-		.beginPath(20, 20)
-		.lineTo(20, 40)
-		.lineTo(40, 40)
-		.lineTo(40, 20)
-		.closePath(20, 20)
+		.beginPath(20.5, 20.5)
+		.lineTo   (20.5, 40.5)
+		.lineTo   (40.5, 40.5)
+		.lineTo   (40.5, 20.5)
+		.closePath(20.5, 20.5)
 		.stroke('red')
 
 });
