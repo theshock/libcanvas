@@ -69,4 +69,4 @@ LibCanvas.Examples = {
 
 LibCanvas.Examples.autoStart();
 
-}();
+};

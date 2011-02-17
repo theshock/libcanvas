@@ -134,6 +134,7 @@ LibCanvas.Canvas2D = atom.Class({
 	_invoker: null,
 	get invoker () {
 		if (this._invoker == null) {
+			console.log(atom.typeOf(this));
 			this._invoker = new LibCanvas.Invoker({
 				context: this,
 				defaultPriority: 10
@@ -167,6 +168,12 @@ LibCanvas.Canvas2D = atom.Class({
 	},
 	stop: function () {
 		this.invoker.stop();
+		return this;
+	},
+
+
+	// not clonable
+	get clone () {
 		return this;
 	}
 });

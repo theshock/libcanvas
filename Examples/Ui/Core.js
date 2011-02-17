@@ -86,4 +86,4 @@ LibCanvas.Examples.Ui = atom.Class({
 	start: atom.Class.abstractMethod
 });
 
-}();
+};
