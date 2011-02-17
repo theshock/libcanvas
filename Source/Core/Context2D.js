@@ -231,6 +231,7 @@ LibCanvas.Context2D = atom.Class({
 		return ret;
 	},
 	closePath : function () {
+		arguments.length && this.lineTo.apply(this, arguments);
 		return this.original('closePath');
 	},
 	clip : function (shape) {
