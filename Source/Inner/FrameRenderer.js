@@ -30,12 +30,10 @@ LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 		} else if (this.autoUpdate) return true;
 		return false;
 	},
-	callFrameFn : function () {
-		if (this.fn) this.fn.call(this);
-		return this;
-	},
 	show : function () {
-		this.origCtx.clearAll().drawImage(this.elem);
+		console.log(this.origCtx);
+		this.origCtx.clearAll();
+		this.origCtx.drawImage(this.elem);
 		return this;
 	},
 	drawAll : function () {
@@ -59,41 +57,11 @@ LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 		}.context(this));
 		return this;
 	},
-	nextFrame : function (time) {
-		if (!this.nft) this.nft = new LibCanvas.Utils.Trace();
-
-		time = Math.max(time, 1000 / this.fps);
-
-		this.nft.trace((1000 / time).round());
-		this.frame.delay(time, this);
-	},
-	frameTime : [0],
-	frame : function (time) {
-		this.nextFrame(this.frameTime.average());
-
-		var startTime = Date.now();
-			this.fireEvent('frameRenderStarted');
-			this.funcs
-				.sortBy('priority', true)
-				.invoke(this, time);
-			var render = this.renderFrame();
-			this.fireEvent('frameRenderFinished');
-		var lastFrameTime = Date.now() - startTime;
-
-		// if no render in this frame - take last rendered frame time
-		if (render) {
-			this.frameTime.push(lastFrameTime);
-			if (this.frameTime.length > 10) {
-				this.frameTime.shift();
-			}
-		}
-		return this;
-	},
 	renderFrame : function () {
 		if (this.checkAutoDraw()) {
 			this.processing('pre');
 			this.isReady() ?
-				this.callFrameFn().drawAll() :
+				this.drawAll() :
 				this.renderProgress();
 			this.processing('post');
 

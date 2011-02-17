@@ -21,6 +21,7 @@ provides: Keyboard
 (function () {
 
 var Keyboard = LibCanvas.Keyboard = atom.Class({
+	Implements: [atom.Class.Events],
 	Static: {
 		keyCodes : {
 			// Alphabet
@@ -51,7 +52,7 @@ var Keyboard = LibCanvas.Keyboard = atom.Class({
 			// Symbols
 			equals: 61, hyphen   :109, coma  :188, dot:190,
 			gravis:192, backslash:220, sbopen:219, sbclose:221,
-			slash :191, semicolon: 59, apostrophe : 222,
+			slash :191, semicolon: 59, apostrophe: 222,
 
 			// Arrows
 			aleft:37, aup:38, aright:39, adown:40
@@ -69,34 +70,22 @@ var Keyboard = LibCanvas.Keyboard = atom.Class({
 		}
 	},
 	initialize : function (libcanvas, preventDefault) {
-		this.libcanvas  = libcanvas;
-		this.preventDefault = preventDefault; 
-		this.bindings = {};
-	},
-	setEvents: function () {
-		var win = atom(window).bind({
-			keydown: this.keyEvent(true),
-			keyup:   this.keyEvent(false)
+		this.libcanvas      = libcanvas;
+		this.preventDefault = preventDefault;
+		
+		atom(window).bind({
+			keydown:  this.keyEvent(true),
+			keyup:    this.keyEvent(false),
+			keypress: this.keyEvent(null)
 		});
-
-		this.preventDefault && win.bind({
-			keypress : function (e) {
-				return !this.prevent(this.self.key(e));
-			}.context(this)
-		});
-	},
-	getBinding: function (keyName, createIfNull) {
-		var bindings = this.bindinds;
-		if (!keyName in bindings && createIfNull) {
-			bindings[keyName] = [];
-		}
-		return bindings[keyName] || null;
 	},
 	keyEvent: function (setTo) {
 		return function (e) {
-			var b, key = this.self.key(e);
-			this.self.keyStates[key] = setTo;
-			if (setTo && (b = this.getBinding(key))) b.invoke(this.libcanvas, e, key);
+			var key = this.self.key(e);
+			if (setTo != null) {
+				this.self.keyStates[key] = setTo;
+				if (setTo) this.fireEvent(key);
+			}
 			return !this.prevent(key);
 		}.context(this);
 	},
@@ -106,18 +95,6 @@ var Keyboard = LibCanvas.Keyboard = atom.Class({
 	},
 	keyState : function (keyName) {
 		return this.self.keyState(keyName);
-	},
-	bind : function (keyName, fn) {
-		if (arguments.length == 1) {
-			for (var i in keyName) this.bind(i, keyName[i]);
-			return this;
-		}
-		this.getBinding(keyName, true).push(fn);
-		return this;
-	},
-	unbind : function (key, fn) {
-		this.bindings[key].erase(fn);
-		return this;
 	}
 });
 

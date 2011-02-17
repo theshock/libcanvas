@@ -131,21 +131,42 @@ LibCanvas.Canvas2D = atom.Class({
 	},
 
 	// Each frame funcs
+	_invoker: null,
+	get invoker () {
+		if (this._invoker == null) {
+			this._invoker = new LibCanvas.Invoker({
+				context: this,
+				defaultPriority: 10
+			});
+		}
+		return this._invoker;
+	},
+
+
 	funcs : [],
 	addFunc : function (fn, priority) {
-		fn.priority = priority || 10;
-		this.funcs.include(fn);
+		this.invoker.addFunction(priority, fn);
 		return this;
 	},
 	rmFunc : function (fn) {
-		this.funcs.erase(fn);
+		this.invoker.rmFunction(priority, fn);
 		return this;
 	},
 
 	// Start, pause, stop
 	start : function (fn) {
-		this.fn = fn;
-		this.frame();
+		fn && this.addFunc(fn);
+		if (this.invoker.timeoutId == 0) {
+			this.addFunc(this.renderFrame, 0);
+			this.invoker
+				.addEvent('beforeInvoke', this.fireEvent.context(this, ['frameRenderStarted']))
+				.addEvent( 'afterInvoke', this.fireEvent.context(this, ['frameRenderFinished']));
+		}
+		this.invoker.invoke();
+		return this;
+	},
+	stop: function () {
+		this.invoker.stop();
 		return this;
 	}
 });

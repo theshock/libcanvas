@@ -161,7 +161,8 @@ LibCanvas.Context2D = atom.Class({
 		try {
 			this.ctx2d[method].apply(this.ctx2d, args || []);
 		} catch (e) {
-			atom.log('Error in context2d.original(method, args)', method, args);
+			console.log('ctx', this, this.ctx2d);
+			atom.log('Error in context2d.original(', method, ',', (args || []), ')');
 			throw e;
 		}
 		return this;
@@ -612,6 +613,6 @@ LibCanvas.Context2D = atom.Class({
 
 LibCanvas.Context2D.office = office;
 
-LibCanvas.addCanvasContext('2d-libcanvas', LibCanvas.Context2D);
+HTMLCanvasElement.addContext('2d-libcanvas', LibCanvas.Context2D);
 
 })();

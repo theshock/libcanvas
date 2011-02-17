@@ -64,22 +64,34 @@ var LibCanvas = window.LibCanvas = atom.Class({
 			}
 			return to;
 		},
-		newContexts: {},
-		addCanvasContext: function (name, ctx) {
-			this.newContexts[name] = ctx;
-			return this;
-		},
-		getCanvasContext: function (name) {
-			return this.newContexts[name] || null;
+
+		_invoker: null,
+		get invoker () {
+			if (this._invoker == null) {
+				this._invoker = new LibCanvas.Invoker().invoke();
+			}
+			return this._invoker;
 		}
 	},
 	initialize: function() {
 		return LibCanvas.Canvas2D.factory(arguments);
 	}
 });
-	
+
 // Changing HTMLCanvasElement.prototype.getContext, so we
 // can create our own contexts by LibCanvas.addCanvasContext(name, ctx);
+
+atom.extend(HTMLCanvasElement, {
+	_newContexts: {},
+	addContext: function (name, ctx) {
+		this._newContexts[name] = ctx;
+		return this;
+	},
+	getContext: function (name) {
+		return this._newContexts[name] || null;
+	}
+});
+
 atom.implement(HTMLCanvasElement, {
 	getOriginalContext: HTMLCanvasElement.prototype.getContext,
 	getContext: function (type) {
@@ -88,13 +100,13 @@ atom.implement(HTMLCanvasElement, {
 		}
 
 		if (!this.contextsList[type]) {
-			var ctx;
-			if (ctx = LibCanvas.getCanvasContext(type)) {
+			var ctx = HTMLCanvasElement.getContext(type);
+			if (ctx) {
 				ctx = new ctx(this);
 			} else try {
 				ctx = this.getOriginalContext.apply(this, arguments);
 			} catch (e) {
-				throw (!e.toString().test(/NS_ERROR_ILLEGAL_VALUE/)) ? e :
+				throw (!e.toString().match(/NS_ERROR_ILLEGAL_VALUE/)) ? e :
 					new TypeError('Wrong Context Type: «' + type + '»');
 			}
 			this.contextsList[type] = ctx;
