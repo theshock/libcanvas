@@ -27,7 +27,8 @@ var LibCanvas = window.LibCanvas,
 	Point     = LibCanvas.Point,
 	Shapes    = LibCanvas.namespace('Shapes'),
 	Rectangle = Shapes.Rectangle,
-	Circle    = Shapes.Circle;
+	Circle    = Shapes.Circle,
+	PointFrom = Point.from.context(Point);
 
 
 var office = {
@@ -278,7 +279,34 @@ LibCanvas.Context2D = atom.Class({
 		// @todo Beauty arguments
 		return this.original('arcTo', arguments);
 	},
+	curveTo: function (curve) {
+		var p  = Array.from(curve.points || []).map(PointFrom),
+			l  = p.length,
+			to = Point.from(curve.to);
+		if (l == 2) {
+			this.original('bezierCurveTo', [
+				p[0].x, p[0].y, p[1].x, p[1].y, to.x, to.y
+			]);
+		} else if (l == 1) {
+			this.original('quadraticCurveTo', [
+				p[0].x, p[0].y, to.x, to.y
+			]);
+		} else {
+			this.original('lineTo', [to]);
+		}
+		return this;
+	},
 	quadraticCurveTo : function () {
+		var a = arguments;
+		if (a.length == 4) {
+			return this.original('bezierCurveTo', arguments);
+		} else {
+			a = a.length == 2 ? a.associate(['p', 'to']) : a[0];
+			return this.curveTo({
+				to: a.to,
+				points: [a.p]
+			});
+		}
 		// @todo Beauty arguments
 		return this.original('quadraticCurveTo', arguments);
 	},
@@ -288,9 +316,10 @@ LibCanvas.Context2D = atom.Class({
 			return this.original('bezierCurveTo', arguments);
 		} else {
 			a = a.length == 3 ? a.associate(['p1', 'p2', 'to']) : a[0];
-			return this.original('bezierCurveTo', [
-				a.p1.x, a.p1.y, a.p2.x, a.p2.y, a.to.x, a.to.y
-			]);
+			return this.curveTo({
+				to: a.to,
+				points: [a.p1, a.p2]
+			});
 		}
 	},
 	isPointInPath : function (x, y) {
@@ -447,6 +476,8 @@ LibCanvas.Context2D = atom.Class({
 	createImageData : function () {
 		return this.original('createImageData', arguments);
 	},
+
+	// @deprecated
 	cachedDrawImage : function (a) {
 		if (!a.image || !a.draw) {
 			return this.drawImage.apply(this, arguments);
@@ -467,6 +498,7 @@ LibCanvas.Context2D = atom.Class({
 		};
 		return this.drawImage(result);
 	},
+	// @deprecated
 	rotatedImage : function (data, cacheLength) {
 		var cacheEnabled = cacheLength !== false;
 		cacheLength = (cacheLength * 1) || 0;
@@ -499,7 +531,6 @@ LibCanvas.Context2D = atom.Class({
 			image : cache,
 			from  : from
 		});
-
 	},
 	drawImage : function (a) {
 		if (arguments.length > 1) return this.original('drawImage', arguments);
