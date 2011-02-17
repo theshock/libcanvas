@@ -47,7 +47,7 @@ LibCanvas.Invoker = atom.Class({
 
 		var all  = this.time;
 		var time = Math.max(all.average(), this.minDelay);
-		//this.timeoutId = this.invoke.delay(time, this);
+		this.timeoutId = this.invoke.delay(time, this);
 
 		var startTime = new Date(),
 			funcs     = this.funcs.sortBy('priority'),

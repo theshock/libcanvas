@@ -58,7 +58,9 @@ LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 		return this;
 	},
 	renderFrame : function () {
+			console.log('renderFrame');
 		if (this.checkAutoDraw()) {
+			console.log('draw');
 			this.processing('pre');
 			this.isReady() ?
 				this.drawAll() :
