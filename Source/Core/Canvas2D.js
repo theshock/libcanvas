@@ -134,7 +134,6 @@ LibCanvas.Canvas2D = atom.Class({
 	_invoker: null,
 	get invoker () {
 		if (this._invoker == null) {
-			console.log(atom.typeOf(this));
 			this._invoker = new LibCanvas.Invoker({
 				context: this,
 				defaultPriority: 10
