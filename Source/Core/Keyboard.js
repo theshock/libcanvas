@@ -74,17 +74,20 @@ var Keyboard = LibCanvas.Keyboard = atom.Class({
 		this.preventDefault = preventDefault;
 		
 		atom(window).bind({
-			keydown:  this.keyEvent(true),
-			keyup:    this.keyEvent(false),
-			keypress: this.keyEvent(null)
+			keydown:  this.keyEvent('down'),
+			keyup:    this.keyEvent('up'),
+			keypress: this.keyEvent('press')
 		});
 	},
-	keyEvent: function (setTo) {
+	keyEvent: function (event) {
 		return function (e) {
 			var key = this.self.key(e);
-			if (setTo != null) {
-				this.self.keyStates[key] = setTo;
-				if (setTo) this.fireEvent(key);
+			if (event != 'press') {
+				this.self.keyStates[key] = {'down':true, 'up':false}[event] || false;
+				if (event == 'down') this.fireEvent(key);
+				if (event == 'up')   this.fireEvent(key + ':up');
+			} else {
+				this.fireEvent(key + ':press');
 			}
 			return !this.prevent(key);
 		}.context(this);
