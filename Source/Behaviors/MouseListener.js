@@ -16,34 +16,28 @@ requires:
 
 provides: Behaviors.MouseListener
 
+events:
+	- click
+	- mouseover
+	- mousemove
+	- mouseout
+	- mouseup
+	- mousedown
+	- away:mouseover
+	- away:mousemove
+	- away:mouseout
+	- away:mouseup
+	- away:mousedown
+
 ...
 */
-
-/**
- * Available such events :
- *
- * click
- *
- * mouseover
- * mousemove
- * mouseout
- * mouseup
- * mousedown
- *
- * away:mouseover
- * away:mousemove
- * away:mouseout
- * away:mouseup
- * away:mousedown
- */
 
 // Should extends LibCanvas.Behaviors.Drawable
 LibCanvas.namespace('Behaviors').MouseListener = atom.Class({
 	listenMouse : function (stopListen) {
 		return this.addEvent('libcanvasSet', function () {
-			this.libcanvas.mouse[
-				stopListen ? "unsubscribe" : "subscribe"
-			](this);
+			var command = stopListen ? "unsubscribe" : "subscribe";
+			this.libcanvas.mouse[command](this);
 		}.context(this));
 	}
 });
