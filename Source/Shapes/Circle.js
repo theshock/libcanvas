@@ -52,18 +52,6 @@ LibCanvas.namespace('Shapes').Circle = atom.Class({
 		if (this.center == null) throw new TypeError('center is null');
 		if (this.radius == null) throw new TypeError('radius is null');
 	},
-	get x () {
-		return this.center.x;
-	},
-	get y () {
-		return this.center.y;
-	},
-	set x (x) {
-		return this.center.moveTo({ x : x, y : this.center.y });
-	},
-	set y (y) {
-		return this.center.moveTo({ x : this.center.y, y : y });
-	},
 	getCoords : function () {
 		return this.center;
 	},

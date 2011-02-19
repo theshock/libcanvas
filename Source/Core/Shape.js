@@ -33,10 +33,10 @@ LibCanvas.Shape = atom.Class({
 		return this.from;
 	},
 	get x () {
-		return this.from.x;
+		return this.getCoords().x;
 	},
 	get y () {
-		return this.from.y;
+		return this.getCoords().y;
 	},
 	set x (x) {
 		return this.move({ x : x - this.x, y : 0 });
