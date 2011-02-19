@@ -45,22 +45,29 @@ LibCanvas.Invoker = atom.Class({
 	invoke: function () {
 		this.fireEvent('beforeInvoke');
 
-		var all  = this.time;
-		var time = Math.max(all.average(), this.minDelay);
+		var i, all = this.time,
+			time   = Math.max(all.average(), this.minDelay);
 		this.timeoutId = this.invoke.delay(time, this);
 
 		var startTime = new Date(),
 			funcs     = this.funcs.sortBy('priority'),
-			ignore    = false;
+			ignore    = false,
+			remove    = [];
 
-		for (var i = funcs.length; i--;) {
-			if (funcs[i].call(this.options.context, time) === false) {
+		for (i = funcs.length; i--;) {
+			var result = funcs[i].call(this.options.context, time);
+			if (result === false) {
 				ignore = true;
+			} else if (result === 'remove') {
+				remove.push(funcs[i]);
 			}
 		}
 		if (!ignore) {
 			all.push(new Date() - startTime);
 			if (all.length > this.options.timeCount) all.shift();
+		}
+		for (i = remove.length; i--;) {
+			this.rmFunction(remove[i]);
 		}
 
 		this.fireEvent('afterInvoke', [time]);
@@ -89,6 +96,6 @@ LibCanvas.Invoker = atom.Class({
 
 LibCanvas.Invoker.AutoChoose = atom.Class({
 	get invoker () {
-		return libcanvas in this ? this.libcanvas.invoker : LibCanvas.invoker;
+		return 'libcanvas' in this ? this.libcanvas.invoker : LibCanvas.invoker;
 	}
 });
