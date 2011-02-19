@@ -12,6 +12,7 @@ authors:
 
 requires:
 	- LibCanvas
+	- Invoker
 
 provides: Behaviors.Animatable
 
