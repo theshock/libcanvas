@@ -47,8 +47,6 @@ var Point = LibCanvas.Point = atom.Class({
 			y = args[1];
 		}
 		if (args.length != 2) {
-			var isObject = typeof x == 'object';
-
 			if (x && x[0] !== undefined && x[1] !== undefined) {
 				y = x[1];
 				x = x[0];

@@ -33,6 +33,7 @@ var Beh = LibCanvas.Behaviors;
 LibCanvas.namespace('Ui').Grip = atom.Class({
 	Extends: Beh.Drawable,
 	Implements: [
+		Beh.Animatable,
 		Beh.Clickable,
 		Beh.Draggable,
 		Beh.Droppable,

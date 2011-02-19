@@ -19,6 +19,7 @@ provides: Behaviors.Animatable
 */
 
 LibCanvas.namespace('Behaviors').Animatable = atom.Class({
+	Implements: [LibCanvas.Invoker.AutoChoose],
 	animate : function (args) {
 		var step  = {};
 		var frames = args.frames || 10;

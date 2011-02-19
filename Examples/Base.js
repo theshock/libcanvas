@@ -20,10 +20,8 @@ provides: Base
 
 LibCanvas.Examples.set('Base',
 	function (canvas) {
-		var libcanvas = new LibCanvas(canvas);
-		libcanvas.start(function () {
-			console.log('frame');
+		new LibCanvas(canvas).start(function () {
+			atom.log('frame');
 		});
-
 	}
 );
