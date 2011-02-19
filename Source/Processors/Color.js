@@ -20,7 +20,7 @@ provides: Processors.Color
 
 new function () {
 
-var math = Math, round = math.round;
+var math = Math;
 
 LibCanvas.namespace('Processors').Color = atom.Class({
 	rgbToHsb: function(red, green, blue){
@@ -40,18 +40,18 @@ LibCanvas.namespace('Processors').Color = atom.Class({
 			
 			if (hue < 0) hue++;
 		}
-		return [round(hue * 360), round(saturation * 100), round(brightness * 100)];
+		return [math.round(hue * 360), math.round(saturation * 100), math.round(brightness * 100)];
 	},
 
 	hsbToRgb: function(hue, sat, bri){
-		bri = round(bri / 100 * 255);
+		bri = math.round(bri / 100 * 255);
 		if (!sat) return [bri, bri, bri];
 		hue = hue % 360;
 		
 		var f = hue % 60,
-			p = round((bri * (100  - sat)) / 10000 * 255),
-			q = round((bri * (6000 - sat * f)) / 600000 * 255),
-			t = round((bri * (6000 - sat * (60 - f))) / 600000 * 255);
+			p = math.round((bri * (100  - sat)) / 10000 * 255),
+			q = math.round((bri * (6000 - sat * f)) / 600000 * 255),
+			t = math.round((bri * (6000 - sat * (60 - f))) / 600000 * 255);
 		switch (parseInt(hue / 60)){
 			case 0: return [bri, t, p];
 			case 1: return [q, bri, p];
