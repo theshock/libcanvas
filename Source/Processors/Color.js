@@ -46,9 +46,9 @@ LibCanvas.namespace('Processors').Color = atom.Class({
 	hsbToRgb: function(hue, sat, bri){
 		bri = round(bri / 100 * 255);
 		if (!sat) return [bri, bri, bri];
-
-		var hue = hue % 360,
-			f = hue % 60,
+		hue = hue % 360;
+		
+		var f = hue % 60,
 			p = round((bri * (100  - sat)) / 10000 * 255),
 			q = round((bri * (6000 - sat * f)) / 600000 * 255),
 			t = round((bri * (6000 - sat * (60 - f))) / 600000 * 255);
