@@ -31,8 +31,10 @@ LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 		return false;
 	},
 	show : function () {
-		this.origCtx.clearAll();
-		this.origCtx.drawImage(this.elem);
+		if (this.elem != this.origElem) {
+			this.origCtx.clearAll();
+			this.origCtx.drawImage(this.elem);
+		}
 		return this;
 	},
 	drawAll : function () {
@@ -63,8 +65,7 @@ LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 				this.drawAll() :
 				this.renderProgress();
 			this.processing('post');
-
-			if (this.elem != this.origElem) this.show();
+			this.show();
 			return true;
 		}
 		return false;

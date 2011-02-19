@@ -28,27 +28,29 @@ LibCanvas.Canvas2D = atom.Class({
 		LibCanvas.Inner.FrameRenderer,
 		LibCanvas.Inner.FpsMeter,
 		LibCanvas.Inner.DownloadingProgress,
-		atom.Class.Events
+		atom.Class.Events,
+		atom.Class.Options
 	],
+
+	options: {
+		clear: null,
+		backBuffer: 'on',
+	},
 
 	fps        : 1,
 	autoUpdate : true,
 	interval   : null,
 
-	initialize : function (elem, cfg) {
+	initialize : function (elem, options) {
 		if (typeof elem == 'string') elem = atom(elem);
 		if (atom.isAtom(elem)) elem = elem.get();
+
+		this.setOptions(options);
 
 		this.origElem = elem;
 		this.origCtx  = elem.getContext('2d-libcanvas');
 
-		if (cfg && cfg.backBuffer == 'off') {
-			this.elem = this.origElem;
-			this.ctx  = this.origCtx;
-		} else {
-			this.elem = this.createBuffer();
-			this.ctx  = this.elem.getContext('2d-libcanvas');
-		}
+		this.createProjectBuffer().addClearer();
 
 		this.update = this.update.context(this);
 	},
@@ -63,13 +65,32 @@ LibCanvas.Canvas2D = atom.Class({
 		return this;
 	},
 
+	createProjectBuffer: atom.Class.protectedMethod(function () {
+		if (this.options.backBuffer == 'off') {
+			this.elem = this.origElem;
+			this.ctx  = this.origCtx;
+		} else {
+			this.elem = this.createBuffer();
+			this.ctx  = this.elem.getContext('2d-libcanvas');
+		}
+		return this;
+	}),
+
+	addClearer: atom.Class.protectedMethod(function () {
+		var clear = this.options.clear;
+		if (clear != null) {
+			this.addProcessor('pre',
+				new LibCanvas.Processors.Clearer(
+					typeof clear === 'string' ? clear : null
+				)
+			);
+		}
+		return this;
+	}),
+
 	updateFrame : true,
 	update : function () {
-		if (this.autoUpdate == 'onRequest') {
-			this.updateFrame = true;
-		} else {
-			this.frame();
-		}
+		this.updateFrame = true;
 		return this;
 	},
 
