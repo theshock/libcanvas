@@ -21,7 +21,7 @@ provides: Context2D
 ...
 */
 
-(function () {
+new function () {
 
 var LibCanvas = window.LibCanvas,
 	Point     = LibCanvas.Point,
@@ -647,4 +647,4 @@ LibCanvas.Context2D.office = office;
 
 HTMLCanvasElement.addContext('2d-libcanvas', LibCanvas.Context2D);
 
-})();
+};

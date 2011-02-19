@@ -20,7 +20,7 @@ provides: Point
 ...
 */
 
-(function (undefined) {
+new function (undefined) {
 
 var shifts = {
 	top    : {x: 0, y:-1},
@@ -154,4 +154,4 @@ var Point = LibCanvas.Point = atom.Class({
 	}
 });
 
-})();
+};

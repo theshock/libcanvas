@@ -16,7 +16,7 @@ provides: Utils.Math
 */
 
 // Number
-(function () {
+new function () {
 
 
 var degreesCache = {};
@@ -57,7 +57,7 @@ for (var degree in [0, 45, 90, 135, 180, 225, 270, 315, 360].toKeys()) {
 }
 var d360 = degreesCache[360];
 
-})();
+};
 
 atom.extend(Math, {
 	hypotenuse: function (cathetus1, cathetus2)  {

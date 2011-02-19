@@ -26,7 +26,7 @@ provides: Ui.Grip
 */
 
 
-(function () {
+new function () {
 
 var Beh = LibCanvas.Behaviors;
 
@@ -73,4 +73,4 @@ LibCanvas.namespace('Ui').Grip = atom.Class({
 	}
 });
 
-})();
+};

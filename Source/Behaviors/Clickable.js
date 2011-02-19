@@ -19,7 +19,7 @@ provides: Behaviors.Clickable
 ...
 */
 
-(function () {
+new function () {
 
 var setValFn = function (object, name, val) {
 	return function () {
@@ -43,4 +43,5 @@ LibCanvas.namespace('Behaviors').Clickable = atom.Class({
 		return this;
 	}
 });
-})();
+
+};

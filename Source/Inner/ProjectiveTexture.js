@@ -18,7 +18,7 @@ provides: Inner.ProjectiveTexture
 ...
 */
 
-(function () {
+new function () {
 
 LibCanvas.namespace('Inner').ProjectiveTexture = atom.Class({
 	initialize : function (image) {
@@ -369,4 +369,4 @@ Matrix.prototype = {
 	}
 };
 
-})();
+};

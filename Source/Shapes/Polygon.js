@@ -19,7 +19,7 @@ provides: Shapes.Polygon
 
 ...
 */
-(function (){
+new function (){
 
 
 var linesIntersect = function (a,b,c,d) {
@@ -127,4 +127,4 @@ LibCanvas.namespace('Shapes').Polygon = atom.Class({
 	}
 });
 
-})();
+};

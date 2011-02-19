@@ -19,7 +19,7 @@ provides: Behaviors.Draggable
 ...
 */
 
-(function () {
+new function () {
 
 LibCanvas.namespace('Behaviors').Draggable = atom.Class({
 	isDraggable : null,
@@ -72,4 +72,4 @@ var initDraggable = function () {
 		});
 };
 
-})();
+};

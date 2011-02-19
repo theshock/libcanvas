@@ -18,7 +18,7 @@ provides: LibCanvas
 */
 
 
-(function () {
+new function () {
 
 var LibCanvas = window.LibCanvas = atom.Class({
 	Static: {
@@ -115,4 +115,4 @@ atom.implement(HTMLCanvasElement, {
 	}
 });
 
-})();
+};
