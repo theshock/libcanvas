@@ -21,31 +21,32 @@ provides: Behaviors.Animatable
 
 LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 	Implements: [LibCanvas.Invoker.AutoChoose],
+
+	initialize: atom.Class.privateMethod(function (element) {
+		this.animate.element = element;
+	}),
+
 	animate : function (args) {
-		var step  = {};
+		if (!args.props) {
+			args = { props : args };
+		}
+		var elem   = this.animate.element || this;
+		var step   = {};
 		var frames = args.frames || 10;
 		for (var i in args.props) {
-			var type = atom.typeOf(this[i]);
-			if (type == 'number' || type == 'function') {
-				step[i] = (args.props[i] - (type == 'function' ? this[i]() : this[i])) / frames;
-			}
+			step[i] = (args.props[i] - elem[i]) / frames;
 		}
 		var frame = 0;
 		var interval = function () {
-			for (var i in step) {
-				if (atom.typeOf(this[i]) == 'function') {
-					this[i](this[i]() + step[i]);
-				} else {
-					this[i] += step[i];
-				}
-			}
-			args.onProccess && args.onProccess.call(this);
+			for (var i in step) elem[i] += step[i];
+			
+			args.onProccess && args.onProccess.call(elem);
 
 			if (++frame >= frames) {
 				interval.stop();
-				args.onFinish && args.onFinish.call(this);
+				args.onFinish && args.onFinish.call(elem);
 			}
-		}.periodical(args.delay || 25, this);
+		}.periodical(args.delay || 25);
 		return this;
 	}
 });
