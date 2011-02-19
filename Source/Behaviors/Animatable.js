@@ -31,11 +31,10 @@ LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 
 		if (!args.props) {
 			args = { props : args };
-		} else {
-			args = atom.extend({
-				time: 500
-			}, args);
 		}
+		args = atom.extend({
+			time: 500
+		}, args);
 
 		var timeLeft = args.time, diff = {};
 		for (var i in args.props) diff[i] = args.props[i] - elem[i];
