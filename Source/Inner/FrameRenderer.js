@@ -31,7 +31,6 @@ LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 		return false;
 	},
 	show : function () {
-		console.log(this.origCtx);
 		this.origCtx.clearAll();
 		this.origCtx.drawImage(this.elem);
 		return this;
@@ -58,9 +57,7 @@ LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 		return this;
 	},
 	renderFrame : function () {
-			console.log('renderFrame');
 		if (this.checkAutoDraw()) {
-			console.log('draw');
 			this.processing('pre');
 			this.isReady() ?
 				this.drawAll() :
