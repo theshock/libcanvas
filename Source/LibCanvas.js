@@ -78,6 +78,10 @@ var LibCanvas = window.LibCanvas = atom.Class({
 	}
 });
 
+atom(function () {
+	LibCanvas.invoker.invoke();
+});
+
 // Changing HTMLCanvasElement.prototype.getContext, so we
 // can create our own contexts by LibCanvas.addCanvasContext(name, ctx);
 

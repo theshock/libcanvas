@@ -23,30 +23,43 @@ LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 	Implements: [LibCanvas.Invoker.AutoChoose],
 
 	initialize: atom.Class.privateMethod(function (element) {
-		this.animate.element = element;
+		this.animate.element  = element;
 	}),
 
 	animate : function (args) {
+		var elem = this.animate.element || this;
+
 		if (!args.props) {
 			args = { props : args };
+		} else {
+			args = atom.extend({
+				time: 500
+			}, args);
 		}
-		var elem   = this.animate.element || this;
-		var step   = {};
-		var frames = args.frames || 10;
-		for (var i in args.props) {
-			step[i] = (args.props[i] - elem[i]) / frames;
-		}
-		var frame = 0;
-		var interval = function () {
-			for (var i in step) elem[i] += step[i];
+
+		var timeLeft = args.time, diff = {};
+		for (var i in args.props) diff[i] = args.props[i] - elem[i];
+
+		this.invoker.addFunction(20, function (time) {
+			var timeElapsed = Math.min(time, timeLeft);
+
+			timeLeft -= timeElapsed;
+
 			
+			for (var i in diff) {
+				elem[i] += diff[i] * timeElapsed / args.time;
+			}
+
 			args.onProccess && args.onProccess.call(elem);
 
-			if (++frame >= frames) {
-				interval.stop();
+			if (timeLeft <= 0) {
 				args.onFinish && args.onFinish.call(elem);
+				return 'remove';
 			}
-		}.periodical(args.delay || 25);
+
+			return true;
+		});
+
 		return this;
 	}
 });
