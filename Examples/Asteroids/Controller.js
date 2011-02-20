@@ -31,11 +31,17 @@ Asteroids.Controller = atom.Class({
 		this.createAsteroids();
 	},
 
-	update: function () {
-		console.log('upd');
+	update: function (time) {
+		this.asteroids.invoke([time]);
 	},
 
+	asteroids: [],
 	createAsteroids: function () {
-		this.libcanvas.addElement(new Asteroids.Asteroid);
+		for (var i = 3; i--;) {
+			var asteroid = new Asteroids.Asteroid
+			this.asteroids.push(asteroid);
+			this.libcanvas.addElement(asteroid);
+		}
+		
 	}
 });
