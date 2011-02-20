@@ -73,6 +73,22 @@ LibCanvas.Invoker = atom.Class({
 		this.fireEvent('afterInvoke', [time]);
 		return this;
 	},
+	after: function (timeLeft, priority, fn) {
+		if (arguments.length == 2) {
+			fn = priority;
+			fn.priority = this.options.defaultPriority;
+		}
+		var timeStart = Date.now(), argTime = timeLeft;
+		this.addFunction(priority, function (time) {
+			timeLeft -= time;
+			if (timeLeft < 0) {
+				fn(Date.now() - timeStart - argTime);
+				return 'remove';
+			}
+			return null;
+		});
+		return this;
+	},
 	stop: function () {
 		this.timeoutId.stop();
 		return this;
