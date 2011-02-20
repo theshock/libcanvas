@@ -20,18 +20,23 @@ provides: Asteroids
 
 LibCanvas.extract();
 
-window.Asteroids = {};
+window.Asteroids = {
+	config: {
+		boundsDistance: 30,
+		canvasSize: {
+			width : 800,
+			height: 500
+		}
+	}
+}
 
 LibCanvas.Examples.set('Asteroids', function (canvas) {
-	var lc = new LibCanvas(canvas, {
+	new LibCanvas(canvas, {
 			fps: 20,
 			clear: 'black',
 			backBuffer: 'off'
 		})
-		.set({
-			width : 800,
-			height: 500
-		})
+		.set(Asteroids.config.canvasSize)
 		.fpsMeter()
 		.listenKeyboard([
 			'up', 'down', 'left', 'right', 'space'
