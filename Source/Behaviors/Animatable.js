@@ -64,6 +64,7 @@ LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 		};
 
 		for (var i in args.props) {
+			// if this property is already animating - remove
 			if (i in inAction) {
 				this.invoker.rmFunction(inAction[i]);
 			}
