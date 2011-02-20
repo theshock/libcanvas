@@ -18,9 +18,12 @@ provides: Asteroids
 ...
 */
 
+LibCanvas.extract();
+
 window.Asteroids = {};
 
 LibCanvas.Examples.set('Asteroids', function (canvas) {
+
 	new LibCanvas(canvas, {
 			fps: 20,
 			clear: 'black'

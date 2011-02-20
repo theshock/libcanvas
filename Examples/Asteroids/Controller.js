@@ -25,6 +25,6 @@ Asteroids.Controller = atom.Class({
 	},
 
 	start: function () {
-		atom.log('started');
+		
 	}
 });
