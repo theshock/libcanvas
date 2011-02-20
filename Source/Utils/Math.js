@@ -49,7 +49,28 @@ atom.implement(Number, {
 			.round(base || 0)
 			.degree()
 			.normalizeAngle();
+	},
+
+	toSeconds: function () {
+		return this / 1000;
+	},
+	toMinutes: function () {
+		return this / 60 / 1000;
+	},
+	toHours: function () {
+		return this / 60 / 60 / 1000;
+	},
+
+	seconds: function () {
+		return this * 1000;
+	},
+	minutes: function () {
+		return this * 60 * 1000;
+	},
+	hours: function () {
+		return this * 60 * 60 * 1000;
 	}
+
 });
 
 for (var degree in [0, 45, 90, 135, 180, 225, 270, 315, 360].toKeys()) {
