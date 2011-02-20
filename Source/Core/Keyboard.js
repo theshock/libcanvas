@@ -89,7 +89,9 @@ var Keyboard = LibCanvas.Keyboard = atom.Class({
 			} else {
 				this.fireEvent(key + ':press');
 			}
-			return !this.prevent(key);
+			var prevent = this.prevent(key);
+			if (prevent) e.preventDefault();
+			return !prevent;
 		}.context(this);
 	},
 	prevent : function (key) {
