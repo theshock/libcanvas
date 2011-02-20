@@ -53,8 +53,6 @@ Asteroids.Asteroid = atom.Class({
 			.rotate(this.rotateSpeed * time.toSeconds())
 			.impulse(this.velocity.clone().mul(time.toSeconds()))
 			.checkBounds();
-
-		//debugger;*/
 	},
 	draw: function () {
 		this.libcanvas.ctx.stroke(this.getShape(), 'red')

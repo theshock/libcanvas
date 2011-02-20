@@ -28,7 +28,11 @@ window.Asteroids = {
 			height: 500
 		},
 		speed: {
-			asteroid: 70.0,
+			asteroid:  70.0,
+			bullet  : 500.0,
+			ship    :  10.0,
+			shipFriction  : 0.95,
+			shipRotate    : (90).degree(),
 			asteroidRotate: (60).degree()
 		}
 	}
