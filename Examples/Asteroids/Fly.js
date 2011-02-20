@@ -41,6 +41,13 @@ Asteroids.Fly = atom.Class({
 		return this;
 	},
 
+	getVelocity : function () {
+		return new Point(
+			this.angle.cos() * this.speed,
+			this.angle.sin() * this.speed
+		);
+	},
+
 	checkBounds : function () {
 		var cfg = Asteroids.config,
 		    pos = this.position,

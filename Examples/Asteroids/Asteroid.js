@@ -35,10 +35,7 @@ Asteroids.Asteroid = atom.Class({
 		this.angle = Number.random(0, 359).degree();
 		
 		this.addEvent('libcanvasSet', function () {
-			this.velocity = new Point({
-				x :  this.angle.sin() * this.speed,
-				y : -this.angle.cos() * this.speed
-			});
+			this.velocity = this.getVelocity();
 
 			this.position = options.position ||
 				this.libcanvas.ctx.getFullRectangle().getRandomPoint(50);

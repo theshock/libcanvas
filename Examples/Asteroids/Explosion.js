@@ -22,15 +22,18 @@ Asteroids.Explosion = atom.Class({
 	position : null,
 
 	Extends : LibCanvas.Behaviors.Drawable,
-	Implements: [LibCanvas.Invoker.AutoChoose],
+	Implements: [
+		atom.Class.Events,
+		LibCanvas.Invoker.AutoChoose
+	],
 
-	initialize : function (position, onStop) {
+	initialize : function (position) {
 		this.setShape(new Circle(position, 50));
 
 		this.addEvent('libcanvasSet', function () {
 			this.invoker.after(2000, function () {
 				this.libcanvas.rmElement(this);
-				onStop();
+				this.fireEvent('stop');
 			}.context(this));
 		});
 	},

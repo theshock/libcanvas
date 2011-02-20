@@ -19,23 +19,21 @@ provides: Asteroids.Ship
 ...
 */
 
+new function () {
+
+var speed = Asteroids.config.speed;
+
 Asteroids.Ship = atom.Class({
 	Extends : Asteroids.Fly,
 
-	speed      : Asteroids.config.speed.ship,
-	friction   : Asteroids.config.speed.shipFriction,
-	rotateSpeed: Asteroids.config.speed.shipRotate,
+	speed      : speed.ship,
+	friction   : speed.shipFriction,
+	rotateSpeed: speed.shipRotate,
 	zIndex: 60,
 	radius: 30,
-
-	animation : null,
-	rotation  : 0,
-	_debug    : {},
-	invulnerable : true,
-	sprite : 0,
-	deaths : 0,
-	moving   : false,
-	rotating : false,
+	reload: 0,
+	invulnerable: true,
+	hidden: true,
 
 	initialize: function () {
 		// Const
@@ -51,7 +49,7 @@ Asteroids.Ship = atom.Class({
 				center: this.position, radius: this.radius
 			}));
 
-			this.invulnerable = false;
+			this.respawn(false);
 		});
 	},
 
@@ -60,18 +58,17 @@ Asteroids.Ship = atom.Class({
 		
 		var key = this.libcanvas.getKey.context(this.libcanvas);
 
-		time = time.toSeconds();
+		// Weapon reloading
+		this.reload = (this.reload - time).limit(0);
 
+		time = time.toSeconds();
 		// Rotation
 		if (key('aleft') || key('aright')) {
 			this.rotate(this.rotateSpeed * time, key('aleft'));
 		}
 		// Move
 		if (key('aup') || key('adown')) {
-			this.velocity.move({
-				x : (this.angle).cos() * this.speed * time,
-				y : (this.angle).sin() * this.speed * time
-			}, key('adown'));
+			this.velocity.move(this.getVelocity().mul(time), key('adown'));
 		}
 		this.impulse(this.velocity).checkBounds();
 		this.velocity.mul(this.friction);
@@ -85,26 +82,29 @@ Asteroids.Ship = atom.Class({
 		this.stop();
 		this.invulnerable = true;
 		this.hidden = true;
-		this.libcanvas.addElement(new Asteroids.Explosion(
-			this.position.clone(),
-			function () {
-				this.rotate(-this.angle);
-				this.position.moveTo(this.full.getRandomPoint(50));
-				this.blink(3000, function () {
-					this.invulnerable = false;
-					this.hidden       = false;
-				});
-			}.context(this)
-		));
+		this.libcanvas.addElement(
+			new Asteroids.Explosion(this.position.clone())
+				.addEvent('stop', this.respawn.context(this, [true]))
+		);
+		return this;
 	},
 
-	blink : function (time, fn) {
+	respawn: function (random) {
+		this.rotate(-this.angle);
+		if (random) this.position.moveTo(this.full.getRandomPoint(50));
+		this.blink(1000, function () {
+			this.invulnerable = false;
+			this.hidden       = false;
+		});
+	},
+
+	blink: function (time, fn) {
 		var blinker = function (error) {
 			blinker.fn && blinker.fn(error);
 		};
 		blinker.fn = function (error) {
 			this.hidden = !this.hidden;
-			this.invoker.after(400 - error, blinker);
+			this.invoker.after(250 - error, blinker);
 		}.context(this)
 
 		blinker(0);
@@ -117,6 +117,11 @@ Asteroids.Ship = atom.Class({
 		return this;
 	},
 
+	shoot: function () {
+		if (this.invulnerable || this.reload > 0) return null;
+		this.reload = 2000;
+		return new Asteroids.Bullet(this.position.clone(), this.angle);
+	},
 
 
 
@@ -310,3 +315,5 @@ Asteroids.Ship = atom.Class({
 		};
 	}
 });
+
+}
