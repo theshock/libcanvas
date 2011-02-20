@@ -26,8 +26,14 @@ LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 		this.animate.element  = element;
 	}),
 
-	animate : function (args) {
-		var elem = this.animate.element || this;
+	animate : function (key, value) {
+		var args, elem = this.animate.element || this;
+		if (typeof key == 'string' && arguments.length == 2) {
+			args = {};
+			args[key] = value;
+		} else {
+			args = key;
+		}
 
 		if (!args.props) {
 			args = { props : args };
