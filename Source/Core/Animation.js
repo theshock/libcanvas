@@ -25,8 +25,14 @@ LibCanvas.Animation = atom.Class({
 		this.sprites[index] = sprite;
 		return this;
 	},
-	addSprites : function (sprites) {
-		atom.extend(this.sprites, sprites);
+	addSprites : function (sprites, width) {
+		if (atom.typeOf(sprites) == 'object') {
+			atom.extend(this.sprites, sprites);
+		} else {
+			for (var w = 0; (w * width) < sprites.width; w++) {
+				this.addSprite(w, sprites.sprite(width*w, 0, width, sprites.height));
+			}
+		}
 		return this;
 	},
 	defaultSprite : null,
@@ -108,6 +114,7 @@ LibCanvas.Animation = atom.Class({
 			var frameName = frame.name ? 'frame:' + frame.name : 'frame';
 			this.fireEvent('changed', [frameName, aniName]);
 			this.fireEvent(frameName, [frameName, aniName]);
+			// use invoker instead
 			if (frame.delay != null) this.nextFrame.delay(frame.delay, this);
 		} else {
 			this.fireEvent('changed', ['stop:' + aniName]);

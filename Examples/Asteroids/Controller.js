@@ -42,7 +42,6 @@ Asteroids.Controller = atom.Class({
 	lastUpdate : 0,
 
 	initialize : function () {
-		return;
 		this.addEvent('libcanvasSet', this.start);
 	},
 
@@ -66,8 +65,6 @@ Asteroids.Controller = atom.Class({
 	},
 
 	upd : function () {
-		console.log('upd');
-
 		var time = this.lastUpdate ? (new Date - this.lastUpdate) / 1000 : 0.001;
 		this.lastUpdate = new Date;
 		// Shooting

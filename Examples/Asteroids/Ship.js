@@ -188,9 +188,7 @@ Asteroids.Ship = atom.Class({
 	initAnimation : function () {
 		var img = this.libcanvas.getImage('ship');
 		this.animation = new LibCanvas.Animation();
-		for (var i = 0; i < 10; i++) {
-			this.animation.addSprite(i, img.sprite(120*i, 0, 120, 120));
-		}
+		this.animation.addSprites(img, 120);
 		this.animation.add({
 			name  : 'main',
 			loop  : true,

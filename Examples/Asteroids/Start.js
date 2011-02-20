@@ -28,7 +28,7 @@ LibCanvas.Examples.set('Asteroids', function (canvas) {
 	var libcanvas = atom.extend(
 			new LibCanvas(canvas),
 			{
-				fps: fps || 10,
+				fps: fps || 1,
 				preloadImages   : Asteroids.config.canvas.images,
 				progressBarStyle: Asteroids.config.canvas.progressBar
 			}
