@@ -35,7 +35,7 @@ LibCanvas.Canvas2D = atom.Class({
 	options: {
 		clear: null,
 		backBuffer: 'on',
-		fps: 20,
+		fps: 25,
 		autoUpdate: true
 	},
 
@@ -171,7 +171,8 @@ LibCanvas.Canvas2D = atom.Class({
 		if (this._invoker == null) {
 			this._invoker = new LibCanvas.Invoker({
 				context: this,
-				defaultPriority: 10
+				defaultPriority: 10,
+				fpsLimit: this.options.fps
 			});
 		}
 		return this._invoker;
