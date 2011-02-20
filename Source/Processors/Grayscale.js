@@ -21,7 +21,7 @@ provides: Processors.Grayscale
 LibCanvas.namespace('Processors').Grayscale = atom.Class({
 	style : null,
 	initialize : function (type) {
-		// luminance, average, red, green, blue, default
+		// sepia, luminance, average, red, green, blue, default
 		this.type = type || 'default';
 	},
 	processPixels : function (data) {
@@ -37,6 +37,11 @@ LibCanvas.namespace('Processors').Grayscale = atom.Class({
 			g = d[i+1];
 			b = d[i+2];
 			switch (type) {
+				case 'sepia':
+					data[i]   = (r * .393) + (g *.769) + (b * .189);
+					data[i+1] = (r * .349) + (g *.686) + (b * .168);
+					data[i+2] = (r * .272) + (g *.534) + (b * .131);
+					break;
 				case 'luminance': set(i, 0.2126*r + 0.7152*g + 0.0722*b); break;
 				case 'average'  : set(i, (r + g + b)/3); break;
 				case 'red'      : set(i, r); break;
