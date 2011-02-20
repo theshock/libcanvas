@@ -1,9 +1,9 @@
 /*
 ---
 
-name: "Shapes.Line"
+name: "Shapes.Path"
 
-description: "Provides line as canvas object"
+description: "Provides Path as canvas object"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
@@ -15,7 +15,7 @@ requires:
 	- Point
 	- Shape
 
-provides: Shapes.Line
+provides: Shapes.Path
 
 ...
 */
