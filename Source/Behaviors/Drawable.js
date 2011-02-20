@@ -23,7 +23,7 @@ LibCanvas.namespace('Behaviors').Drawable = atom.Class({
 	setLibcanvas : function (libcanvas) {
 		this.libcanvas = libcanvas;
 		this.readyEvent('libcanvasSet');
-		this.libcanvas.addEvent('ready', this.readyEvent.bind(this, 'libcanvasReady'));
+		this.libcanvas.addEvent('ready', this.readyEvent.context(this, ['libcanvasReady']));
 		return this;
 	},
 	getCoords : function () {

@@ -25,6 +25,6 @@ Asteroids.Controller = atom.Class({
 	},
 
 	start: function () {
-		
+		this.libcanvas.addElement(new Asteroids.Asteroid);
 	}
 });
