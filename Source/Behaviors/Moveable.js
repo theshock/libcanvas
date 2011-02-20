@@ -12,46 +12,36 @@ authors:
 
 requires:
 	- LibCanvas
+	- Behaviors.Animatable
 
 provides: Behaviors.Moveable
 
 ...
 */
-
 LibCanvas.namespace('Behaviors').Moveable = atom.Class({
-	moving : {
-		interval : 0,
-		speed : 0, // pixels per sec
-		to : null
-	},
 	stopMoving : function () {
-		this.moving.interval.stop();
+		if (this.stopMoving.fn) this.stopMoving.fn();
 		return this;
 	},
-	getCoords : function () {
-		return this.shape.getCoords();
-	},
-	moveTo    : function (point, speed) {
+	moveTo    : function (point, speed) { // speed == pixels per sec
 		this.stopMoving();
-		this.moving.speed = speed = (speed || this.moving.speed);
+		point = LibCanvas.Point.from(point);
+		var diff = this.getCoords().diff(point), shape = this.getShape();
 		if (!speed) {
-			this.getShape().move(this.getCoords().diff(point));
+			shape.move(diff);
 			return this;
 		}
-		this.moving.interval = function () {
-			var move = {}, pixelsPerFn = speed / 20;
-			var diff = this.getCoords().diff(point);
-			var distance = Math.hypotenuse(diff.x, diff.y);
-			if (distance > pixelsPerFn) {
-				move.x = diff.x * (pixelsPerFn / distance);
-				move.y = diff.y * (pixelsPerFn / distance);
-				this.getShape().move(move);
-			} else {
-				this.getShape().move(diff);
-				this.stopMoving();
-				this.fireEvent('stopMove');
-			}
-		}.periodical(20, this);
+		var distance = Math.hypotenuse(diff.x, diff.y);
+		this.stopMoving.fn = new LibCanvas.Behaviors.Animatable(function (change) {
+			shape.move({
+				x : diff.x * change,
+				y : diff.y * change
+			});
+		}).animate({
+			time : distance / speed * 1000,
+			onFinish: this.fireEvent.bind(this, 'stopMove')
+		}).stop;
+
 		return this;
 	}
 });

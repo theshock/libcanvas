@@ -19,11 +19,29 @@ provides: Behaviors.Animatable
 ...
 */
 
+new function () {
+
+var Factor = function (fn) {
+	return {
+		Factor: Factor,
+		_factor: 0,
+		get factor () {
+			return this._factor;
+		},
+		set factor (value) {
+			var change = value - this._factor;
+			this._factor = value;
+			fn(change)
+		}
+	};
+};
+
 LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 	Implements: [LibCanvas.Invoker.AutoChoose],
 
 	initialize: atom.Class.privateMethod(function (element) {
-		this.animate.element  = element;
+		this.animate.element = atom.typeOf(element) == 'function' ?
+			Factor(element) : element;
 	}),
 
 	animatedProperties : {},
@@ -38,13 +56,20 @@ LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 		}
 
 		if (!args.props) {
-			args = { props : args };
+			if (elem.Factor == Factor) {
+				args.props = { factor : 1 };
+			} else {
+				args = { props : args };
+			}
 		}
 		args = atom.extend({
 			time: 500
 		}, args);
 
-		var timeLeft = args.time, diff = {}, inAction = this.animatedProperties;
+		var timeLeft = args.time,
+			diff = {},
+			inAction = this.animatedProperties,
+			invoker = this.invoker;
 
 		var fn = function (time) {
 			var timeElapsed = Math.min(time, timeLeft);
@@ -63,17 +88,26 @@ LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 			return true;
 		};
 
+
+
 		for (var i in args.props) {
 			// if this property is already animating - remove
 			if (i in inAction) {
-				this.invoker.rmFunction(inAction[i]);
+				invoker.rmFunction(inAction[i]);
 			}
 			inAction[i] = fn;
 			diff[i] = args.props[i] - elem[i];
 		}
 
-		this.invoker.addFunction(20, fn);
-		return this;
-
+		invoker.addFunction(20, fn);
+		return {
+			stop : function () {
+				for (var i in args.props) inAction[i] = null;
+				invoker.rmFunction(fn);
+				return this;
+			}
+		};
 	}
 });
+
+};

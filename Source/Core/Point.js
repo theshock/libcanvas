@@ -147,6 +147,12 @@ var Point = LibCanvas.Point = atom.Class({
 		return (arguments.length < 2) ? (to.x == this.x && to.y == this.y) :
 			(this.x.equals(to.x, accuracy) && this.y.equals(to.y, accuracy));
 	},
+	toObject: function () {
+		return {
+			x: this.x,
+			y: this.y
+		};
+	},
 	clone : function () {
 		return new Point(this);
 	}
