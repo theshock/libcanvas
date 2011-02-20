@@ -32,9 +32,7 @@ LibCanvas.Examples.set('Animating.Base', function (canvas) {
 
 	(function () {
 		new LC.Animatable(grip.shape)
-			.animate({
-				radius: 75
-			});
-	}.delay(2000));
+			.animate({ radius: 75 });
+	}.delay(1000));
 
 });
