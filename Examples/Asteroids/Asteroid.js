@@ -55,10 +55,6 @@ Asteroids.Asteroid = atom.Class({
 			.checkBounds();
 	},
 	draw: function () {
-		this.libcanvas.ctx.stroke(this.getShape(), 'red')
-			.stroke(new Line  (this.position, this.position.clone().move({
-				x: this.radius * 1.5 * this.angle.cos(),
-				y: this.radius * 1.5 * this.angle.sin()
-			})), 'red');
+		this.parent('red');
 	}
 });

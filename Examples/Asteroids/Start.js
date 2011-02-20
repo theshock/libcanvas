@@ -32,7 +32,7 @@ window.Asteroids = {
 			bullet  : 500.0,
 			ship    :  10.0,
 			shipFriction  : 0.95,
-			shipRotate    : (90).degree(),
+			shipRotate    : (120).degree(),
 			asteroidRotate: (60).degree()
 		}
 	}
@@ -40,14 +40,14 @@ window.Asteroids = {
 
 LibCanvas.Examples.set('Asteroids', function (canvas) {
 	new LibCanvas(canvas, {
-			fps: 20,
+			fps: 25,
 			clear: 'black',
 			backBuffer: 'off'
 		})
 		.set(Asteroids.config.canvasSize)
 		.fpsMeter()
 		.listenKeyboard([
-			'up', 'down', 'left', 'right', 'space'
+			'aup', 'adown', 'aleft', 'aright', 'space'
 		])
 		.addEvent('ready', function () {
 			new Asteroids.Controller(this);

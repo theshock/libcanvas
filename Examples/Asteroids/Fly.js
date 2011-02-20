@@ -20,6 +20,7 @@ provides: Asteroids.Fly
 
 Asteroids.Fly = atom.Class({
 	Extends : LibCanvas.Behaviors.Drawable,
+	Implements: [LibCanvas.Invoker.AutoChoose],
 
 	zIndex   : 10,
 	angle    : 0,
@@ -30,8 +31,8 @@ Asteroids.Fly = atom.Class({
 
 	update : atom.Class.abstractMethod,
 
-	rotate : function (add) {
-		this.angle = (this.angle + add).normalizeAngle();
+	rotate : function (add, reverse) {
+		this.angle = (this.angle + add * (reverse ? -1 : 1)).normalizeAngle();
 		return this;
 	},
 
@@ -67,5 +68,15 @@ Asteroids.Fly = atom.Class({
 			y: 0
 		});
 		return this;
+	},
+
+	draw : function (color) {
+		if (this.hidden) return;
+
+		this.libcanvas.ctx.stroke(this.getShape(), color)
+			.stroke(new Line  (this.position, this.position.clone().move({
+				x: this.radius * 1.5 * this.angle.cos(),
+				y: this.radius * 1.5 * this.angle.sin()
+			})), color);
 	}
 });
