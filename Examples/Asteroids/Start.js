@@ -29,7 +29,7 @@ window.Asteroids = {
 		},
 		speed: {
 			asteroid: 70.0,
-			asteroidRotate: (45).degree()
+			asteroidRotate: (60).degree()
 		}
 	}
 }

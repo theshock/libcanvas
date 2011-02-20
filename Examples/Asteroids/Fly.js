@@ -22,7 +22,7 @@ Asteroids.Fly = atom.Class({
 	Extends : LibCanvas.Behaviors.Drawable,
 
 	zIndex   : 10,
-	rotation : 0,
+	angle    : 0,
 	speed    : 0,
 	friction : 0,
 	shape    : 0,
@@ -31,7 +31,7 @@ Asteroids.Fly = atom.Class({
 	update : atom.Class.abstractMethod,
 
 	rotate : function (add) {
-		this.rotation = (this.rotation + add).normalizeAngle();
+		this.angle = (this.angle + add).normalizeAngle();
 		return this;
 	},
 
@@ -49,15 +49,14 @@ Asteroids.Fly = atom.Class({
 
 		if (pos.x > canvas.width + bounds / 2) {
 			impulse.x = -(canvas.width + bounds);
-		} else if (pos.x < bounds / 2) {
+		} else if (pos.x < - bounds / 2) {
 			impulse.x =  (canvas.width + bounds);
 		}
 		if (pos.y > canvas.height + bounds / 2) {
 			impulse.y = -(canvas.height + bounds);
-		} else if (pos.y < bounds / 2) {
+		} else if (pos.y < - bounds / 2) {
 			impulse.y =  (canvas.height + bounds);
 		}
-
 		this.impulse(impulse);
 		return this;
 	},

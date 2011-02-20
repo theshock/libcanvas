@@ -32,13 +32,13 @@ Asteroids.Controller = atom.Class({
 	},
 
 	update: function (time) {
-		this.asteroids.invoke([time]);
+		this.asteroids.invoke('update', time);
 	},
 
 	asteroids: [],
 	createAsteroids: function () {
-		for (var i = 3; i--;) {
-			var asteroid = new Asteroids.Asteroid
+		for (var i = 10; i--;) {
+			var asteroid = new Asteroids.Asteroid();
 			this.asteroids.push(asteroid);
 			this.libcanvas.addElement(asteroid);
 		}

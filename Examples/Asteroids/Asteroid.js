@@ -31,28 +31,33 @@ Asteroids.Asteroid = atom.Class({
 	initialize: function (options) {
 		if (!options) options = {};
 		
-		this.size     = options.size || 1;
-		this.rotation = Number.random(0, 359).degree();
+		this.size  = options.size || 1;
+		this.angle = Number.random(0, 359).degree();
 		
 		this.addEvent('libcanvasSet', function () {
 			this.velocity = new Point({
-				x :  this.rotation.sin() * this.speed,
-				y : -this.rotation.cos() * this.speed
+				x :  this.angle.sin() * this.speed,
+				y : -this.angle.cos() * this.speed
 			});
 
 			this.position = options.position ||
 				this.libcanvas.ctx.getFullRectangle().getRandomPoint(50);
+
+			this.setShape(new Circle(this.position, this.radius));
 		});
 	},
 	update: function (time) {
+		if (!this.isReady()) return;
+		
 		this
-			.rotate(this.rotate.speed * time)
-			.impulse(this.velocity.clone().mul(time))
+			.rotate(this.rotateSpeed * time.toSeconds())
+			.impulse(this.velocity.clone().mul(time.toSeconds()))
 			.checkBounds();
+
+		//debugger;*/
 	},
 	draw: function () {
-		this.libcanvas.ctx
-			.stroke(new Circle(this.position, this.radius), 'red')
+		this.libcanvas.ctx.stroke(this.getShape(), 'red')
 			.stroke(new Line  (this.position, this.position.clone().move({
 				x: this.radius * 1.5 * this.angle.cos(),
 				y: this.radius * 1.5 * this.angle.sin()
