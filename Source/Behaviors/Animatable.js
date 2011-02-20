@@ -26,6 +26,8 @@ LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 		this.animate.element  = element;
 	}),
 
+	animatedProperties : {},
+
 	animate : function (key, value) {
 		var args, elem = this.animate.element || this;
 		if (typeof key == 'string' && arguments.length == 2) {
@@ -42,18 +44,14 @@ LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 			time: 500
 		}, args);
 
-		var timeLeft = args.time, diff = {};
-		for (var i in args.props) diff[i] = args.props[i] - elem[i];
+		var timeLeft = args.time, diff = {}, inAction = this.animatedProperties;
 
-		this.invoker.addFunction(20, function (time) {
+		var fn = function (time) {
 			var timeElapsed = Math.min(time, timeLeft);
 
 			timeLeft -= timeElapsed;
 
-			
-			for (var i in diff) {
-				elem[i] += diff[i] * timeElapsed / args.time;
-			}
+			for (var i in diff) elem[i] += diff[i] * timeElapsed / args.time;
 
 			args.onProccess && args.onProccess.call(elem);
 
@@ -63,8 +61,18 @@ LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 			}
 
 			return true;
-		});
+		};
 
+		for (var i in args.props) {
+			if (i in inAction) {
+				this.invoker.rmFunction(inAction[i]);
+			}
+			inAction[i] = fn;
+			diff[i] = args.props[i] - elem[i];
+		}
+
+		this.invoker.addFunction(20, fn);
 		return this;
+
 	}
 });
