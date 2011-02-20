@@ -39,7 +39,9 @@ LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 	},
 	drawAll : function () {
 		var elems = this.elems.sortBy('getZIndex');
-		for (var i = elems.length; i--;) elems[i].draw();
+		for (var i = elems.length; i--;) {
+			if (elems[i].isReady()) elems[i].draw();
+		}
 		return this;
 	},
 	processing : function (type) {

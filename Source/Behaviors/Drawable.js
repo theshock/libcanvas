@@ -20,11 +20,18 @@ provides: Behaviors.Drawable
 
 LibCanvas.namespace('Behaviors').Drawable = atom.Class({
 	Implements: [atom.Class.Events],
+	libcanvasIsReady: false,
 	setLibcanvas : function (libcanvas) {
 		this.libcanvas = libcanvas;
+		this.addEvent('libcanvasReady', function () {
+			this.libcanvasIsReady = true;
+		})
 		this.readyEvent('libcanvasSet');
 		this.libcanvas.addEvent('ready', this.readyEvent.context(this, ['libcanvasReady']));
 		return this;
+	},
+	isReady : function () {
+		return this.libcanvasIsReady;
 	},
 	getCoords : function () {
 		return this.shape.getCoords();

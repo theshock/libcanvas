@@ -25,8 +25,6 @@ Asteroids.Fly = atom.Class({
 	rotation : 0,
 	speed    : 0,
 	friction : 0,
-	position : new Point(0, 0),
-	velocity : new Point(0, 0),
 	shape    : 0,
 	hidden   : false,
 

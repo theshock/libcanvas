@@ -26,6 +26,10 @@ window.Asteroids = {
 		canvasSize: {
 			width : 800,
 			height: 500
+		},
+		speed: {
+			asteroid: 70.0,
+			asteroidRotate: (45).degree()
 		}
 	}
 }

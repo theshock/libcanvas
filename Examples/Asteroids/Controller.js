@@ -19,12 +19,23 @@ provides: Asteroids.Controller
 */
 
 Asteroids.Controller = atom.Class({
+	Implements: [LibCanvas.Invoker.AutoChoose],
+
 	initialize: function (libcanvas) {
 		this.libcanvas = libcanvas;
 		this.start();
 	},
 
 	start: function () {
+		this.invoker.addFunction(10, this.update.context(this));
+		this.createAsteroids();
+	},
+
+	update: function () {
+		console.log('upd');
+	},
+
+	createAsteroids: function () {
 		this.libcanvas.addElement(new Asteroids.Asteroid);
 	}
 });
