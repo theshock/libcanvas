@@ -78,7 +78,7 @@ Asteroids.Fly = atom.Class({
 	},
 
 	draw : function (color) {
-		if (this.hidden) return;
+		if (this.hidden || !Asteroids.config.showShapes) return;
 
 		this.libcanvas.ctx.stroke(this.getShape(), color)
 			.stroke(new Line  (this.position, this.position.clone().move({

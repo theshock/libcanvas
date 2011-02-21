@@ -36,17 +36,22 @@ Asteroids.Asteroid = atom.Class({
 	initialize: function (options) {
 		if (!options) options = {};
 		
-		this.size  = options.size || 1;
-		this.color = options.color || this.colors.random();
-		this.angle = Number.random(0, 359).degree();
+		this.size   = options.size || 0;
+		this.color  = options.color || this.colors.random();
+		this.angle  = Number.random(0, 359).degree();
+		this.radius = [35, 26, 15][this.size];
 		
 		this.addEvent('libcanvasSet', function () {
+			this.image = this.libcanvas.getImage('stones').sprite(
+				cfg.stones[this.color][this.size].random()
+			);
+
 			this.velocity = this.getVelocity();
 
 			this.position = options.position ||
 				this.libcanvas.ctx.getFullRectangle().getRandomPoint(50);
 
-			this.setShape(new Circle(this.position, (this.radius / this.size).floor() ));
+			this.setShape(new Circle(this.position, this.radius ));
 		});
 	},
 	update: function (time) {
@@ -59,7 +64,7 @@ Asteroids.Asteroid = atom.Class({
 	},
 	explode: function (decay) {
 		this.libcanvas.rmElement(this);
-		if (decay && this.size < 3) {
+		if (decay && this.size < 2) {
 			for (var c = 3; c--;) {
 				decay(new this.self({
 					position: this.position.clone(),
@@ -71,6 +76,12 @@ Asteroids.Asteroid = atom.Class({
 		return this;
 	},
 	draw: function () {
+		this.libcanvas.ctx.drawImage({
+			image : this.image,
+			center: this.position,
+			angle : this.angle
+		});
+
 		this.parent(this.color);
 	}
 });

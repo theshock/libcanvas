@@ -49,6 +49,14 @@ Asteroids.Ship = atom.Class({
 				center: this.position, radius: this.radius
 			}));
 
+			this.animation = new Animation()
+				.addSprites(this.libcanvas.getImage('ship'), 60)
+				.run({
+					line : Array.range(0,8),
+					delay: 40,
+					loop : true
+				});
+
 			this.respawn(false);
 		});
 	},
@@ -75,7 +83,15 @@ Asteroids.Ship = atom.Class({
 	},
 
 	draw: function () {
-		this.parent('#f0f');
+		if (this.hidden) return;
+
+		this.libcanvas.ctx.drawImage({
+			image : this.animation.getSprite(),
+			center: this.position,
+			angle : this.angle + (90).degree()
+		});
+
+		this.parent('red');
 	},
 
 	explode: function () {
@@ -98,7 +114,6 @@ Asteroids.Ship = atom.Class({
 	},
 
 	respawn: function (random) {
-		this.rotate(-this.angle);
 		if (random) this.position.moveTo(this.full.getRandomPoint(50));
 		this.blink(2000, function () {
 			this.invulnerable = false;
@@ -126,10 +141,24 @@ Asteroids.Ship = atom.Class({
 		return this;
 	},
 
+	secondWeapon: true,
+
+	getWeaponPosition: function () {
+		this.secondWeapon = !this.secondWeapon;
+
+		return this.position
+			.clone()
+			.move({ x: this.radius, y: 0 })
+			.rotate(
+				this.angle + (45).degree() * (this.secondWeapon ? -1 : 1),
+				this.position
+			);
+	},
+
 	shoot: function () {
 		if (this.invulnerable || this.reload > 0) return null;
 		this.reload = 300;
-		return new Asteroids.Bullet(this.position.clone(), this.angle);
+		return new Asteroids.Bullet(this.getWeaponPosition(), this.angle);
 	},
 
 
