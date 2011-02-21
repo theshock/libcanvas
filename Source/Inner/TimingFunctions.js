@@ -39,8 +39,17 @@ var TF = LibCanvas.namespace('Inner').TimingFunctions = atom.Class({
 				throw new TypeError('No timing function «' + fn[0] + '»');
 			}
 			var In = fn.contains('in'), Out = fn.contains('out');
-			var method = 'ease' + ((In && !Out) ? 'In' : (!In && Out) ? 'Out' : 'InOut');
-			return this[method](fn[0], progress, params);
+			if (In && !Out) {
+				return this.easeIn(fn[0], progress, params);
+			} else if (!In && Out) {
+				return this.easeOut(fn[0], progress, params);
+			} else {
+				fn = fn.filter(function (name) {
+					return name != 'in' && name != 'out';
+				});
+				if (fn.length < 2) fn[1] = fn[0];
+				return this.easeInOut(fn, progress, params);
+			}
 		},
 		easeIn: function(fn, progress, params){
 			return this.instance[fn](progress, params);
@@ -50,8 +59,8 @@ var TF = LibCanvas.namespace('Inner').TimingFunctions = atom.Class({
 		},
 		easeInOut: function(fn, progress, params){
 			return (progress <= 0.5) ?
-				this.instance[fn](2 * progress, params) / 2 :
-				(2 - this.instance[fn](2 * (1 - progress), params)) / 2;
+				this.instance[fn[0]](2 * progress, params) / 2 :
+				(2 - this.instance[fn[1]](2 * (1 - progress), params)) / 2;
 		}
 	},
 
