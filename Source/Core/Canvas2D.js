@@ -43,7 +43,7 @@ LibCanvas.Canvas2D = atom.Class({
 	set fps (value) {
 		this.options.fps = value;
 	},
-	get fps (value) {
+	get fps () {
 		return this.options.fps;
 	},
 	// @deprecated
