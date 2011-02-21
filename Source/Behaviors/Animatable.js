@@ -13,6 +13,7 @@ authors:
 requires:
 	- LibCanvas
 	- Invoker
+	- Inner.TimingFunctions
 
 provides: Behaviors.Animatable
 
@@ -20,6 +21,8 @@ provides: Behaviors.Animatable
 */
 
 new function () {
+
+var TF = LibCanvas.Inner.TimingFunctions;
 
 var Factor = function (fn) {
 	return {
@@ -63,20 +66,33 @@ LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 			}
 		}
 		args = atom.extend({
-			time: 500
+			fn    : 'linear',
+			params: [],
+			time  : 500,
 		}, args);
 
+		if (!Array.isArray(args.fn)) {
+			args.fn = args.fn.split('-');
+		}
+
+		args.params = Array.from(args.params);
+
 		var timeLeft = args.time,
-			diff = {},
+			diff     = {},
+			start    = {},
 			inAction = this.animatedProperties,
-			invoker = this.invoker;
+			invoker  = this.invoker;
 
 		var fn = function (time) {
 			var timeElapsed = Math.min(time, timeLeft);
 
 			timeLeft -= timeElapsed;
 
-			for (var i in diff) elem[i] += diff[i] * timeElapsed / args.time;
+			var progress = (args.time - timeLeft) / args.time;
+
+			var factor = TF.count(args.fn, progress, args.params);
+
+			for (var i in diff) elem[i] = start[i] + diff[i] * factor;
 
 			args.onProccess && args.onProccess.call(elem);
 
@@ -92,11 +108,10 @@ LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 
 		for (var i in args.props) {
 			// if this property is already animating - remove
-			if (i in inAction) {
-				invoker.rmFunction(inAction[i]);
-			}
+			if (i in inAction) invoker.rmFunction(inAction[i]);
 			inAction[i] = fn;
-			diff[i] = args.props[i] - elem[i];
+			diff[i]  = args.props[i] - elem[i];
+			start[i] = elem[i];
 		}
 
 		invoker.addFunction(20, fn);

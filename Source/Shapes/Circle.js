@@ -77,10 +77,12 @@ LibCanvas.namespace('Shapes').Circle = atom.Class({
 	},
 	processPath : function (ctx, noWrap) {
 		if (!noWrap) ctx.beginPath();
-		ctx.arc({
-			circle : this,
-			angle  : [0, (360).degree()]
-		});
+		if (this.radius) {
+			ctx.arc({
+				circle : this,
+				angle  : [0, (360).degree()]
+			});
+		}
 		if (!noWrap) ctx.closePath();
 		return ctx;
 	},
