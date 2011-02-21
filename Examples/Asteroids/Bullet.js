@@ -23,6 +23,8 @@ Asteroids.Bullet = atom.Class({
 	Extends : Asteroids.Fly,
 	Implements: [LibCanvas.Invoker.AutoChoose],
 
+	animation: null,
+
 	initialize : function (position, angle) {
 		this.setZIndex(200);
 		this.position = position;
@@ -31,7 +33,18 @@ Asteroids.Bullet = atom.Class({
 		this.velocity = this.getVelocity();
 
 		this.addEvent('libcanvasSet', function () {
-			this.invoker.after(800, this.die.context(this));
+			this.animation = new Animation()
+				.addSprites(this.libcanvas.getImage('shot'), 60)
+				.run({
+					frames: [
+						{sprite: 0, delay: 40},
+						{sprite: 1, delay: 40},
+						{sprite: 2, delay: 700},
+						{sprite: 1, delay: 40},
+						{sprite: 0, delay: 40}
+					]
+				})
+				.addEvent('stop', this.die.context(this));
 		});
 	},
 
@@ -66,6 +79,10 @@ Asteroids.Bullet = atom.Class({
 	draw : function () {
 		if (this.hidden) return;
 
-		this.libcanvas.ctx.stroke(new Circle(this.position, 5), '#0f0');
+		this.libcanvas.ctx.drawImage({
+			image : this.animation.getSprite(),
+			center: this.position,
+			angle : this.angle - (90).degree()
+		});
 	}
 });

@@ -19,20 +19,25 @@ provides: Asteroids.Asteroid
 ...
 */
 
+new function () {
+
+var cfg = Asteroids.config;
+
 Asteroids.Asteroid = atom.Class({
 	Extends  : Asteroids.Fly,
 	radius   : 30,
 	angle    : 0,
 	position : null,
 
-	speed: Asteroids.config.speed.asteroid,
-	rotateSpeed: Asteroids.config.speed.asteroidRotate,
+	colors     : Object.keys(cfg.stones),
+	speed      : cfg.speed.asteroid,
+	rotateSpeed: cfg.speed.asteroidRotate,
 	
 	initialize: function (options) {
 		if (!options) options = {};
 		
 		this.size  = options.size || 1;
-		this.color = options.color || ['#ff0', '#0ff'].random();
+		this.color = options.color || this.colors.random();
 		this.angle = Number.random(0, 359).degree();
 		
 		this.addEvent('libcanvasSet', function () {
@@ -69,3 +74,5 @@ Asteroids.Asteroid = atom.Class({
 		this.parent(this.color);
 	}
 });
+
+};

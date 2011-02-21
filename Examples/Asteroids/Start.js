@@ -22,6 +22,7 @@ LibCanvas.extract();
 
 window.Asteroids = {
 	config: {
+		fps: 25,
 		boundsDistance: 30,
 		canvasSize: {
 			width : 800,
@@ -34,15 +35,29 @@ window.Asteroids = {
 			shipFriction  : 0.95,
 			shipRotate    : (120).degree(),
 			asteroidRotate: (60).degree()
+		},
+		stones: {
+			yellow: {},
+			cyan  : {}
 		}
 	}
 }
 
 LibCanvas.Examples.set('Asteroids', function (canvas) {
+	var images = '/files/asteroids/';
+	
+	atom(canvas).css({ background: 'url("' + images + 'stars.jpg")' });
+
 	new LibCanvas(canvas, {
-			fps: 25,
-			clear: 'black',
-			backBuffer: 'off'
+			fps: Asteroids.config.fps,
+			clear: true,
+			preloadImages: {
+				explosion: images + 'explosion.png',
+				fire     : images + 'fire.png',
+				ship     : images + 'ship-red.png',
+				shot     : images + 'shot.png',
+				stones   : images + 'stones.png'
+			}
 		})
 		.set(Asteroids.config.canvasSize)
 		.fpsMeter()

@@ -27,18 +27,29 @@ Asteroids.Explosion = atom.Class({
 		LibCanvas.Invoker.AutoChoose
 	],
 
+	animation: null,
+
 	initialize : function (position) {
-		this.setShape(new Circle(position, 50));
+		this.position = position;
 
 		this.addEvent('libcanvasSet', function () {
-			this.invoker.after(2000, function () {
-				this.libcanvas.rmElement(this);
-				this.fireEvent('stop');
-			}.context(this));
+			this.animation = new Animation()
+				.addSprites(this.libcanvas.getImage('explosion'), 162)
+				.run({
+					delay: 40,
+					line : Array.range(0, 9)
+				})
+				.addEvent('stop', function () {
+					this.libcanvas.rmElement(this);
+					this.fireEvent('stop');
+				}.context(this))
 		});
 	},
 
 	draw : function () {
-		this.libcanvas.ctx.fill(this.getShape(), '#f96');
+		this.libcanvas.ctx.drawImage({
+			image : this.animation.getSprite(),
+			center: this.position
+		});
 	}
 });

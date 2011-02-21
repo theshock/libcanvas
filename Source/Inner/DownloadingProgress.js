@@ -20,8 +20,6 @@ provides: Inner.DownloadingProgress
 ...
 */
 LibCanvas.namespace('Inner').DownloadingProgress = atom.Class({
-	preloadImages : null,
-	progressBarStyle : null,
 	getImage : function (name) {
 		if (this.images && this.images[name]) {
 			return this.images[name];
@@ -30,9 +28,9 @@ LibCanvas.namespace('Inner').DownloadingProgress = atom.Class({
 		}
 	},
 	renderProgress : function () {
-		if (this.progressBarStyle && !this.progressBar) {
+		if (this.options.progressBarStyle && !this.progressBar) {
 			this.progressBar = new LibCanvas.Utils.ProgressBar()
-				.setStyle(this.progressBarStyle);
+				.setStyle(this.options.progressBarStyle);
 		}
 		if (this.progressBar) {
 			this.progressBar
@@ -43,8 +41,8 @@ LibCanvas.namespace('Inner').DownloadingProgress = atom.Class({
 	},
 	createPreloader : function () {
 		if (!this.imagePreloader) {
-			if (this.preloadImages) {
-				this.imagePreloader = new LibCanvas.Utils.ImagePreloader(this.preloadImages)
+			if (this.options.preloadImages) {
+				this.imagePreloader = new LibCanvas.Utils.ImagePreloader(this.options.preloadImages)
 					.addEvent('ready', function (preloader) {
 						this.images = preloader.images;
 						atom.log(preloader.getInfo());
@@ -61,6 +59,6 @@ LibCanvas.namespace('Inner').DownloadingProgress = atom.Class({
 	},
 	isReady : function () {
 		this.createPreloader();
-		return !this.preloadImages || (this.imagePreloader && this.imagePreloader.isReady());
+		return !this.options.preloadImages || (this.imagePreloader && this.imagePreloader.isReady());
 	}
 });

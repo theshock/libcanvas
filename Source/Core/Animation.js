@@ -42,15 +42,15 @@ LibCanvas.Animation = atom.Class({
 	},
 	getSprite : function () {
 		return this.getFrame() ? this.sprites[this.getFrame().sprite] : 
-			Object.isReal(this.defaultSprite) ? this.sprites[this.defaultSprite] : null;
+			this.defaultSprite != null ? this.sprites[this.defaultSprite] : null;
 	},
 
 	animations : {},
 	add : function (animation) {
 		if (!animation.frames && animation.line) {
 			animation.frames = [];
-			animation.line.forEach(function (f) {
-				animation.frames.push({sprite : f, delay : animation.delay});
+			animation.line.forEach(function (f, i) {
+				animation.frames.push({sprite: f, delay: animation.delay, name: i});
 			});
 			delete animation.line;
 			return this.add(animation);
@@ -59,9 +59,23 @@ LibCanvas.Animation = atom.Class({
 		return this;
 	},
 
+	singleAnimationId: 0,
+	runOnce: function (cfg) {
+		var name = '_singleAnimation' + this.singleAnimationId++;
+		return this
+			.add(atom.extend({
+				name : name,
+				delay: 40
+			}, cfg))
+			.run(name);
+	},
+
 	current : null,
 	queue : [],
 	run : function (name, cfg) {
+		if (typeof name != 'string') {
+			return this.runOnce(name);
+		}
 		if (!name in this.animations) {
 			throw new Error('No animation «' + name + '»');
 		}
@@ -87,7 +101,7 @@ LibCanvas.Animation = atom.Class({
 	},
 	stopped : function () {
 		var next = this.queue.shift();
-		return Object.isReal(next) && this.init(next);
+		return next != null && this.init(next);
 	},
 	init : function (args) {
 		this.current = {
@@ -99,9 +113,8 @@ LibCanvas.Animation = atom.Class({
 		return this.nextFrame();
 	},
 	nextFrame : function () {
-		if (!this.current) {
-			return this;
-		}
+		if (!this.current) return this;
+		
 		this.current.index++;
 		var frame = this.getFrame();
 		if (!frame && (this.getCfg('loop') || this.current.repeat)) {
