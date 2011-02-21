@@ -61,9 +61,25 @@ Asteroids.Ship = atom.Class({
 		});
 	},
 
+	  moveAction: null,
+	rotateAction: null,
+
 	update: function (time) {
 		if (!this.isReady()) return;
 		
+		var fire = function (type, start) {
+			if (start) {
+				this.getFireAnimation(type)
+					.stop(1)
+					.run('start')
+					.run('moving');
+			} else {
+				this.getFireAnimation(type)
+					.stop(1)
+					.run('end');
+			}
+		}.context(this);
+
 		var key = this.libcanvas.getKey.context(this.libcanvas);
 
 		// Weapon reloading
@@ -73,17 +89,43 @@ Asteroids.Ship = atom.Class({
 		// Rotation
 		if (key('aleft') || key('aright')) {
 			this.rotate(this.rotateSpeed * time, key('aleft'));
+
+			var newRotateAction = key('aleft') ? 'left' : 'right';
+			if (this.rotateAction != newRotateAction) {
+				// changing direction without stopping the ship
+				this.rotateAction && fire(this.rotateAction, 0);
+				fire(newRotateAction, 1);
+			}
+			this.rotateAction = newRotateAction;
+		} else {
+			this.rotateAction && fire(this.rotateAction, 0);
+			this.rotateAction = null;
 		}
+
 		// Move
 		if (key('aup') || key('adown')) {
 			this.velocity.move(this.getVelocity().mul(time), key('adown'));
+
+			var newMoveAction = key('aup') ? 'forward' : 'back';
+			if (this.moveAction != newMoveAction) {
+				// changing direction without stoping the ship
+				this.moveAction && fire(this.moveAction, 0);
+				fire(newMoveAction, 1);
+			}
+			this.moveAction = newMoveAction;
+		} else {
+			this.moveAction && fire(this.moveAction, 0);
+			this.moveAction = null;
 		}
+
 		this.impulse(this.velocity).checkBounds();
 		this.velocity.mul(this.friction);
 	},
 
 	draw: function () {
 		if (this.hidden) return;
+
+		this.drawEngines();
 
 		this.libcanvas.ctx.drawImage({
 			image : this.animation.getSprite(),
@@ -161,6 +203,127 @@ Asteroids.Ship = atom.Class({
 		return new Asteroids.Bullet(this.getWeaponPosition(), this.angle);
 	},
 
+
+	/********************************
+	 * engines fire animation
+	 */
+
+	enginesShifts: {
+		'mainLeft'  : { x: -30 , y: -6 },
+		'mainRight' : { x: -30 , y:  6 },
+		'backLeft'  : { x:  30, y:  10 },
+		'backRight' : { x:  30, y: -10 },
+		'turnLeft'  : { x: -10, y:  30 },
+		'turnRight' : { x: -10, y: -30 },
+	},
+	getEnginePosition : function (type) {
+		return this.position.clone()
+			.move(this.enginesShifts[type])
+			.rotate(this.angle, this.position);
+	},
+	fireAnimation : {},
+	getFireAnimation : function (type) {
+		if (!this.fireAnimation[type]) {
+			var size = (type == 'forward') ? 'Big' : 'Small';
+			this.fireAnimation[type] = this['createFireAnimation' + size]();
+		}
+		return this.fireAnimation[type];
+	},
+	createFireAnimation : function () {
+		var image = this.libcanvas.getImage('fire');
+		return new LibCanvas.Animation()
+			.addSprites({
+				small : image.sprite(  0, 0, 20, 140),
+				med1  : image.sprite( 20, 0, 20, 140),
+				med2  : image.sprite( 40, 0, 20, 140),
+				med3  : image.sprite( 60, 0, 20, 140),
+				big1  : image.sprite( 80, 0, 20, 140),
+				big2  : image.sprite(100, 0, 20, 140),
+				big3  : image.sprite(120, 0, 20, 140)
+			});
+	},
+	createFireAnimationBig : function () {
+		return this.createFireAnimation()
+			.add({
+				name : 'start',
+				line: ['small', 'small', 'med1', 'med2'],
+				delay: 40
+			})
+			.add({
+				name : 'moving',
+				loop : true,
+				line : ['big1', 'big2', 'big3'],
+				delay : 40
+			})
+			.add({
+				name : 'end',
+				line: ['med2', 'med1', 'small', 'small'],
+				delay: 40
+			});
+	},
+	createFireAnimationSmall : function () {
+		return this.createFireAnimation()
+			.add({
+				name : 'start',
+				line : ['small'],
+				delay: 40
+			})
+			.add({
+				name : 'moving',
+				loop : true,
+				line : ['med1', 'med2', 'med3'],
+				delay : 40
+			})
+			.add({
+				name : 'end',
+				line : ['small'],
+				delay: 40
+			});
+	},
+	getEnginesImages : function () {
+		var get = function (type) {
+			return this.getFireAnimation(type).getSprite();
+		}.context(this);
+		
+		return {
+			'mainLeft'  : {
+				image : get('forward'),
+				degree: (270).degree()
+			},
+			'mainRight' : {
+				image : get('forward'),
+				degree: (270).degree()
+			},
+			'turnLeft' : {
+				image : get('left'),
+				degree: -(150).degree()
+			},
+			'turnRight' : {
+				image : get('right'),
+				degree: -(30).degree()
+			},
+			'backLeft' : {
+				image : get('back'),
+				degree: (90).degree()
+			},
+			'backRight' : {
+				image : get('back'),
+				degree: (90).degree()
+			}
+		};
+	},
+	drawEngines: function () {
+		var engines = this.getEnginesImages();
+
+		for (var type in engines) if (engines[type].image) {
+			this.libcanvas.ctx
+				.drawImage({
+					image  : engines[type].image,
+					center : this.getEnginePosition(type),
+					angle  : this.angle + engines[type].degree
+				});
+		}
+	}
 
 });
 
