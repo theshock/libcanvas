@@ -61,7 +61,8 @@ LibCanvas.namespace('Utils').ImagePreloader = atom.Class({
 				load  : this.createEvent('loaded'),
 				error : this.createEvent('errors'),
 				abort : this.createEvent('aborts')
-			});
+			})
+			.get();
 	},
 	createImages : function (images) {
 		var imgs = {};
