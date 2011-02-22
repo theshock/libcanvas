@@ -29,7 +29,7 @@ Point
 
 ## Метод move
 
-	LibCanvas.Point move(~LibCanvas.Point distance, boolean reverse = false)
+	LibCanvas.Point move(LibCanvas.Point distance, boolean reverse = false)
 
 В данном случае можно использовать в качестве distance не только LibCanvas.Point, но и обычный объект со свойствами x и y или массив из двух элементов-чисел
 
@@ -106,7 +106,7 @@ Point
 
 ## Метод rotate
 
-	LibCanvas.Point rotate(int angle, ~LibCanvas.Point pivot = {x:0, y:0})
+	LibCanvas.Point rotate(int angle, LibCanvas.Point pivot = {x:0, y:0})
 
 Развенуть точку на angle градусов вокруг оси pivot
 
@@ -120,7 +120,7 @@ Point
 
 ## Метод scale
 
-	LibCanvas.Point scale(int power, ~LibCanvas.Point pivot = {x:0, y:0})
+	LibCanvas.Point scale(int power, LibCanvas.Point pivot = {x:0, y:0})
 
 Увеличивает расстояние от точки `pivot` в `power` раз
 
