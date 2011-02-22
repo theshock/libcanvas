@@ -67,6 +67,10 @@ LibCanvas.Canvas2D = atom.Class({
 		this.createProjectBuffer().addClearer();
 
 		this.update = this.update.context(this);
+
+		this.addEvent('ready', function () {
+			this.update.delay(0)
+		});
 	},
 
 	set: function (props) {
