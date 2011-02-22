@@ -30,6 +30,8 @@ var setValFn = function (object, name, val) {
 
 // Should extends drawable, implements mouseListener
 LibCanvas.namespace('Behaviors').Clickable = atom.Class({
+	Implements: [LibCanvas.Behaviors.MouseListener],
+
 	clickable : function () { 
 		this.listenMouse();
 
