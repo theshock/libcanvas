@@ -42,7 +42,7 @@ var office = {
 	rect : function (func, args) {
 		var rect = office.makeRect.call(this, args);
 		return this.original(func,
-			[rect.from.x, rect.from.y, rect.getWidth(), rect.getHeight()]);
+			[rect.from.x, rect.from.y, rect.width, rect.height]);
 	},
 	makeRect: function (args) {
 		return args.length ?
@@ -155,6 +155,7 @@ LibCanvas.Context2D = atom.Class({
 	get height() {
 		return this.canvas.height;
 	},
+
 	getFullRectangle : function () {
 		return new Rectangle(0, 0, this.width, this.height);
 	},
@@ -169,33 +170,13 @@ LibCanvas.Context2D = atom.Class({
 		return this;
 	},
 	getClone : function (width, height) {
-		var canvas = this.canvas, clone  = LibCanvas.Buffer(
-			width  || canvas.width,
-			height || canvas.height
-		);
+		width  = width  || canvas.width;
+		height = height || canvas.height
+		var canvas = this.canvas, clone  = LibCanvas.Buffer(width, height);
 		var ctx = clone.getContext('2d');
 		!arguments.length ? ctx.drawImage(canvas, 0, 0) :
 			ctx.drawImage(canvas, 0, 0, width, height);
 		return clone;
-	},
-
-	// All
-	fillAll : function (style) {
-		return office.all.call(this, 'fill', style);
-	},
-	strokeAll : function (style) {
-		return office.all.call(this, 'stroke', style);
-	},
-	clearAll : function (style) {
-		return office.all.call(this, 'clear', style);
-	},
-
-	// Save/Restore
-	save : function () {
-		return this.original('save');
-	},
-	restore : function () {
-		return this.original('restore');
 	},
 
 	// Values
@@ -217,6 +198,25 @@ LibCanvas.Context2D = atom.Class({
 		return this.ctx2d[name];
 	},
 
+	// All
+	fillAll : function (style) {
+		return office.all.call(this, 'fill', style);
+	},
+	strokeAll : function (style) {
+		return office.all.call(this, 'stroke', style);
+	},
+	clearAll : function (style) {
+		return office.all.call(this, 'clear', style);
+	},
+
+	// Save/Restore
+	save : function () {
+		return this.original('save');
+	},
+	restore : function () {
+		return this.original('restore');
+	},
+
 	// Fill/Stroke
 	fill : function (shape) {
 		return office.fillStroke.call(this, 'fill', arguments);
@@ -234,12 +234,6 @@ LibCanvas.Context2D = atom.Class({
 	closePath : function () {
 		arguments.length && this.lineTo.apply(this, arguments);
 		return this.original('closePath');
-	},
-	clip : function (shape) {
-		if (shape && atom.typeOf(shape.processPath) == 'function') {
-			shape.processPath(this);
-		}
-		return this.original('clip');
 	},
 	moveTo : function (point) {
 		return office.originalPoint.call(this, 'moveTo', arguments);
@@ -330,19 +324,25 @@ LibCanvas.Context2D = atom.Class({
 			return this.ctx2d.isPointInPath(point.x, point.y);
 		}		
 	},
+	clip : function (shape) {
+		if (shape && atom.typeOf(shape.processPath) == 'function') {
+			shape.processPath(this);
+		}
+		return this.original('clip');
+	},
 
 	// transformation
-	rotate : function (angle, point) {
+	rotate : function (angle, pivot) {
 		if (angle) {
-			if (point) this.translate(point);
+			if (pivot) this.translate(pivot);
 			this.ctx2d.rotate(angle);
-			if (point) this.translate(point, true);
+			if (pivot) this.translate(pivot, true);
 		}
 		return this;
 	},
 	translate : function (point, reverse) {
 		point = Point.from(
-			(arguments.length === 1 || reverse === true)
+			(arguments.length === 1 || typeof reverse === 'boolean')
 				? point : arguments
 		);
 		var multi = reverse === true ? -1 : 1;
