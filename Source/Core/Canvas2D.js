@@ -141,10 +141,10 @@ LibCanvas.Canvas2D = atom.Class({
 				Array.collect(this.origElem, ['width', 'height'])
 		);
 	},
-	createGrip : function (config) {
-		var grip = new LibCanvas.Ui.Grip(this, config);
-		this.addElement(grip);
-		return grip;
+	createShaper : function (config) {
+		var shaper = new LibCanvas.Ui.Shaper(this, config);
+		this.addElement(shaper);
+		return shaper;
 	},
 
 	// post-/pre- procesing

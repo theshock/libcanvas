@@ -23,14 +23,14 @@ LibCanvas.Examples.set('Animating.Looped', function (canvas) {
 
 	var libcanvas = new LibCanvas(canvas, { clear: true });
 
-	var grip = libcanvas.start()
-		.createGrip({
+	var shaper = libcanvas.start()
+		.createShaper({
 			shape : new LC.Circle(75, 75, 15),
 			fill  : '#900',
 			stroke: '#f00'
 		});
 
-	var Ani = new LC.Animatable(grip.shape);
+	var Ani = new LC.Animatable(shaper.shape);
 
 	// Changing size
 	var decrease = function () {

@@ -24,7 +24,7 @@ LibCanvas.Examples.set('Ui.Moveable',
 		Extends: LibCanvas.Examples.Ui,
 		start: function (libcanvas) {
 			libcanvas
-				.createGrip({
+				.createShaper({
 					shape : this.randomShape('circle'),
 					stroke: '#990000',
 					fill  : '#330000',

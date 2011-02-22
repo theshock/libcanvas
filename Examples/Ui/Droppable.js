@@ -35,7 +35,7 @@ LibCanvas.Examples.set('Ui.Droppable',
 		},
 		shape: function (type, z) {
 			return this
-				.createGrip(this.randomShape(type), z)
+				.createShaper(this.randomShape(type), z)
 				.listenMouse()
 				.clickable()
 				.draggable();
@@ -45,7 +45,7 @@ LibCanvas.Examples.set('Ui.Droppable',
 		// which bind dropes of recngle in or out of circle
 		getTraceFn : function () {
 			return function (to) {
-				this.createGrip(to ?
+				this.createShaper(to ?
 					this.createTraceYesShape() :
 					this.createTraceNoShape()
 				);

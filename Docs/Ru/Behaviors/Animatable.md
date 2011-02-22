@@ -50,15 +50,15 @@ Animatable
 Например, нам необходимо анимировать радиус круга.
 
     // Создаем круг с радиусом 15
-	var grip = new LibCanvas(canvas, { clear: true }).start()
-		.createGrip({
+	var shaper = new LibCanvas(canvas, { clear: true }).start()
+		.createShaper({
 			shape : new LibCanvas.Shapes.Circle(150, 75, 15),
 			fill  : '#900',
 			stroke: '#f00'
 		});
 
     // Создаем объект Animatable, и анимируем свойство radius до значения 75
-    new LibCanvas.Behaviors.Animatable(grip.shape)
+    new LibCanvas.Behaviors.Animatable()
         .animate('radius', 75);
 
 ## Пример использования Animatable для подмешивания

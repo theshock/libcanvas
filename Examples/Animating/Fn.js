@@ -23,15 +23,15 @@ LibCanvas.Examples.set('Animating.Fn', function (canvas) {
 
 	var libcanvas = new LibCanvas(canvas, { clear: true });
 
-	var grip = libcanvas.start()
-		.createGrip({
+	var shaper = libcanvas.start()
+		.createShaper({
 			shape : new LC.Circle(75, 75, 25),
 			fill  : '#900',
 			stroke: '#f00'
 		});
 
 	(function () {
-		new LC.Animatable(grip.shape)
+		new LC.Animatable(shaper.shape)
 			.animate({ 
 				props: { x : 225 },
 				fn   : 'bounce-out',

@@ -25,7 +25,7 @@ LibCanvas.Examples.set('Ui.Draggable',
 		start: function (libcanvas) {
 			['circle', 'rectangle', 'triangle'].forEach(function (shape, zIndex) {
 				libcanvas
-					.createGrip({
+					.createShaper({
 						shape : this.randomShape(shape),
 						stroke: '#990000',
 						fill  : '#330000',
