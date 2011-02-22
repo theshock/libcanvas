@@ -9,6 +9,7 @@ Animatable
 Кроме того, `Animatable` можно использовать не только для подмешивания (mixin), но и как отдельный класс.
 
 ## Global
+
 При использовании LibCanvas.extract() можно использовать как короткий алиас "Animatable"
 
 ## Метод animate
@@ -23,6 +24,7 @@ Animatable
 дополнительных настроек анимации не требуется), в следующем формате:
 
 * `key`   (*mixed*) Анимируемый параметр
+
 * `value` (*mixed*) Конечное значение параметра
 
 ### Опции
@@ -33,7 +35,7 @@ Animatable
 
 `time`      (*number*: по умолчанию равно 500) Время в миллисекундах, которое должна длиться анимация.
 
-`props`     (*object*): Анимируемые параметры объекта. Должны содержать анимируемый параметр и необходимое конечное значение. Например, { radius: 75 }.
+`props`     (*object*): Анимируемые параметры объекта. Должны содержать анимируемый параметр и необходимое конечное значение. Например, `{ radius: 75 }`.
 
 `onFinish`  (*function*: по умолчанию не используется): Функция вызываемая после завершения анимации. В качестве аргумента передается анимируемый объект.
 
@@ -61,37 +63,24 @@ Animatable
 
 ## Пример использования Animatable для подмешивания
 
-    // Создаем класс Circle, инкапсулирующий круг
-    var Circle = atom.Class({
-        Extends : LibCanvas.Ui.Grip,
-
-        // Подмешиваем поведение «Animatable»
+    var ProgressBar = atom.Class({
         Implements : [LibCanvas.Behaviors.Animatable],
 
-        initialize : function (libcanvas) {
-            this.parent(libcanvas, {
-                shape : new LC.Circle(150, 75, 25),
-                fill  : '#900',
-                stroke: '#f00'
-            });
-            libcanvas.addElement(this);
-        },
+        _progress: 0,
+        // Текущий прогресс желательно инкапсулировать в другой класс,
+        // но для простоты примера будем использовать число.
 
-        // Определяем свойство radius, которое мы будем анимировать.
-        get radius () {
-            return this.shape.radius;
+        // Определяем анимируемое свойство progress:
+        get progress () {
+            return this._progess;
         },
-        set radius (value) {
-            this.shape.radius = value;
+        set progress (value) {
+            // Вызываем метод animate из подмешенного класса Animatable
+            this.animate({ _progress: value });
         }
     });
 
-    var circle = new Circle(
-        new LibCanvas(canvas, { clear: true }).start()
-    );
+    var progressBar = new ProgressBar();
 
-    // Анимируем радиус круга в течение 1 секунды
-    circle.animate({
-        props : { radius : 75 },
-        time : 1000
-    });
+    // Плавно изменяем прогресс до 50%
+    progressBar.progress = 50;
