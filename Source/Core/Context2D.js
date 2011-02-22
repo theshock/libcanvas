@@ -564,12 +564,12 @@ LibCanvas.Context2D = atom.Class({
 				var crop = Rectangle.from(a.crop);
 				this.original('drawImage', [
 					a.image,
-					crop.from.x, crop.from.y, crop.getWidth(), crop.getHeight(),
-					draw.from.x, draw.from.y, draw.getWidth(), draw.getHeight()
+					crop.from.x, crop.from.y, crop.width, crop.height,
+					draw.from.x, draw.from.y, draw.width, draw.height
 				]);
 			} else {
 				this.original('drawImage', [
-					a.image, draw.from.x, draw.from.y, draw.getWidth(), draw.getHeight()
+					a.image, draw.from.x, draw.from.y, draw.width, draw.height
 				]);
 			}
 		} else {
