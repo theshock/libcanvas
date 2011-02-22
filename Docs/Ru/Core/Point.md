@@ -5,7 +5,7 @@ Point
 
 #### Гибкость
 
-Когда требуется объект `LibCanvas.Point` достаточно передать point-подобный объект `{ x: x, y: y }`, если не сказано иначе, но это не рекомендуется.
+Когда требуется объект `LibCanvas.Point` достаточно передать point-подобный объект `{ x: x, y: y }` или массив [x, y], если не сказано иначе, но это не рекомендуется.
 
 #### Global
 
@@ -38,8 +38,6 @@ Point
 ## Метод move
 
 	LibCanvas.Point move(LibCanvas.Point distance, boolean reverse = false)
-
-В данном случае можно использовать в качестве distance не только LibCanvas.Point, но и обычный объект со свойствами x и y или массив из двух элементов-чисел
 
 #### Пример
 	var point = new LibCanvas.Point(10, 10);
