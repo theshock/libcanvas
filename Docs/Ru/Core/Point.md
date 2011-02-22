@@ -29,22 +29,19 @@ Point
 	var point = anotherPoint.clone();
 
 
-Методы
-------
-
-### move
+## Метод `move`
 
 	LibCanvas.Point move(~LibCanvas.Point distance, boolean reverse = false)
 
 В данном случае можно использовать в качестве distance не только LibCanvas.Point, но и обычный объект со свойствами x и y или массив из двух элементов-чисел
 
-##### Пример
+#### Пример
 	var point = new LibCanvas.Point(10, 10);
 	var distance = { x : 5, y : -3 };
 	point.move(distance, false); // x : 15, y :  7
 	point.move(distance, true ); // x :  5, y : 13
 
-##### События
+#### События
 	point.addEvent('move', function (distance) {
 		alert('Точка передвинулась на '
 			+ distance.x + ' по оси X и на '
@@ -52,17 +49,17 @@ Point
 		);
 	});
 
-##### Возвращает
+#### Возвращает
 	this
 
 
-### moveTo
+## Метод `moveTo`
 
 	LibCanvas.Point moveTo(~LibCanvas.Point point, int speed = 0)
 
 `speed` - это количество пикселей, которое точка проходит за секунду. Если задана - будет анимированное движение точки.
 
-##### Пример
+#### Пример
 	// Растояние между точками где-то 1000 пикселей.
 	var start  = new LibCanvas.Point(100, 100);
 	var finish = new LibCanvas.Point(800, 800);
@@ -71,5 +68,5 @@ Point
 	// точка переместится в конец примерно за 2 секунды
 	start.moveTo(finish, 500);
 
-##### Возвращает
+#### Возвращает
 	this
