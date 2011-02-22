@@ -24,7 +24,6 @@ LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 	checkAutoDraw : function () {
 		if (this.autoUpdate == 'onRequest') {
 			if (this.updateFrame) {
-				this.updateFrame = false;
 				return true;
 			}
 		} else if (this.autoUpdate) return true;
@@ -60,14 +59,19 @@ LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 		}.context(this));
 		return this;
 	},
-	renderFrame : function () {
+	prerenderFrame: function () {
 		if (this.checkAutoDraw()) {
 			this.processing('pre');
+		}
+	},
+	renderFrame : function () {
+		if (this.checkAutoDraw()) {
 			this.isReady() ?
 				this.drawAll() :
 				this.renderProgress();
 			this.processing('post');
 			this.show();
+			this.updateFrame = false;
 			return true;
 		}
 		return false;

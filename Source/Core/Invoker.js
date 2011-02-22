@@ -94,7 +94,7 @@ LibCanvas.Invoker = atom.Class({
 		return this;
 	},
 	addFunction: function (priority, fn) {
-		if (arguments.length == 1) {
+		if (fn == null) {
 			fn = priority;
 			fn.priority = this.options.defaultPriority;
 		}

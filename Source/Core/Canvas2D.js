@@ -184,20 +184,21 @@ LibCanvas.Canvas2D = atom.Class({
 
 
 	funcs : [],
-	addFunc : function (fn, priority) {
+	addFunc : function (priority, fn) {
 		this.invoker.addFunction(priority, fn);
 		return this;
 	},
 	rmFunc : function (fn) {
-		this.invoker.rmFunction(priority, fn);
+		this.invoker.rmFunction(fn);
 		return this;
 	},
 
 	// Start, pause, stop
 	start : function (fn) {
-		fn && this.addFunc(fn);
+		fn && this.addFunc(10, fn);
 		if (this.invoker.timeoutId == 0) {
-			this.addFunc(this.renderFrame, 0);
+			this.addFunc(999, this.prerenderFrame);
+			this.addFunc(  0, this.renderFrame);
 			this.invoker
 				.addEvent('beforeInvoke', this.fireEvent.context(this, ['frameRenderStarted']))
 				.addEvent( 'afterInvoke', this.fireEvent.context(this, ['frameRenderFinished']));
