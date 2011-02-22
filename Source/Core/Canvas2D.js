@@ -185,11 +185,15 @@ LibCanvas.Canvas2D = atom.Class({
 
 	funcs : [],
 	addFunc : function (priority, fn) {
-		this.invoker.addFunction(priority, fn);
+		if (fn == null) {
+			fn = priority;
+			priority = fn.priority || 10;
+		}
+		this.funcs.include(fn);
 		return this;
 	},
 	rmFunc : function (fn) {
-		this.invoker.rmFunction(fn);
+		this.funcs.erase(fn);
 		return this;
 	},
 
@@ -197,9 +201,8 @@ LibCanvas.Canvas2D = atom.Class({
 	start : function (fn) {
 		fn && this.addFunc(10, fn);
 		if (this.invoker.timeoutId == 0) {
-			this.addFunc(999, this.prerenderFrame);
-			this.addFunc(  0, this.renderFrame);
 			this.invoker
+				.addFunction(0, this.renderFrame)
 				.addEvent('beforeInvoke', this.fireEvent.context(this, ['frameRenderStarted']))
 				.addEvent( 'afterInvoke', this.fireEvent.context(this, ['frameRenderFinished']));
 		}
