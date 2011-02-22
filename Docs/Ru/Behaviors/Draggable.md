@@ -3,11 +3,11 @@ Draggable
 
 `LibCanvas.Behaviors.Draggable` добавляет возможность перетскивать объект при помощи мыши.
 
-Для активации поведения необходимо вызвать метод `clickable()`.
+Для активации поведения необходимо вызвать метод `draggable()`.
 
 ## Global
 
-При использовании LibCanvas.extract() можно использовать короткий алиас «Clickable»
+При использовании LibCanvas.extract() можно использовать короткий алиас «Draggable»
 
 ## События
 
@@ -30,20 +30,22 @@ Draggable
 
 #### Аргумент `stopDrag`
 
-Если передать в качестве аргумента `false`, то у объекта временно отключается возможность его перетаскивать.
-Вызов метода с аргументом `true` включает ее обратно.
+Если передать в качестве аргумента `true`, то у объекта временно отключается возможность его перетаскивать.
+Вызов метода с аргументом `false` включает ее обратно.
+
+По умолчанию поведение не изменяется.
 
 #### Возвращает `this`
 
 #### Пример использования
 
     var DraggableShape = atom.Class({
-        Implements : [LibCanvas.Behaviors.Draggable],
+        Implements : [LibCanvas.Behaviors.Draggable, LibCanvas.Behaviors.Moveable],
 
         initialize : function () {
             this.draggable()
-                .addEvent('startDrag', this.startDrag)
-                .addEvent('stopDrag', this.stopDrag);
+                .addEvent('startDrag', this.startDrag) // Контекст вызываемых функций будет верным,
+                .addEvent('stopDrag', this.stopDrag);  // т.к. он указывается в addEvent
         },
 
         startDrag : function () {
