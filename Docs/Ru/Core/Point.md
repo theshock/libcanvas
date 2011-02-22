@@ -15,18 +15,23 @@ Point
 Создать экземпляр класса `LibCanvas.Point` можно одним из следующих способов:
 
 	var xCoord = 15, yCoord = 20;
+
 	// передав в конструктор координаты
 	var point = new LibCanvas.Point( xCoord, yCoord );
+
 	// массив координат
 	var point = new LibCanvas.Point([xCoord, yCoord]);
+
 	// объект координат
 	var point = new LibCanvas.Point({ x : xCoord, y : yCoord });
+
 	// Другой объект LibCanvas.Point
 	var point = new LibCanvas.Point(anotherPoint);
+	
 	// что равнозначно с
 	var point = anotherPoint.clone();
 
-	// после использовать LibCanvas.extract():
+	// после использования LibCanvas.extract():
 	var point = new Point( xCoord, yCoord );
 
 
