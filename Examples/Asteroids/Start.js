@@ -43,19 +43,23 @@ window.Asteroids = {
 }
 
 LibCanvas.Examples.set('Asteroids', function (canvas) {
-	var images = '/files/asteroids/';
+	var files = '/files/asteroids/';
 	
-	atom(canvas).css({ background: 'url("' + images + 'stars.jpg")' });
+	atom(canvas).css({ background: 'url("' + files + 'stars.jpg")' });
 
 	new LibCanvas(canvas, {
 			fps: Asteroids.config.fps,
 			clear: true,
 			preloadImages: {
-				explosion: images + 'explosion.png',
-				fire     : images + 'fire.png',
-				ship     : images + 'ship-red.png',
-				shot     : images + 'shot.png',
-				stones   : images + 'stones.png'
+				explosion: files + 'explosion.png',
+				fire     : files + 'fire.png',
+				ship     : files + 'ship-red.png',
+				shot     : files + 'shot.png',
+				stones   : files + 'stones.png'
+			},
+			preloadAudio: {
+				shot      : files + 'sounds/shot.*',
+				explosion : files + 'sounds/explosion.*',
 			}
 		})
 		.set(Asteroids.config.canvasSize)
@@ -65,6 +69,8 @@ LibCanvas.Examples.set('Asteroids', function (canvas) {
 		])
 		.addEvent('ready', function () {
 			new Asteroids.Controller(this);
+			this.getAudio('shot').gatling(6);
+			this.getAudio('explosion').gatling(12);
 		})
 		.start();
 });

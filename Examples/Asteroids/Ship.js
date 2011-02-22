@@ -199,6 +199,9 @@ Asteroids.Ship = atom.Class({
 
 	shoot: function () {
 		if (this.invulnerable || this.reload > 0) return null;
+
+		this.libcanvas.getAudio('shot').playNext();
+
 		this.reload = 300;
 		return new Asteroids.Bullet(this.getWeaponPosition(), this.angle);
 	},

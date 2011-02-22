@@ -27,6 +27,13 @@ LibCanvas.namespace('Inner').DownloadingProgress = atom.Class({
 			throw new Error('No image «' + name + '»');
 		}
 	},
+	getAudio: function (name) {
+		if (this._audio) {
+			var audio = this._audio.get(name);
+			if (audio) return audio;
+		}
+		throw new Error('No audio «' + name + '»');
+	},
 	renderProgress : function () {
 		if (this.options.progressBarStyle && !this.progressBar) {
 			this.progressBar = new LibCanvas.Utils.ProgressBar()
@@ -41,6 +48,12 @@ LibCanvas.namespace('Inner').DownloadingProgress = atom.Class({
 	},
 	createPreloader : function () {
 		if (!this.imagePreloader) {
+			if (this.options.preloadAudio) {
+				this._audio = new LibCanvas.Utils.AudioContainer(this.options.preloadAudio);
+			} else {
+				this._audio = null;
+			}
+
 			if (this.options.preloadImages) {
 				this.imagePreloader = new LibCanvas.Utils.ImagePreloader(this.options.preloadImages)
 					.addEvent('ready', function (preloader) {
