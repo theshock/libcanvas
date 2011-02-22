@@ -97,7 +97,7 @@ Rectangle
 ## Метод draw
 	LibCanvas.Shapes.Rectangle draw(LibCanvas.Context2D ctx, String type);
 
-Отрисовывает (fill/stroke/clear) фигуру в контекст, используя текущие настройки
+Отрисовывает прямоугольник в контекст, используя текущие настройки
 
 #### аргумент `type`
 	Способ отрисовки. Может принимать значения `fill`, `stroke`, `clear`
