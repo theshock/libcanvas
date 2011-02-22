@@ -42,13 +42,13 @@ Circle
 
 ## Метод move
 
-	LibCanvas.Shapes.Line move(LibCanvas.Point distance, bool reverse);
+	LibCanvas.Shapes.Center move(LibCanvas.Point distance, bool reverse);
 
-Вызывает метод move у обоих точек
+Вызывает метод move у центра
 
 #### События
-	line.addEvent('move', function (distance) {
-		alert('Линия передвинулась на '
+	circle.addEvent('move', function (distance) {
+		alert('Круг передвинулся на '
 			+ distance.x + ' по оси X и на '
 			+ distance.y + ' по оси Y'
 		);
@@ -64,57 +64,3 @@ Circle
 	// line.to   == Point(10, 11)
 
 #### Возвращает `this`
-
-## Метод getCenter
-	LibCanvas.Point getCenter();
-Создает и возвращает точку, находящуюся ровно в центре линии:
-
-	var line = new LibCanvas.Shapes.Rectangle({
-		from : [10, 10],
-		to   : [20, 20]
-	});
-	line.getCenter(); // Point(15, 15)
-
-## Метод processPath
-
-	LibCanvas.Context2D processPath(LibCanvas.Context2D ctx, bool noWrap = false)
-
-Прокладывает путь с помощью с точки `from` с помощью `ctx.moveTo` в точку `to` с помощью `ctx.lineTo`
-
-#### аргумент `noWrap`
-если указан в false(по умолчанию), то обрамляет с помощью beginPath, endPath
-
-#### Пример
-	LibCanvas.Shapes.Line({
-		from : [4, 4],
-		to   : [8, 8]
-	}).processPath(ctx);
-
-	// равносильно c:
-	ctx.beginPath()
-	   .moveTo(4, 4) // line.from
-	   .lineTo(8, 8) // line.to
-	   .closePath();
-</code></pre></div>
-
-## Метод equals
-	bool equals(LibCanvas.Shapes.Line line, int accuracy)
-
-Сравнивает точки линий методом LibCanvas.Point.equals
-
-	var foo = new LibCanvas.Shapes.Line(15, 20, 10, 5);
-	var bar = new LibCanvas.Shapes.Line(15, 20, 10, 5);
-
-	trace(bar == foo);      // false
-	trace(bar.equals(foo)); // true
-
-## Метод clone
-	LibCanvas.Shapes.Line clone()
-
-Возвращает линию с такими же координатами
-
-	var line  = new LibCanvas.Shapes.Line(15, 20, 10, 5);
-	var clone = line.clone();
-
-	trace(line == clone);      // false
-	trace(line.equals(clone)); // true

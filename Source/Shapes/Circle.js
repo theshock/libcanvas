@@ -63,6 +63,9 @@ LibCanvas.namespace('Shapes').Circle = atom.Class({
 		this.center.scale(factor);
 		return this;
 	},
+	getCenter: function () {
+		return this.center;
+	},
 	intersect : function (obj) {
 		if (obj instanceof this.self) {
 			return this.center.distanceTo(obj.center) < this.radius + obj.radius;
