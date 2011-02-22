@@ -10,7 +10,7 @@ Animatable
 
 ## Global
 
-При использовании LibCanvas.extract() можно использовать как короткий алиас "Animatable"
+При использовании LibCanvas.extract() можно использовать короткий алиас "Animatable"
 
 ## Метод animate
 
