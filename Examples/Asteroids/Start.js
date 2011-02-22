@@ -45,17 +45,17 @@ window.Asteroids = {
 LibCanvas.Examples.set('Asteroids', function (canvas) {
 	var files = '/files/asteroids/';
 	
-	atom(canvas).css({ background: 'url("' + files + 'stars.jpg")' });
+	atom(canvas).css({ background: 'url("' + files + 'images/stars.jpg")' });
 
 	new LibCanvas(canvas, {
 			fps: Asteroids.config.fps,
 			clear: true,
 			preloadImages: {
-				explosion: files + 'explosion.png',
-				fire     : files + 'fire.png',
-				ship     : files + 'ship-red.png',
-				shot     : files + 'shot.png',
-				stones   : files + 'stones.png'
+				explosion: files + 'images/explosion.png',
+				fire     : files + 'images/fire.png',
+				ship     : files + 'images/ship-red.png',
+				shot     : files + 'images/shot.png',
+				stones   : files + 'images/stones.png'
 			},
 			preloadAudio: {
 				shot      : files + 'sounds/shot.*',
