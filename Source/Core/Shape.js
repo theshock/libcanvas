@@ -50,8 +50,8 @@ LibCanvas.Shape = atom.Class({
 		this. to .move(distance);
 		return this.parent(distance);
 	},
-	equals : function (shape) {
-		return shape.from.equals(this.from) && shape.to.equals(this.to);
+	equals : function (shape, accuracy) {
+		return shape.from.equals(this.from, accuracy) && shape.to.equals(this.to, accuracy);
 	},
 	clone : function () {
 		return new this.self(this.from.clone(), this.to.clone());

@@ -144,7 +144,7 @@ var Point = LibCanvas.Point = atom.Class({
 	},
 	equals : function (to, accuracy) {
 		to = Point.from(to);
-		return (arguments.length < 2) ? (to.x == this.x && to.y == this.y) :
+		return accuracy == null ? (to.x == this.x && to.y == this.y) :
 			(this.x.equals(to.x, accuracy) && this.y.equals(to.y, accuracy));
 	},
 	toObject: function () {
