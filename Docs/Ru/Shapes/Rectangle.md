@@ -2,7 +2,6 @@ Rectangle
 =========
 
 `LibCanvas.Shapes.Rectangle` - базовая фигура в LibCanvas, которая используется в том числе в отрисовке холста (например в `ctx.drawImage`)
-Создать экземпляр класса `LibCanvas.Shapes.Rectangle` можно одним из следующих способов:
 
 #### Global
 
