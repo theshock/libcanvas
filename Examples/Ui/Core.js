@@ -53,9 +53,9 @@ LibCanvas.Examples.Ui = atom.Class({
 		}
 		throw new TypeError('Unknown shape: ' + shape);
 	},
-	createGrip: function (shape, z) {
+	createShaper: function (shape, z) {
 		return this.libcanvas
-			.createGrip({
+			.createShaper({
 				shape : shape,
 				stroke: '#990000',
 				fill  : '#330000',

@@ -23,15 +23,15 @@ LibCanvas.Examples.set('Animating.Base', function (canvas) {
 
 	var libcanvas = new LibCanvas(canvas, { clear: true });
 
-	var grip = libcanvas.start()
-		.createGrip({
+	var shaper = libcanvas.start()
+		.createShaper({
 			shape : new LC.Circle(150, 75, 15),
 			fill  : '#900',
 			stroke: '#f00'
 		});
 
 	(function () {
-		new LC.Animatable(grip.shape)
+		new LC.Animatable(shaper.shape)
 			.animate({ radius: 75 });
 	}.delay(1000));
 

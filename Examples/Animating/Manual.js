@@ -23,8 +23,8 @@ LibCanvas.Examples.set('Animating.Manual', function (canvas) {
 
 	var libcanvas = new LibCanvas(canvas, { clear: true });
 
-	var grip = libcanvas.start()
-		.createGrip({
+	var shaper = libcanvas.start()
+		.createShaper({
 			shape : new LC.Rectangle(25, 25, 25, 25),
 			fill  : '#900',
 			stroke: '#f00'
@@ -32,10 +32,10 @@ LibCanvas.Examples.set('Animating.Manual', function (canvas) {
 
 	new LC.Animatable({
 		get x () {
-			return grip.shape.to.x;
+			return shaper.shape.to.x;
 		},
 		set x (value) {
-			return grip.shape.to.x = value;
+			return shaper.shape.to.x = value;
 		}
 	})
 	.animate({ x: 275 });
