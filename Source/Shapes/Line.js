@@ -53,8 +53,11 @@ LibCanvas.namespace('Shapes').Line = atom.Class({
 		// if triangle square is zero - points are on one line
 		return ((fx-px)*(ty-py)-(tx-px)*(fy-py)).round(6) == 0;
 	},
-	getLength : function () {
+	get length () {
 		return this.to.distanceTo(this.from);
+	},
+	getLength : function () {
+		return this.length;
 	},
 	processPath : function (ctx, noWrap) {
 		if (!noWrap) ctx.beginPath();

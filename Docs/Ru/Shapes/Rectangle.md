@@ -5,7 +5,7 @@ Rectangle
 
 #### Global
 
-При использовании LibCanvas.extract() можно использовать короткий алиас "Rectangle"
+После вызова LibCanvas.extract() можно использовать короткий алиас "Rectangle"
 
 ## Создание экземпляра LibCanvas.Shapes.Rectangle
 	// координаты первой точки и размеры
@@ -95,6 +95,7 @@ Rectangle
 #### Возвращает `this`
 
 ## Метод draw
+
 	LibCanvas.Shapes.Rectangle draw(LibCanvas.Context2D ctx, String type);
 
 Отрисовывает прямоугольник в контекст, используя текущие настройки
@@ -123,7 +124,9 @@ Rectangle
 		.stroke(rect, 'black');
 
 ## Метод getCenter
+
 	LibCanvas.Point getCenter();
+
 Создает и возвращает точку, находящуюся ровно в центре прямоугольника:
 
 	var rect = new LibCanvas.Shapes.Rectangle({
@@ -133,8 +136,10 @@ Rectangle
 	rect.getCenter(); // Point(15, 15)
 
 ## Метод processPath
-LibCanvas.Context2D processPath(LibCanvas.Context2D ctx, bool noWrap = false)
-Проходит путь с помощью ctx.moveTo, ctx.lineTo начиная с точки from по часовой стрелке
+
+	LibCanvas.Context2D processPath(LibCanvas.Context2D ctx, bool noWrap = false)
+
+Проходит путь с помощью `ctx.moveTo`, `ctx.lineTo` начиная с точки `from` по часовой стрелке
 
 #### аргумент `noWrap`
 если указан в false(по умолчанию), то обрамляет с помощью beginPath, endPath
@@ -156,7 +161,9 @@ LibCanvas.Context2D processPath(LibCanvas.Context2D ctx, bool noWrap = false)
 </code></pre></div>
 
 ## Метод getRandomPoint
-LibCanvas.Point getRandomPoint(int margin = 0);
+
+	LibCanvas.Point getRandomPoint(int margin = 0);
+
 Возвращает случайную точку, находящуюся внутри прямоугольника
 
 #### аргумент `margin`
@@ -179,6 +186,7 @@ LibCanvas.Point getRandomPoint(int margin = 0);
 </code></pre></div>
 
 ## Метод equals
+
 	bool equals(LibCanvas.Shapes.Rectangle rect, int accuracy)
 
 Сравнивает точки многоугольников методом LibCanvas.Point.equals
