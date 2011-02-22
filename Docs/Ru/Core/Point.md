@@ -26,6 +26,9 @@ Point
 	// что равнозначно с
 	var point = anotherPoint.clone();
 
+	// после использовать LibCanvas.extract():
+	var point = new Point( xCoord, yCoord );
+
 
 ## Метод move
 
