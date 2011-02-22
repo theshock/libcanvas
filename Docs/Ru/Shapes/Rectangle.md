@@ -4,6 +4,10 @@ Rectangle
 `LibCanvas.Shapes.Rectangle` - базовая фигура в LibCanvas, которая используется в том числе в отрисовке холста (например в `ctx.drawImage`)
 Создать экземпляр класса `LibCanvas.Shapes.Rectangle` можно одним из следующих способов:
 
+#### Global
+
+При использовании LibCanvas.extract() можно использовать короткий алиас "Rectangle"
+
 ## Создание экземпляра LibCanvas.Shapes.Rectangle
 	// координаты первой точки и размеры
 	var rect = new LibCanvas.Shapes.Rectangle( xFromCoord, yFromCoord, width, height );
