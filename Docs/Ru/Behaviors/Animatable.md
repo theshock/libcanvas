@@ -84,3 +84,12 @@ Animatable
 
     // Плавно изменяем прогресс до 50%
     progressBar.progress = 50;
+
+## Пример использования функций прогресса анимации
+
+    new Animatable(function (value) {
+      alert(value);
+    }).animate({
+      fn: 'bounce',
+      time: 1000
+    });
