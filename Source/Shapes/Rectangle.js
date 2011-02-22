@@ -120,12 +120,6 @@ LibCanvas.namespace('Shapes').Rectangle = atom.Class({
 		]);
 		return this;
 	},
-	getCenter : function () {
-		return new Point(
-			(this.from.x + this.to.x) / 2,
-			(this.from.y + this.to.y) / 2
-		);
-	},
 	processPath : function (ctx, noWrap) {
 		if (!noWrap) ctx.beginPath();
 		ctx
