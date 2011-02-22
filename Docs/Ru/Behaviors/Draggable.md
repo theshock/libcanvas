@@ -3,6 +3,9 @@ Draggable
 
 `LibCanvas.Behaviors.Draggable` добавляет возможность перетскивать объект при помощи мыши.
 
+Объект, в который подмешивается `Draggable` также должен включать `Moveable`, так как первое поведение зависит
+от последнего.
+
 Для активации поведения необходимо вызвать метод `draggable()`.
 
 ## Global
@@ -37,7 +40,7 @@ Draggable
 
 #### Возвращает `this`
 
-#### Пример использования
+#### Пример
 
     var DraggableShape = atom.Class({
         Implements : [LibCanvas.Behaviors.Draggable, LibCanvas.Behaviors.Moveable],
@@ -60,8 +63,6 @@ Draggable
 
 Возвращает объект в исходное положение (до события `startDrag`).
 
-Объект должен содержать поведение `Moveable` для того, чтобы метод работал.
-
 См. `Behaviors.Moveable.moveTo`
 
 #### Аргумент `speed` *(опционально)*
@@ -71,7 +72,7 @@ Draggable
 
 #### Возвращает `this`
 
-#### Пример использования
+#### Пример
 
     moveDrag : function () {
         if (this.position.x > 300) {

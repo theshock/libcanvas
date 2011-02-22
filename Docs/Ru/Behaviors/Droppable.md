@@ -34,13 +34,11 @@ Droppable
         initialize : function () {
             this.draggable()
                 .drop(recycleBin)
-                .addEvent('dropped', this.addFileToRecycle());
+                .addEvent('dropped', this.addFileToRecycle);
         },
 
-        addFileToRecycle : function () {
-            return function (recycleBin) {
-                recycleBin.addFile(this);
-            }.context(this);
+        addFileToRecycle : function (recycleBin) {
+            recycleBin.addFile(this);
         }
     });
 
