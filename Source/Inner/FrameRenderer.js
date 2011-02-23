@@ -58,15 +58,21 @@ LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 		}.context(this));
 		return this;
 	},
-	renderFrame : function () {
+	innerInvoke : function (type, time) {
+		var f = this.funcs[type].sortBy('priority');
+		for (var i = f.length; i--;) f.call(this, time);
+		return this;
+	},
+	renderFrame : function (time) {
+		this.innerInvoke('plain', time);
 		if (this.checkAutoDraw()) {
 			this.processing('pre');
-			for (var i = this.funcs.sortBy('priority').length; i--;) {
-				this.funcs[i].call(this);
-			}
-			this.isReady() ?
-				this.drawAll() :
+			if (this.isReady()) {
+				this.innerInvoke('render', time);
+				this.drawAll();
+			} else {
 				this.renderProgress();
+			}
 			this.processing('post');
 			this.show();
 			return true;

@@ -182,23 +182,34 @@ LibCanvas.Canvas2D = atom.Class({
 	},
 
 
-	funcs : [],
-	addFunc : function (priority, fn) {
+	funcs : {
+		plain : [],
+		render: []
+	},
+	addFunc: function (priority, fn, isRender) {
 		if (fn == null) {
 			fn = priority;
 			priority = fn.priority || 10;
 		}
-		this.funcs.include(fn);
+		var f = this.funcs;
+		if (!f.plain.contains(fn) && !f.render.contains(fn)) {
+			f[isRender ? 'render' : 'plain'].push(fn);
+		}
 		return this;
 	},
+	addRender: function (priority, fn) {
+		return this.addFunc(priority, fn, true);
+	},
 	rmFunc : function (fn) {
-		this.funcs.erase(fn);
+		var f = this.funcs;
+		f.plain.erase(fn);
+		f.render.erase(fn);
 		return this;
 	},
 
 	// Start, pause, stop
 	start : function (fn) {
-		fn && this.addFunc(10, fn);
+		fn && this.addRender(10, fn);
 		if (this.invoker.timeoutId == 0) {
 			this.invoker
 				.addFunction(0, this.renderFrame)
