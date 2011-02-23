@@ -26,7 +26,28 @@ LibCanvas.namespace('Utils').Color = atom.Class({
 	Static: {
 		isColorString : function (string) {
 			if (typeof string != 'string') return false;
-			return string.match(/^#\w{3,6}$/) || string.match(/^rgba?\([\d, ]+\)$/)
+			return string in this.colorNames ||
+			       string.match(/^#\w{3,6}$/) ||
+			       string.match(/^rgba?\([\d, ]+\)$/);
+		},
+		colorNames: {
+			white:  '#ffffff',
+			silver: '#c0c0c0',
+			gray:   '#808080',
+			black:  '#000000',
+			red:    '#ff0000',
+			maroon: '#800000',
+			yellow: '#ffff00',
+			olive:  '#808000',
+			lime:   '#00ff00',
+			green:  '#008000',
+			aqua:   '#00ffff',
+			teal:   '#008080',
+			blue:   '#0000ff',
+			navy:   '#000080',
+			fuchsia:'#ff00ff',
+			purple: '#800080',
+			orange: '#ffa500'
 		}
 	},
 	r: 0,
@@ -40,6 +61,9 @@ LibCanvas.namespace('Utils').Color = atom.Class({
 			if (typeof value != 'string') {
 				throw new TypeError('Unknown value type: ' + atom.typeOf(value));
 			}
+			value = value.toLowerCase();
+			
+			value = this.self.colorNames[value] || value;
 			var hex = value.match(/^#(\w{1,2})(\w{1,2})(\w{1,2})$/);
 			if (hex) {
 				rgb = hex.slice(1).map(function (part) {

@@ -19,12 +19,10 @@ provides: Behaviors.Moveable
 ...
 */
 LibCanvas.namespace('Behaviors').Moveable = atom.Class({
-	stopMoving : function (animationFinished) {
+	stopMoving : function () {
 		var sm = this.stopMoving;
 		if (sm.animation) {
-			if (!animationFinished) sm.animation.stop();
-			sm.animation = null;
-			this.fireEvent('stopMove')
+			sm.animation.stop();
 		}
 		return this;
 	},
@@ -34,9 +32,11 @@ LibCanvas.namespace('Behaviors').Moveable = atom.Class({
 		var diff = this.getCoords().diff(point), shape = this.getShape();
 		if (!speed) {
 			shape.move(diff);
+			this.fireEvent('stopMove')
 			return this;
 		}
 		var distance = Math.hypotenuse(diff.x, diff.y), prev = 0;
+
 		this.stopMoving.animation = new LibCanvas.Behaviors.Animatable(function (change) {
 			shape.move({
 				x : diff.x * (change - prev),
@@ -46,8 +46,9 @@ LibCanvas.namespace('Behaviors').Moveable = atom.Class({
 		}).animate({
 			fn        : fn,
 			time      : distance / speed * 1000,
-			onProccess: this.fireEvent.context(this, ['onMove']),
-			onFinish  : this.stopMoving.context(this, [true])
+			onProccess: this.fireEvent.context(this, [['move']]),
+			onAbort   : this.fireEvent.context(this, [['stopMove']]),
+			onFinish  : this.fireEvent.context(this, [['stopMove']])
 		});
 
 		return this;

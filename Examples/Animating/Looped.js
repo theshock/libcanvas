@@ -27,7 +27,7 @@ LibCanvas.Examples.set('Animating.Looped', function (canvas) {
 		.createShaper({
 			shape : new LC.Circle(150, 75, 60),
 			fill  : '#900',
-			stroke: '#f00',
+			stroke: 'red',
 			lineWidth: 7
 		});
 

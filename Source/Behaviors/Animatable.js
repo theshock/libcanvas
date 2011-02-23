@@ -73,8 +73,12 @@ LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 				this.animate(args);
 			}.context(this),
 			stop : function () {
+				// avoid calling twice
+				animation.stop = function () { return this };
+
 				if (isFn) for (var i in args.props) inAction[i] = null;
 				invoker.rmFunction(fn);
+				args.onAbort && args.onAbort.call(this, animation, start);
 				return this;
 			}.context(this),
 			instance: this
