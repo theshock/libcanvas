@@ -41,7 +41,7 @@ Asteroids.Explosion = atom.Class({
 				})
 				.addEvent('stop', function () {
 					this.libcanvas.rmElement(this);
-					this.fireEvent('stop');
+					this.fireEvent('stop', []);
 				}.context(this))
 
 			this.libcanvas.getAudio('explosion').playNext();

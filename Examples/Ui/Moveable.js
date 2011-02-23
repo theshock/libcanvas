@@ -31,7 +31,7 @@ LibCanvas.Examples.set('Ui.Moveable',
 				})
 				.listenMouse()
 				.addEvent('away:mousedown', function (e) {
-					this.moveTo(e.offset, Number.random(70, 250));
+					this.moveTo(e.offset, Number.random(100, 250), 'sine');
 				});
 		}
 	}).factory()
