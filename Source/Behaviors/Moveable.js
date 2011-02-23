@@ -19,11 +19,12 @@ provides: Behaviors.Moveable
 ...
 */
 LibCanvas.namespace('Behaviors').Moveable = atom.Class({
-	stopMoving : function () {
+	stopMoving : function (animationFinished) {
 		var sm = this.stopMoving;
 		if (sm.animation) {
-			sm.animation.stop();
+			if (!animationFinished) sm.animation.stop();
 			sm.animation = null;
+			this.fireEvent('stopMove')
 		}
 		return this;
 	},
@@ -46,7 +47,7 @@ LibCanvas.namespace('Behaviors').Moveable = atom.Class({
 			fn        : fn,
 			time      : distance / speed * 1000,
 			onProccess: this.fireEvent.context(this, ['onMove']),
-			onFinish  : this.fireEvent.context(this, ['stopMove'])
+			onFinish  : this.stopMoving.context(this, [true])
 		});
 
 		return this;
