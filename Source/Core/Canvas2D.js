@@ -33,7 +33,7 @@ LibCanvas.Canvas2D = atom.Class({
 	],
 
 	options: {
-		clear: null,
+		clear: true,
 		backBuffer: 'on',
 		fps: 25,
 		autoUpdate: true
