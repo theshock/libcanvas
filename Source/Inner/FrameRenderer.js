@@ -22,12 +22,10 @@ provides: Inner.FrameRenderer
 
 LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 	checkAutoDraw : function () {
-		if (this.autoUpdate == 'onRequest') {
-			if (this.updateFrame) {
-				this.updateFrame = false;
-				return true;
-			}
-		} else if (this.autoUpdate) return true;
+		if (this.updateFrame) {
+			this.updateFrame = false;
+			return true;
+		}
 		return false;
 	},
 	show : function () {
