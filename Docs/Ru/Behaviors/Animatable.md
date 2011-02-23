@@ -58,7 +58,7 @@ Animatable
 		});
 
     // Создаем объект Animatable, и анимируем свойство radius до значения 75
-    new LibCanvas.Behaviors.Animatable()
+    new LibCanvas.Behaviors.Animatable(shaper.shape)
         .animate('radius', 75);
 
 ## Пример использования Animatable для подмешивания
