@@ -38,7 +38,7 @@ LibCanvas.Examples.set('Shapes.Rectangle.Creating', function (canvas) {
 	var closeLastRectangle = function () {
 		if ( last ) {
 			libcanvas.rmElement(last);
-			last.setConfig({
+			last.setOptions({
 				fill   : 'rgba(192, 192, 192, 0.4)',
 				stroke : 'rgba(  0,   0,   0, 0.4)'
 			});

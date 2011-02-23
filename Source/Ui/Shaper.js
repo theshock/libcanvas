@@ -39,28 +39,28 @@ LibCanvas.namespace('Ui').Shaper = atom.Class({
 		Beh.Droppable,
 		Beh.Linkable,
 		Beh.MouseListener,
-		Beh.Moveable
+		Beh.Moveable,
+		atom.Class.Options
 	],
 
 	config : {},
-	initialize : function (libcanvas, config) {
+	initialize : function (libcanvas, options) {
 		this.libcanvas = libcanvas;
-		this.setConfig(config);
-		this.setShape(config.shape);
+		this.setOptions(options);
+		this.setShape(options.shape);
 		
 		this.getShape().addEvent('move', libcanvas.update);
 		this.addEvent(['moveDrag', 'statusChanged'], libcanvas.update);
 	},
-	setConfig : function (config) {
-		atom.extend(this.config, config);
+	setOptions : function (options) {
 		this.libcanvas.update();
-		return this;
+		return this.parent(options);
 	},
 	getStyle : function (type) {
-		var cfg = this.config;
-		return (this.active && cfg.active) ? cfg.active[type] :
-		       (this.hover  && cfg.hover)  ? cfg.hover [type] :
-		                      (cfg[type]  || null);
+		var o = this.options;
+		return (this.active && o.active) ? o.active[type] :
+		       (this.hover  && o.hover)  ? o.hover [type] :
+		                      (o[type]  || null);
 	},
 	drawTo : function (ctx) {
 		var fill   = this.getStyle('fill'),
