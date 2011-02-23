@@ -31,12 +31,14 @@ LibCanvas.Examples.set('Animating.Base', function (canvas) {
 		});
 
 	(function () {
-		new LC.Animatable(shaper.shape)
-			.animate({
-				props: { radius: 75 },
-				onProccess: libcanvas.update,
-				time: 2000
-			});
+		shaper.animate({
+			props: {
+				radius: 75,
+				fill  : '#090',
+				stroke: '#0f0'
+			},
+			time: 2000
+		});
 	}.delay(1000));
 
 });

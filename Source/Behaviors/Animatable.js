@@ -68,6 +68,18 @@ LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 			inAction = this.animatedProperties,
 			invoker  = this.invoker;
 
+		var animation = {
+			repeat: function () {
+				this.animate(args);
+			}.context(this),
+			stop : function () {
+				if (isFn) for (var i in args.props) inAction[i] = null;
+				invoker.rmFunction(fn);
+				return this;
+			}.context(this),
+			instance: this
+		};
+		
 		var fn = function (time) {
 			var timeElapsed = Math.min(time, timeLeft);
 
@@ -91,11 +103,11 @@ LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 				}
 			}
 
-			args.onProccess && args.onProccess.call(this);
+			args.onProccess && args.onProccess.call(this, animation, start);
 
 			if (timeLeft <= 0) {
 				args.onFinish && invoker.after(0, function() {
-					args.onFinish.call(this);
+					args.onFinish.call(this, animation, start);
 				}.context(this));
 				return 'remove';
 			}
@@ -119,14 +131,7 @@ LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 		}
 
 		invoker.addFunction(20, fn);
-		return {
-			stop : function () {
-				if (isFn) for (var i in args.props) inAction[i] = null;
-				invoker.rmFunction(fn);
-				return this;
-			},
-			instance: this
-		};
+		return animation;
 	}
 });
 

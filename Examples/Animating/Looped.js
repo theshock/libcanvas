@@ -21,50 +21,33 @@ provides: Animating.Looped
 LibCanvas.Examples.set('Animating.Looped', function (canvas) {
 	var LC = LibCanvas.extract({});
 
-	var libcanvas = new LibCanvas(canvas, { clear: true });
+	var libcanvas = new LibCanvas(canvas);
 
 	var shaper = libcanvas.start()
 		.createShaper({
-			shape : new LC.Circle(75, 75, 15),
+			shape : new LC.Circle(150, 75, 60),
 			fill  : '#900',
-			stroke: '#f00'
+			stroke: '#f00',
+			lineWidth: 7
 		});
 
-	var Ani = new LC.Animatable(shaper.shape);
-
-	// Changing size
-	var decrease = function () {
-		Ani.animate({
-			props: { radius: 15 },
-			time : 3000,
-			onFinish: increase
-		});
-	};
-	var increase = function () {
-		Ani.animate({
-			props: { radius: 60 },
-			time : 500,
-			onFinish: decrease
-		});
-	};
-	increase();
-
-
-	// Moving left/right
-	var left = function (){
-		Ani.animate({
-			props: { x : 60 },
-			time : 2500,
-			onFinish: right
-		});
-	};
-	var right = function (){
-		Ani.animate({
-			props: { x : 240 },
-			time : 7500,
-			onFinish: left
-		});
-	};
-	right()
+	// Changing size and color
+	shaper.animate({
+		props: {
+			radius: 15,
+			fill  : '#2d2d2d',
+			stroke: '#4c4c4c',
+			lineWidth: 1
+		},
+		time : 1200,
+		onFinish: function (prevAnim, prevProps) {
+			shaper.animate({
+				props: prevProps,
+				fn : 'bounce-out',
+				time : 800,
+				onFinish: prevAnim.repeat
+			});
+		}
+	});
 	
 });

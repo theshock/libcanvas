@@ -36,39 +36,12 @@ LibCanvas.Examples.set('Animating.Manual', function (canvas) {
 		},
 		set x (value) {
 			return shaper.shape.to.x = value;
-		},
-		get y () {
-			return shaper.shape.to.y;
-		},
-		set y (value) {
-			return shaper.shape.to.y = value;
-		},
-		get color () {
-			return shaper.options.fill;
-		},
-		set color (value) {
-			shaper.options.fill = value;
-		},
-		get border () {
-			return shaper.options.stroke;
-		},
-		set border (value) {
-			shaper.options.stroke = value;
 		}
 	})
 	.animate({
-		props: { x: 274.5, color: '#090', border: '#fff' },
-		time: 2000,
-		fn: 'quint-in',
+		props: { x: 274.5 },
 		onProccess: libcanvas.update,
-		onFinish: function () {
-			this.animate({
-				props : { y: 124.5, color: '#009', border: '#66f' },
-				fn    : 'bounce-out',
-				time  : 1500,
-				onProccess: libcanvas.update
-			});
-		}
+		time: 2000
 	})
 
 });

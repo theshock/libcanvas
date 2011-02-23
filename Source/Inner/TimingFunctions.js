@@ -104,12 +104,6 @@ var TF = LibCanvas.namespace('Inner').TimingFunctions = atom.Class({
 		return math.pow(2, 10 * --p) * math.cos(20 * p * math.PI * (x && x[0] || 1) / 3);
 	}
 });
-console.log(['quad', 'cubic', 'quart', 'quint']
-		.associate(function(name, i){
-			return function (p) {
-				return math.pow(p, [i + 2]);
-			}
-		}));
 
 TF.implement(
 	['quad', 'cubic', 'quart', 'quint']

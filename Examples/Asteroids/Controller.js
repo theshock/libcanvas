@@ -51,6 +51,8 @@ Asteroids.Controller = atom.Class({
 				bullet.addEvent('die', this.bulletOnDie);
 			}
 		}
+
+		this.libcanvas.update();
 	},
 
 	bulletOnDie: function (bullet) {
