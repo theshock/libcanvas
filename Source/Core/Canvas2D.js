@@ -35,7 +35,7 @@ LibCanvas.Canvas2D = atom.Class({
 	options: {
 		clear: true,
 		backBuffer: 'on',
-		fps: 25
+		fps: 30
 	},
 
 	// @deprecated

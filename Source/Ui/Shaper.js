@@ -31,19 +31,19 @@ new function () {
 var Beh = LibCanvas.Behaviors;
 
 LibCanvas.namespace('Ui').Shaper = atom.Class({
-	Extends: Beh.Drawable,
+	Extends: atom.Class.Options,
 	Implements: [
+		Beh.Drawable,
 		Beh.Animatable,
 		Beh.Clickable,
 		Beh.Draggable,
 		Beh.Droppable,
 		Beh.Linkable,
 		Beh.MouseListener,
-		Beh.Moveable,
-		atom.Class.Options
+		Beh.Moveable
 	],
 
-	config : {},
+	options : {},
 	initialize : function (libcanvas, options) {
 		this.libcanvas = libcanvas;
 		this.setOptions(options);

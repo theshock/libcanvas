@@ -21,7 +21,7 @@ provides: Animating.Base
 LibCanvas.Examples.set('Animating.Base', function (canvas) {
 	var LC = LibCanvas.extract({});
 
-	var libcanvas = new LibCanvas(canvas, { clear: true });
+	var libcanvas = new LibCanvas(canvas);
 
 	var shaper = libcanvas.start()
 		.createShaper({
@@ -32,7 +32,11 @@ LibCanvas.Examples.set('Animating.Base', function (canvas) {
 
 	(function () {
 		new LC.Animatable(shaper.shape)
-			.animate({ radius: 75 });
+			.animate({
+				props: { radius: 75 },
+				onProccess: libcanvas.update,
+				time: 2000
+			});
 	}.delay(1000));
 
 });

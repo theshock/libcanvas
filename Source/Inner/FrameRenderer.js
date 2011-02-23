@@ -60,7 +60,7 @@ LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 	},
 	innerInvoke : function (type, time) {
 		var f = this.funcs[type].sortBy('priority');
-		for (var i = f.length; i--;) f.call(this, time);
+		for (var i = f.length; i--;) f[i].call(this, time);
 		return this;
 	},
 	renderFrame : function (time) {

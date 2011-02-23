@@ -14,6 +14,7 @@ requires:
 	- LibCanvas
 	- Invoker
 	- Inner.TimingFunctions
+	- Utils.Color
 
 provides: Behaviors.Animatable
 
@@ -22,35 +23,23 @@ provides: Behaviors.Animatable
 
 new function () {
 
-var TF = LibCanvas.Inner.TimingFunctions;
-
-var Factor = function (fn) {
-	return {
-		Factor: Factor,
-		_factor: 0,
-		get factor () {
-			return this._factor;
-		},
-		set factor (value) {
-			var change = value - this._factor;
-			this._factor = value;
-			fn(change)
-		}
-	};
-};
+var LibCanvas = window.LibCanvas,
+	TF        = LibCanvas.Inner.TimingFunctions,
+	Color     = LibCanvas.Utils.Color;
 
 LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 	Implements: [LibCanvas.Invoker.AutoChoose],
 
 	initialize: atom.Class.privateMethod(function (element) {
-		this.animate.element = atom.typeOf(element) == 'function' ?
-			Factor(element) : element;
+		this.animate.element = element;
+		this.animate.func    = atom.typeOf(element) == 'function';
 	}),
 
 	animatedProperties : {},
 
 	animate : function (key, value) {
-		var args, elem = this.animate.element || this;
+		var args, elem = this.animate.element || this, isFn = !!this.animate.func;
+
 		if (typeof key == 'string' && arguments.length == 2) {
 			args = {};
 			args[key] = value;
@@ -58,12 +47,8 @@ LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 			args = key;
 		}
 
-		if (!args.props) {
-			if (elem.Factor == Factor) {
-				args.props = { factor : 1 };
-			} else {
-				args = { props : args };
-			}
+		if (!isFn && !args.props) {
+			args = { props : args };
 		}
 		args = atom.extend({
 			fn    : 'linear',
@@ -92,35 +77,55 @@ LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 
 			var factor = TF.count(args.fn, progress, args.params);
 
-			for (var i in diff) elem[i] = start[i] + diff[i] * factor;
+			if (isFn) {
+				elem(factor);
+			} else {
+				for (var i in diff) {
+					if (start[i] instanceof Color) {
+						elem[i] = start[i].shift(diff[i].map(function(elem) {
+							return elem * factor;
+						})).toString();
+					} else {
+						elem[i] = start[i] + diff[i] * factor;
+					}
+				}
+			}
 
-			args.onProccess && args.onProccess.call(elem);
+			args.onProccess && args.onProccess.call(this);
 
 			if (timeLeft <= 0) {
-				args.onFinish && args.onFinish.call(elem);
+				args.onFinish && invoker.after(0, function() {
+					args.onFinish.call(this);
+				}.context(this));
 				return 'remove';
 			}
 
 			return true;
-		};
+		}.context(this);
 
 
 
-		for (var i in args.props) {
+		if (!isFn) for (var i in args.props) {
 			// if this property is already animating - remove
 			if (i in inAction) invoker.rmFunction(inAction[i]);
 			inAction[i] = fn;
-			diff[i]  = args.props[i] - elem[i];
-			start[i] = elem[i];
+			if (Color.isColorString(elem[i])) {
+				start[i] = new Color(elem[i]);
+				diff[i]  = start[i].diff(args.props[i]);
+			} else {
+				start[i] = elem[i];
+				diff[i]  = args.props[i] - elem[i];
+			}
 		}
 
 		invoker.addFunction(20, fn);
 		return {
 			stop : function () {
-				for (var i in args.props) inAction[i] = null;
+				if (isFn) for (var i in args.props) inAction[i] = null;
 				invoker.rmFunction(fn);
 				return this;
-			}
+			},
+			instance: this
 		};
 	}
 });
