@@ -55,7 +55,7 @@ LibCanvas.Examples.set('Shapes.Rectangle.Creating', function (canvas) {
 		mousedown : function (e) {
 			var start = libcanvas.mouse.getOffset(e);
 			last = libcanvas
-				.createGrip({
+				.createShaper({
 					shape : new LC.Rectangle( start.clone(), start.clone() ),
 					fill   : 'rgba(255, 192, 192, 0.4)',
 					stroke : 'rgba(127,   0,   0, 0.4)'

@@ -48,7 +48,7 @@ LibCanvas.Examples.set('Shapes.Rectangle.Points', function (canvas) {
 	);
 
 	libcanvas
-		.createGrip({
+		.createShaper({
 			shape : rect,
 			fill   : 'rgba(255, 192, 192, 0.4)',
 			stroke : 'rgba(127,   0,   0, 0.4)'
@@ -59,7 +59,7 @@ LibCanvas.Examples.set('Shapes.Rectangle.Points', function (canvas) {
 
 	[rect.from, rect.to].forEach(function (point, i) {
 		libcanvas
-			.createGrip({
+			.createShaper({
 				shape  : new LC.Circle(point, 5),
 				fill   : "#f99",
 				stroke : "#600",
