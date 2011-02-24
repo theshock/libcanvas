@@ -56,13 +56,16 @@ var LibCanvas = global.LibCanvas = atom.Class({
 			});
 			return current;
 		},
-		extract: function (to, what) {
+		extract: function (to) {
 			to = to || global;
+
 			for (var i in {Shapes: 1, Behaviors: 1, Utils: 1}) {
-				if (!what || what.contains(i)) atom.extend(to, LibCanvas[i]);
+				for (var k in LibCanvas[i]) {
+					to[k] = LibCanvas[i];
+				}
 			}
-			for (i in {Point: 1, Animation: 1, Buffer: 1}) {
-				if (!what || what.contains(i)) to[i] = LibCanvas[i];
+			for (i in {Point: 1, Animation: 1}) {
+				to[i] = LibCanvas[i];
 			}
 			return to;
 		},
