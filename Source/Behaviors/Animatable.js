@@ -21,11 +21,10 @@ provides: Behaviors.Animatable
 ...
 */
 
-new function () {
+(function (LibCanvas) {
 
-var LibCanvas = window.LibCanvas,
-	TF        = LibCanvas.Inner.TimingFunctions,
-	Color     = LibCanvas.Utils.Color;
+var TF    = LibCanvas.Inner.TimingFunctions,
+	Color = LibCanvas.Utils.Color;
 
 LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 	Implements: [LibCanvas.Invoker.AutoChoose],
@@ -139,4 +138,4 @@ LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 	}
 });
 
-};
+})(LibCanvas);

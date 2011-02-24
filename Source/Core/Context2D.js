@@ -15,16 +15,16 @@ requires:
 	- Point
 	- Shapes.Rectangle
 	- Shapes.Circle
+	- Utils.Canvas
 
 provides: Context2D
 
 ...
 */
 
-new function () {
+(function (LibCanvas) {
 
-var LibCanvas = window.LibCanvas,
-	Point     = LibCanvas.Point,
+var Point     = LibCanvas.Point,
 	Shapes    = LibCanvas.namespace('Shapes'),
 	Rectangle = Shapes.Rectangle,
 	Circle    = Shapes.Circle,
@@ -647,4 +647,4 @@ LibCanvas.Context2D.office = office;
 
 HTMLCanvasElement.addContext('2d-libcanvas', LibCanvas.Context2D);
 
-};
+})(LibCanvas);

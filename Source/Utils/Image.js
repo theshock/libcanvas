@@ -19,10 +19,9 @@ provides: Utils.Image
 ...
 */
 
-new function () {
+(function (LibCanvas) {
 
-var LibCanvas = window.LibCanvas,
-	Point     = LibCanvas.Point,
+var Point     = LibCanvas.Point,
 	Buffer    = LibCanvas.Buffer,
 	Rectangle = LibCanvas.Shapes.Rectangle,
 	math      = Math,
@@ -121,4 +120,4 @@ atom.implement(HTMLCanvasElement, {
 	toCanvas : function () { return this; }
 });
 	
-}();
+})(LibCanvas);

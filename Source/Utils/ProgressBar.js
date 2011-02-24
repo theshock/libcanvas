@@ -21,10 +21,9 @@ provides: Utils.ProgressBar
 ...
 */
 
-new function () {
+(function (LibCanvas) {
 
-var LibCanvas = window.LibCanvas,
-	Buffer    = LibCanvas.Buffer,
+var Buffer    = LibCanvas.Buffer,
 	Rectangle = LibCanvas.Shapes.Rectangle,
 	Polygon   = LibCanvas.Shapes.Polygon,
 	Point     = LibCanvas.Point;
@@ -139,4 +138,4 @@ LibCanvas.namespace('Utils').ProgressBar = atom.Class({
 	}
 });
 
-}();
+})(LibCanvas);

@@ -20,9 +20,9 @@ provides: Shapes.Path
 ...
 */
 
-new function () {
+(function (LibCanvas) {
 
-var LibCanvas = window.LibCanvas, Point = LibCanvas.Point, Shapes = LibCanvas.Shapes;
+var Point = LibCanvas.Point, Shapes = LibCanvas.Shapes;
 
 var Path = LibCanvas.namespace('Shapes').Path = atom.Class({
 	Extends: LibCanvas.Shape,
@@ -196,4 +196,4 @@ LibCanvas.namespace('Shapes.Path').Builder = atom.Class({
 	}
 });
 
-}();
+})(LibCanvas);
