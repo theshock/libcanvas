@@ -59,14 +59,14 @@ LibCanvas.namespace('Utils').AudioElement = atom.Class({
 		audioClone.load();
 		return audioClone;
 	},
-	play : function () {
+	play : function (elem) {
 		if (this.stub) return this;
-		this.getCurrent().play();
+		(elem || this.getCurrent()).play();
 		return this;
 	},
-	pause : function () {
+	pause : function (elem) {
 		if (this.stub) return this;
-		this.getCurrent().pause();
+		(elem || this.getCurrent()).pause();
 		return this;
 	},
 	stop : function (elem) {
@@ -106,9 +106,8 @@ LibCanvas.namespace('Utils').AudioElement = atom.Class({
 	},
 	playNext : function () {
 		if (this.stub) return this;
-		var elem = this.getNext();
-		this.stop(elem);
-		elem.play();
+		this.getNext();
+		this.stop().play();
 		return this;
 	},
 
