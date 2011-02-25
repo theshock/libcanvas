@@ -61,7 +61,7 @@ var LibCanvas = global.LibCanvas = atom.Class({
 
 			for (var i in {Shapes: 1, Behaviors: 1, Utils: 1}) {
 				for (var k in LibCanvas[i]) {
-					to[k] = LibCanvas[i];
+					to[k] = LibCanvas[i][k];
 				}
 			}
 			for (i in {Point: 1, Animation: 1}) {
