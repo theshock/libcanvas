@@ -39,7 +39,6 @@ LibCanvas.namespace('Utils').AudioElement = atom.Class({
 		if (gatling) {
 			file = file.replace(/:\d+$/, '');
 			gatling = gatling[1];
-			console.log(gatling)
 		}
 		this.audio.src = file.replace(/\*/g, this.getExtension());
 		this.audio.load();
