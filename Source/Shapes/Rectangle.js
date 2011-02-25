@@ -104,11 +104,12 @@ LibCanvas.namespace('Shapes').Rectangle = atom.Class({
 		this.height = height;
 		return this;
 	},
-	hasPoint : function (point) {
-		point = Point.from(arguments);
+	hasPoint : function (point, padding) {
+		point   = Point.from(arguments);
+		padding = padding || 0;
 		return point.x != null && point.y != null
-			&& point.x.between(min(this.from.x, this.to.x), max(this.from.x, this.to.x), 1)
-			&& point.y.between(min(this.from.y, this.to.y), max(this.from.y, this.to.y), 1);
+			&& point.x.between(min(this.from.x, this.to.x) + padding, max(this.from.x, this.to.x) - padding, 1)
+			&& point.y.between(min(this.from.y, this.to.y) + padding, max(this.from.y, this.to.y) - padding, 1);
 	},
 	draw : function (ctx, type) {
 		// fixed Opera bug - cant drawing rectangle with width or height below zero

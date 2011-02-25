@@ -57,17 +57,21 @@ Rectangle
 
 ## Метод hasPoint
 
-	bool hasPoint(LibCanvas.Point point);
+	bool hasPoint(LibCanvas.Point point, int padding);
 
 Возвращает true если точка находится внутри или на границе прямоугольника
 
+#### аргумент `padding`
+	Учитывает отступы от границы
+
 #### Пример
 	var rect = new LibCanvas.Shapes.Rectangle({
-		from : [4, 4],
-		to   : [8, 8]
+		from : [ 4,  4],
+		to   : [10, 10]
 	});
 	rect.hasPoint( [6, 6] ); // true
 	rect.hasPoint( [2, 2] ); // false
+	rect.hasPoint( [3, 3], 2 ); // false
 
 ## Метод move
 
