@@ -35,8 +35,15 @@ LibCanvas.namespace('Utils').AudioElement = atom.Class({
 	},
 	src : function (file) {
 		if (this.stub) return this;
+		var gatling = file.match(/:(\d+)$/);
+		if (gatling) {
+			file = file.replace(/:\d+$/, '');
+			gatling = gatling[1];
+			console.log(gatling)
+		}
 		this.audio.src = file.replace(/\*/g, this.getExtension());
 		this.audio.load();
+		if (gatling) this.gatling(gatling);
 		return this;
 	},
 	getExtension : function () {
@@ -79,6 +86,14 @@ LibCanvas.namespace('Utils').AudioElement = atom.Class({
 		elem.pause();
 		return this;
 	},
+	restart: function (elem) {
+		elem = elem || this.getCurrent();
+		elem.currentTime = 0.025;
+		if (elem.ended || elem.paused) {
+			elem.play();
+		}
+		return this;
+	},
 	events : [],
 	event : function (event, fn) {
 		if (this.stub) return this;
@@ -107,7 +122,7 @@ LibCanvas.namespace('Utils').AudioElement = atom.Class({
 	playNext : function () {
 		if (this.stub) return this;
 		this.getNext();
-		this.stop().play();
+		this.restart();
 		return this;
 	},
 
