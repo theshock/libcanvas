@@ -56,12 +56,22 @@ LibCanvas.namespace('Shapes').Line = atom.Class({
 		// if triangle square is zero - points are on one line
 		return ((fx-px)*(ty-py)-(tx-px)*(fy-py)).round(6) == 0;
 	},
-	intersect: function (line) {
-		line = this.self.from(arguments);
-		var a = this.from, b = this.to, c = line.from, d = line.t, x, y;
+	intersect: function (line, point) {
+		line = this.self.from(line);
+		var a = this.from, b = this.to, c = line.from, d = line.to, x, y, FALSE = point ? null : false;
 		if (d.x == c.x) { // DC == vertical line
 			if (b.x == a.x) {
-				return a.x == d.x && (a.y.between(c.y, d.y) || b.x.between(c.y, d.y));
+				if (a.x == d.x) {
+					if (a.y.between(c.y, d.y)) {
+						return a.clone();
+					} else if (b.y.between(c.y, d.y)) {
+						return b.clone();
+					} else {
+						return FALSE;
+					}
+				} else {
+					return FALSE;
+				}
 			}
 			x = d.x;
 			y = b.y + (x-b.x)*(a.y-b.y)/(a.x-b.x);
@@ -72,7 +82,8 @@ LibCanvas.namespace('Shapes').Line = atom.Class({
 		}
 		
 		return between(x, a.x, b.x) && between (y, a.y, b.y) &&
-		       between(x, c.x, d.x) && between (y, c.y, d.y);
+		       between(x, c.x, d.x) && between (y, c.y, d.y) ?
+		            (point ? new Point(x, y) : true) : FALSE;
 	},
 	get length () {
 		return this.to.distanceTo(this.from);
