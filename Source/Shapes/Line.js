@@ -88,4 +88,4 @@ LibCanvas.namespace('Shapes').Line = atom.Class({
 	}
 });
 
-}();
+};
