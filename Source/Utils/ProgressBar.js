@@ -15,6 +15,8 @@ requires:
 	- Point
 	- Shapes.Rectangle
 	- Shapes.Polygon
+	- Shapes.Polygon
+	- Behaviors.Animatable
 
 provides: Utils.ProgressBar
 
@@ -29,8 +31,9 @@ var Buffer    = LibCanvas.Buffer,
 	Point     = LibCanvas.Point;
 
 LibCanvas.namespace('Utils').ProgressBar = atom.Class({
+	Implements: [LibCanvas.Behaviors.Animatable],
 	initialize : function () {
-		this.coord = new Point;
+		this.coord = new Point(0,0);
 		this.progress = 0;
 	},
 	preRender : function () {
@@ -69,16 +72,18 @@ LibCanvas.namespace('Utils').ProgressBar = atom.Class({
 	drawLine : function () {
 		if (this.progress > 0) {
 			var line = this.line;
-			var width  = line.width  - 2;
-			var height = line.height - 2;
 			var prog   = this.progress;
-			var c = this.coord;
+			var width  = ((line.width  - 2) * prog).round();
+			if (width) {
+				var height = line.height - 2;
+				var c = this.coord;
 
-			this.libcanvas.ctx.drawImage({
-				image : line,
-				crop  : [0, 0 , width * prog, height],
-				draw  : [c.x+1, c.y+1, width * prog, height]
-			});
+				this.libcanvas.ctx.drawImage({
+					image : line,
+					crop  : [0, 0 , width, height],
+					draw  : [c.x+1, c.y+1, width, height]
+				});
+			}
 		}
 		return this;
 	},
@@ -119,7 +124,12 @@ LibCanvas.namespace('Utils').ProgressBar = atom.Class({
 		return b.restore().canvas;
 	},
 	setProgress : function (progress) {
-		this.update().progress = progress;
+		this.update().animate({
+			props: {progress: progress},
+			fn: 'circ-in',
+			onProccess: this.update.context(this),
+			time: 200
+		});
 		return this;
 	},
 	setStyle : function (newStyle) {
