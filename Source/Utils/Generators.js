@@ -26,4 +26,5 @@ atom.Class.Mutators.Generators = function(properties) {
 			});
 		})(i, properties[i]);
 	}
+	properties = null;
 };
