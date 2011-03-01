@@ -70,10 +70,8 @@ var Point = LibCanvas.Point = atom.Class({
 
 		return this.parent(distance, false);
 	},
-	moveTo : function (newCoord, speed) {
-		return speed ?
-			this.animateMoveTo(newCoord, speed) :
-			this.move(this.diff(newCoord));
+	moveTo : function (newCoord) {
+		return this.move(this.diff(newCoord));
 	},
 	angleTo : function (point) {
 		var diff = Point.from(arguments).diff(this);
@@ -121,26 +119,6 @@ var Point = LibCanvas.Point = atom.Class({
 	},
 	getNeighbour : function (dir) {
 		return this.clone().move(shifts[dir]);
-	},
-	movingInterval: 0,
-	animateMoveTo : function (to, speed) {
-		this.movingInterval.stop();
-		this.movingInterval = function () {
-			var move = {}, pixelsPerFn = speed / 20;
-			var diff = this.diff(to);
-			var dist = this.distanceTo(to);
-			if (dist > pixelsPerFn) {
-				move.x = diff.x * (pixelsPerFn / dist);
-				move.y = diff.y * (pixelsPerFn / dist);
-			} else {
-				move.x = diff.x;
-				move.y = diff.y;
-				this.movingInterval.stop();
-				this.fireEvent('stopMove');
-			}
-			this.move(move);
-		}.periodical(20, this);
-		return this;
 	},
 	equals : function (to, accuracy) {
 		to = Point.from(to);

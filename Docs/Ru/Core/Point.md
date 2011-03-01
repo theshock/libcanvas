@@ -58,19 +58,13 @@ Point
 
 ## Метод moveTo
 
-	LibCanvas.Point moveTo(LibCanvas.Point point, int speed = 0)
-
-#### аргумент `speed`
-Количество пикселей, которое точка проходит за секунду. Если задана - будет анимированное движение точки.
+	LibCanvas.Point moveTo(LibCanvas.Point point)
 
 #### Пример
-	// Растояние между точками где-то 1000 пикселей.
 	var start  = new LibCanvas.Point(100, 100);
 	var finish = new LibCanvas.Point(800, 800);
 	// просто перемещаем точку в конец
 	start.moveTo(finish);
-	// точка переместится в конец примерно за 2 секунды
-	start.moveTo(finish, 500);
 
 #### Возвращает `this`
 
