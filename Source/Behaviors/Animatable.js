@@ -29,7 +29,7 @@ var TF    = LibCanvas.Inner.TimingFunctions,
 LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 	Implements: [LibCanvas.Invoker.AutoChoose],
 
-	initialize: atom.Class.privateMethod(function (element) {
+	initialize: atom.Class.hiddenMethod(function (element) {
 		this.animate.element = element;
 		this.animate.func    = atom.typeOf(element) == 'function';
 	}),
