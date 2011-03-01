@@ -16,6 +16,7 @@ requires:
 	- Inner.FrameRenderer
 	- Inner.FpsMeter
 	- Inner.DownloadingProgress
+	- atom.Class.Mutators.Generators
 
 provides: Canvas2D
 
@@ -31,6 +32,22 @@ LibCanvas.Canvas2D = atom.Class({
 		atom.Class.Events,
 		atom.Class.Options
 	],
+
+	Generators: {
+		mouse: function () {
+			throw new Error('Mouse is not listened by libcanvas');
+		},
+		keyboard: function () {
+			throw new Error('Keyboard is not listened by libcanvas');
+		},
+		invoker: function () {
+			return new LibCanvas.Invoker({
+				context: this,
+				defaultPriority: 10,
+				fpsLimit: this.options.fps
+			});
+		}
+	},
 
 	options: {
 		clear: true,
@@ -110,21 +127,10 @@ LibCanvas.Canvas2D = atom.Class({
 		this.updateFrame = true;
 		return this;
 	},
-
-	_mouse : null,
-	get mouse () {
-		if (this._mouse == null) throw new Error('Mouse is not listened by libcanvas');
-		return this._mouse;
-	},
 	listenMouse : function (elem) {
 		this._mouse = LibCanvas.isLibCanvas(elem) ? elem.mouse
 			: new LibCanvas.Mouse(this, /* preventDefault */elem);
 		return this;
-	},
-	_keyboard : null,
-	get keyboard () {
-		if (this._keyboard == null) throw new Error('Keyboard is not listened by libcanvas');
-		return this._keyboard;
 	},
 	getKey : function (key) {
 		return this.keyboard.keyState(key);
@@ -169,18 +175,6 @@ LibCanvas.Canvas2D = atom.Class({
 	},
 
 	// Each frame funcs
-	_invoker: null,
-	get invoker () {
-		if (this._invoker == null) {
-			this._invoker = new LibCanvas.Invoker({
-				context: this,
-				defaultPriority: 10,
-				fpsLimit: this.options.fps
-			});
-		}
-		return this._invoker;
-	},
-
 
 	funcs : {
 		plain : [],
