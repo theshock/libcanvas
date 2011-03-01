@@ -1,3 +1,19 @@
+/*
+---
+
+name: "atom.Class.Mutators.Generators"
+
+description: "Provides Generators mutator"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+provides: atom.Class.Mutators.Generators
+
+...
+*/
 
 atom.Class.Mutators.Generators = function(properties) {
 	var self = this;
