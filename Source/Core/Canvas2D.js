@@ -16,7 +16,6 @@ requires:
 	- Inner.FrameRenderer
 	- Inner.FpsMeter
 	- Inner.DownloadingProgress
-	- atom.Class.Mutators.Generators
 
 provides: Canvas2D
 
