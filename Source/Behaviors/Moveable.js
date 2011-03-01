@@ -46,9 +46,9 @@ LibCanvas.namespace('Behaviors').Moveable = atom.Class({
 		}).animate({
 			fn        : fn,
 			time      : distance / speed * 1000,
-			onProccess: this.fireEvent.context(this, [['move']]),
-			onAbort   : this.fireEvent.context(this, [['stopMove']]),
-			onFinish  : this.fireEvent.context(this, [['stopMove']])
+			onProccess: this.fireEvent.context(this, ['move']),
+			onAbort   : this.fireEvent.context(this, ['stopMove']),
+			onFinish  : this.fireEvent.context(this, ['stopMove'])
 		});
 
 		return this;
