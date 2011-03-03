@@ -31,11 +31,13 @@ LibCanvas.Examples.set('Ui.Lines',
 					width : 400,
 					height: 250
 				});
-				
+			
+			libcanvas.mouse.debug();
+			
 			var last = null;
 				
-			atom(libcanvas.origElem).bind('dblclick', function (e) {
-				var coord = libcanvas.mouse.getOffset(e);
+			libcanvas.mouse.addEvent('dblclick', function (e) {
+				var coord = e.offset;
 
 				libcanvas.createShaper({
 					shape: new Circle(coord, 5),
