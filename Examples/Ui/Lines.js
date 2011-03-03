@@ -32,26 +32,17 @@ LibCanvas.Examples.set('Ui.Lines',
 					height: 250
 				});
 			
-			libcanvas.mouse.debug();
-			
-			var last = null;
+			var last = null, userInterface = this;
 				
 			libcanvas.mouse.addEvent('dblclick', function (e) {
 				var coord = e.offset;
 
-				libcanvas.createShaper({
-					shape: new Circle(coord, 5),
-					fill : '#900'
-				})
-				.setZIndex(5)
-				.draggable();
+				userInterface
+					.createShaper(new Circle(coord, 5), 5)
+					.clickable()
+					.draggable();
 
-				if (last) {
-					libcanvas.createShaper({
-						shape : new Line(coord, last),
-						stroke: '#600'
-					}).setZIndex(4);
-				}
+				if (last) userInterface.createShaper(new Line(coord, last), 4)
 
 				last = coord;
 			});
