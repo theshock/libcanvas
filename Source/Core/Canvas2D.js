@@ -78,8 +78,6 @@ LibCanvas.Canvas2D = atom.Class({
 
 		this.origElem = elem;
 		this.origCtx  = elem.getContext('2d-libcanvas');
-		
-		atom(elem).bind('selectstart', false);
 
 		this.createProjectBuffer().addClearer();
 

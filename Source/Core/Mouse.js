@@ -21,6 +21,8 @@ provides: Mouse
 */
 
 LibCanvas.Mouse = atom.Class({
+	Implements: [ atom.Class.Events ],
+	
 	initialize : function (libcanvas) {
 		this.inCanvas = false;
 		this.point = new LibCanvas.Point(null, null);
@@ -32,17 +34,17 @@ LibCanvas.Mouse = atom.Class({
 
 		this.setEvents();
 	},
-	setCoords : function (x, y) {
+	setCoords : function (newPosition) {
 		var point = this.point, inCanvas = false;
-		if (x != null) {
-			point.moveTo([x, y]);
+		if (newPosition != null) {
+			point.moveTo(newPosition);
 			inCanvas = true;
 		}
 		this.inCanvas = inCanvas;
 		
 		if (this.debugTrace) {
 			this.debugTrace.trace( 'Mouse' +
-				(inCanvas ? ': ' + this.point.x.round() + ',' + this.point.y.round() : ' is out of canvas')
+				(inCanvas ? ': ' + point.x.round() + ',' + point.y.round() : ' is out of canvas')
 			);
 		}
 		return this;
@@ -104,35 +106,51 @@ LibCanvas.Mouse = atom.Class({
 	},
 	setEvents : function () {
 		var mouse = this;
-		atom(this.elem).bind({
-			/* bug in Linux Google Chrome 5.0.356.0 dev
+		atom(mouse.elem).bind({
+			/* bug in Linux Google Chrome
 			 * if moving mouse while some text is selected
 			 * mouse becomes disable.
 			 */
-			mousemove : function (e) {
+			click: function (e) {
+				mouse.getOffset(e);
+				mouse.fireEvent('click', [e]);
+			},
+			dblclick: function (e) {
+				mouse.getOffset(e);
+				mouse.fireEvent('dblclick', [e]);
+			},
+			contextmenu: function (e) {
+				mouse.getOffset(e);
+				mouse.fireEvent('contextmenu', [e]);
+			},
+			mousemove: function (e) {
 				var offset = mouse.getOffset(e);
-				mouse.setCoords(offset.x, offset.y);
+				mouse.setCoords(offset);
 				mouse.events.event('mousemove', e);
 				mouse.isOut = false;
 				return false;
 			},
 			mouseout : function (e) {
 				mouse.getOffset(e);
-				mouse.setCoords(/* null */);
+				mouse.setCoords(null);
 				mouse.events.event('mouseout', e);
 				mouse.isOut = true;
+				mouse.fireEvent('mouseout', [e]);
 				return false;
 			},
 			mousedown : function (e) {
 				mouse.getOffset(e);
 				mouse.events.event('mousedown', e);
+				mouse.fireEvent('mousedown', [e]);
 				return false;
 			},
 			mouseup : function (e) {
 				mouse.getOffset(e);
-				mouse.events.event('mouseup'  , e);
+				mouse.events.event('mouseup', e);
+				mouse.fireEvent('mouseup', [e]);
 				return false;
-			}
+			},
+			selectstart: false
 		});
 		return this;
 	},
