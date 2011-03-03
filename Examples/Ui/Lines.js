@@ -33,7 +33,7 @@ LibCanvas.Examples.set('Ui.Lines',
 				});
 			
 			var last = null, userInterface = this;
-				
+			
 			libcanvas.mouse.addEvent('dblclick', function (e) {
 				var coord = e.offset;
 
