@@ -34,19 +34,14 @@ LibCanvas.Mouse = atom.Class({
 
 		this.setEvents();
 	},
-	setCoords : function (newPosition) {
-		var point = this.point, inCanvas = false;
-		if (newPosition != null) {
-			point.moveTo(newPosition);
-			inCanvas = true;
+	setCoords : function (point) {
+		if (point == null) {
+			this.inCanvas = false;
+		} else {
+			this.point.moveTo(point);
+			this.inCanvas = true;
 		}
-		this.inCanvas = inCanvas;
-		
-		if (this.debugTrace) {
-			this.debugTrace.trace( 'Mouse' +
-				(inCanvas ? ': ' + point.x.round() + ',' + point.y.round() : ' is out of canvas')
-			);
-		}
+		this.debugUpdate();
 		return this;
 	},
 	getOffset : function (e) {
@@ -153,6 +148,13 @@ LibCanvas.Mouse = atom.Class({
 		return this;
 	},
 	debugTrace: null,
+	debugUpdate: function () {
+		if (this.debugTrace) {
+			this.debugTrace.trace( 'Mouse' +
+				(this.inCanvas ? ': ' + this.point.x.round() + ',' + this.point.y.round() : ' is out of canvas')
+			);
+		}
+	},
 	debug : function (on) {
 		this.debugTrace = on === false ? null : new LibCanvas.Utils.Trace();
 		return this;
