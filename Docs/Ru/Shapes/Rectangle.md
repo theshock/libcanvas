@@ -161,8 +161,7 @@ Rectangle
 	rectFrom.from; // Point(15, 15);
 	rectFrom.to  ; // Point(25, 25);
 
-
-Проходит путь с помощью `ctx.moveTo`, `ctx.lineTo` начиная с точки `from` по часовой стрелке
+#### Возвращает `this`
 
 ## Метод processPath
 
