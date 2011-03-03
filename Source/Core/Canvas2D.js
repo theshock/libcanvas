@@ -141,8 +141,8 @@ LibCanvas.Canvas2D = atom.Class({
 				Array.collect(this.origElem, ['width', 'height'])
 		);
 	},
-	createShaper : function (config) {
-		var shaper = new LibCanvas.Ui.Shaper(this, config);
+	createShaper : function (options) {
+		var shaper = new LibCanvas.Ui.Shaper(this, options);
 		this.addElement(shaper);
 		return shaper;
 	},
