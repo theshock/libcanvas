@@ -33,12 +33,17 @@ LibCanvas.Mouse = atom.Class({
 		this.setEvents();
 	},
 	setCoords : function (x, y) {
-		if (arguments.length == 2) {
-			this.point.moveTo([x, y]);
-			this.inCanvas = true;
-		} else {
-			this.point.moveTo([null, null]);
-			this.inCanvas = false;
+		var point = this.point, inCanvas = false;
+		if (x != null) {
+			point.moveTo([x, y]);
+			inCanvas = true;
+		}
+		this.inCanvas = inCanvas;
+		
+		if (this.debugTrace) {
+			this.debugTrace.trace( 'Mouse' +
+				(inCanvas ? ': ' + this.point.x.round() + ',' + this.point.y.round() : ' is out of canvas')
+			);
 		}
 		return this;
 	},
@@ -139,8 +144,9 @@ LibCanvas.Mouse = atom.Class({
 		this.events.unsubscribe(elem);
 		return this;
 	},
-	debug : function () {
-		return !this.inCanvas ? 'NotInCanvas' :
-			this.point.x.round(3) + ':' + this.point.y.round(3);
+	debugTrace: null,
+	debug : function (on) {
+		this.debugTrace = on === false ? null : new LibCanvas.Utils.Trace();
+		return this;
 	}
 });
