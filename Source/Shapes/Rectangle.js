@@ -117,10 +117,10 @@ Rectangle = LibCanvas.namespace('Shapes').Rectangle = atom.Class({
 	draw : function (ctx, type) {
 		// fixed Opera bug - cant drawing rectangle with width or height below zero
 		ctx.original(type + 'Rect', [
-			min(this.from.x, this.to.x),
-			min(this.from.y, this.to.y),
-			this.getWidth() .abs(),
-			this.getHeight().abs()
+			math.min(this.from.x, this.to.x),
+			math.min(this.from.y, this.to.y),
+			this.width .abs(),
+			this.height.abs()
 		]);
 		return this;
 	},
@@ -138,15 +138,15 @@ Rectangle = LibCanvas.namespace('Shapes').Rectangle = atom.Class({
 	getRandomPoint : function (margin) {
 		margin = margin || 0;
 		return new Point(
-			random(margin, this.getWidth()  - margin),
-			random(margin, this.getHeight() - margin)
+			random(margin, this.width  - margin),
+			random(margin, this.height - margin)
 		);
 	},
 	translate : function (point, fromRect) {
 		var diff = fromRect.from.diff(point);
 		return new Point({
-			x : (diff.x / fromRect.getWidth() ) * this.getWidth(),
-			y : (diff.y / fromRect.getHeight()) * this.getHeight()
+			x : (diff.x / fromRect.width ) * this.width,
+			y : (diff.y / fromRect.height) * this.height
 		});
 	}
 });
