@@ -157,6 +157,7 @@ LibCanvas.Mouse = atom.Class({
 	},
 	debug : function (on) {
 		this.debugTrace = on === false ? null : new LibCanvas.Utils.Trace();
+		this.debugUpdate();
 		return this;
 	}
 });
