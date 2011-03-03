@@ -105,24 +105,26 @@ LibCanvas.Mouse = atom.Class({
 		return e;
 	},
 	setEvents : function () {
-		var mouse = this;
+		var mouse = this, waitEvent = function (event, isOffise) {
+			return function (e) {
+				var wait = mouse.isEventAdded(event);
+				if (isOffise || wait) mouse.getOffset(e);
+				if (isOffise) mouse.events.event(event, e);
+				if (wait) mouse.fireEvent(event, [e]);
+				return !isOffise;
+			};
+		};
+		
 		atom(mouse.elem).bind({
 			/* bug in Linux Google Chrome
 			 * if moving mouse while some text is selected
 			 * mouse becomes disable.
 			 */
-			click: function (e) {
-				mouse.getOffset(e);
-				mouse.fireEvent('click', [e]);
-			},
-			dblclick: function (e) {
-				mouse.getOffset(e);
-				mouse.fireEvent('dblclick', [e]);
-			},
-			contextmenu: function (e) {
-				mouse.getOffset(e);
-				mouse.fireEvent('contextmenu', [e]);
-			},
+			click      : waitEvent('click'),
+			dblclick   : waitEvent('dblclick'),
+			contextmenu: waitEvent('contextmenu'),
+			mousedown  : waitEvent('mousedown', true),
+			mouseup    : waitEvent('mouseup'  , true),
 			mousemove: function (e) {
 				var offset = mouse.getOffset(e);
 				mouse.setCoords(offset);
@@ -134,20 +136,8 @@ LibCanvas.Mouse = atom.Class({
 				mouse.getOffset(e);
 				mouse.setCoords(null);
 				mouse.events.event('mouseout', e);
-				mouse.isOut = true;
 				mouse.fireEvent('mouseout', [e]);
-				return false;
-			},
-			mousedown : function (e) {
-				mouse.getOffset(e);
-				mouse.events.event('mousedown', e);
-				mouse.fireEvent('mousedown', [e]);
-				return false;
-			},
-			mouseup : function (e) {
-				mouse.getOffset(e);
-				mouse.events.event('mouseup', e);
-				mouse.fireEvent('mouseup', [e]);
+				mouse.isOut = true;
 				return false;
 			},
 			selectstart: false
