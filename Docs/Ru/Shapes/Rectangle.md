@@ -139,6 +139,31 @@ Rectangle
 	});
 	rect.getCenter(); // Point(15, 15)
 
+
+## Метод moveTo
+
+	LibCanvas.Shapes.Rectangle moveTo(LibCanvas.Shapes.Rectangle rect)
+
+Перемещает текущий прямоугольник так, чтобы он стал равен прямоугольнику, переданному аргументом
+
+
+	var Rectangle = LibCanvas.Shapes.Rectangle;
+	var rectFrom = new Rectangle({
+		from : [10, 10],
+		to   : [20, 20]
+	});
+	var rectTo   = new Rectangle({
+		from : [15, 15],
+		to   : [25, 25]
+	});
+	rectFrom.moveTo(rectTo);
+
+	rectFrom.from; // Point(15, 15);
+	rectFrom.to  ; // Point(25, 25);
+
+
+Проходит путь с помощью `ctx.moveTo`, `ctx.lineTo` начиная с точки `from` по часовой стрелке
+
 ## Метод processPath
 
 	LibCanvas.Context2D processPath(LibCanvas.Context2D ctx, bool noWrap = false)
