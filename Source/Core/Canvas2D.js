@@ -62,12 +62,8 @@ LibCanvas.Canvas2D = atom.Class({
 		return this.options.fps;
 	},
 	// @deprecated
-	set autoUpdate (value) {
-		this.options.autoUpdate = value;
-	},
-	get autoUpdate () {
-		return this.options.autoUpdate;
-	},
+	set autoUpdate (value) { },
+	get autoUpdate () { return true; },
 	interval   : null,
 
 	initialize : function (elem, options) {
