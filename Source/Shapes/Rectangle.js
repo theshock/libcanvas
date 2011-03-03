@@ -24,12 +24,9 @@ new function () {
 
 var Point = LibCanvas.Point,
 	math = Math,
-	min = math.min,
-	max = math.max,
-	isReal = Object.isReal,
-	random = Number.random;
+	random = Number.random,
 
-LibCanvas.namespace('Shapes').Rectangle = atom.Class({
+Rectangle = LibCanvas.namespace('Shapes').Rectangle = atom.Class({
 	Extends: LibCanvas.Shape,
 	set : function () {
 		var a = Array.pickFrom(arguments);
@@ -108,8 +105,8 @@ LibCanvas.namespace('Shapes').Rectangle = atom.Class({
 		point   = Point.from(arguments);
 		padding = padding || 0;
 		return point.x != null && point.y != null
-			&& point.x.between(min(this.from.x, this.to.x) + padding, max(this.from.x, this.to.x) - padding, 1)
-			&& point.y.between(min(this.from.y, this.to.y) + padding, max(this.from.y, this.to.y) - padding, 1);
+			&& point.x.between(math.min(this.from.x, this.to.x) + padding, math.max(this.from.x, this.to.x) - padding, 1)
+			&& point.y.between(math.min(this.from.y, this.to.y) + padding, math.max(this.from.y, this.to.y) - padding, 1);
 	},
 	draw : function (ctx, type) {
 		// fixed Opera bug - cant drawing rectangle with width or height below zero
@@ -148,4 +145,4 @@ LibCanvas.namespace('Shapes').Rectangle = atom.Class({
 	}
 });
 
-}();
+};
