@@ -91,6 +91,7 @@ var Keyboard = LibCanvas.Keyboard = atom.Class({
 			}
 			var prevent = this.prevent(key);
 			if (prevent) e.preventDefault();
+			this.debugUpdate();
 			return !prevent;
 		}.context(this);
 	},
@@ -100,6 +101,22 @@ var Keyboard = LibCanvas.Keyboard = atom.Class({
 	},
 	keyState : function (keyName) {
 		return this.self.keyState(keyName);
+	},
+	debugTrace: null,
+	debugUpdate: function () {
+		if (this.debugTrace) {
+			var keys = '', states = this.self.keyStates;
+			for (var key in states) if (states[key]) {
+				keys += '\n = ' + key;
+			}
+			this.debugTrace.trace( 'Keyboard:' + keys );
+		}
+		return this;
+	},
+	debug : function (on) {
+		this.debugTrace = on === false ? null : new LibCanvas.Utils.Trace();
+		this.debugUpdate();
+		return this;
 	}
 });
 
