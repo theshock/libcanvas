@@ -111,3 +111,42 @@ LibCanvas.Canvas2D
 	var buffer = libcanvas.createBuffer();
 
 ## Метод createShaper
+
+Создаёт и возвращает экземпляр LibCanvas.Ui.Shaper, который используется для отрисовки примитивных фигур
+
+
+#### Пример:
+
+	libcanvas.createShaper({
+		shape: new Circle(100, 100, 50),
+		fill : 'red',
+		hover: { fill: 'red' }
+	})
+	.clickable()
+	.draggable();
+
+## Методы addElement/rmElement
+
+Добавляет или удаляет элемент, который реализует интерфейс Behaviours.Drawable для автоматической отрисовки каждый кадр.
+
+#### Пример:
+
+	var MyText = atom.Class({
+		Implements: [Drawable],
+		initialize: function (text) {
+			this.text = text;
+		},
+		draw: function () {
+			this.libcanvas.ctx.text({ text: this.text });
+		}
+	});
+
+	libcanvas.addElement(new MyText('Hello World'));
+
+## Метод addFunc
+## Метод addRender
+
+## Метод start
+
+Начинает отрисовку.
+
