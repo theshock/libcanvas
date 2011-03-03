@@ -18,8 +18,8 @@ $arg = $get('arg', '');
 	</head>
 	<body>
 		<form>
-			<label for="app">App: <input name="app" value="<?= $app ?>" /></label>
-			<label for="arg">Arg: <input name="arg" value="<?= $arg ?>" /></label>
+			<label for="app">App: <input id="app" value="<?= $app ?>" /></label>
+			<label for="arg">Arg: <input id="arg" value="<?= $arg ?>" /></label>
 			<input type="submit" />
 		</form>
 		<canvas data-app="<?= $app ?>" data-arg="<?= $arg ?>"></canvas>
