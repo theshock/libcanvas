@@ -161,7 +161,8 @@ LibCanvas.Canvas2D = atom.Class({
 	// Element : add, rm
 	elems : [],
 	addElement : function (elem) {
-		this.elems.include(elem.setLibcanvas(this));
+		this.elems.include(elem);
+		elem.setLibcanvas(this)
 		return this;
 	},
 	rmElement : function (elem) {
