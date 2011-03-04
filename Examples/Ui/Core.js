@@ -29,7 +29,7 @@ LibCanvas.Examples.Ui = atom.Class({
 		width : 400,
 		height: 250
 	},
-	initialize: function (canvas, options) {
+	initialize: function (options) {
 		this.setOptions(options);
 		return this.init.context(this);
 	},
@@ -71,12 +71,9 @@ LibCanvas.Examples.Ui = atom.Class({
 			.setZIndex(z || 0);
 	},
 	createLibcanvas: function(canvas) {
-		var libcanvas = new LibCanvas(canvas, { backBuffer: 'off' });
+		var libcanvas = new LibCanvas(canvas, { fps: 50 });
 		libcanvas.listenMouse();
-		libcanvas.fps = 50;
-		libcanvas.autoUpdate = 'onRequest';
-
-		libcanvas.addProcessor('pre', new LibCanvas.Processors.Clearer());
+		
 		return libcanvas
 			.set({
 				width : this.options.width,

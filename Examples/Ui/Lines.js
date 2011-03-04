@@ -25,12 +25,7 @@ LibCanvas.Examples.set('Ui.Lines',
 		start: function (libcanvas) {
 			LibCanvas.extract({});
 			
-			libcanvas
-				.listenMouse()
-				.set({
-					width : 400,
-					height: 250
-				});
+			libcanvas.listenMouse();
 			
 			var last = null, userInterface = this;
 			
@@ -49,5 +44,8 @@ LibCanvas.Examples.set('Ui.Lines',
 			
 			
 		}
-	}).factory()
+	}).factory({
+		width : 400,
+		height: 250
+	})
 );
