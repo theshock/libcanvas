@@ -1,6 +1,0 @@
-[submodule "AtomJS"]
-	path = AtomJS
-	url = git://github.com/theshock/atomjs.git
-[submodule "Packager"]
-	path = Packager
-	url = git://github.com/slik/packager.git
