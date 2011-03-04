@@ -18,6 +18,17 @@ provides: Behaviors.Drawable
 ...
 */
 
+new function () {
+	
+var start = function () {
+	this.libcanvas.addElement(this);
+	return 'remove';
+};
+var stop = function () {
+	this.libcanvas.addElement(this);
+	return 'remove';
+};
+
 LibCanvas.namespace('Behaviors').Drawable = atom.Class({
 	Implements: [atom.Class.Events],
 	libcanvasIsReady: false,
@@ -50,5 +61,17 @@ LibCanvas.namespace('Behaviors').Drawable = atom.Class({
 		this.zIndex = zIndex;
 		return this;
 	},
+	startDrawing: function () {
+		return this
+		  .removeEvent('libcanvasSet', stop)
+		     .addEvent('libcanvasSet', start);
+	},
+	stopDrawing: function () {
+		return this
+		  .removeEvent('libcanvasSet', start)
+		     .addEvent('libcanvasSet', stop);
+	},
 	draw : atom.Class.abstractMethod
 });
+
+};
