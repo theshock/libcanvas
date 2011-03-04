@@ -1,0 +1,18 @@
+html, body, input {
+	color: #eee;
+	background: #111;
+}
+canvas {
+	border: 1px solid #666;
+	margin: 12px;
+}
+input {
+	border: 1px solid #666;
+}
+li, a {
+	color: #090;
+	text-decoration: none;
+}
+a:hover {
+	text-decoration: underline;
+}

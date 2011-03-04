@@ -1,0 +1,1 @@
+Папку "images" поместить в "/files/asteroids/images", папку "sounds" поместить в "/files/asteroids/sounds",
