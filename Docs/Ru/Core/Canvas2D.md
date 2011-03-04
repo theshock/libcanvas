@@ -56,6 +56,10 @@ LibCanvas.Canvas2D
 
 `ready` - вызывается, когда все изображения загружены и libcanvas готов к отрисовке.
 
+`frameRenderStarted` - вызывается каждый кадр перед началом просчётов
+
+`frameRenderFinished` - вызывается каждый кадр после окончания просчётов и рендера
+
 ## Метод set
 
 Позволяет указать атрибуты html-элемента
@@ -144,9 +148,62 @@ LibCanvas.Canvas2D
 	libcanvas.addElement(new MyText('Hello World'));
 
 ## Метод addFunc
+
+	LibCanvas.Canvas2D addFunc(int priority = 10, function fn)
+
+Добавляет функцию, которая вызывается каждый кадр перед рендером.
+
+Чем выше значение необязательного аргумента `priority`, тем раньше выполнится функция.
+Рекомендуется указывать значения в пределах 50-100 для функций, которые должны выполнится самыми первыми,
+0-9 для тех, кто должны выполниться последними и 10-49 если приоритет не имеет значения.
+
+Контекст функции - ссылка на объект libcanvas.
+Первый аргумент - время, которое прошло с вызова предыдущей функции.
+Это время может использоваться для стабильной скорости приложения, несмотря на fps
+
+#### Пример:
+
+	libcanvas.addFunc(function (time) {
+		var move = {x:0, y:0};
+		if (this.getKey('aleft' )) move.x = -1 * time;
+		if (this.getKey('aright')) move.x =  1 * time;
+		if (this.getKey('aup'   )) move.y = -1 * time;
+		if (this.getKey('adown' )) move.y =  1 * time;
+
+		unit.position.move(move);
+
+		// this == libcanvas
+	});
+
+#### Возвращает `this`
+
 ## Метод addRender
+
+	LibCanvas.Canvas2D addRender(int priority = 10, function fn)
+
+Метод подобен методу `addFunc`, но содержимое обязано выполнять не просчёт, а рендер сцены.
+Основное отличие от `addFunc` в том, что функции, переданные в `addRender` выполняются только тогда, когда был вызван `libcanvas.update()` в одной из функций, переданных в `libcanvas.addFunc`
+
+#### Пример:
+
+	libcanvas.addRender(function (time) {
+		this.ctx.fillAll('red');
+
+		// this == libcanvas
+	});
+
+#### Возвращает `this`
 
 ## Метод start
 
-Начинает отрисовку.
+Начинает отрисовку. Первым аргументом можно передать функцию, которая будет добавлена с помощью `addRender`
 
+#### Пример:
+
+	libcanvas.start(function (time) {
+		this.ctx.fillAll('red');
+
+		// this == libcanvas
+	});
+
+#### Возвращает `this`
