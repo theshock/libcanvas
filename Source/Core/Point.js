@@ -131,9 +131,10 @@ var Point = LibCanvas.Point = atom.Class({
 			y: this.y
 		};
 	},
-	snapToPixel: function (minus) {
-		var shift = minus ? -0.5 : 0.5;
-		return this.clone().move({ x: shift, y: shift });
+	snapToPixel: function () {
+		this.x += 1 - (this.x - this.x.floor()) - 0.5;
+		this.y += 1 - (this.x - this.x.floor()) - 0.5;
+		return this;
 	},
 	clone : function () {
 		return new Point(this);
