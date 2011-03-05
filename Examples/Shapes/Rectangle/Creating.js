@@ -51,30 +51,31 @@ LibCanvas.Examples.set('Shapes.Rectangle.Creating', function (canvas) {
 	var last = null;
 	var rectCount = 0;
 
-	atom(libcanvas.origElem).bind({
-		mousedown : function (e) {
-			var start = libcanvas.mouse.getOffset(e);
+	libcanvas.mouse.addEvent({
+		mousedown : function () {
+			var start = libcanvas.mouse.point.clone().snapToPixel();
 			last = libcanvas
 				.createShaper({
-					shape : new LC.Rectangle( start.clone(), start.clone() ),
+					shape : new LC.Rectangle( start, start.clone() ),
 					fill   : 'rgba(255, 192, 192, 0.4)',
 					stroke : 'rgba(127,   0,   0, 0.4)'
 				})
 				.setZIndex(++rectCount);
 		},
-		mousemove : function (e) {
-			if ( last ) {
-				last.getShape().to.moveTo(
-					libcanvas.mouse.getOffset(e)
-				);
-				libcanvas.update();
-			}
-		},
 		mouseup  : closeLastRectangle,
 		mouseout : closeLastRectangle
 	});
-
-	libcanvas.start(function () {
-		libcanvas.ctx.drawImage(cache, 0, 0);
-	});
+	
+	libcanvas
+		.addFunc(function () {
+			if ( last && libcanvas.mouse.inCanvas ) {
+				last.shape.to
+					.moveTo(libcanvas.mouse.point)
+					.snapToPixel();
+				libcanvas.update();
+			}
+		})
+		.start(function () {
+			libcanvas.ctx.drawImage(cache);
+		});
 });
