@@ -857,9 +857,10 @@ var Point = LibCanvas.Point = atom.Class({
 			y: this.y
 		};
 	},
-	snapToPixel: function (minus) {
-		var shift = minus ? -0.5 : 0.5;
-		return this.clone().move({ x: shift, y: shift });
+	snapToPixel: function () {
+		this.x += 1 - (this.x - this.x.floor()) - 0.5;
+		this.y += 1 - (this.y - this.y.floor()) - 0.5;
+		return this;
 	},
 	clone : function () {
 		return new Point(this);
@@ -2247,6 +2248,11 @@ Rectangle = LibCanvas.namespace('Shapes').Rectangle = atom.Class({
 			x : (diff.x / fromRect.width ) * this.width,
 			y : (diff.y / fromRect.height) * this.height
 		});
+	},
+	snapToPixel: function () {
+		this.from.snapToPixel();
+		this.to.snapToPixel();
+		return this;
 	}
 });
 
@@ -2523,7 +2529,7 @@ LibCanvas.namespace('Utils').ProgressBar = atom.Class({
 		var pbRect = new Rectangle({
 			from : this.coord,
 			size : Object.collect(s, ['width', 'height'])
-		});
+		}).snapToPixel();
 
 		this.libcanvas.ctx
 			.fillAll(s['bgColor'])
@@ -2536,14 +2542,14 @@ LibCanvas.namespace('Utils').ProgressBar = atom.Class({
 			var line = this.line;
 			var prog   = this.progress;
 			var width  = ((line.width  - 2) * prog).round();
-			if (width) {
+			if (width > 1) {
 				var height = line.height - 2;
 				var c = this.coord;
 
 				this.libcanvas.ctx.drawImage({
 					image : line,
-					crop  : [0, 0 , width, height],
-					draw  : [c.x+1, c.y+1, width, height]
+					crop  : [    0,    0 , width-1, height-1],
+					draw  : [c.x+1, c.y+1, width-1, height-1]
 				});
 			}
 		}
