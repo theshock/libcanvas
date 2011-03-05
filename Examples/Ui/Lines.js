@@ -44,8 +44,8 @@ LibCanvas.Examples.set('Ui.Lines',
 			
 			
 		}
-	}).factory({
+	}).factory([{
 		width : 400,
 		height: 250
-	})
+	}])
 );
