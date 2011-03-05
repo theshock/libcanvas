@@ -148,6 +148,11 @@ Rectangle = LibCanvas.namespace('Shapes').Rectangle = atom.Class({
 			x : (diff.x / fromRect.width ) * this.width,
 			y : (diff.y / fromRect.height) * this.height
 		});
+	},
+	snapToPixel: function () {
+		this.from.snapToPixel();
+		this.to.snapToPixel();
+		return this;
 	}
 });
 
