@@ -19,13 +19,9 @@ provides: Shapes.Rectangle.Points
 */
 
 LibCanvas.Examples.set('Shapes.Rectangle.Points', function (canvas) {
-	atom(canvas).css('background', 'url(/files/bg.jpg)');
-
 	var LC = LibCanvas.extract({});
 
-	var libcanvas = new LibCanvas(canvas, {
-			clear: true
-		})
+	var libcanvas = new LibCanvas(canvas)
 		.set({
 			width : 512,
 			height: 256
@@ -35,6 +31,7 @@ LibCanvas.Examples.set('Shapes.Rectangle.Points', function (canvas) {
 			rect && this.ctx.text({
 				padding : [4, 8],
 				family  : 'monospace',
+				color: '#fff',
 				size : 13,
 				text : 'Size : ' + rect.width  + '×' + rect.height + '\n'
 					 + 'From : ' + rect.from.x + '×' + rect.from.y + '\n'
@@ -44,14 +41,15 @@ LibCanvas.Examples.set('Shapes.Rectangle.Points', function (canvas) {
 
 
 	var rect = new LC.Rectangle(
-		new LC.Point(100, 100), new LC.Point(250, 200)
-	);
+		new LC.Point(100, 100),
+		new LC.Point(250, 200)
+	).snapToPixel();
 
 	libcanvas
 		.createShaper({
 			shape : rect,
-			fill   : 'rgba(255, 192, 192, 0.4)',
-			stroke : 'rgba(127,   0,   0, 0.4)'
+			fill   : 'rgba(153, 0, 0, 0.4)',
+			stroke : 'rgba(255, 0, 0, 0.4)'
 		})
 		.clickable()
 		.draggable();
@@ -61,10 +59,11 @@ LibCanvas.Examples.set('Shapes.Rectangle.Points', function (canvas) {
 		libcanvas
 			.createShaper({
 				shape  : new LC.Circle(point, 5),
-				fill   : "#f99",
-				stroke : "#600",
-				hover  : { fill : "#9f9", stroke : "#060"},
-				active : { fill : "#696", stroke : "#060"}
+				fill   : "#300",
+				stroke : "#f00",
+				hover  : { fill : "#900", stroke : "#f00"},
+				active : { fill : "#090", stroke : "#0f0"},
+				lineWidth: 0.5
 			})
 			.setZIndex(i + 1)
 			.clickable()
