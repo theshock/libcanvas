@@ -48,7 +48,7 @@ LibCanvas.Examples.Ui = atom.Class({
 	randomShape: function (shape) {
 		switch(shape) {
 			case 'circle'   : return new LC.Circle   (this.randomPoint(), rand(10,30)); break;
-			case 'rectangle': return new LC.Rectangle(this.randomPoint(), this.randomPoint()); break;
+			case 'rectangle': return new LC.Rectangle(this.randomPoint(), this.randomPoint()).snapToPixel(); break;
 			case 'triangle' : return new LC.Polygon ([this.randomPoint(), this.randomPoint(), this.randomPoint()]); break;
 		}
 		throw new TypeError('Unknown shape: ' + shape);
