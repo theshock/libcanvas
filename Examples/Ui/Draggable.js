@@ -24,22 +24,10 @@ LibCanvas.Examples.set('Ui.Draggable',
 		Extends: LibCanvas.Examples.Ui,
 		start: function (libcanvas) {
 			['circle', 'rectangle', 'triangle'].forEach(function (shape, zIndex) {
-				libcanvas
-					.createShaper({
-						shape : this.randomShape(shape),
-						stroke: '#990000',
-						fill  : '#330000',
-						hover : {
-							stroke: '#ff0000',
-							fill  : '#990000'
-						},
-						active : {
-							stroke: '#00ff00',
-							fill  : '#009900'
-						}
-					})
-					.setZIndex(zIndex)
-					.listenMouse()
+				this.createShaper(
+						this.randomShape(shape),
+						zIndex
+					)
 					.clickable()
 					.draggable();
 			}.context(this));

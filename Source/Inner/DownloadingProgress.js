@@ -21,6 +21,8 @@ provides: Inner.DownloadingProgress
 */
 LibCanvas.namespace('Inner').DownloadingProgress = atom.Class({
 	getImage : function (name) {
+		if (this.parentLayer) return this.parentLayer.getImage(name);
+		
 		if (this.images && this.images[name]) {
 			return this.images[name];
 		} else {
@@ -28,6 +30,8 @@ LibCanvas.namespace('Inner').DownloadingProgress = atom.Class({
 		}
 	},
 	getAudio: function (name) {
+		if (this.parentLayer) return this.parentLayer.getAudio(name);
+		
 		if (this._audio) {
 			var audio = this._audio.get(name);
 			if (audio) return audio;
@@ -35,6 +39,8 @@ LibCanvas.namespace('Inner').DownloadingProgress = atom.Class({
 		throw new Error('No audio «' + name + '»');
 	},
 	renderProgress : function () {
+		if (this.parentLayer) return;
+		
 		if (this.options.progressBarStyle && !this.progressBar) {
 			this.progressBar = new LibCanvas.Utils.ProgressBar()
 				.setStyle(this.options.progressBarStyle);
@@ -48,6 +54,15 @@ LibCanvas.namespace('Inner').DownloadingProgress = atom.Class({
 	},
 	createPreloader : function () {
 		if (!this.imagePreloader) {
+			
+			if (this.parentLayer) {
+				this.parentLayer.addEvent('ready', function () {
+					this.readyEvent('ready');
+				}.context(this));
+				this.imagePreloader = true;
+				return;
+			}
+			
 			if (this.options.preloadAudio) {
 				this._audio = new LibCanvas.Utils.AudioContainer(this.options.preloadAudio);
 			} else {
@@ -72,6 +87,7 @@ LibCanvas.namespace('Inner').DownloadingProgress = atom.Class({
 	},
 	isReady : function () {
 		this.createPreloader();
+		if (this.parentLayer) return this.parentLayer.isReady();
 		return !this.options.preloadImages || (this.imagePreloader && this.imagePreloader.isReady());
 	}
 });

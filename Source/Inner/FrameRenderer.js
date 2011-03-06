@@ -38,7 +38,9 @@ LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 	drawAll : function () {
 		var elems = this.elems.sortBy('getZIndex');
 		for (var i = elems.length; i--;) {
-			if (elems[i].isReady()) elems[i].draw();
+			if (elems[i].isReady()) {
+				elems[i].draw();
+			}
 		}
 		return this;
 	},
@@ -63,6 +65,7 @@ LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 		return this;
 	},
 	renderLayer: function (layer, time) {
+		layer.innerInvoke('plain', time);
 		if (layer.checkAutoDraw()) {
 			layer.processing('pre');
 			if (layer.isReady()) {
@@ -78,9 +81,8 @@ LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 		return false;
 	},
 	renderFrame : function (time) {
-		this.innerInvoke('plain', time);
 		for (var n in this._layers) {
-			this.renderLayer(this._layers[n]);
+			this.renderLayer(this._layers[n], time);
 		}
 		return true;
 	}

@@ -68,6 +68,7 @@ LibCanvas.Canvas2D = atom.Class({
 	set autoUpdate (value) { },
 	get autoUpdate () { return true; },
 	interval   : null,
+	name: null,
 
 	initialize : function (elem, options) {
 		if (typeof elem == 'string') elem = atom(elem);
@@ -80,9 +81,10 @@ LibCanvas.Canvas2D = atom.Class({
 		this.origElem.atom = atom(elem).css({ position: 'absolute' });
 		
 		if (this.parentLayer) {
-			this.wrapper.append(this.origElem);
+			this.origElem.atom.appendTo(this.wrapper);
 		} else {
 			this._layers[null] = this;
+			this.zIndex = null;
 			this.origElem.atom.wrap(
 				this.wrapper.css({
 					width : elem.width + 'px',
@@ -253,31 +255,43 @@ LibCanvas.Canvas2D = atom.Class({
 			throw new Error('Layer «' + name + '» already exists');
 		}
 		var layer = this._layers[name] = new LibCanvas.Layer(this, this.options);
-		layer.zIndex = z;
 		layer._layers = this._layers;
+		layer.zIndex  = z;
+		layer.name    = name;
 		return layer;
+	},
+	
+	get maxZIndex () {
+		var max = 0, layers = this._layers;
+		for (var name in layers) {
+			max = Math.max(max, layers[name].zIndex);
+		}
+		return max;
 	},
 	
 	_zIndex: null,
 	
 	set zIndex (z) {
 		var cur = this._zIndex, layers = this._layers, name;
-		if (cur == null) {
-			z = 0;
-			// ищем самый большой z-index и присваиваем текущему элементу на единицу большее
+		if (z == null) {
+			z = 1;
+			// ищем самый большой z-index и присваиваем текущему элементу на единицу больше
 			for (name in layers) {
-				if (layers[name].zIndex >= z) {
-					z = layers[name].zIndex+1;
-				}
+				var thatZ = layers[name].zIndex;	
+				if (thatZ && thatZ >= z) z = thatZ;
 			}
-		} else {
-			this.zIndex = z;
-			for (name in layers) if (layers[name] != this) {
-				var lz = layers[name].zIndex;
-				if (z < cur) { // zIndex уменьшается
-					if (z <= lz && lz < cur) layers[name].zIndex++;
-				} else { // zIndex увеличивается
-					if (cur < lz && lz <= z) layers[name].zIndex--;
+			if (cur == null) z++;
+		}
+		z = z.limit(1, this.maxZIndex + 1);
+		if (cur != null) {
+			for (name in layers) {
+				if (layers[name] != this) {
+					var lz = layers[name].zIndex;
+					if (z < cur) { // zIndex уменьшается
+						if (z <= lz && lz < cur) layers[name]._zIndex++;
+					} else { // zIndex увеличивается
+						if (cur < lz && lz <= z) layers[name]._zIndex--;
+					}
 				}
 			}
 		}

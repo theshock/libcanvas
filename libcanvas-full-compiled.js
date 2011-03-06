@@ -914,11 +914,23 @@ LibCanvas.namespace('Inner').MouseEvents = atom.Class({
 			over : [],
 			out  : []
 		};
-		var maxOverMouseZ = 0, sub = this.subscribers.sortBy('getZIndex');
+		var maxOverMouseLCZ = 0, maxOverMouseZ = 0, sub = this.subscribers;
+		sub.sort(function ($0, $1) {
+			var diff = $1.libcanvas.zIndex - $0.libcanvas.zIndex;
+			if (diff) return diff < 0 ? -1 : 1;
+			diff = $1.getZIndex() - $0.getZIndex();
+			return diff ? (diff < 0 ? -1 : 1) : 0;
+		});
+		
+		
 		for (var i = 0, l = sub.length; i < l; i++) {
 			var elem = sub[i];
-			if (elem.getZIndex() >= maxOverMouseZ && this.overElem(elem)) {
-				maxOverMouseZ = elem.getZIndex();
+			
+			if (elem.getZIndex() >= maxOverMouseZ
+			 && elem.libcanvas.zIndex >= maxOverMouseLCZ
+			 && this.overElem(elem)) {
+				maxOverMouseZ   = elem.getZIndex();
+				maxOverMouseLCZ = elem.libcanvas.zIndex;
 				elements.over.push(elem);
 			} else {
 				elements.out.push(elem);
@@ -996,7 +1008,7 @@ LibCanvas.Mouse = atom.Class({
 		this.point = new LibCanvas.Point(null, null);
 
 		this.libcanvas = libcanvas;
-		this.elem      = libcanvas.origElem;
+		this.elem      = libcanvas.wrapper;
 
 		this.events = new LibCanvas.Inner.MouseEvents(this);
 
@@ -1906,7 +1918,9 @@ LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 	drawAll : function () {
 		var elems = this.elems.sortBy('getZIndex');
 		for (var i = elems.length; i--;) {
-			if (elems[i].isReady()) elems[i].draw();
+			if (elems[i].isReady()) {
+				elems[i].draw();
+			}
 		}
 		return this;
 	},
@@ -1931,6 +1945,7 @@ LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 		return this;
 	},
 	renderLayer: function (layer, time) {
+		layer.innerInvoke('plain', time);
 		if (layer.checkAutoDraw()) {
 			layer.processing('pre');
 			if (layer.isReady()) {
@@ -1946,9 +1961,8 @@ LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 		return false;
 	},
 	renderFrame : function (time) {
-		this.innerInvoke('plain', time);
 		for (var n in this._layers) {
-			this.renderLayer(this._layers[n]);
+			this.renderLayer(this._layers[n], time);
 		}
 		return true;
 	}
@@ -2646,6 +2660,8 @@ provides: Inner.DownloadingProgress
 */
 LibCanvas.namespace('Inner').DownloadingProgress = atom.Class({
 	getImage : function (name) {
+		if (this.parentLayer) return this.parentLayer.getImage(name);
+		
 		if (this.images && this.images[name]) {
 			return this.images[name];
 		} else {
@@ -2653,6 +2669,8 @@ LibCanvas.namespace('Inner').DownloadingProgress = atom.Class({
 		}
 	},
 	getAudio: function (name) {
+		if (this.parentLayer) return this.parentLayer.getAudio(name);
+		
 		if (this._audio) {
 			var audio = this._audio.get(name);
 			if (audio) return audio;
@@ -2660,6 +2678,8 @@ LibCanvas.namespace('Inner').DownloadingProgress = atom.Class({
 		throw new Error('No audio «' + name + '»');
 	},
 	renderProgress : function () {
+		if (this.parentLayer) return;
+		
 		if (this.options.progressBarStyle && !this.progressBar) {
 			this.progressBar = new LibCanvas.Utils.ProgressBar()
 				.setStyle(this.options.progressBarStyle);
@@ -2673,6 +2693,15 @@ LibCanvas.namespace('Inner').DownloadingProgress = atom.Class({
 	},
 	createPreloader : function () {
 		if (!this.imagePreloader) {
+			
+			if (this.parentLayer) {
+				this.parentLayer.addEvent('ready', function () {
+					this.readyEvent('ready');
+				}.context(this));
+				this.imagePreloader = true;
+				return;
+			}
+			
 			if (this.options.preloadAudio) {
 				this._audio = new LibCanvas.Utils.AudioContainer(this.options.preloadAudio);
 			} else {
@@ -2697,6 +2726,7 @@ LibCanvas.namespace('Inner').DownloadingProgress = atom.Class({
 	},
 	isReady : function () {
 		this.createPreloader();
+		if (this.parentLayer) return this.parentLayer.isReady();
 		return !this.options.preloadImages || (this.imagePreloader && this.imagePreloader.isReady());
 	}
 });
@@ -2771,6 +2801,7 @@ LibCanvas.Canvas2D = atom.Class({
 	set autoUpdate (value) { },
 	get autoUpdate () { return true; },
 	interval   : null,
+	name: null,
 
 	initialize : function (elem, options) {
 		if (typeof elem == 'string') elem = atom(elem);
@@ -2780,12 +2811,13 @@ LibCanvas.Canvas2D = atom.Class({
 
 		this.origElem = elem;
 		this.origCtx = elem.getContext('2d-libcanvas');
-		this.origElem.atom = atom(elem);//.css({ position: 'absolute' });
+		this.origElem.atom = atom(elem).css({ position: 'absolute' });
 		
 		if (this.parentLayer) {
-			this.wrapper.append(this.origElem);
+			this.origElem.atom.appendTo(this.wrapper);
 		} else {
 			this._layers[null] = this;
+			this.zIndex = null;
 			this.origElem.atom.wrap(
 				this.wrapper.css({
 					width : elem.width + 'px',
@@ -2956,31 +2988,43 @@ LibCanvas.Canvas2D = atom.Class({
 			throw new Error('Layer «' + name + '» already exists');
 		}
 		var layer = this._layers[name] = new LibCanvas.Layer(this, this.options);
-		layer.zIndex = z;
 		layer._layers = this._layers;
+		layer.zIndex  = z;
+		layer.name    = name;
 		return layer;
+	},
+	
+	get maxZIndex () {
+		var max = 0, layers = this._layers;
+		for (var name in layers) {
+			max = Math.max(max, layers[name].zIndex);
+		}
+		return max;
 	},
 	
 	_zIndex: null,
 	
 	set zIndex (z) {
 		var cur = this._zIndex, layers = this._layers, name;
-		if (cur == null) {
-			z = 0;
-			// ищем самый большой z-index и присваиваем текущему элементу на единицу большее
+		if (z == null) {
+			z = 1;
+			// ищем самый большой z-index и присваиваем текущему элементу на единицу больше
 			for (name in layers) {
-				if (layers[name].zIndex >= z) {
-					z = layers[name].zIndex+1;
-				}
+				var thatZ = layers[name].zIndex;	
+				if (thatZ && thatZ >= z) z = thatZ;
 			}
-		} else {
-			this.zIndex = z;
-			for (name in layers) if (layers[name] != this) {
-				var lz = layers[name].zIndex;
-				if (z < cur) { // zIndex уменьшается
-					if (z <= lz && lz < cur) layers[name].zIndex++;
-				} else { // zIndex увеличивается
-					if (cur < lz && lz <= z) layers[name].zIndex--;
+			if (cur == null) z++;
+		}
+		z = z.limit(1, this.maxZIndex + 1);
+		if (cur != null) {
+			for (name in layers) {
+				if (layers[name] != this) {
+					var lz = layers[name].zIndex;
+					if (z < cur) { // zIndex уменьшается
+						if (z <= lz && lz < cur) layers[name]._zIndex++;
+					} else { // zIndex увеличивается
+						if (cur < lz && lz <= z) layers[name]._zIndex--;
+					}
 				}
 			}
 		}
@@ -3326,7 +3370,6 @@ LibCanvas.Context2D = atom.Class({
 		try {
 			this.ctx2d[method].apply(this.ctx2d, args || []);
 		} catch (e) {
-			console.log('ctx', this, this.ctx2d);
 			atom.log('Error in context2d.original(', method, ',', (args || []), ')');
 			throw e;
 		}

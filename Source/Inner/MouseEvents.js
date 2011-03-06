@@ -43,11 +43,23 @@ LibCanvas.namespace('Inner').MouseEvents = atom.Class({
 			over : [],
 			out  : []
 		};
-		var maxOverMouseZ = 0, sub = this.subscribers.sortBy('getZIndex');
+		var maxOverMouseLCZ = 0, maxOverMouseZ = 0, sub = this.subscribers;
+		sub.sort(function ($0, $1) {
+			var diff = $1.libcanvas.zIndex - $0.libcanvas.zIndex;
+			if (diff) return diff < 0 ? -1 : 1;
+			diff = $1.getZIndex() - $0.getZIndex();
+			return diff ? (diff < 0 ? -1 : 1) : 0;
+		});
+		
+		
 		for (var i = 0, l = sub.length; i < l; i++) {
 			var elem = sub[i];
-			if (elem.getZIndex() >= maxOverMouseZ && this.overElem(elem)) {
-				maxOverMouseZ = elem.getZIndex();
+			
+			if (elem.getZIndex() >= maxOverMouseZ
+			 && elem.libcanvas.zIndex >= maxOverMouseLCZ
+			 && this.overElem(elem)) {
+				maxOverMouseZ   = elem.getZIndex();
+				maxOverMouseLCZ = elem.libcanvas.zIndex;
 				elements.over.push(elem);
 			} else {
 				elements.out.push(elem);

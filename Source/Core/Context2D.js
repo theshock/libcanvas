@@ -171,7 +171,6 @@ LibCanvas.Context2D = atom.Class({
 		try {
 			this.ctx2d[method].apply(this.ctx2d, args || []);
 		} catch (e) {
-			console.log('ctx', this, this.ctx2d);
 			atom.log('Error in context2d.original(', method, ',', (args || []), ')');
 			throw e;
 		}

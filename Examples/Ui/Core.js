@@ -53,8 +53,8 @@ LibCanvas.Examples.Ui = atom.Class({
 		}
 		throw new TypeError('Unknown shape: ' + shape);
 	},
-	createShaper: function (shape, z) {
-		return this.libcanvas
+	createShaper: function (shape, z, layer) {
+		return (layer || this.libcanvas)
 			.createShaper({
 				shape : shape,
 				stroke: '#990000',

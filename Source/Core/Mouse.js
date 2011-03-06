@@ -28,7 +28,7 @@ LibCanvas.Mouse = atom.Class({
 		this.point = new LibCanvas.Point(null, null);
 
 		this.libcanvas = libcanvas;
-		this.elem      = libcanvas.origElem;
+		this.elem      = libcanvas.wrapper;
 
 		this.events = new LibCanvas.Inner.MouseEvents(this);
 
