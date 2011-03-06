@@ -78,15 +78,18 @@ LibCanvas.Canvas2D = atom.Class({
 
 		this.origElem = elem;
 		this.origCtx = elem.getContext('2d-libcanvas');
-		this.origElem.atom = atom(elem).css({ position: 'absolute' });
+		var aElem = this.origElem.atom =
+			atom(elem).css({ position: 'absolute' });
 		
 		if (this.parentLayer) {
-			this.origElem.atom.appendTo(this.wrapper);
+			aElem.appendTo(this.wrapper);
 		} else {
-			this._layers[null] = this;
+			this._layers['main'] = this;
 			this.zIndex = null;
-			this.origElem.atom.wrap(
-				this.wrapper.css({
+			this.name = 'main';
+			aElem
+				.attr({ 'data-layer-name': 'main' })
+				.wrap(this.wrapper.css({
 					width : elem.width + 'px',
 					height: elem.height + 'px'
 				}));
@@ -101,8 +104,10 @@ LibCanvas.Canvas2D = atom.Class({
 		});
 	},
 
-	size: function (size, height) {
-		if (height != null) {
+	size: function (size, height, wrapper) {
+		if (typeof size == 'object') {
+			wrapper = height;
+		} else {
 			size = { width: size, height: height };
 		}
 		for (var i in size) {
@@ -110,7 +115,17 @@ LibCanvas.Canvas2D = atom.Class({
 				this.origElem[i] = size[i];
 			}
 			this.elem[i] = size[i];
-			this.wrapper.css(i, size[i] + 'px');
+			wrapper && this.wrapper.css(i, size[i] + 'px');
+		}
+		return this;
+	},
+	
+	shift: function (shift, left) {
+		if (left != null) {
+			shift = { top: shift, left: left };
+		}
+		for (var i in shift) {
+			this.origElem.style[i] = shift[i];
 		}
 		return this;
 	},
@@ -258,6 +273,7 @@ LibCanvas.Canvas2D = atom.Class({
 		layer._layers = this._layers;
 		layer.zIndex  = z;
 		layer.name    = name;
+		layer.origElem.atom.attr({ 'data-layer-name': name });
 		return layer;
 	},
 	

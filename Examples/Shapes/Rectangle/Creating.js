@@ -29,7 +29,7 @@ LibCanvas.Examples.set('Shapes.Rectangle.Creating', function (canvas) {
 		.size({
 			width : 512,
 			height: 256
-		})
+		}, true)
 		.listenMouse()
 	
 	var cache = libcanvas.createBuffer();

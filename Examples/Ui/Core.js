@@ -78,7 +78,7 @@ LibCanvas.Examples.Ui = atom.Class({
 			.size({
 				width : this.options.width,
 				height: this.options.height
-			});
+			}, true);
 	},
 	start: atom.Class.abstractMethod
 });

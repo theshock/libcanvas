@@ -25,7 +25,7 @@ LibCanvas.Examples.set('Shapes.Rectangle.Points', function (canvas) {
 		.size({
 			width : 512,
 			height: 256
-		})
+		}, true)
 		.listenMouse()
 		.start(function () {
 			rect && this.ctx.text({

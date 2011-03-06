@@ -57,7 +57,7 @@ LibCanvas.Examples.set('ProgressBar',
 		.size({
 			width : 400,
 			height: 200
-		})
+		}, true)
 		.start(function () {
 			this.ctx.fillAll('#dbd2cb').text({
 				text: 'Ready!',
