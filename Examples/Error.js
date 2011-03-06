@@ -22,7 +22,7 @@ LibCanvas.Examples.set('Error', function (canvas, app) {
 	app = app ? '«' + app + '» ' : '';
 	canvas
 		.getContext('2d-libcanvas')
-		.size({
+		.set({
 			width : 200,
 			height: 100
 		})
