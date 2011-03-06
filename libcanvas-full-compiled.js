@@ -1924,28 +1924,33 @@ LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 				);
 			}
 		}.context(this));
-		return this;
 	},
 	innerInvoke : function (type, time) {
 		var f = this.funcs[type].sortBy('priority');
 		for (var i = f.length; i--;) f[i].call(this, time);
 		return this;
 	},
-	renderFrame : function (time) {
-		this.innerInvoke('plain', time);
-		if (this.checkAutoDraw()) {
-			this.processing('pre');
-			if (this.isReady()) {
-				this.innerInvoke('render', time);
-				this.drawAll();
+	renderLayer: function (layer, time) {
+		if (layer.checkAutoDraw()) {
+			layer.processing('pre');
+			if (layer.isReady()) {
+				layer.innerInvoke('render', time);
+				layer.drawAll();
 			} else {
-				this.renderProgress();
+				layer.renderProgress();
 			}
-			this.processing('post');
-			this.show();
+			layer.processing('post');
+			layer.show();
 			return true;
 		}
 		return false;
+	},
+	renderFrame : function (time) {
+		this.innerInvoke('plain', time);
+		for (var n in this._layers) {
+			this.renderLayer(this._layers[n]);
+		}
+		return true;
 	}
 });
 
@@ -2737,6 +2742,9 @@ LibCanvas.Canvas2D = atom.Class({
 		keyboard: function () {
 			throw new Error('Keyboard is not listened by libcanvas');
 		},
+		wrapper: function () {
+			return atom().create('div');
+		},
 		invoker: function () {
 			return new LibCanvas.Invoker({
 				context: this,
@@ -2770,8 +2778,17 @@ LibCanvas.Canvas2D = atom.Class({
 
 		this.setOptions(options);
 
-		this.origElem = elem;
-		this.origCtx  = elem.getContext('2d-libcanvas');
+
+		this.origElem      = elem;
+		this.origElem.atom = atom(elem);
+		this.origCtx       = elem.getContext('2d-libcanvas');
+
+		if (this.parentLayer) {
+			this.wrapper.append(this.origElem);
+		} else {
+			this._layers[null] = this;
+			this.origElem.atom.wrap(this.wrapper);
+		}
 
 		this.createProjectBuffer().addClearer();
 
@@ -2912,6 +2929,61 @@ LibCanvas.Canvas2D = atom.Class({
 		return this;
 	},
 
+	_layers: {},
+	parentLayer: null,
+	layer: function (name) {
+		if (!name) {
+			// gettin master layer
+			return this.parentLayer == null ? this : this.parentLayer.layer();
+		}
+		
+		if (name in this._layers) {
+			return this._layers[name];
+		} else {
+			throw new Error('No layer «' + name + '»');
+		}
+	},
+	
+	createLayer: function (name, z) {
+		if (name in this._layers) {
+			throw new Error('Layer «' + name + '» already exists');
+		}
+		var layer = this._layers[name] = new LibCanvas.Layer(this, this.options);
+		layer.zIndex = z;
+		layer._layers = this._layers;
+		return layer;
+	},
+	
+	_zIndex: null,
+	
+	set zIndex (z) {
+		var cur = this._zIndex, layers = this._layers, name;
+		if (cur == null) {
+			z = 0;
+			// ищем самый большой z-index и присваиваем текущему элементу на единицу большее
+			for (name in layers) {
+				if (layers[name].zIndex >= z) {
+					z = layers[name].zIndex+1;
+				}
+			}
+		} else {
+			this.zIndex = z;
+			for (name in layers) if (layers[name] != this) {
+				var lz = layers[name].zIndex;
+				if (z < cur) { // zIndex уменьшается
+					if (z <= lz && lz < cur) layers[name].zIndex++;
+				} else { // zIndex увеличивается
+					if (cur < lz && lz <= z) layers[name].zIndex--;
+				}
+			}
+		}
+		this.origElem.atom.css('zIndex', z);
+		this._zIndex = z;
+	},
+	
+	get zIndex () {
+		return this._zIndex;
+	},
 
 	// not clonable
 	get clone () {
@@ -3859,6 +3931,70 @@ Keyboard.extend({ codeNames: Object.invert(Keyboard.keyCodes) });
 
 };
 
+
+/*
+---
+
+name: "Layer"
+
+description: "Layer"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- Canvas2D
+
+provides: Layer
+
+...
+*/
+
+new function () {
+	
+var callParent = function (method) {
+	return function () {
+		this.parentLayer[method].apply(this.parentLayer, arguments);
+		return this;
+	};
+};
+
+LibCanvas.Layer = atom.Class({
+	Extends: LibCanvas.Canvas2D,
+
+	Generators: {
+		mouse: function () {
+			return this.parentLayer.mouse;
+		},
+		keyboard: function () {
+			return this.parentLayer.keyboard;
+		},
+		invoker: function () {
+			return this.parentLayer.invoker;
+		},
+		wrapper: function () {
+			return this.parentLayer.wrapper;
+		}
+	},
+	
+	initialize : function (elem, options) {
+		this.parentLayer = elem;
+
+		this.parent(elem.createBuffer(), options);
+	},
+
+	listenMouse : callParent('listenMouse'),
+	listenKeyboard :  callParent('listenKeyboard'),
+
+	start : function () {
+		throw new Error('Start can be called only from master layer');
+	}
+});
+
+};
 
 /*
 ---

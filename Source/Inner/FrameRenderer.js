@@ -56,27 +56,32 @@ LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 				);
 			}
 		}.context(this));
-		return this;
 	},
 	innerInvoke : function (type, time) {
 		var f = this.funcs[type].sortBy('priority');
 		for (var i = f.length; i--;) f[i].call(this, time);
 		return this;
 	},
-	renderFrame : function (time) {
-		this.innerInvoke('plain', time);
-		if (this.checkAutoDraw()) {
-			this.processing('pre');
-			if (this.isReady()) {
-				this.innerInvoke('render', time);
-				this.drawAll();
+	renderLayer: function (layer, time) {
+		if (layer.checkAutoDraw()) {
+			layer.processing('pre');
+			if (layer.isReady()) {
+				layer.innerInvoke('render', time);
+				layer.drawAll();
 			} else {
-				this.renderProgress();
+				layer.renderProgress();
 			}
-			this.processing('post');
-			this.show();
+			layer.processing('post');
+			layer.show();
 			return true;
 		}
 		return false;
+	},
+	renderFrame : function (time) {
+		this.innerInvoke('plain', time);
+		for (var n in this._layers) {
+			this.renderLayer(this._layers[n]);
+		}
+		return true;
 	}
 });
