@@ -22,7 +22,7 @@ LibCanvas.Examples.set('Shapes.Rectangle.Points', function (canvas) {
 	var LC = LibCanvas.extract({});
 
 	var libcanvas = new LibCanvas(canvas)
-		.set({
+		.size({
 			width : 512,
 			height: 256
 		})

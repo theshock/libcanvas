@@ -62,7 +62,7 @@ LibCanvas.Examples.set('Asteroids', function (canvas) {
 				explosion : files + 'sounds/explosion.*',
 			}
 		})
-		.set(Asteroids.config.canvasSize)
+		.size(Asteroids.config.canvasSize)
 		.fpsMeter()
 		.listenKeyboard([
 			'aup', 'adown', 'aleft', 'aright', 'space'

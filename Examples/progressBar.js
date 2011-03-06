@@ -54,7 +54,7 @@ LibCanvas.Examples.set('ProgressBar',
 				blendOpacity : 0.2
 			}
 		})
-		.set({
+		.size({
 			width : 400,
 			height: 200
 		})

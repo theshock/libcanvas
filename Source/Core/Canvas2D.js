@@ -75,16 +75,19 @@ LibCanvas.Canvas2D = atom.Class({
 
 		this.setOptions(options);
 
-
-		this.origElem      = elem;
-		this.origElem.atom = atom(elem);
-		this.origCtx       = elem.getContext('2d-libcanvas');
-
+		this.origElem = elem;
+		this.origCtx = elem.getContext('2d-libcanvas');
+		this.origElem.atom = atom(elem).css({ position: 'absolute' });
+		
 		if (this.parentLayer) {
 			this.wrapper.append(this.origElem);
 		} else {
 			this._layers[null] = this;
-			this.origElem.atom.wrap(this.wrapper);
+			this.origElem.atom.wrap(
+				this.wrapper.css({
+					width : elem.width + 'px',
+					height: elem.height + 'px'
+				}));
 		}
 
 		this.createProjectBuffer().addClearer();
@@ -96,12 +99,16 @@ LibCanvas.Canvas2D = atom.Class({
 		});
 	},
 
-	set: function (props) {
-		for (var i in props) {
+	size: function (size, height) {
+		if (height != null) {
+			size = { width: size, height: height };
+		}
+		for (var i in size) {
 			if (this.origElem != this.elem) {
-				this.origElem[i] = props[i];
+				this.origElem[i] = size[i];
 			}
-			this.elem[i] = props[i];
+			this.elem[i] = size[i];
+			this.wrapper.css(i, size[i] + 'px');
 		}
 		return this;
 	},

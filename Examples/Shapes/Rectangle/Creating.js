@@ -26,7 +26,7 @@ LibCanvas.Examples.set('Shapes.Rectangle.Creating', function (canvas) {
 	var libcanvas = new LibCanvas(canvas, {
 			clear: true
 		})
-		.set({
+		.size({
 			width : 512,
 			height: 256
 		})

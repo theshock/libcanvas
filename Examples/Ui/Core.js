@@ -75,7 +75,7 @@ LibCanvas.Examples.Ui = atom.Class({
 		libcanvas.listenMouse();
 		
 		return libcanvas
-			.set({
+			.size({
 				width : this.options.width,
 				height: this.options.height
 			});
