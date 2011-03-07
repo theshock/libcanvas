@@ -1,7 +1,7 @@
 LibCanvas.Canvas2D
 ==================
 
-`LibCanvas.Canvas2D` - это ключевой объект, вокруг которого строится вся анимация.
+`LibCanvas.Canvas2D` - это ключевой объект, вокруг которого строится вся отрисовка, организована работа со слоями, событиями и устройствами
 
 ## Создание
 
@@ -42,6 +42,27 @@ LibCanvas.Canvas2D
 		}
 	});
 
+## Разметка
+
+Достаточно создать один тег и передать ссылку на него в LibCanvas:
+	<body>
+		<canvas id="my-first-canvas"></canvas>
+	</body>
+	<script>
+		new LibCanvas('#my-first-canvas');
+	</script>
+
+В итоге ваша вёрстка будет приведена приблизительно к такому виду:
+	<body>
+		<div class="libcanvas-layers-container">
+			<!-- Главный слой - элемент, который вы создаёте на странице -->
+			<canvas data-layer-name="main" id="my-first-canvas"></canvas>
+			<!-- Список слоёв, которые вы будете создавать при помощи javascript -->
+			<canvas data-layer-name="your-layer-name-first"></canvas>
+			<canvas data-layer-name="your-layer-name-second"></canvas>
+		</div>
+	</body>
+
 ## Свойства
 
 `ctx` - ссылка на активный контекст, следует использовать при отрисовке. Например:
@@ -52,6 +73,8 @@ LibCanvas.Canvas2D
 
 `keyboard` - ссылка на объект `LibCanvas.Keyboard`. Активируется после использования метода `listenKeyboard()`
 
+`zIndex` - zIndex слоя. При указании "null" - поднимется в самый верх.
+
 ## События
 
 `ready` - вызывается, когда все изображения загружены и libcanvas готов к отрисовке.
@@ -60,16 +83,33 @@ LibCanvas.Canvas2D
 
 `frameRenderFinished` - вызывается каждый кадр после окончания просчётов и рендера
 
-## Метод set
+## Метод size
 
-Позволяет указать атрибуты html-элемента
+	LibCanvas.Canvas2D size(object size, bool wrapper = false);
+
+Позволяет указать размер слоя и контейнера
+
+#### аргумент `size` - объект с параметрами `width` и `height`
+
+#### аргумент `wrapper` - объект с параметрами `width` и `height`
+
+Вторым аргументом - 
 
 #### Пример:
 
-	libcanvas.set({
+	// Меняем размер текущего слоя:
+	libcanvas.size({
 		width : 400,
 		height: 250
 	});
+
+	// Меняем размер элемента:
+	libcanvas.size({
+		width : 400,
+		height: 250
+	}, true);
+
+#### Возвращает `this`
 
 ## Метод update
 
@@ -207,3 +247,97 @@ LibCanvas.Canvas2D
 	});
 
 #### Возвращает `this`
+
+# Управление слоями
+
+Стоит помнить, что LibCanvas позволяет очень гибко оперировать слоями.
+Ваш основной слой, который вы создали при инициализации носит имя "main".
+Его нельзя удалить, заменить или переименовать.
+
+Но вы можете создавать неограниченное количество слоёв с уникальными именами.
+
+Созданный слой будет точно таким же элементом, как родительский libcanvas, со всеми его методами, но собственным апдейтом, набором коллбеков и элементами.
+
+Не стоит добавлять каждый элемент на отдельный слой. Желательно выделить группы элементов, например "задний план", "объекты" и "панель управления" и обновлять определённый слой только при изменении соответсвующего объекта.
+
+
+## Метод createLayer
+
+	LibCanvas.Layer createLayer(string name, int z = Infinity);
+
+Создаёт новый слой, если имя `name` не занято. 
+Второй опциональный аргумент позволяет указать zIndex.
+
+#### Пример:
+
+	var libcanvasChild = libcanvas.createLayer('child');
+
+	libcanvas instanceof LibCanvas; // true
+	libcanvas instanceof LibCanvas.Layer; // false
+
+	libcanvasChild instanceof LibCanvas; // true;
+	libcanvasChild instanceof LibCanvas.Layer; // true
+
+## Метод layer
+
+	LibCanvas.Canvas2D layer(string name);
+
+Возвращает слой с именем name, если он есть, иначе - бросает исключение.
+У всех слоёв одна область видимости, потому неважно, к которому применять этот метод.
+
+#### Пример:
+	
+	libcanvas.createLayer('first' );
+	libcanvas.createLayer('second');
+
+	var first = libcanvas.layer('first');
+
+	libcanvas.layer('second') == first.layer('second'); // true
+	first.layer('main') == libcanvas; // true
+
+## Свойства
+
+`zIndex` - zIndex слоя. При указании `Infinity` - поднимается в самый верх, `0` - падает вниз.
+
+`topLayer` (*LibCanvas.Canvas2D*) - возвращает слой, который находится в самом верху.
+
+
+#### Пример:
+
+	var top = libcanvas.createLayer('top');
+	top.zIndex = 0; // опускаем слой в самый низ
+
+	top.zIndex = Infinity; // поднимаем слой в самый верх
+
+	libcanvas.topLayer == top; // true
+
+## Примечание
+
+Стоит понять, как работает zIndex. Он может быть любым положительным числом от единицы до бесконечности, но не больше, чем количество слоёв на данный момент.
+
+Когда вы передаёте "ноль" - слою присваивается индекс "единица", а все остальные - сдвигаются. Когда "бесконечность" - передаётся самый большой возможный индекс. Например:
+
+	libcanvas.createLayer('second');
+	libcanvas.createLayer('third');
+	/* 'main'.z   == 1
+	 * 'second'.z == 2
+	 * 'third'.z  == 3
+	 */
+
+	// Поднимаем слой вверх:
+	libcanvas.zIndex = Infinity;
+	/* 'second'.z == 1
+	 * 'third'.z  == 2
+	 * 'main'.z   == 3
+	 */
+Видно, что слой сместил все слои так, чтобы zIndex шёл по-порядку.
+
+	libcanvas.createLayer('fourth');
+	/* 'second'.z == 1
+	 * 'third'.z  == 2
+	 * 'main'.z   == 3
+	 * 'fourth'.z == 4
+	 */
+
+Мы видим, что, хотя мы присвоили слою 'main' zIndex Infinity - он занял место 3 (самое большое на момент создания) и теперь уступил верхушку новому слою.
+
