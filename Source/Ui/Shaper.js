@@ -48,7 +48,6 @@ LibCanvas.namespace('Ui').Shaper = atom.Class({
 	initialize : function (libcanvas, options) {
 		this.update = libcanvas.update;
 
-		this.libcanvas = libcanvas;
 		this.setOptions(options);
 		this.setShape(options.shape);
 
