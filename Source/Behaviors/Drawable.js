@@ -33,12 +33,17 @@ LibCanvas.namespace('Behaviors').Drawable = atom.Class({
 	Implements: [atom.Class.Events],
 	libcanvasIsReady: false,
 	setLibcanvas : function (libcanvas) {
-		this.libcanvas = libcanvas;
-		this.addEvent('libcanvasReady', function () {
-			this.libcanvasIsReady = true;
-		})
-		this.readyEvent('libcanvasSet');
-		this.libcanvas.addEvent('ready', this.readyEvent.context(this, ['libcanvasReady']));
+		if (this.libcanvas) {
+			this.libcanvas.rmElement(this)
+			this.libcanvas = libcanvas;
+		} else {
+			this.libcanvas = libcanvas;
+			this.addEvent('libcanvasReady', function () {
+				this.libcanvasIsReady = true;
+			})
+			this.readyEvent('libcanvasSet');
+			this.libcanvas.addEvent('ready', this.readyEvent.context(this, ['libcanvasReady']));
+		}
 		return this;
 	},
 	isReady : function () {
@@ -59,6 +64,11 @@ LibCanvas.namespace('Behaviors').Drawable = atom.Class({
 	},
 	setZIndex : function (zIndex) {
 		this.zIndex = zIndex;
+		return this;
+	},
+	toLayer: function (name) {
+		this.libcanvas.layer(name)
+			.addElement(this);
 		return this;
 	},
 	startDrawing: function () {
