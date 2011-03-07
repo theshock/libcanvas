@@ -3949,7 +3949,8 @@ var Keyboard = LibCanvas.Keyboard = atom.Class({
 			return this.keyStates[this.keyName(keyName)];
 		},
 		keyName: function (code) {
-			return (typeof code == 'string') ? code : this.key(code);
+			return typeof code == 'string' && code in this.keyCodes ? 
+				code : this.key(code);
 		},
 		key: function (code) {
 			if ('keyCode' in code) return this.codeNames[code.keyCode];
