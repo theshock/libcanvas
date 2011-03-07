@@ -78,8 +78,9 @@ LibCanvas.Canvas2D = atom.Class({
 
 		this.origElem = elem;
 		this.origCtx = elem.getContext('2d-libcanvas');
-		var aElem = this.origElem.atom =
-			atom(elem).css({ position: 'absolute' });
+		var aElem = this.origElem.atom = atom(elem)
+			.css('position', 'absolute')
+			.addClass('libcanvas-layers-container');
 		
 		if (this.parentLayer) {
 			aElem.appendTo(this.wrapper);
@@ -88,9 +89,9 @@ LibCanvas.Canvas2D = atom.Class({
 			this.zIndex = null;
 			this.name = 'main';
 			aElem
-				.attr({ 'data-layer-name': 'main' })
+				.attr('data-layer-name', 'main')
 				.wrap(this.wrapper.css({
-					width : elem.width + 'px',
+					width : elem.width  + 'px',
 					height: elem.height + 'px'
 				}));
 		}
