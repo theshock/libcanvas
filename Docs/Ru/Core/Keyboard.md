@@ -1,2 +1,4 @@
-| table | is | here |
-| test  | is | here |
+First Header  | Second Header
+------------- | -------------
+Content Cell  | Content Cell
+Content Cell  | Content Cell
