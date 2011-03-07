@@ -85,7 +85,7 @@ LibCanvas.Canvas2D = atom.Class({
 			aElem.appendTo(this.wrapper);
 		} else {
 			this._layers[this.name = 'main'] = this;
-			this.zIndex = null;
+			this.zIndex = Infinity;
 			aElem
 				.attr('data-layer-name', 'main')
 				.wrap(this.wrapper.css({
@@ -277,22 +277,23 @@ LibCanvas.Canvas2D = atom.Class({
 	},
 	
 	get topLayer () {
-		return this._layers[this.maxZIndex];
+		var max = 0, layers = this._layers, nameMax = null;
+		for (var name in layers) if (layers[name].zIndex > max) {
+			nameMax = name;
+			max     = layers[name].zIndex;
+		}
+		return layers[nameMax];
 	},
 	
 	get maxZIndex () {
-		var max = 0, layers = this._layers;
-		for (var name in layers) {
-			max = Math.max(max, layers[name].zIndex);
-		}
-		return max;
+		return this.topLayer.zIndex;
 	},
 	
 	_zIndex: null,
 	
 	set zIndex (z) {
 		var cur = this._zIndex, layers = this._layers, name;
-		if (z == null) {
+		if (z == null || z == Infinity) {
 			z = 1;
 			// ищем самый большой z-index и присваиваем текущему элементу на единицу больше
 			for (name in layers) {
