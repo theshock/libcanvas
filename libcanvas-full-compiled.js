@@ -1347,12 +1347,17 @@ LibCanvas.namespace('Behaviors').Drawable = atom.Class({
 	Implements: [atom.Class.Events],
 	libcanvasIsReady: false,
 	setLibcanvas : function (libcanvas) {
-		this.libcanvas = libcanvas;
-		this.addEvent('libcanvasReady', function () {
-			this.libcanvasIsReady = true;
-		})
-		this.readyEvent('libcanvasSet');
-		this.libcanvas.addEvent('ready', this.readyEvent.context(this, ['libcanvasReady']));
+		if (this.libcanvas) {
+			this.libcanvas.rmElement(this)
+			this.libcanvas = libcanvas;
+		} else {
+			this.libcanvas = libcanvas;
+			this.addEvent('libcanvasReady', function () {
+				this.libcanvasIsReady = true;
+			})
+			this.readyEvent('libcanvasSet');
+			this.libcanvas.addEvent('ready', this.readyEvent.context(this, ['libcanvasReady']));
+		}
 		return this;
 	},
 	isReady : function () {
@@ -1373,6 +1378,11 @@ LibCanvas.namespace('Behaviors').Drawable = atom.Class({
 	},
 	setZIndex : function (zIndex) {
 		this.zIndex = zIndex;
+		return this;
+	},
+	toLayer: function (name) {
+		this.libcanvas.layer(name)
+			.addElement(this);
 		return this;
 	},
 	startDrawing: function () {
@@ -2773,7 +2783,7 @@ LibCanvas.Canvas2D = atom.Class({
 			throw new Error('Keyboard is not listened by libcanvas');
 		},
 		wrapper: function () {
-			return atom().create('div');
+			return atom().create('div').addClass('libcanvas-layers-container');
 		},
 		invoker: function () {
 			return new LibCanvas.Invoker({
@@ -2812,14 +2822,13 @@ LibCanvas.Canvas2D = atom.Class({
 		this.origElem = elem;
 		this.origCtx = elem.getContext('2d-libcanvas');
 		var aElem = this.origElem.atom = atom(elem)
-			.css('position', 'absolute')
-			.addClass('libcanvas-layers-container');
+			.css('position', 'absolute');
 		
 		if (this.parentLayer) {
 			aElem.appendTo(this.wrapper);
 		} else {
 			this._layers[this.name = 'main'] = this;
-			this.zIndex = null;
+			this.zIndex = Infinity;
 			aElem
 				.attr('data-layer-name', 'main')
 				.wrap(this.wrapper.css({
@@ -3011,22 +3020,23 @@ LibCanvas.Canvas2D = atom.Class({
 	},
 	
 	get topLayer () {
-		return this._layers[this.maxZIndex];
+		var max = 0, layers = this._layers, nameMax = null;
+		for (var name in layers) if (layers[name].zIndex > max) {
+			nameMax = name;
+			max     = layers[name].zIndex;
+		}
+		return layers[nameMax];
 	},
 	
 	get maxZIndex () {
-		var max = 0, layers = this._layers;
-		for (var name in layers) {
-			max = Math.max(max, layers[name].zIndex);
-		}
-		return max;
+		return this.topLayer.zIndex;
 	},
 	
 	_zIndex: null,
 	
 	set zIndex (z) {
 		var cur = this._zIndex, layers = this._layers, name;
-		if (z == null) {
+		if (z == null || z == Infinity) {
 			z = 1;
 			// ищем самый большой z-index и присваиваем текущему элементу на единицу больше
 			for (name in layers) {
@@ -4124,10 +4134,6 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 		this.oldMatrix = matrix.clone();
 		return this;
 	},
-	// todo: check if clone is successfull
-	//cloneMatrix : function (matrix) {
-	//	return matrix.clone();
-	//},
 	addTile : function (index, fn) {
 		this.tiles[index] = fn;
 		return this;
