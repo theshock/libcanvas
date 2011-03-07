@@ -3,11 +3,9 @@ LibCanvas.Keyboard
 
 `LibCanvas.Keyboard` предоставляет интерфейс для прозрачного управления клавиатурой.
 
+#### Примечание
 
-First Header  | Second Header
-------------- | -------------
-Content Cell  | Content Cell
-Content Cell  | Content Cell
+Чтобы посмотреть доступный список кодов клавиш - смотрите раздел `Docs/Additions/KeyCodes`
 
 ## Статические свойства:
 
