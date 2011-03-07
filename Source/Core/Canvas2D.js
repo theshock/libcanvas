@@ -85,9 +85,8 @@ LibCanvas.Canvas2D = atom.Class({
 		if (this.parentLayer) {
 			aElem.appendTo(this.wrapper);
 		} else {
-			this._layers['main'] = this;
+			this._layers[this.name = 'main'] = this;
 			this.zIndex = null;
-			this.name = 'main';
 			aElem
 				.attr('data-layer-name', 'main')
 				.wrap(this.wrapper.css({
@@ -276,6 +275,10 @@ LibCanvas.Canvas2D = atom.Class({
 		layer.name    = name;
 		layer.origElem.atom.attr({ 'data-layer-name': name });
 		return layer;
+	},
+	
+	get topLayer () {
+		return this._layers[this.maxZIndex];
 	},
 	
 	get maxZIndex () {
