@@ -282,11 +282,12 @@ LibCanvas.Canvas2D = atom.Class({
 			nameMax = name;
 			max     = layers[name].zIndex;
 		}
-		return layers[nameMax] || this;
+		return layers[nameMax] || null;
 	},
 	
 	get maxZIndex () {
-		return this.topLayer.zIndex;
+		var top = this.topLayer;
+		return top ? top.zIndex : 0;
 	},
 	
 	_zIndex: null,
