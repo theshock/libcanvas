@@ -2811,19 +2811,19 @@ LibCanvas.Canvas2D = atom.Class({
 
 		this.origElem = elem;
 		this.origCtx = elem.getContext('2d-libcanvas');
-		var aElem = this.origElem.atom =
-			atom(elem).css({ position: 'absolute' });
+		var aElem = this.origElem.atom = atom(elem)
+			.css('position', 'absolute')
+			.addClass('libcanvas-layers-container');
 		
 		if (this.parentLayer) {
 			aElem.appendTo(this.wrapper);
 		} else {
-			this._layers['main'] = this;
+			this._layers[this.name = 'main'] = this;
 			this.zIndex = null;
-			this.name = 'main';
 			aElem
-				.attr({ 'data-layer-name': 'main' })
+				.attr('data-layer-name', 'main')
 				.wrap(this.wrapper.css({
-					width : elem.width + 'px',
+					width : elem.width  + 'px',
 					height: elem.height + 'px'
 				}));
 		}
@@ -2843,7 +2843,6 @@ LibCanvas.Canvas2D = atom.Class({
 		} else {
 			size = { width: size, height: height };
 		}
-		console.log(wrapper);
 		for (var i in size) {
 			if (this.origElem != this.elem) {
 				this.origElem[i] = size[i];
@@ -3009,6 +3008,10 @@ LibCanvas.Canvas2D = atom.Class({
 		layer.name    = name;
 		layer.origElem.atom.attr({ 'data-layer-name': name });
 		return layer;
+	},
+	
+	get topLayer () {
+		return this._layers[this.maxZIndex];
 	},
 	
 	get maxZIndex () {
