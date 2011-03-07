@@ -3025,11 +3025,12 @@ LibCanvas.Canvas2D = atom.Class({
 			nameMax = name;
 			max     = layers[name].zIndex;
 		}
-		return layers[nameMax];
+		return layers[nameMax] || null;
 	},
 	
 	get maxZIndex () {
-		return this.topLayer.zIndex;
+		var top = this.topLayer;
+		return top ? top.zIndex : 0;
 	},
 	
 	_zIndex: null,
@@ -5330,7 +5331,6 @@ LibCanvas.namespace('Ui').Shaper = atom.Class({
 	initialize : function (libcanvas, options) {
 		this.update = libcanvas.update;
 
-		this.libcanvas = libcanvas;
 		this.setOptions(options);
 		this.setShape(options.shape);
 
