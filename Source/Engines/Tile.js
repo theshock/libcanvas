@@ -56,10 +56,6 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 		this.oldMatrix = matrix.clone();
 		return this;
 	},
-	// todo: check if clone is successfull
-	//cloneMatrix : function (matrix) {
-	//	return matrix.clone();
-	//},
 	addTile : function (index, fn) {
 		this.tiles[index] = fn;
 		return this;
