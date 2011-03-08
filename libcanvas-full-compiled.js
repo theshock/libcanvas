@@ -2816,6 +2816,7 @@ LibCanvas.Canvas2D = atom.Class({
 	},
 
 	options: {
+		autoStart: true,
 		clear: true,
 		backBuffer: 'on',
 		fps: 30
@@ -2861,6 +2862,8 @@ LibCanvas.Canvas2D = atom.Class({
 		this.createProjectBuffer().addClearer();
 
 		this.update = this.update.context(this);
+
+		if (this.options.autoStart) this.isReady();
 
 		this.addEvent('ready', function () {
 			this.update.delay(0)
@@ -4186,7 +4189,7 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 	setSize : function (cellWidth, cellHeight, margin) {
 		this.cellWidth  = cellWidth;
 		this.cellHeight = cellHeight;
-		this.margin = margin;
+		this.margin = margin || 0;
 		return this;
 	},
 	update : function () {
