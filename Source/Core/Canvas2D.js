@@ -329,5 +329,15 @@ LibCanvas.Canvas2D = atom.Class({
 	get clone () {
 		return this;
 	},
+	dump: function () {
+		var el = this.elem, 
+			pr = [
+				this.name,
+				'z=' + this.z,
+				's=' + el.width + '*' + el.height,
+				'e=' this.elems.length
+			].join(',');
+		return '(LibCanvas[' + pr + '])';
+	},
 	toString: Function.lambda('[object LibCanvas.Canvas2D]')
 });
