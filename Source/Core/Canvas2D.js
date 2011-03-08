@@ -52,6 +52,7 @@ LibCanvas.Canvas2D = atom.Class({
 	},
 
 	options: {
+		autoStart: true,
 		clear: true,
 		backBuffer: 'on',
 		fps: 30
@@ -76,8 +77,6 @@ LibCanvas.Canvas2D = atom.Class({
 
 		this.setOptions(options);
 
-		if (options.update === false) this.updateFrame = false;
-
 		this.origElem = elem;
 		this.origCtx = elem.getContext('2d-libcanvas');
 		var aElem = this.origElem.atom = atom(elem)
@@ -99,6 +98,8 @@ LibCanvas.Canvas2D = atom.Class({
 		this.createProjectBuffer().addClearer();
 
 		this.update = this.update.context(this);
+
+		if (this.options.autoStart) this.isReady();
 
 		this.addEvent('ready', function () {
 			this.update.delay(0)
