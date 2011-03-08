@@ -52,5 +52,6 @@ LibCanvas.namespace('Utils').AudioContainer = atom.Class({
 		this.allAudios.forEach(function (audio) {
 			audio.muted = muted;
 		})
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Utils.AudioContainer]')
 });

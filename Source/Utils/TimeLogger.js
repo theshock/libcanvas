@@ -42,7 +42,8 @@ LibCanvas.namespace('Utils').TimeLogger = atom.Class({
 		this.sw.stop();
 		if (this.time.length > 25) this.time.shift();
 		this.trace.trace(msg + this.time.average().toFixed(2));
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Utils.TimeLogger]')
 });
 
 }();

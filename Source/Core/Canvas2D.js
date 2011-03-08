@@ -327,5 +327,6 @@ LibCanvas.Canvas2D = atom.Class({
 	// not clonable
 	get clone () {
 		return this;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Canvas2D]')
 });

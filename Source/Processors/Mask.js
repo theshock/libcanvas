@@ -32,5 +32,6 @@ LibCanvas.namespace('Processors').Mask = atom.Class({
 			d[i+2] = c[2];
 		}
 		return data;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Processors.Mask]')
 });

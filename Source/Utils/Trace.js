@@ -167,7 +167,8 @@ var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
 				dblclick : function () { this.stop().destroy(); }.context(this)
 			});
 		return this.events();
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Utils.Trace]')
 });
 
 window.trace = function (msg) {

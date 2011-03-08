@@ -145,7 +145,8 @@ LibCanvas.namespace('Utils').ProgressBar = atom.Class({
 		this.drawBorder().drawLine();
 		this.libcanvas.ctx.restore();
 		return this;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Utils.ProgressBar]')
 });
 
 })(LibCanvas);

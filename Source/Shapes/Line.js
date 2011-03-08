@@ -96,7 +96,8 @@ LibCanvas.namespace('Shapes').Line = atom.Class({
 		ctx.moveTo(this.from).lineTo(this.to);
 		if (!noWrap) ctx.closePath();
 		return ctx;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Shapes.Line]')
 });
 
 };

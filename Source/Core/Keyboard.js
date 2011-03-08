@@ -118,7 +118,8 @@ var Keyboard = LibCanvas.Keyboard = atom.Class({
 		this.debugTrace = on === false ? null : new LibCanvas.Utils.Trace();
 		this.debugUpdate();
 		return this;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Keyboard]')
 });
 
 Keyboard.extend({ codeNames: Object.invert(Keyboard.keyCodes) });

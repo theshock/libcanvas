@@ -46,5 +46,6 @@ LibCanvas.namespace('Utils').FpsMeter = atom.Class({
 			this.trace.trace('FPS: counting');
 		}
 		return this;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Utils.FpsMeter]')
 });

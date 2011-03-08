@@ -61,7 +61,8 @@ LibCanvas.namespace('Processors').Color = atom.Class({
 			case 5: return [bri, p, q];
 		}
 		return null;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Processors.Color]')
 });
 
 }();

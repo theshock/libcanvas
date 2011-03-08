@@ -23,5 +23,6 @@ LibCanvas.namespace('Processors').Invert = atom.Class({
 		var d = data.data, i = 0, l = d.length;
 		for (;i < l; i++) if (i % 4 != 3) d[i] = 255 - d[i];
 		return data;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Processors.Invert]')
 });

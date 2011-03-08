@@ -107,7 +107,8 @@ LibCanvas.Invoker = atom.Class({
 	rmFunction: function (fn) {
 		this.funcs.erase(fn);
 		return this;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Invoker]')
 });
 
 LibCanvas.Invoker.AutoChoose = atom.Class({

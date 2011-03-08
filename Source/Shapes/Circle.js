@@ -94,7 +94,8 @@ LibCanvas.namespace('Shapes').Circle = atom.Class({
 	},
 	getPoints : function () {
 		return { center : this.center };
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Shapes.Circle]')
 });
 
 }();

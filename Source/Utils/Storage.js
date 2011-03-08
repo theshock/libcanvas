@@ -54,5 +54,6 @@ LibCanvas.namespace('Utils').Storage = atom.Class({
 		typeof name == 'object' ?
 			atom.extend(this.store, name) : (this.store[name] = value);
 		return this;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Utils.Storage]')
 });

@@ -64,5 +64,6 @@ LibCanvas.Shape = atom.Class({
 	},
 	getPoints : function () {
 		return { from : this.from, to : this.to };
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Shape]')
 });

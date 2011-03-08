@@ -642,7 +642,8 @@ LibCanvas.Context2D = atom.Class({
 	},
 	drawWindow : function () {
 		return this.original('drawWindow', arguments);
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Context2D]')
 	// Such moz* methods wasn't duplicated:
 	// mozTextStyle, mozDrawText, mozMeasureText, mozPathText, mozTextAlongPath
 

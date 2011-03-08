@@ -40,5 +40,6 @@ LibCanvas.Geometry = atom.Class({
 	move : function (distance, reverse) {
 		this.fireEvent('move', [this.invertDirection(distance, reverse)]);
 		return this;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Geometry]')
 });

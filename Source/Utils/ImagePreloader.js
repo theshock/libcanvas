@@ -72,5 +72,6 @@ LibCanvas.namespace('Utils').ImagePreloader = atom.Class({
 	ready : function (fn) {
 		this.addEvent('ready', fn);
 		return this;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Utils.ImagePreloader]')
 });

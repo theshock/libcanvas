@@ -51,5 +51,6 @@ LibCanvas.namespace('Processors').Grayscale = atom.Class({
 			}
 		}
 		return data;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Processors.Grayscale]')
 });

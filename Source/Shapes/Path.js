@@ -80,7 +80,8 @@ var Path = LibCanvas.namespace('Shapes').Path = atom.Class({
 			}
 		});
 		return this;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Shapes.Path]')
 });
 
 LibCanvas.namespace('Shapes.Path').Builder = atom.Class({

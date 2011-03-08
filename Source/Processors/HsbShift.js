@@ -55,5 +55,6 @@ LibCanvas.namespace('Processors').HsbShift = atom.Class({
 			d[i+2] = rgb[2];
 		}
 		return data;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Processors.HsbShift]')
 });

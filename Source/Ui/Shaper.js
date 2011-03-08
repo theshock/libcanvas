@@ -123,6 +123,7 @@ LibCanvas.namespace('Ui').Shaper = atom.Class({
 		this.shape.radius = value;
 		this.update();
 	},
+	toString: Function.lambda('[object LibCanvas.Ui.Shaper]')
 });
 
 };

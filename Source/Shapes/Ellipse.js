@@ -93,5 +93,6 @@ LibCanvas.namespace('Shapes').Ellipse = atom.Class({
 	draw : function (ctx, type) {
 		this.processPath(ctx)[type]();
 		return this;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Shapes.Ellipse]')
 });

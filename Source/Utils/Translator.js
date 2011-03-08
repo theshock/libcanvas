@@ -53,7 +53,8 @@ LibCanvas.namespace('Utils').Translator = atom.Class({
 			}
 		});
 		return this;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Utils.Translator]')
 
 });
 

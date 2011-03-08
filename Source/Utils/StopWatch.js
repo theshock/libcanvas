@@ -46,5 +46,6 @@ LibCanvas.namespace('Utils').StopWatch = atom.Class({
 		return (s < 60) ?
 			d2((t / 1000).toFixed(1)) :
 			h + ':' + d2(m) + ':' + d2(s % 60);
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Utils.StopWatch]')
 });

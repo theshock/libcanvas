@@ -156,5 +156,6 @@ LibCanvas.namespace('Utils').AudioElement = atom.Class({
 			}.context(this)
 		});
 		return this;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Utils.AudioElement]')
 });

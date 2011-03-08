@@ -57,7 +57,8 @@ LibCanvas.Layer = atom.Class({
 
 	start : function () {
 		throw new Error('Start can be called only from master layer');
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Layer]')
 });
 
 };

@@ -139,5 +139,6 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 	},
 	height : function () {
 		return this.matrix.length || 0;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Engines.Tile]')
 });

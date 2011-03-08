@@ -28,7 +28,8 @@ LibCanvas.namespace('Processors').Clearer = atom.Class({
 		this.style ?
 			libcanvas.ctx.fillAll(this.style) :
 			libcanvas.ctx.clearAll();
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Processors.Clearer]')
 	// processCanvas : function (elem) {}
 	// processPixels : function (elem) {}
 });

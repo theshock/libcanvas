@@ -124,7 +124,8 @@ LibCanvas.namespace('Shapes').Polygon = atom.Class({
 	},
 	clone: function () {
 		return new this.self(this.points);
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Shapes.Polygon]')
 });
 
 };

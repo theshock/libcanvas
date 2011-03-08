@@ -146,5 +146,6 @@ LibCanvas.Animation = atom.Class({
 		return index in this.current.cfg ?
 			this.current.cfg[index] :
 			this.current.animation[index];
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Animation]')
 });

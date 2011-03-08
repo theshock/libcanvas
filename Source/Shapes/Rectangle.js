@@ -153,7 +153,8 @@ Rectangle = LibCanvas.namespace('Shapes').Rectangle = atom.Class({
 		this.from.snapToPixel();
 		this.to.snapToPixel();
 		return this;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Shapes.Rectangle]')
 });
 
 };
