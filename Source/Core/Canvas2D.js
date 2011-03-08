@@ -123,9 +123,10 @@ LibCanvas.Canvas2D = atom.Class({
 		if (left != null) {
 			shift = { top: shift, left: left };
 		}
-		for (var i in shift) {
-			this.origElem.style[i] = shift[i];
-		}
+		this.origElem.atom.css({
+			'marginTop' : shift.top,
+			'marginLeft': shift.left
+		});
 		return this;
 	},
 
