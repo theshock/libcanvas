@@ -96,7 +96,7 @@ LibCanvas.namespace('Shapes').Circle = atom.Class({
 		return { center : this.center };
 	},
 	dump: function () {
-		return '[Circle('+this.center.x+'*'+this.center.y+', '+this.radius+']';
+		return '[shape Circle(center['+this.center.x+', '+this.center.y+'], '+this.radius+')]';
 	},
 	toString: Function.lambda('[object LibCanvas.Shapes.Circle]')
 });

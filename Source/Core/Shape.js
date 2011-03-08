@@ -67,8 +67,8 @@ LibCanvas.Shape = atom.Class({
 	},
 	dump: function (shape) {
 		if (!shape) return this.toString();
-		var p = function (p) { return p.x + '*' + p.y };
-		return '[shape ' + shape + '(from='+p(this.from)+', to='+p(this.to)+')]';
+		var p = function (p) { return '[' + p.x + ', ' + p.y + ']'; };
+		return '[shape ' + shape + '(from'+p(this.from)+', to'+p(this.to)+')]';
 	},
 	toString: Function.lambda('[object LibCanvas.Shape]')
 });
