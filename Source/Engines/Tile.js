@@ -67,7 +67,7 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 	setSize : function (cellWidth, cellHeight, margin) {
 		this.cellWidth  = cellWidth;
 		this.cellHeight = cellHeight;
-		this.margin = margin;
+		this.margin = margin || 0;
 		return this;
 	},
 	update : function () {
