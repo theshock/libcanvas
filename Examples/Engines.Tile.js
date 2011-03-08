@@ -25,24 +25,40 @@ LibCanvas.Examples.set('Engines.Tile',
 			backBuffer: 'off',
 			preloadImages: { sprite: '/files/sprite-ok.png' }
 		})
+		.listenMouse()
 		.size(32*6, 32*4, true)
 		.addEvent('ready', function () {
-			new LibCanvas.Engines.Tile(this.elem)
+			var cells = [
+				['c','c','c','c','c','c'],
+				['f','f','c','f','f','c'],
+				['c','c','c','f','f','c'],
+				['c','c','f','c','c','c']
+			];
+			
+			var engine = new LibCanvas.Engines.Tile(this.elem)
 				.setSize(32, 32)
 				.addTiles({
 					c: '#030',
+					a: '#036',
 					i: this.getImage('sprite'),
 					f: function (ctx, rect) {
 						ctx.stroke(new Line(rect.from, rect.to), '#66f');
+						ctx.stroke(new Line(
+							[rect.from.x, rect.to.y],
+							[rect.to.x, rect.from.y]
+						), '#66f');
 					}
 				})
-				.setMatrix([
-					['c','i','c','c','i','c'],
-					['f','f','c','f','f','c'],
-					['c','i','i','c','f','i'],
-					['c','i','f','c','i','c']
-				])
+				.setMatrix(cells)
 				.update();
+			
+			this.mouse.addEvent('click', function (e) {
+				var cell = engine.getCell(e.offset);
+				if (['c', 'i', 'a'].contains(cell.t)) {
+					cells[cell.y][cell.x] = cell.t == 'i' ? 'a' : 'i';
+					engine.update();
+				}
+			});
 		});
 		
 	}
