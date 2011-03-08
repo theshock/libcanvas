@@ -199,7 +199,8 @@ LibCanvas.Invoker = atom.Class({
 	rmFunction: function (fn) {
 		this.funcs.erase(fn);
 		return this;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Invoker]')
 });
 
 LibCanvas.Invoker.AutoChoose = atom.Class({
@@ -439,6 +440,9 @@ LibCanvas.namespace('Utils').Color = atom.Class({
 		clone.b += math.round(array[2]);
 		return clone;
 	},
+	dump: function () {
+		return '[Color(' + this + ')]';
+	},
 	clone: function () {
 		return new this.self(this.r, this.g, this.b);
 	}
@@ -630,7 +634,8 @@ LibCanvas.Geometry = atom.Class({
 	move : function (distance, reverse) {
 		this.fireEvent('move', [this.invertDirection(distance, reverse)]);
 		return this;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Geometry]')
 });
 
 /*
@@ -864,7 +869,11 @@ var Point = LibCanvas.Point = atom.Class({
 	},
 	clone : function () {
 		return new Point(this);
-	}
+	},
+	dump: function () {
+		return '[Point(' + this.x + ', ' + this.y + ')]';
+	},
+	toString: Function.lambda('[object LibCanvas.Point]')
 });
 
 };
@@ -1139,7 +1148,12 @@ LibCanvas.Mouse = atom.Class({
 		this.debugTrace = on === false ? null : new LibCanvas.Utils.Trace();
 		this.debugUpdate();
 		return this;
-	}
+	},
+	dump: function () {
+		var p = this.point;
+		return '[Mouse(' + p.x + '*' + p.y + ')]';
+	},
+	toString: Function.lambda('[object LibCanvas.Mouse]')
 });
 
 /*
@@ -1703,7 +1717,8 @@ LibCanvas.Animation = atom.Class({
 		return index in this.current.cfg ?
 			this.current.cfg[index] :
 			this.current.animation[index];
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Animation]')
 });
 
 
@@ -1731,7 +1746,7 @@ new function () {
 
 var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
 	initialize : function (object) {
-		if (arguments.length == 1) this.trace(object);
+		if (arguments.length) this.trace(object);
 		this.stopped = false;
 		return this;
 	},
@@ -1739,58 +1754,56 @@ var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
 		this.stopped = true;
 		return this;
 	},
-	trace : function (object) {
-		if (this.stopped) return false;
-		if (!this.blocked) {
-			this.createNode().html(
-				this.dump(object)
-					.safeHtml()
-					.replaceAll({
-						'\t': '&nbsp;'.repeat(3),
-						'\n': '<br />'
-					})
-				|| 'null'
-			);
+	set value (value) {
+		if (!this.stopped && !this.blocked) {
+			var html = this.dump(value)
+				.replaceAll({
+					'\t': '&nbsp;'.repeat(3),
+					'\n': '<br />'
+				});
+			this.createNode().html(html);
 		}
+	},
+	trace : function (value) {
+		this.value = value;
 		return this;
 	},
 	dumpRec : function (obj, level) {
-		var callee = arguments.callee;
-		var html = '', type = atom.typeOf(obj);
-		if (level > 5) return '*TOO_DEEP : ' + level + '*';
-		var tabs = '\t'.repeat(level);
-		if (Array.isArray(obj)) {
-			html += tabs + '[\n';
-			obj.forEach(function (key) {
-				html += tabs + '\t' + key + ': ' + callee(this, 1+(1*level)) + '\n';
-			});
-			html += tabs + ']\n';
-		} else if (type == 'element') {
-			var attr = [], meth = [];
-			for (var i in obj) (typeof(obj[i]) == 'function') ?
-				meth.push(i + '()') : attr.push(i);
-			html += obj.toString() + ' {\n';
-			if (obj.tagName == 'IMG') try {
-				html += tabs + '\tsrc        : ' + obj.src + '\n';
-				html += tabs + '\tsize       : ' + obj.width + '×' + obj.height + '\n';
-			} catch (ignored) {}
-			html += tabs + '\tattributes : ' + meth.join(', ') + '\n';
-			html += tabs + '\tmethods    : ' + attr.join(', ') + '\n';
-			html += tabs + '}\n'
-		} else if (type == 'object') {
-			html += '{\n';
-			for (var key in obj) {
-				html += tabs + '\t' + key + ': ' + callee(obj[key], 1+(1*level)) + '\n';
-			}
-			html += tabs + '}';
-		} else if (type == 'null') {
-			html += 'null';
-		} else if (type === 'boolean') {
-			html += obj ? 'true' : 'false';
-		} else {
-			html += obj;
+		level  = parseInt(level) || 0
+			
+		if (level > 5) return '*TOO_DEEP*';
+		
+		if (typeof obj == 'object' && typeof(obj.dump) == 'function') return obj.dump();
+		
+		var subDump = function (elem, index) {
+				return tabs + '\t' + index + ': ' + this.dumpRec(elem, level+1) + '\n';
+			}.context(this),
+		    type = atom.typeOf(obj),
+		    tabs = '\t'.repeat(level);
+		
+		switch (type) {
+			case 'array':
+				return '[\n' + obj.map(subDump).join('') + tabs + ']';
+				break;
+			case 'object':
+				var html = '';
+				for (var index in obj) html += subDump(obj[index], index);
+				return '{\n' + html + tabs + '}';
+			case 'element':
+				var prop = (obj.width && obj.height) ? '('+obj.width+'×'+obj.height+')' : '';
+				return '[DOM ' + obj.tagName.toLowerCase() + prop + ']';
+			case 'textnode':
+			case 'whitespace':
+				return '[DOM ' + type + ']';
+			case 'null':
+				return 'null';
+			case 'boolean':
+				return obj ? 'true' : 'false';
+			case 'string':
+				return ('"' + obj + '"').safeHtml();
+			default:
+				return ('' + obj).safeHtml();
 		}
-		return html;
 	},
 	dump : function (object) {
 		return (this.dumpRec(object, 0));
@@ -1803,47 +1816,37 @@ var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
 					'position' : 'absolute',
 					'top'      : '3px',
 					'right'    : '6px',
-					'maxWidth' : "70%"
+					'maxWidth' : '70%'
 				})
 				.appendTo('body');
 	},
 	events : function (remove) {
 		var trace = this;
-		if (remove) {
-			return this.node;
-			this.node
-				.unbind('onmouseover')
-				.unbind('onmouseout')
-				.unbind('onmousedown')
-				.unbind('onmouseup');
-		} else {
-			this.node.bind({
-				mouseover : function () {
-					this.css('background', '#222');
-				},
-				mouseout  : function () {
-					this.css('background', '#000');
-				},
-				mousedown : function () {
-					trace.blocked = true;
-				},
-				mouseup : function () {
-					trace.blocked = false;
-				}
-			});
-		}
+		// add events unbind
+		!remove || this.node.bind({
+			mouseover : function () {
+				this.css('background', '#222');
+			},
+			mouseout  : function () {
+				this.css('background', '#000');
+			},
+			mousedown : function () {
+				trace.blocked = true;
+			},
+			mouseup : function () {
+				trace.blocked = false;
+			}
+		});
 		return this.node;
 	},
 	destroy : function () {
-		var trace = this;
-		this.events(true);
 		this.node.css('background', '#300');
-		this.timeout = setTimeout (function () {
-			if (trace.node) {
-				trace.node.destroy();
-				trace.node = null;
+		this.timeout = (function () {
+			if (this.node) {
+				this.node.destroy();
+				this.node = null;
 			}
-		}, 500);
+		}.delay(500, this));
 		return this;
 	},
 	createNode : function () {
@@ -1876,14 +1879,18 @@ var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
 				dblclick : function () { this.stop().destroy(); }.context(this)
 			});
 		return this.events();
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Utils.Trace]')
 });
 
 window.trace = function (msg) {
 	var L = arguments.length;
-	if (L) {
-		while (L--) new Trace(arguments[L]);
-	} else return new Trace();
+	if (L > 0) {
+		if (L > 1) msg = atom.toArray(arguments);
+		return new Trace(msg);
+	} else {
+		return new Trace();
+	}
 };
 
 }();
@@ -2026,7 +2033,8 @@ LibCanvas.namespace('Utils').FpsMeter = atom.Class({
 			this.trace.trace('FPS: counting');
 		}
 		return this;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Utils.FpsMeter]')
 });
 
 /*
@@ -2124,7 +2132,13 @@ LibCanvas.Shape = atom.Class({
 	},
 	getPoints : function () {
 		return { from : this.from, to : this.to };
-	}
+	},
+	dump: function (shape) {
+		if (!shape) return this.toString();
+		var p = function (p) { return '[' + p.x + ', ' + p.y + ']'; };
+		return '[shape ' + shape + '(from'+p(this.from)+', to'+p(this.to)+')]';
+	},
+	toString: Function.lambda('[object LibCanvas.Shape]')
 });
 
 /*
@@ -2282,7 +2296,11 @@ Rectangle = LibCanvas.namespace('Shapes').Rectangle = atom.Class({
 		this.from.snapToPixel();
 		this.to.snapToPixel();
 		return this;
-	}
+	},
+	dump: function () {
+		return this.parent('Rectangle');
+	},
+	toString: Function.lambda('[object LibCanvas.Shapes.Rectangle]')
 });
 
 };
@@ -2361,7 +2379,8 @@ LibCanvas.namespace('Utils').ImagePreloader = atom.Class({
 	ready : function (fn) {
 		this.addEvent('ready', fn);
 		return this;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Utils.ImagePreloader]')
 });
 
 /*
@@ -2490,7 +2509,8 @@ LibCanvas.namespace('Shapes').Polygon = atom.Class({
 	},
 	clone: function () {
 		return new this.self(this.points);
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Shapes.Polygon]')
 });
 
 };
@@ -2642,7 +2662,8 @@ LibCanvas.namespace('Utils').ProgressBar = atom.Class({
 		this.drawBorder().drawLine();
 		this.libcanvas.ctx.restore();
 		return this;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Utils.ProgressBar]')
 });
 
 })(LibCanvas);
@@ -2866,9 +2887,10 @@ LibCanvas.Canvas2D = atom.Class({
 		if (left != null) {
 			shift = { top: shift, left: left };
 		}
-		for (var i in shift) {
-			this.origElem.style[i] = shift[i];
-		}
+		this.origElem.atom.css({
+			'marginTop' : shift.top,
+			'marginLeft': shift.left
+		});
 		return this;
 	},
 
@@ -3070,7 +3092,17 @@ LibCanvas.Canvas2D = atom.Class({
 	// not clonable
 	get clone () {
 		return this;
-	}
+	},
+	dump: function () {
+		var el = this.elem, 
+			pr = [
+				'"' + this.name + '"',
+				'z=' + this.zIndex,
+				'e=' + this.elems.length
+			].join(',');
+		return '[LibCanvas(' + pr + ')]';
+	},
+	toString: Function.lambda('[object LibCanvas.Canvas2D]')
 });
 
 /*
@@ -3169,7 +3201,11 @@ LibCanvas.namespace('Shapes').Circle = atom.Class({
 	},
 	getPoints : function () {
 		return { center : this.center };
-	}
+	},
+	dump: function () {
+		return '[shape Circle(center['+this.center.x+', '+this.center.y+'], '+this.radius+')]';
+	},
+	toString: Function.lambda('[object LibCanvas.Shapes.Circle]')
 });
 
 }();
@@ -3872,7 +3908,8 @@ LibCanvas.Context2D = atom.Class({
 	},
 	drawWindow : function () {
 		return this.original('drawWindow', arguments);
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Context2D]')
 	// Such moz* methods wasn't duplicated:
 	// mozTextStyle, mozDrawText, mozMeasureText, mozPathText, mozTextAlongPath
 
@@ -4006,7 +4043,8 @@ var Keyboard = LibCanvas.Keyboard = atom.Class({
 		this.debugTrace = on === false ? null : new LibCanvas.Utils.Trace();
 		this.debugUpdate();
 		return this;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Keyboard]')
 });
 
 Keyboard.extend({ codeNames: Object.invert(Keyboard.keyCodes) });
@@ -4073,7 +4111,8 @@ LibCanvas.Layer = atom.Class({
 
 	start : function () {
 		throw new Error('Start can be called only from master layer');
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Layer]')
 });
 
 };
@@ -4219,7 +4258,8 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 	},
 	height : function () {
 		return this.matrix.length || 0;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Engines.Tile]')
 });
 
 /*
@@ -4625,7 +4665,8 @@ LibCanvas.namespace('Processors').Clearer = atom.Class({
 		this.style ?
 			libcanvas.ctx.fillAll(this.style) :
 			libcanvas.ctx.clearAll();
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Processors.Clearer]')
 	// processCanvas : function (elem) {}
 	// processPixels : function (elem) {}
 });
@@ -4693,7 +4734,8 @@ LibCanvas.namespace('Processors').Color = atom.Class({
 			case 5: return [bri, p, q];
 		}
 		return null;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Processors.Color]')
 });
 
 }();
@@ -4751,7 +4793,8 @@ LibCanvas.namespace('Processors').Grayscale = atom.Class({
 			}
 		}
 		return data;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Processors.Grayscale]')
 });
 
 /*
@@ -4811,7 +4854,8 @@ LibCanvas.namespace('Processors').HsbShift = atom.Class({
 			d[i+2] = rgb[2];
 		}
 		return data;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Processors.HsbShift]')
 });
 
 /*
@@ -4839,7 +4883,8 @@ LibCanvas.namespace('Processors').Invert = atom.Class({
 		var d = data.data, i = 0, l = d.length;
 		for (;i < l; i++) if (i % 4 != 3) d[i] = 255 - d[i];
 		return data;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Processors.Invert]')
 });
 
 /*
@@ -4876,7 +4921,8 @@ LibCanvas.namespace('Processors').Mask = atom.Class({
 			d[i+2] = c[2];
 		}
 		return data;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Processors.Mask]')
 });
 
 /*
@@ -4974,7 +5020,11 @@ LibCanvas.namespace('Shapes').Ellipse = atom.Class({
 	draw : function (ctx, type) {
 		this.processPath(ctx)[type]();
 		return this;
-	}
+	},
+	dump: function () {
+		return this.parent('Ellipse');
+	},
+	toString: Function.lambda('[object LibCanvas.Shapes.Ellipse]')
 });
 
 /*
@@ -5075,7 +5125,11 @@ LibCanvas.namespace('Shapes').Line = atom.Class({
 		ctx.moveTo(this.from).lineTo(this.to);
 		if (!noWrap) ctx.closePath();
 		return ctx;
-	}
+	},
+	dump: function () {
+		return this.parent('Line');
+	},
+	toString: Function.lambda('[object LibCanvas.Shapes.Line]')
 });
 
 };
@@ -5163,7 +5217,8 @@ var Path = LibCanvas.namespace('Shapes').Path = atom.Class({
 			}
 		});
 		return this;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Shapes.Path]')
 });
 
 LibCanvas.namespace('Shapes.Path').Builder = atom.Class({
@@ -5406,6 +5461,10 @@ LibCanvas.namespace('Ui').Shaper = atom.Class({
 		this.shape.radius = value;
 		this.update();
 	},
+	dump: function () {
+		return '[Shaper ' + this.shape.dump() + ']';
+	},
+	toString: Function.lambda('[object LibCanvas.Ui.Shaper]')
 });
 
 };
@@ -5464,7 +5523,8 @@ LibCanvas.namespace('Utils').AudioContainer = atom.Class({
 		this.allAudios.forEach(function (audio) {
 			audio.muted = muted;
 		})
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Utils.AudioContainer]')
 });
 
 /*
@@ -5625,7 +5685,8 @@ LibCanvas.namespace('Utils').AudioElement = atom.Class({
 			}.context(this)
 		});
 		return this;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Utils.AudioElement]')
 });
 
 /*
@@ -5800,7 +5861,8 @@ LibCanvas.namespace('Utils').StopWatch = atom.Class({
 		return (s < 60) ?
 			d2((t / 1000).toFixed(1)) :
 			h + ':' + d2(m) + ':' + d2(s % 60);
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Utils.StopWatch]')
 });
 
 /*
@@ -5859,7 +5921,8 @@ LibCanvas.namespace('Utils').Storage = atom.Class({
 		typeof name == 'object' ?
 			atom.extend(this.store, name) : (this.store[name] = value);
 		return this;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Utils.Storage]')
 });
 
 /*
@@ -5906,7 +5969,8 @@ LibCanvas.namespace('Utils').TimeLogger = atom.Class({
 		this.sw.stop();
 		if (this.time.length > 25) this.time.shift();
 		this.trace.trace(msg + this.time.average().toFixed(2));
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Utils.TimeLogger]')
 });
 
 }();
@@ -5966,7 +6030,8 @@ LibCanvas.namespace('Utils').Translator = atom.Class({
 			}
 		});
 		return this;
-	}
+	},
+	toString: Function.lambda('[object LibCanvas.Utils.Translator]')
 
 });
 
