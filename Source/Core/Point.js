@@ -139,6 +139,9 @@ var Point = LibCanvas.Point = atom.Class({
 	clone : function () {
 		return new Point(this);
 	},
+	dump: function () {
+		return '[Point(' + this.x + '*' + this.y + ')]';
+	},
 	toString: Function.lambda('[object LibCanvas.Point]')
 });
 

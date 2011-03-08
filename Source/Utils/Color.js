@@ -111,6 +111,9 @@ LibCanvas.namespace('Utils').Color = atom.Class({
 		clone.b += math.round(array[2]);
 		return clone;
 	},
+	dump: function () {
+		return '[Color(' + this + ')]';
+	},
 	clone: function () {
 		return new this.self(this.r, this.g, this.b);
 	}

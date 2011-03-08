@@ -160,5 +160,9 @@ LibCanvas.Mouse = atom.Class({
 		this.debugUpdate();
 		return this;
 	},
+	dump: function () {
+		var p = this.point;
+		return '[Mouse(' + p.x + '*' + p.y + ')]';
+	},
 	toString: Function.lambda('[object LibCanvas.Mouse]')
 });

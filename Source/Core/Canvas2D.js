@@ -337,7 +337,7 @@ LibCanvas.Canvas2D = atom.Class({
 				's=' + el.width + '*' + el.height,
 				'e=' this.elems.length
 			].join(',');
-		return '(LibCanvas[' + pr + '])';
+		return '[LibCanvas(' + pr + ')]';
 	},
 	toString: Function.lambda('[object LibCanvas.Canvas2D]')
 });

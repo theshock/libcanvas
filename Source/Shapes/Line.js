@@ -97,6 +97,9 @@ LibCanvas.namespace('Shapes').Line = atom.Class({
 		if (!noWrap) ctx.closePath();
 		return ctx;
 	},
+	dump: function () {
+		return this.parent('Line');
+	},
 	toString: Function.lambda('[object LibCanvas.Shapes.Line]')
 });
 
