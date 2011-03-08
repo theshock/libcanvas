@@ -76,6 +76,8 @@ LibCanvas.Canvas2D = atom.Class({
 
 		this.setOptions(options);
 
+		if (options.update === false) this.updateFrame = false;
+
 		this.origElem = elem;
 		this.origCtx = elem.getContext('2d-libcanvas');
 		var aElem = this.origElem.atom = atom(elem)
