@@ -47,7 +47,7 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 		var matrix = new Array(height);
 		for (var y = height; y--;) matrix[y] = Array.fill(width, fill);
 		this.setMatrix(matrix);
-		return matrix;
+		return this;
 	},
 	setMatrix : function (matrix) {
 		this.first = true;
