@@ -52,6 +52,7 @@ LibCanvas.Canvas2D = atom.Class({
 	},
 
 	options: {
+		name: 'main',
 		autoStart: true,
 		clear: true,
 		backBuffer: 'on',
@@ -81,14 +82,15 @@ LibCanvas.Canvas2D = atom.Class({
 		this.origCtx = elem.getContext('2d-libcanvas');
 		var aElem = this.origElem.atom = atom(elem)
 			.css('position', 'absolute');
-		
+
 		if (this.parentLayer) {
 			aElem.appendTo(this.wrapper);
 		} else {
-			this._layers[this.name = 'main'] = this;
+			var name = this.options.name;
+			this._layers[this.name = name] = this;
 			this.zIndex = Infinity;
 			aElem
-				.attr('data-layer-name', 'main')
+				.attr('data-layer-name', name)
 				.wrap(this.wrapper.css({
 					width : elem.width  + 'px',
 					height: elem.height + 'px'
@@ -104,6 +106,16 @@ LibCanvas.Canvas2D = atom.Class({
 		this.addEvent('ready', function () {
 			this.update.delay(0)
 		});
+	},
+	
+	show: function () {
+		this.origElem.atom.css('display', 'block');
+		return this;
+	},
+	
+	hide: function () {
+		this.origElem.atom.css('display', 'hide');
+		return this;
 	},
 
 	size: function (size, height, wrapper) {
