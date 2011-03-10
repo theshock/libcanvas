@@ -130,7 +130,7 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 			});
 		} else if (typeof fn == 'function') {
 			fn(this.ctx, rect, cell);
-		} else if (fn !== null) {
+		} else if (fn != null) {
 			this.ctx.fill(rect, fn);
 		}
 		return this;
