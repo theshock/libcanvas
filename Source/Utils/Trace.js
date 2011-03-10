@@ -89,6 +89,7 @@ var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
 		return cont.length ? cont :
 			atom().create('div', { 'id' : 'traceContainer'})
 				.css({
+					'zIndex'   : '87223',
 					'position' : 'absolute',
 					'top'      : '3px',
 					'right'    : '6px',
