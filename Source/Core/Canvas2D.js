@@ -88,7 +88,6 @@ LibCanvas.Canvas2D = atom.Class({
 		} else {
 			var name = this.options.name;
 			this._layers[this.name = name] = this;
-			this.zIndex = Infinity;
 			aElem
 				.attr('data-layer-name', name)
 				.wrap(this.wrapper.css({
@@ -106,6 +105,8 @@ LibCanvas.Canvas2D = atom.Class({
 		this.addEvent('ready', function () {
 			this.update.delay(0)
 		});
+		
+		this.zIndex = Infinity;
 	},
 	
 	show: function () {
@@ -139,8 +140,8 @@ LibCanvas.Canvas2D = atom.Class({
 			shift = { top: shift, left: left };
 		}
 		this.origElem.atom.css({
-			'marginTop' : shift.top,
-			'marginLeft': shift.left
+			'margin-top' : shift.top,
+			'margin-left': shift.left
 		});
 		return this;
 	},
@@ -169,9 +170,13 @@ LibCanvas.Canvas2D = atom.Class({
 	}),
 
 	updateFrame : true,
-	update : function () {
+	update : function (cancel) {
 		this.updateFrame = true;
 		return this;
+	},
+	_freezed: false,
+	freeze: function (unfreeze) {
+		this._freezed = !unfreeze;
 	},
 	listenMouse : function (elem) {
 		this._mouse = LibCanvas.isLibCanvas(elem) ? elem.mouse
@@ -303,37 +308,31 @@ LibCanvas.Canvas2D = atom.Class({
 	
 	get maxZIndex () {
 		var top = this.topLayer;
-		return top ? top.zIndex : 0;
+		return top ? top.zIndex : 1;
 	},
 	
 	_zIndex: null,
 	
-	set zIndex (z) {
-		var cur = this._zIndex, layers = this._layers, name;
-		if (z == null || z == Infinity) {
-			z = 1;
-			// ищем самый большой z-index и присваиваем текущему элементу на единицу больше
-			for (name in layers) {
-				var thatZ = layers[name].zIndex;	
-				if (thatZ && thatZ >= z) z = thatZ;
-			}
-			if (cur == null) z++;
+	set zIndex (value) {
+		var set = function (layer, z) {
+			layer._zIndex = z;
+			layer.origElem.atom.css('zIndex', z);
+			layer.showBuffer();
+		};
+		
+		var current = this._zindex;
+		
+		if (value == null) value = Infinity;
+		value = value.limit(1, this.maxZIndex + (current ? 1 : 0));
+		
+		current = current || Infinity;
+		
+		for (var i in this._layers) if (this._layers[i] != this) {
+			var l = this._layers[i], z = l._zIndex;
+			if (current > z && value <= z) set(l, z+1);
+			if (current < z && value >= z) set(l, z-1);
 		}
-		z = z.limit(1, this.maxZIndex + 1);
-		if (cur != null) {
-			for (name in layers) {
-				if (layers[name] != this) {
-					var lz = layers[name].zIndex;
-					if (z < cur) { // zIndex уменьшается
-						if (z <= lz && lz < cur) layers[name]._zIndex++;
-					} else { // zIndex увеличивается
-						if (cur < lz && lz <= z) layers[name]._zIndex--;
-					}
-				}
-			}
-		}
-		this.origElem.atom.css('zIndex', z);
-		this._zIndex = z;
+		set(this, value);
 	},
 	
 	get zIndex () {

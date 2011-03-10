@@ -15,6 +15,7 @@ requires:
 	- Point
 	- Context2D
 	- Shapes.Rectangle
+	- LibCanvas.Behaviours.Drawable
 
 provides: Engines.Tile
 
@@ -22,7 +23,10 @@ provides: Engines.Tile
 */
 
 LibCanvas.namespace('Engines').Tile = atom.Class({
-	Implements: [atom.Class.Events],
+	Implements: [
+		LibCanvas.Behaviors.Drawable,
+		atom.Class.Events
+	],
 	tiles : {},
 	rects : {},
 	first : true,
@@ -31,6 +35,11 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 	cellHeight : 0,
 	margin : 0,
 	initialize : function (canvas) {
+		if (canvas instanceof LibCanvas) {
+			this.libcanvas = canvas;
+			canvas.freeze();
+			canvas = canvas.elem;
+		}
 		this.elem = canvas;
 		this.ctx  = canvas.getContext('2d-libcanvas');
 	},
@@ -80,7 +89,10 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 			}
 		}.context(this));
 		this.first = false;
-		if (changed) this.fireEvent('update');
+		if (changed) {
+			this.fireEvent('update');
+			this.libcanvas && this.libcanvas.showBuffer();
+		}
 		return this;
 	},
 	getRect : function (cell) {
@@ -139,6 +151,9 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 	},
 	height : function () {
 		return this.matrix.length || 0;
+	},
+	draw: function () {
+		this.update();
 	},
 	toString: Function.lambda('[object LibCanvas.Engines.Tile]')
 });

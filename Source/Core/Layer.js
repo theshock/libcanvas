@@ -48,7 +48,7 @@ LibCanvas.Layer = atom.Class({
 	
 	initialize : function (elem, options) {
 		this.parentLayer = elem;
-
+		
 		this.parent(elem.createBuffer(), options);
 	},
 

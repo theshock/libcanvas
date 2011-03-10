@@ -22,13 +22,13 @@ provides: Inner.FrameRenderer
 
 LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 	checkAutoDraw : function () {
-		if (this.updateFrame) {
+		if (!this._freezed && this.updateFrame) {
 			this.updateFrame = false;
 			return true;
 		}
 		return false;
 	},
-	show : function () {
+	showBuffer : function () {
 		if (this.elem != this.origElem) {
 			this.origCtx.clearAll();
 			this.origCtx.drawImage(this.elem);
@@ -75,7 +75,7 @@ LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 				layer.renderProgress();
 			}
 			layer.processing('post');
-			layer.show();
+			layer.showBuffer();
 			return true;
 		}
 		return false;
