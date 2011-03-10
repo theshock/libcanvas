@@ -64,7 +64,7 @@ LibCanvas.Mouse = atom.Class({
 		this.setEvents();
 	},
 	button: function (key) {
-		return this.self.buttons[key];
+		return this.self.buttons[key || 'left'];
 	},
 	setCoords : function (point) {
 		if (point == null) {
