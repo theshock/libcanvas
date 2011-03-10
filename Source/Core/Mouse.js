@@ -20,8 +20,37 @@ provides: Mouse
 ...
 */
 
+
 LibCanvas.Mouse = atom.Class({
 	Implements: [ atom.Class.Events ],
+	
+	Static: {
+		buttons: {
+			left  : false,
+			middle: false,
+			// not supported
+			right : false
+		},
+		listen: function () {
+			var Mouse   = this,
+				buttons = Mouse.buttons,
+				set = function (val, b) {
+					return function (e) {
+						if (b == 'all') {
+							for (var i in buttons) buttons[i] = val
+						} else {
+							b = b || ['left', 'middle'][e.button];
+							if (b) buttons[b] = val;
+						}
+					};
+				};
+			atom().bind({
+				mousedown  : set(true),
+				mouseup    : set(false),
+				blur       : set(false, 'all')
+			});
+		}
+	},
 	
 	initialize : function (libcanvas) {
 		this.inCanvas = false;
@@ -33,6 +62,9 @@ LibCanvas.Mouse = atom.Class({
 		this.events = new LibCanvas.Inner.MouseEvents(this);
 
 		this.setEvents();
+	},
+	button: function (key) {
+		return this.self.buttons[key];
 	},
 	setCoords : function (point) {
 		if (point == null) {
@@ -166,3 +198,5 @@ LibCanvas.Mouse = atom.Class({
 	},
 	toString: Function.lambda('[object LibCanvas.Mouse]')
 });
+
+LibCanvas.Mouse.listen();
