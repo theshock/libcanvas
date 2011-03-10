@@ -40,7 +40,14 @@ LibCanvas.Canvas2D = atom.Class({
 			throw new Error('Keyboard is not listened by libcanvas');
 		},
 		wrapper: function () {
-			return atom().create('div').addClass('libcanvas-layers-container');
+			var wrapper = atom().create('div').css({
+				width   : '100%',
+				height  : '100%',
+				overflow: 'hidden',
+				position: 'absolute'
+			});
+			wrapper.parent = atom().create('div').addClass('libcanvas-layers-container');
+			return wrapper.appendTo(wrapper.parent);
 		},
 		invoker: function () {
 			return new LibCanvas.Invoker({
@@ -83,20 +90,22 @@ LibCanvas.Canvas2D = atom.Class({
 		var aElem = this.origElem.atom = atom(elem)
 			.css('position', 'absolute');
 
+		this.createProjectBuffer().addClearer();
+
 		if (this.parentLayer) {
 			aElem.appendTo(this.wrapper);
 		} else {
-			var name = this.options.name;
-			this._layers[this.name = name] = this;
+			this.name = this.options.name;
+			this._layers[this.name] = this;
 			aElem
-				.attr('data-layer-name', name)
-				.wrap(this.wrapper.css({
-					width : elem.width  + 'px',
-					height: elem.height + 'px'
-				}));
+				.attr('data-layer-name', this.name)
+				.replaceWith(this.wrapper.parent)
+				.appendTo(this.wrapper);
+			
+			if (elem.width && elem.height) {
+				this.size(elem.width, elem.height, true);
+			}
 		}
-
-		this.createProjectBuffer().addClearer();
 
 		this.update = this.update.context(this);
 
@@ -130,7 +139,11 @@ LibCanvas.Canvas2D = atom.Class({
 				this.origElem[i] = size[i];
 			}
 			this.elem[i] = size[i];
-			wrapper && this.wrapper.css(i, size[i] + 'px');
+			
+			if (wrapper) {
+				this.wrapper       .css(i, size[i]);
+				this.wrapper.parent.css(i, size[i]);
+			}
 		}
 		return this;
 	},
