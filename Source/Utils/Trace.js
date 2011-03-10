@@ -22,15 +22,19 @@ new function () {
 
 var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
 	Static: {
-		dumpRec : function (obj, level) {
+		dumpRec : function (obj, level, plain) {
 			level  = parseInt(level) || 0
+			
+			var escape = function (v) {
+				return plain ? v : v.safeHtml();
+			};
 
 			if (level > 5) return '*TOO_DEEP*';
 
 			if (typeof obj == 'object' && typeof(obj.dump) == 'function') return obj.dump();
 
 			var subDump = function (elem, index) {
-					return tabs + '\t' + index + ': ' + this.dumpRec(elem, level+1) + '\n';
+					return tabs + '\t' + index + ': ' + this.dumpRec(elem, level+1, plain) + '\n';
 				}.context(this),
 				type = atom.typeOf(obj),
 				tabs = '\t'.repeat(level);
@@ -54,10 +58,13 @@ var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
 				case 'boolean':
 					return obj ? 'true' : 'false';
 				case 'string':
-					return ('"' + obj + '"').safeHtml();
+					return escape('"' + obj + '"');
 				default:
-					return ('' + obj).safeHtml();
+					return escape('' + obj);
 			}
+		},
+		dumpPlain: function (object) {
+			return (this.dumpRec(object, 0, true));
 		},
 		dump : function (object) {
 			return (this.dumpRec(object, 0));
