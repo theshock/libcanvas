@@ -21,6 +21,48 @@ provides: Utils.Trace
 new function () {
 
 var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
+	Static: {
+		dumpRec : function (obj, level) {
+			level  = parseInt(level) || 0
+
+			if (level > 5) return '*TOO_DEEP*';
+
+			if (typeof obj == 'object' && typeof(obj.dump) == 'function') return obj.dump();
+
+			var subDump = function (elem, index) {
+					return tabs + '\t' + index + ': ' + this.dumpRec(elem, level+1) + '\n';
+				}.context(this),
+				type = atom.typeOf(obj),
+				tabs = '\t'.repeat(level);
+
+			switch (type) {
+				case 'array':
+					return '[\n' + obj.map(subDump).join('') + tabs + ']';
+					break;
+				case 'object':
+					var html = '';
+					for (var index in obj) html += subDump(obj[index], index);
+					return '{\n' + html + tabs + '}';
+				case 'element':
+					var prop = (obj.width && obj.height) ? '('+obj.width+'×'+obj.height+')' : '';
+					return '[DOM ' + obj.tagName.toLowerCase() + prop + ']';
+				case 'textnode':
+				case 'whitespace':
+					return '[DOM ' + type + ']';
+				case 'null':
+					return 'null';
+				case 'boolean':
+					return obj ? 'true' : 'false';
+				case 'string':
+					return ('"' + obj + '"').safeHtml();
+				default:
+					return ('' + obj).safeHtml();
+			}
+		},
+		dump : function (object) {
+			return (this.dumpRec(object, 0));
+		}
+	},
 	initialize : function (object) {
 		if (arguments.length) this.trace(object);
 		this.stopped = false;
@@ -32,7 +74,7 @@ var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
 	},
 	set value (value) {
 		if (!this.stopped && !this.blocked) {
-			var html = this.dump(value)
+			var html = this.self.dump(value)
 				.replaceAll({
 					'\t': '&nbsp;'.repeat(3),
 					'\n': '<br />'
@@ -43,46 +85,6 @@ var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
 	trace : function (value) {
 		this.value = value;
 		return this;
-	},
-	dumpRec : function (obj, level) {
-		level  = parseInt(level) || 0
-			
-		if (level > 5) return '*TOO_DEEP*';
-		
-		if (typeof obj == 'object' && typeof(obj.dump) == 'function') return obj.dump();
-		
-		var subDump = function (elem, index) {
-				return tabs + '\t' + index + ': ' + this.dumpRec(elem, level+1) + '\n';
-			}.context(this),
-		    type = atom.typeOf(obj),
-		    tabs = '\t'.repeat(level);
-		
-		switch (type) {
-			case 'array':
-				return '[\n' + obj.map(subDump).join('') + tabs + ']';
-				break;
-			case 'object':
-				var html = '';
-				for (var index in obj) html += subDump(obj[index], index);
-				return '{\n' + html + tabs + '}';
-			case 'element':
-				var prop = (obj.width && obj.height) ? '('+obj.width+'×'+obj.height+')' : '';
-				return '[DOM ' + obj.tagName.toLowerCase() + prop + ']';
-			case 'textnode':
-			case 'whitespace':
-				return '[DOM ' + type + ']';
-			case 'null':
-				return 'null';
-			case 'boolean':
-				return obj ? 'true' : 'false';
-			case 'string':
-				return ('"' + obj + '"').safeHtml();
-			default:
-				return ('' + obj).safeHtml();
-		}
-	},
-	dump : function (object) {
-		return (this.dumpRec(object, 0));
 	},
 	getContainer : function () {
 		var cont = atom('#traceContainer');
