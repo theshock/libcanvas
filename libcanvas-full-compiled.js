@@ -140,7 +140,7 @@ LibCanvas.Invoker = atom.Class({
 		var i, all = this.time,
 			time   = Math.max(all.average(), this.minDelay);
 		this.timeoutId = this.invoke.delay(time, this);
-
+		
 		var startTime = new Date(),
 			funcs     = this.funcs.sortBy('priority'),
 			ignore    = false,
@@ -1009,8 +1009,37 @@ provides: Mouse
 ...
 */
 
+
 LibCanvas.Mouse = atom.Class({
 	Implements: [ atom.Class.Events ],
+	
+	Static: {
+		buttons: {
+			left  : false,
+			middle: false,
+			// not supported
+			right : false
+		},
+		listen: function () {
+			var Mouse   = this,
+				buttons = Mouse.buttons,
+				set = function (val, b) {
+					return function (e) {
+						if (b == 'all') {
+							for (var i in buttons) buttons[i] = val
+						} else {
+							b = b || ['left', 'middle'][e.button];
+							if (b) buttons[b] = val;
+						}
+					};
+				};
+			atom().bind({
+				mousedown  : set(true),
+				mouseup    : set(false),
+				blur       : set(false, 'all')
+			});
+		}
+	},
 	
 	initialize : function (libcanvas) {
 		this.inCanvas = false;
@@ -1022,6 +1051,9 @@ LibCanvas.Mouse = atom.Class({
 		this.events = new LibCanvas.Inner.MouseEvents(this);
 
 		this.setEvents();
+	},
+	button: function (key) {
+		return this.self.buttons[key || 'left'];
 	},
 	setCoords : function (point) {
 		if (point == null) {
@@ -1155,6 +1187,9 @@ LibCanvas.Mouse = atom.Class({
 	},
 	toString: Function.lambda('[object LibCanvas.Mouse]')
 });
+
+LibCanvas.Mouse.listen();
+
 
 /*
 ---
@@ -1745,6 +1780,55 @@ provides: Utils.Trace
 new function () {
 
 var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
+	Static: {
+		dumpRec : function (obj, level, plain) {
+			level  = parseInt(level) || 0
+			
+			var escape = function (v) {
+				return plain ? v : v.safeHtml();
+			};
+
+			if (level > 5) return '*TOO_DEEP*';
+
+			if (typeof obj == 'object' && typeof(obj.dump) == 'function') return obj.dump();
+
+			var subDump = function (elem, index) {
+					return tabs + '\t' + index + ': ' + this.dumpRec(elem, level+1, plain) + '\n';
+				}.context(this),
+				type = atom.typeOf(obj),
+				tabs = '\t'.repeat(level);
+
+			switch (type) {
+				case 'array':
+					return '[\n' + obj.map(subDump).join('') + tabs + ']';
+					break;
+				case 'object':
+					var html = '';
+					for (var index in obj) html += subDump(obj[index], index);
+					return '{\n' + html + tabs + '}';
+				case 'element':
+					var prop = (obj.width && obj.height) ? '('+obj.width+'×'+obj.height+')' : '';
+					return '[DOM ' + obj.tagName.toLowerCase() + prop + ']';
+				case 'textnode':
+				case 'whitespace':
+					return '[DOM ' + type + ']';
+				case 'null':
+					return 'null';
+				case 'boolean':
+					return obj ? 'true' : 'false';
+				case 'string':
+					return escape('"' + obj + '"');
+				default:
+					return escape('' + obj);
+			}
+		},
+		dumpPlain: function (object) {
+			return (this.dumpRec(object, 0, true));
+		},
+		dump : function (object) {
+			return (this.dumpRec(object, 0));
+		}
+	},
 	initialize : function (object) {
 		if (arguments.length) this.trace(object);
 		this.stopped = false;
@@ -1756,7 +1840,7 @@ var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
 	},
 	set value (value) {
 		if (!this.stopped && !this.blocked) {
-			var html = this.dump(value)
+			var html = this.self.dump(value)
 				.replaceAll({
 					'\t': '&nbsp;'.repeat(3),
 					'\n': '<br />'
@@ -1768,51 +1852,12 @@ var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
 		this.value = value;
 		return this;
 	},
-	dumpRec : function (obj, level) {
-		level  = parseInt(level) || 0
-			
-		if (level > 5) return '*TOO_DEEP*';
-		
-		if (typeof obj == 'object' && typeof(obj.dump) == 'function') return obj.dump();
-		
-		var subDump = function (elem, index) {
-				return tabs + '\t' + index + ': ' + this.dumpRec(elem, level+1) + '\n';
-			}.context(this),
-		    type = atom.typeOf(obj),
-		    tabs = '\t'.repeat(level);
-		
-		switch (type) {
-			case 'array':
-				return '[\n' + obj.map(subDump).join('') + tabs + ']';
-				break;
-			case 'object':
-				var html = '';
-				for (var index in obj) html += subDump(obj[index], index);
-				return '{\n' + html + tabs + '}';
-			case 'element':
-				var prop = (obj.width && obj.height) ? '('+obj.width+'×'+obj.height+')' : '';
-				return '[DOM ' + obj.tagName.toLowerCase() + prop + ']';
-			case 'textnode':
-			case 'whitespace':
-				return '[DOM ' + type + ']';
-			case 'null':
-				return 'null';
-			case 'boolean':
-				return obj ? 'true' : 'false';
-			case 'string':
-				return ('"' + obj + '"').safeHtml();
-			default:
-				return ('' + obj).safeHtml();
-		}
-	},
-	dump : function (object) {
-		return (this.dumpRec(object, 0));
-	},
 	getContainer : function () {
 		var cont = atom('#traceContainer');
 		return cont.length ? cont :
 			atom().create('div', { 'id' : 'traceContainer'})
 				.css({
+					'zIndex'   : '87223',
 					'position' : 'absolute',
 					'top'      : '3px',
 					'right'    : '6px',
@@ -1919,13 +1964,13 @@ provides: Inner.FrameRenderer
 
 LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 	checkAutoDraw : function () {
-		if (this.updateFrame) {
+		if (!this._freezed && this.updateFrame) {
 			this.updateFrame = false;
 			return true;
 		}
 		return false;
 	},
-	show : function () {
+	showBuffer : function () {
 		if (this.elem != this.origElem) {
 			this.origCtx.clearAll();
 			this.origCtx.drawImage(this.elem);
@@ -1972,7 +2017,7 @@ LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
 				layer.renderProgress();
 			}
 			layer.processing('post');
-			layer.show();
+			layer.showBuffer();
 			return true;
 		}
 		return false;
@@ -2804,7 +2849,14 @@ LibCanvas.Canvas2D = atom.Class({
 			throw new Error('Keyboard is not listened by libcanvas');
 		},
 		wrapper: function () {
-			return atom().create('div').addClass('libcanvas-layers-container');
+			var wrapper = atom().create('div').css({
+				width   : '100%',
+				height  : '100%',
+				overflow: 'hidden',
+				position: 'absolute'
+			});
+			wrapper.parent = atom().create('div').addClass('libcanvas-layers-container');
+			return wrapper.appendTo(wrapper.parent);
 		},
 		invoker: function () {
 			return new LibCanvas.Invoker({
@@ -2816,6 +2868,7 @@ LibCanvas.Canvas2D = atom.Class({
 	},
 
 	options: {
+		name: 'main',
 		autoStart: true,
 		clear: true,
 		backBuffer: 'on',
@@ -2845,21 +2898,23 @@ LibCanvas.Canvas2D = atom.Class({
 		this.origCtx = elem.getContext('2d-libcanvas');
 		var aElem = this.origElem.atom = atom(elem)
 			.css('position', 'absolute');
-		
+
+		this.createProjectBuffer().addClearer();
+
 		if (this.parentLayer) {
 			aElem.appendTo(this.wrapper);
 		} else {
-			this._layers[this.name = 'main'] = this;
-			this.zIndex = Infinity;
+			this.name = this.options.name;
+			this._layers[this.name] = this;
 			aElem
-				.attr('data-layer-name', 'main')
-				.wrap(this.wrapper.css({
-					width : elem.width  + 'px',
-					height: elem.height + 'px'
-				}));
+				.attr('data-layer-name', this.name)
+				.replaceWith(this.wrapper.parent)
+				.appendTo(this.wrapper);
+			
+			if (elem.width && elem.height) {
+				this.size(elem.width, elem.height, true);
+			}
 		}
-
-		this.createProjectBuffer().addClearer();
 
 		this.update = this.update.context(this);
 
@@ -2868,6 +2923,18 @@ LibCanvas.Canvas2D = atom.Class({
 		this.addEvent('ready', function () {
 			this.update.delay(0)
 		});
+		
+		this.zIndex = Infinity;
+	},
+	
+	show: function () {
+		this.origElem.atom.css('display', 'block');
+		return this;
+	},
+	
+	hide: function () {
+		this.origElem.atom.css('display', 'hide');
+		return this;
 	},
 
 	size: function (size, height, wrapper) {
@@ -2881,7 +2948,11 @@ LibCanvas.Canvas2D = atom.Class({
 				this.origElem[i] = size[i];
 			}
 			this.elem[i] = size[i];
-			wrapper && this.wrapper.css(i, size[i] + 'px');
+			
+			if (wrapper) {
+				this.wrapper       .css(i, size[i]);
+				this.wrapper.parent.css(i, size[i]);
+			}
 		}
 		return this;
 	},
@@ -2891,8 +2962,8 @@ LibCanvas.Canvas2D = atom.Class({
 			shift = { top: shift, left: left };
 		}
 		this.origElem.atom.css({
-			'marginTop' : shift.top,
-			'marginLeft': shift.left
+			'margin-top' : shift.top,
+			'margin-left': shift.left
 		});
 		return this;
 	},
@@ -2921,9 +2992,13 @@ LibCanvas.Canvas2D = atom.Class({
 	}),
 
 	updateFrame : true,
-	update : function () {
+	update : function (cancel) {
 		this.updateFrame = true;
 		return this;
+	},
+	_freezed: false,
+	freeze: function (unfreeze) {
+		this._freezed = !unfreeze;
 	},
 	listenMouse : function (elem) {
 		this._mouse = LibCanvas.isLibCanvas(elem) ? elem.mouse
@@ -3055,37 +3130,31 @@ LibCanvas.Canvas2D = atom.Class({
 	
 	get maxZIndex () {
 		var top = this.topLayer;
-		return top ? top.zIndex : 0;
+		return top ? top.zIndex : 1;
 	},
 	
 	_zIndex: null,
 	
-	set zIndex (z) {
-		var cur = this._zIndex, layers = this._layers, name;
-		if (z == null || z == Infinity) {
-			z = 1;
-			// ищем самый большой z-index и присваиваем текущему элементу на единицу больше
-			for (name in layers) {
-				var thatZ = layers[name].zIndex;	
-				if (thatZ && thatZ >= z) z = thatZ;
-			}
-			if (cur == null) z++;
+	set zIndex (value) {
+		var set = function (layer, z) {
+			layer._zIndex = z;
+			layer.origElem.atom.css('zIndex', z);
+			layer.showBuffer();
+		};
+		
+		var current = this._zindex;
+		
+		if (value == null) value = Infinity;
+		value = value.limit(1, this.maxZIndex + (current ? 1 : 0));
+		
+		current = current || Infinity;
+		
+		for (var i in this._layers) if (this._layers[i] != this) {
+			var l = this._layers[i], z = l._zIndex;
+			if (current > z && value <= z) set(l, z+1);
+			if (current < z && value >= z) set(l, z-1);
 		}
-		z = z.limit(1, this.maxZIndex + 1);
-		if (cur != null) {
-			for (name in layers) {
-				if (layers[name] != this) {
-					var lz = layers[name].zIndex;
-					if (z < cur) { // zIndex уменьшается
-						if (z <= lz && lz < cur) layers[name]._zIndex++;
-					} else { // zIndex увеличивается
-						if (cur < lz && lz <= z) layers[name]._zIndex--;
-					}
-				}
-			}
-		}
-		this.origElem.atom.css('zIndex', z);
-		this._zIndex = z;
+		set(this, value);
 	},
 	
 	get zIndex () {
@@ -4105,7 +4174,7 @@ LibCanvas.Layer = atom.Class({
 	
 	initialize : function (elem, options) {
 		this.parentLayer = elem;
-
+		
 		this.parent(elem.createBuffer(), options);
 	},
 
@@ -4137,6 +4206,7 @@ requires:
 	- Point
 	- Context2D
 	- Shapes.Rectangle
+	- LibCanvas.Behaviours.Drawable
 
 provides: Engines.Tile
 
@@ -4144,7 +4214,10 @@ provides: Engines.Tile
 */
 
 LibCanvas.namespace('Engines').Tile = atom.Class({
-	Implements: [atom.Class.Events],
+	Implements: [
+		LibCanvas.Behaviors.Drawable,
+		atom.Class.Events
+	],
 	tiles : {},
 	rects : {},
 	first : true,
@@ -4153,6 +4226,11 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 	cellHeight : 0,
 	margin : 0,
 	initialize : function (canvas) {
+		if (canvas instanceof LibCanvas) {
+			this.libcanvas = canvas;
+			canvas.freeze();
+			canvas = canvas.elem;
+		}
 		this.elem = canvas;
 		this.ctx  = canvas.getContext('2d-libcanvas');
 	},
@@ -4169,7 +4247,7 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 		var matrix = new Array(height);
 		for (var y = height; y--;) matrix[y] = Array.fill(width, fill);
 		this.setMatrix(matrix);
-		return matrix;
+		return this;
 	},
 	setMatrix : function (matrix) {
 		this.first = true;
@@ -4202,7 +4280,10 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 			}
 		}.context(this));
 		this.first = false;
-		if (changed) this.fireEvent('update');
+		if (changed) {
+			this.fireEvent('update');
+			this.libcanvas && this.libcanvas.showBuffer();
+		}
 		return this;
 	},
 	getRect : function (cell) {
@@ -4240,7 +4321,7 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 			});
 		} else if (typeof fn == 'function') {
 			fn(this.ctx, rect, cell);
-		} else if (fn !== null) {
+		} else if (fn != null) {
 			this.ctx.fill(rect, fn);
 		}
 		return this;
@@ -4261,6 +4342,9 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 	},
 	height : function () {
 		return this.matrix.length || 0;
+	},
+	draw: function () {
+		this.update();
 	},
 	toString: Function.lambda('[object LibCanvas.Engines.Tile]')
 });
