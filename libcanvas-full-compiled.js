@@ -2158,7 +2158,7 @@ LibCanvas.Shape = atom.Class({
 		return this.move({ x : 0, y : y - this.y });
 	},
 	getCenter : function () {
-		return new Point(
+		return new LibCanvas.Point(
 			(this.from.x + this.to.x) / 2,
 			(this.from.y + this.to.y) / 2
 		);
