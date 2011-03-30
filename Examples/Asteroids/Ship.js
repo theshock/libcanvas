@@ -217,7 +217,7 @@ Asteroids.Ship = atom.Class({
 		'backLeft'  : { x:  30, y:  10 },
 		'backRight' : { x:  30, y: -10 },
 		'turnLeft'  : { x: -10, y:  30 },
-		'turnRight' : { x: -10, y: -30 },
+		'turnRight' : { x: -10, y: -30 }
 	},
 	getEnginePosition : function (type) {
 		return this.position.clone()
