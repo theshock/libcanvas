@@ -1388,7 +1388,7 @@ var start = function () {
 	return 'remove';
 };
 var stop = function () {
-	this.libcanvas.addElement(this);
+	this.libcanvas.rmElement(this);
 	return 'remove';
 };
 
@@ -1397,13 +1397,13 @@ LibCanvas.namespace('Behaviors').Drawable = atom.Class({
 	libcanvasIsReady: false,
 	setLibcanvas : function (libcanvas) {
 		if (this.libcanvas) {
-			this.libcanvas.rmElement(this)
+			this.libcanvas.rmElement(this);
 			this.libcanvas = libcanvas;
 		} else {
 			this.libcanvas = libcanvas;
 			this.addEvent('libcanvasReady', function () {
 				this.libcanvasIsReady = true;
-			})
+			});
 			this.readyEvent('libcanvasSet');
 			this.libcanvas.addEvent('ready', this.readyEvent.context(this, ['libcanvasReady']));
 		}
