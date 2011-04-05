@@ -55,7 +55,7 @@ LibCanvas.namespace('Utils').ImagePreloader = atom.Class({
 	},
 	createImage : function (src, key) {
 		this.number++;
-		return this.images[key] = atom()
+		return this.images[key] = atom.dom()
 			.create('img', { src : src })
 			.bind({
 				load  : this.createEvent('loaded'),

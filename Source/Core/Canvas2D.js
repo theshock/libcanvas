@@ -40,13 +40,13 @@ LibCanvas.Canvas2D = atom.Class({
 			throw new Error('Keyboard is not listened by libcanvas');
 		},
 		wrapper: function () {
-			var wrapper = atom().create('div').css({
+			var wrapper = atom.dom().create('div').css({
 				width   : '100%',
 				height  : '100%',
 				overflow: 'hidden',
 				position: 'absolute'
 			});
-			wrapper.parent = atom().create('div').addClass('libcanvas-layers-container');
+			wrapper.parent = atom.dom().create('div').addClass('libcanvas-layers-container');
 			return wrapper.appendTo(wrapper.parent);
 		},
 		invoker: function () {
@@ -80,15 +80,14 @@ LibCanvas.Canvas2D = atom.Class({
 	name: null,
 
 	initialize : function (elem, options) {
-		if (typeof elem == 'string') elem = atom(elem);
-		if (atom.isAtom(elem)) elem = elem.get();
+		var aElem = atom.dom(elem);
+		elem = aElem.first;
 
 		this.setOptions(options);
 
 		this.origElem = elem;
-		this.origCtx = elem.getContext('2d-libcanvas');
-		var aElem = this.origElem.atom = atom(elem)
-			.css('position', 'absolute');
+		this.origCtx  = elem.getContext('2d-libcanvas');
+		this.origElem.atom = aElem.css('position', 'absolute');
 
 		this.createProjectBuffer().addClearer();
 

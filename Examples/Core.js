@@ -32,7 +32,7 @@ LibCanvas.Examples = {
 		return name in this.registry;
 	},
 	start: function () {
-		atom('canvas').each(function (canvas) {
+		atom.dom('canvas').each(function (canvas) {
 			var app = canvas.getAttribute('data-app'),
 				arg = canvas.getAttribute('data-arg');
 
@@ -53,14 +53,14 @@ LibCanvas.Examples = {
 			links.push('<li><a href="?app=' + name + '">' + name +'</a></li>');
 		}
 
-		atom().create('div')
+		atom.dom().create('div')
 			.html('<ul>' + links.join('\n') + '</ul>')
 			.appendTo('body');
 
 		return this;
 	},
 	autoStart: function () {
-		atom(function () {
+		atom.dom(function () {
 			this.start().showLinks();
 		}.context(this));
 		return this;

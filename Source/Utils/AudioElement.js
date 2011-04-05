@@ -135,7 +135,7 @@ LibCanvas.namespace('Utils').AudioElement = atom.Class({
 		} else {
 			if (!this.loopBinded) {
 				this.event('ended', this.playNext.context(this) ).gatling(2);
-				atom(window).bind('unload', this.pause.context(this));
+				atom.dom(window).bind('unload', this.pause.context(this));
 				this.loopBinded = true;
 			}
 			this.stop().playNext();

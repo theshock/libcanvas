@@ -119,7 +119,7 @@ LibCanvas.Canvas2D
 
 #### Пример:
 
-	atom('#update-button').bind({
+	atom.dom('#update-button').bind({
 		'click' : libcanvas.update
 	});
 

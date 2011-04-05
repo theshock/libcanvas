@@ -44,7 +44,7 @@ LibCanvas.Mouse = atom.Class({
 						}
 					};
 				};
-			atom().bind({
+			atom.dom().bind({
 				mousedown  : set(true),
 				mouseup    : set(false),
 				blur       : set(false, 'all')
@@ -142,7 +142,7 @@ LibCanvas.Mouse = atom.Class({
 			};
 		};
 		
-		atom(mouse.elem).bind({
+		atom.dom(mouse.elem).bind({
 			/* bug in Linux Google Chrome
 			 * if moving mouse while some text is selected
 			 * mouse becomes disable.

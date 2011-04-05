@@ -36,7 +36,7 @@ var LibCanvas = global.LibCanvas = atom.Class({
 				width   = width.width
 			}
 			
-			var canvas = atom()
+			var canvas = atom.dom()
 				.create("canvas", {
 					width  : width,
 					height : height
@@ -83,7 +83,7 @@ var LibCanvas = global.LibCanvas = atom.Class({
 	}
 });
 
-atom(function () {
+atom.dom(function () {
 	LibCanvas.invoker.invoke();
 });
 

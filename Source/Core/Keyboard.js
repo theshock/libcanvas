@@ -74,7 +74,7 @@ var Keyboard = LibCanvas.Keyboard = atom.Class({
 		this.libcanvas      = libcanvas;
 		this.preventDefault = preventDefault;
 		
-		atom(window).bind({
+		atom.dom(window).bind({
 			keydown:  this.keyEvent('down'),
 			keyup:    this.keyEvent('up'),
 			keypress: this.keyEvent('press')

@@ -36,7 +36,7 @@ var LibCanvas = global.LibCanvas = atom.Class({
 				width   = width.width
 			}
 			
-			var canvas = atom()
+			var canvas = atom.dom()
 				.create("canvas", {
 					width  : width,
 					height : height
@@ -83,7 +83,7 @@ var LibCanvas = global.LibCanvas = atom.Class({
 	}
 });
 
-atom(function () {
+atom.dom(function () {
 	LibCanvas.invoker.invoke();
 });
 
@@ -504,7 +504,7 @@ LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 		args = atom.extend({
 			fn    : 'linear',
 			params: [],
-			time  : 500,
+			time  : 500
 		}, args);
 
 		if (!Array.isArray(args.fn)) {
@@ -1033,7 +1033,7 @@ LibCanvas.Mouse = atom.Class({
 						}
 					};
 				};
-			atom().bind({
+			atom.dom().bind({
 				mousedown  : set(true),
 				mouseup    : set(false),
 				blur       : set(false, 'all')
@@ -1131,7 +1131,7 @@ LibCanvas.Mouse = atom.Class({
 			};
 		};
 		
-		atom(mouse.elem).bind({
+		atom.dom(mouse.elem).bind({
 			/* bug in Linux Google Chrome
 			 * if moving mouse while some text is selected
 			 * mouse becomes disable.
@@ -1853,9 +1853,9 @@ var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
 		return this;
 	},
 	getContainer : function () {
-		var cont = atom('#traceContainer');
+		var cont = atom.dom('#traceContainer');
 		return cont.length ? cont :
-			atom().create('div', { 'id' : 'traceContainer'})
+			atom.dom().create('div', { 'id' : 'traceContainer'})
 				.css({
 					'zIndex'   : '87223',
 					'position' : 'absolute',
@@ -1904,7 +1904,7 @@ var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
 			return this.node;
 		}
 
-		this.node = atom()
+		this.node = atom.dom()
 			.create('div')
 			.css({
 				background : '#000',
@@ -2407,7 +2407,7 @@ LibCanvas.namespace('Utils').ImagePreloader = atom.Class({
 	},
 	createImage : function (src, key) {
 		this.number++;
-		return this.images[key] = atom()
+		return this.images[key] = atom.dom()
 			.create('img', { src : src })
 			.bind({
 				load  : this.createEvent('loaded'),
@@ -2849,13 +2849,13 @@ LibCanvas.Canvas2D = atom.Class({
 			throw new Error('Keyboard is not listened by libcanvas');
 		},
 		wrapper: function () {
-			var wrapper = atom().create('div').css({
+			var wrapper = atom.dom().create('div').css({
 				width   : '100%',
 				height  : '100%',
 				overflow: 'hidden',
 				position: 'absolute'
 			});
-			wrapper.parent = atom().create('div').addClass('libcanvas-layers-container');
+			wrapper.parent = atom.dom().create('div').addClass('libcanvas-layers-container');
 			return wrapper.appendTo(wrapper.parent);
 		},
 		invoker: function () {
@@ -2889,15 +2889,14 @@ LibCanvas.Canvas2D = atom.Class({
 	name: null,
 
 	initialize : function (elem, options) {
-		if (typeof elem == 'string') elem = atom(elem);
-		if (atom.isAtom(elem)) elem = elem.get();
+		var aElem = atom.dom(elem);
+		elem = aElem.first;
 
 		this.setOptions(options);
 
 		this.origElem = elem;
-		this.origCtx = elem.getContext('2d-libcanvas');
-		var aElem = this.origElem.atom = atom(elem)
-			.css('position', 'absolute');
+		this.origCtx  = elem.getContext('2d-libcanvas');
+		this.origElem.atom = aElem.css('position', 'absolute');
 
 		this.createProjectBuffer().addClearer();
 
@@ -4071,7 +4070,7 @@ var Keyboard = LibCanvas.Keyboard = atom.Class({
 		this.libcanvas      = libcanvas;
 		this.preventDefault = preventDefault;
 		
-		atom(window).bind({
+		atom.dom(window).bind({
 			keydown:  this.keyEvent('down'),
 			keyup:    this.keyEvent('up'),
 			keypress: this.keyEvent('press')
@@ -5751,7 +5750,7 @@ LibCanvas.namespace('Utils').AudioElement = atom.Class({
 		} else {
 			if (!this.loopBinded) {
 				this.event('ended', this.playNext.context(this) ).gatling(2);
-				atom(window).bind('unload', this.pause.context(this));
+				atom.dom(window).bind('unload', this.pause.context(this));
 				this.loopBinded = true;
 			}
 			this.stop().playNext();

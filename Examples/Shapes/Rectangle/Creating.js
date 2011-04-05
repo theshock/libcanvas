@@ -19,7 +19,7 @@ provides: Shapes.Rectangle.Creating
 */
 
 LibCanvas.Examples.set('Shapes.Rectangle.Creating', function (canvas) {
-	atom(canvas).css('background', 'url(/files/bg.jpg)');
+	atom.dom(canvas).css('background', 'url(/files/bg.jpg)');
 
 	var LC = LibCanvas.extract({});
 
