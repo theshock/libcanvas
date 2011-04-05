@@ -123,7 +123,7 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 		var rect = this.getRect(cell), fn = this.tiles[cell.t];
 		if (!fn && fn !== 0 && 'default' in this.tiles) fn = this.tiles['default'];
 		this.ctx.clearRect(rect);
-		if (atom.isDomElement(fn)) {
+		if (atom.dom.isElement(fn)) {
 			this.ctx.drawImage({
 				image : fn,
 				draw  : rect
