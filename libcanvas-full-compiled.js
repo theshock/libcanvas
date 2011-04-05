@@ -83,7 +83,7 @@ var LibCanvas = global.LibCanvas = atom.Class({
 	}
 });
 
-atom.dom(function () {
+atom.dom && atom.dom(function () {
 	LibCanvas.invoker.invoke();
 });
 
@@ -122,10 +122,10 @@ LibCanvas.Invoker = atom.Class({
 		defaultPriority: 1
 	},
 	initialize: function (options) {
+		this.funcs = [];
+		this.time  = [0];
 		this.setOptions(options);
 	},
-	funcs: [],
-	time : [0],
 	execTime: function (fn, context, args) {
 		fn.apply(context, args || []);
 		return ;
@@ -482,14 +482,14 @@ LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 	Implements: [LibCanvas.Invoker.AutoChoose],
 
 	initialize: atom.Class.hiddenMethod(function (element) {
-		this.animate.element = element;
-		this.animate.func    = atom.typeOf(element) == 'function';
+		this['animate.element'] = element;
+		this['animate.func']    = atom.typeOf(element) == 'function';
 	}),
 
-	animatedProperties : {},
-
 	animate : function (key, value) {
-		var args, elem = this.animate.element || this, isFn = !!this.animate.func;
+		if (!this['animate.properties']) this['animate.properties'] = {};
+
+		var args, elem = this['animate.element'] || this, isFn = !!this['animate.func'];
 
 		if (typeof key == 'string' && arguments.length == 2) {
 			args = {};
@@ -516,7 +516,7 @@ LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 		var timeLeft = args.time,
 			diff     = {},
 			start    = {},
-			inAction = this.animatedProperties,
+			inAction = this['animate.properties'],
 			invoker  = this.invoker;
 
 		var animation = {
@@ -900,10 +900,11 @@ provides: Inner.MouseEvents
 */
 
 LibCanvas.namespace('Inner').MouseEvents = atom.Class({
-	subscribers : [],
-	lastMouseMove : [],
-	lastMouseDown : [],
 	initialize : function (mouse) {
+		this.subscribers   = [];
+		this.lastMouseMove = [];
+		this.lastMouseDown = [];
+
 		this.mouse = mouse;
 		this.point = mouse.point;
 	},
@@ -1626,7 +1627,10 @@ provides: Animation
 
 LibCanvas.Animation = atom.Class({
 	Implements: [atom.Class.Events],
-	sprites : {},
+	sprites : null,
+	initialize: function () {
+		this.sprites = {};
+	},
 	addSprite : function (index, sprite) {
 		this.sprites[index] = sprite;
 		return this;
@@ -1782,7 +1786,7 @@ new function () {
 var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
 	Static: {
 		dumpRec : function (obj, level, plain) {
-			level  = parseInt(level) || 0
+			level  = parseInt(level) || 0;
 			
 			var escape = function (v) {
 				return plain ? v : v.safeHtml();
@@ -2373,15 +2377,15 @@ provides: Utils.ImagePreloader
 
 LibCanvas.namespace('Utils').ImagePreloader = atom.Class({
 	Implements: [atom.Class.Events],
-	count : {
-		errors : 0,
-		aborts : 0,
-		loaded : 0
-	},
-	images : {},
 	processed : 0,
 	number: 0,
 	initialize: function (images) {
+		this.count = {
+			errors : 0,
+			aborts : 0,
+			loaded : 0
+		};
+		this.images = {};
 		this.createImages(images);
 	},
 	onProcessed : function (type) {
@@ -2475,7 +2479,10 @@ var Point = LibCanvas.Point;
 
 LibCanvas.namespace('Shapes').Polygon = atom.Class({
 	Extends: LibCanvas.Shape,
-	points: [],
+	initialize: function () {
+		this.points = [];
+		this.parent.apply(this, arguments);
+	},
 	set : function () {
 		this.points.empty().append(
 			Array.pickFrom(arguments)
@@ -2867,14 +2874,6 @@ LibCanvas.Canvas2D = atom.Class({
 		}
 	},
 
-	options: {
-		name: 'main',
-		autoStart: true,
-		clear: true,
-		backBuffer: 'on',
-		fps: 30
-	},
-
 	// @deprecated
 	set fps (value) {
 		this.options.fps = value;
@@ -2882,17 +2881,28 @@ LibCanvas.Canvas2D = atom.Class({
 	get fps () {
 		return this.options.fps;
 	},
-	// @deprecated
-	set autoUpdate (value) { },
-	get autoUpdate () { return true; },
-	interval   : null,
+	interval: null,
 	name: null,
 
 	initialize : function (elem, options) {
+		this._layers = {};
+		this.funcs = {
+			plain : [],
+			render: []
+		};
+		this.elems = [];
+				
+
 		var aElem = atom.dom(elem);
 		elem = aElem.first;
 
-		this.setOptions(options);
+		this.setOptions({
+			name: 'main',
+			autoStart: true,
+			clear: true,
+			backBuffer: 'on',
+			fps: 30
+		}, options);
 
 		this.origElem = elem;
 		this.origCtx  = elem.getContext('2d-libcanvas');
@@ -2991,7 +3001,7 @@ LibCanvas.Canvas2D = atom.Class({
 	}),
 
 	updateFrame : true,
-	update : function (cancel) {
+	update : function () {
 		this.updateFrame = true;
 		return this;
 	},
@@ -3025,21 +3035,24 @@ LibCanvas.Canvas2D = atom.Class({
 	},
 
 	// post-/pre- procesing
-	processors : { pre: [], post: [] },
 	addProcessor : function (type, processor) {
+		if (!this.processors) {
+			this.processors = { pre: [], post: [] };
+		}
 		this.processors[type].push(processor);
 		return this;
 	},
 	rmProcessor : function (type, processor) {
-		this.processors[type].erase(processor);
+		if (this.processors) {
+			this.processors[type].erase(processor);
+		}
 		return this;
 	},
 
 	// Element : add, rm
-	elems : [],
 	addElement : function (elem) {
 		this.elems.include(elem);
-		elem.setLibcanvas(this)
+		elem.setLibcanvas(this);
 		return this;
 	},
 	rmElement : function (elem) {
@@ -3049,10 +3062,6 @@ LibCanvas.Canvas2D = atom.Class({
 
 	// Each frame funcs
 
-	funcs : {
-		plain : [],
-		render: []
-	},
 	addFunc: function (priority, fn, isRender) {
 		if (fn == null) {
 			fn = priority;
@@ -3091,7 +3100,6 @@ LibCanvas.Canvas2D = atom.Class({
 		return this;
 	},
 
-	_layers: {},
 	parentLayer: null,
 	layer: function (name) {
 		if (!name) {
@@ -4177,8 +4185,8 @@ LibCanvas.Layer = atom.Class({
 		this.parent(elem.createBuffer(), options);
 	},
 
-	listenMouse : callParent('listenMouse'),
-	listenKeyboard :  callParent('listenKeyboard'),
+	listenMouse    : callParent('listenMouse'),
+	listenKeyboard : callParent('listenKeyboard'),
 
 	start : function () {
 		throw new Error('Start can be called only from master layer');
@@ -4217,14 +4225,15 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 		LibCanvas.Behaviors.Drawable,
 		atom.Class.Events
 	],
-	tiles : {},
-	rects : {},
 	first : true,
 
 	cellWidth  : 0,
 	cellHeight : 0,
 	margin : 0,
 	initialize : function (canvas) {
+		this.tiles = {};
+		this.rects = {};
+
 		if (canvas instanceof LibCanvas) {
 			this.libcanvas = canvas;
 			canvas.freeze();
@@ -5309,7 +5318,10 @@ var Path = LibCanvas.namespace('Shapes').Path = atom.Class({
 
 LibCanvas.namespace('Shapes.Path').Builder = atom.Class({
 	Extends: LibCanvas.Shape,
-	parts : [],
+	initialize: function () {
+		this.parts = [];
+		this.parent.apply(this, arguments);
+	},
 	changed : true,
 	add : function (method, args) {
 		this.changed = true;
@@ -5468,7 +5480,6 @@ LibCanvas.namespace('Ui').Shaper = atom.Class({
 		Beh.Moveable
 	],
 
-	options : {},
 	initialize : function (libcanvas, options) {
 		this.update = libcanvas.update;
 
@@ -5578,6 +5589,7 @@ provides: Utils.AudioContainer
 LibCanvas.namespace('Utils').AudioContainer = atom.Class({
 	support : false,
 	initialize: function (files) {
+		this.allAudios = [];
 		this.checkSupport();
 		var audio = {};
 		for (var i in files) {
@@ -5604,7 +5616,6 @@ LibCanvas.namespace('Utils').AudioContainer = atom.Class({
 	get : function (index) {
 		return this.audio[index];
 	},
-	allAudios : [],
 	mute : function (muted) {
 		this.allAudios.forEach(function (audio) {
 			audio.muted = muted;
@@ -5639,6 +5650,7 @@ LibCanvas.namespace('Utils').AudioElement = atom.Class({
 	Implements: [LibCanvas.Behaviors.Animatable],
 	stub   : true,
 	initialize : function (container, file) {
+		this.events = [];
 		if (container.support) {
 			this.stub = false;
 			this.container = container;
@@ -5708,7 +5720,6 @@ LibCanvas.namespace('Utils').AudioElement = atom.Class({
 		}
 		return this;
 	},
-	events : [],
 	event : function (event, fn) {
 		if (this.stub) return this;
 		this.events.push([event, fn]);
@@ -6037,11 +6048,11 @@ new function () {
 var Utils = LibCanvas.Utils;
 
 LibCanvas.namespace('Utils').TimeLogger = atom.Class({
-	time : [],
 	last : 10,
 	sw   : null,
 	trace: null,
 	initialize : function (last) {
+		this.time = [];
 		if (last) this.last = last;
 		this.sw    = new Utils.StopWatch();
 		this.trace = new Utils.Trace();
@@ -6088,9 +6099,9 @@ var Point = LibCanvas.Point;
 
 LibCanvas.namespace('Utils').Translator = atom.Class({
 	initialize : function (rectTo) {
+		this.shapes = [];
 		this.rectTo = rectTo;
 	},
-	shapes : [],
 	add : function (shape) {
 		shape.translated = shape.clone();
 		this.shapes.include(shape);
