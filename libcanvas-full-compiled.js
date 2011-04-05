@@ -504,7 +504,7 @@ LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 		args = atom.extend({
 			fn    : 'linear',
 			params: [],
-			time  : 500
+			time  : 500,
 		}, args);
 
 		if (!Array.isArray(args.fn)) {
