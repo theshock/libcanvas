@@ -58,14 +58,6 @@ LibCanvas.Canvas2D = atom.Class({
 		}
 	},
 
-	options: {
-		name: 'main',
-		autoStart: true,
-		clear: true,
-		backBuffer: 'on',
-		fps: 30
-	},
-
 	// @deprecated
 	set fps (value) {
 		this.options.fps = value;
@@ -73,17 +65,28 @@ LibCanvas.Canvas2D = atom.Class({
 	get fps () {
 		return this.options.fps;
 	},
-	// @deprecated
-	set autoUpdate (value) { },
-	get autoUpdate () { return true; },
-	interval   : null,
+	interval: null,
 	name: null,
 
 	initialize : function (elem, options) {
+		this._layers = {};
+		this.funcs = {
+			plain : [],
+			render: []
+		};
+		this.elems = [];
+				
+
 		var aElem = atom.dom(elem);
 		elem = aElem.first;
 
-		this.setOptions(options);
+		this.setOptions({
+			name: 'main',
+			autoStart: true,
+			clear: true,
+			backBuffer: 'on',
+			fps: 30
+		}, options);
 
 		this.origElem = elem;
 		this.origCtx  = elem.getContext('2d-libcanvas');
@@ -182,7 +185,7 @@ LibCanvas.Canvas2D = atom.Class({
 	}),
 
 	updateFrame : true,
-	update : function (cancel) {
+	update : function () {
 		this.updateFrame = true;
 		return this;
 	},
@@ -216,21 +219,24 @@ LibCanvas.Canvas2D = atom.Class({
 	},
 
 	// post-/pre- procesing
-	processors : { pre: [], post: [] },
 	addProcessor : function (type, processor) {
+		if (!this.processors) {
+			this.processors = { pre: [], post: [] };
+		}
 		this.processors[type].push(processor);
 		return this;
 	},
 	rmProcessor : function (type, processor) {
-		this.processors[type].erase(processor);
+		if (this.processors) {
+			this.processors[type].erase(processor);
+		}
 		return this;
 	},
 
 	// Element : add, rm
-	elems : [],
 	addElement : function (elem) {
 		this.elems.include(elem);
-		elem.setLibcanvas(this)
+		elem.setLibcanvas(this);
 		return this;
 	},
 	rmElement : function (elem) {
@@ -240,10 +246,6 @@ LibCanvas.Canvas2D = atom.Class({
 
 	// Each frame funcs
 
-	funcs : {
-		plain : [],
-		render: []
-	},
 	addFunc: function (priority, fn, isRender) {
 		if (fn == null) {
 			fn = priority;
@@ -282,7 +284,6 @@ LibCanvas.Canvas2D = atom.Class({
 		return this;
 	},
 
-	_layers: {},
 	parentLayer: null,
 	layer: function (name) {
 		if (!name) {

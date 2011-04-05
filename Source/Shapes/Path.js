@@ -86,7 +86,10 @@ var Path = LibCanvas.namespace('Shapes').Path = atom.Class({
 
 LibCanvas.namespace('Shapes.Path').Builder = atom.Class({
 	Extends: LibCanvas.Shape,
-	parts : [],
+	initialize: function () {
+		this.parts = [];
+		this.parent.apply(this, arguments);
+	},
 	changed : true,
 	add : function (method, args) {
 		this.changed = true;

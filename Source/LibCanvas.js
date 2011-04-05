@@ -83,7 +83,7 @@ var LibCanvas = global.LibCanvas = atom.Class({
 	}
 });
 
-atom.dom(function () {
+atom.dom && atom.dom(function () {
 	LibCanvas.invoker.invoke();
 });
 

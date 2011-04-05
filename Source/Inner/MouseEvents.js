@@ -20,10 +20,11 @@ provides: Inner.MouseEvents
 */
 
 LibCanvas.namespace('Inner').MouseEvents = atom.Class({
-	subscribers : [],
-	lastMouseMove : [],
-	lastMouseDown : [],
 	initialize : function (mouse) {
+		this.subscribers   = [];
+		this.lastMouseMove = [];
+		this.lastMouseDown = [];
+
 		this.mouse = mouse;
 		this.point = mouse.point;
 	},

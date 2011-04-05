@@ -52,8 +52,8 @@ LibCanvas.Layer = atom.Class({
 		this.parent(elem.createBuffer(), options);
 	},
 
-	listenMouse : callParent('listenMouse'),
-	listenKeyboard :  callParent('listenKeyboard'),
+	listenMouse    : callParent('listenMouse'),
+	listenKeyboard : callParent('listenKeyboard'),
 
 	start : function () {
 		throw new Error('Start can be called only from master layer');

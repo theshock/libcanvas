@@ -30,10 +30,10 @@ LibCanvas.Invoker = atom.Class({
 		defaultPriority: 1
 	},
 	initialize: function (options) {
+		this.funcs = [];
+		this.time  = [0];
 		this.setOptions(options);
 	},
-	funcs: [],
-	time : [0],
 	execTime: function (fn, context, args) {
 		fn.apply(context, args || []);
 		return ;

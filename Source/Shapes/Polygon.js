@@ -45,7 +45,10 @@ var Point = LibCanvas.Point;
 
 LibCanvas.namespace('Shapes').Polygon = atom.Class({
 	Extends: LibCanvas.Shape,
-	points: [],
+	initialize: function () {
+		this.points = [];
+		this.parent.apply(this, arguments);
+	},
 	set : function () {
 		this.points.empty().append(
 			Array.pickFrom(arguments)

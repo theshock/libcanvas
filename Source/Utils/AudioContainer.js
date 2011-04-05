@@ -21,6 +21,7 @@ provides: Utils.AudioContainer
 LibCanvas.namespace('Utils').AudioContainer = atom.Class({
 	support : false,
 	initialize: function (files) {
+		this.allAudios = [];
 		this.checkSupport();
 		var audio = {};
 		for (var i in files) {
@@ -47,7 +48,6 @@ LibCanvas.namespace('Utils').AudioContainer = atom.Class({
 	get : function (index) {
 		return this.audio[index];
 	},
-	allAudios : [],
 	mute : function (muted) {
 		this.allAudios.forEach(function (audio) {
 			audio.muted = muted;

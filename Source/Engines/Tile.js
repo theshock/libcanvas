@@ -27,14 +27,15 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 		LibCanvas.Behaviors.Drawable,
 		atom.Class.Events
 	],
-	tiles : {},
-	rects : {},
 	first : true,
 
 	cellWidth  : 0,
 	cellHeight : 0,
 	margin : 0,
 	initialize : function (canvas) {
+		this.tiles = {};
+		this.rects = {};
+
 		if (canvas instanceof LibCanvas) {
 			this.libcanvas = canvas;
 			canvas.freeze();

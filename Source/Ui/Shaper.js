@@ -44,7 +44,6 @@ LibCanvas.namespace('Ui').Shaper = atom.Class({
 		Beh.Moveable
 	],
 
-	options : {},
 	initialize : function (libcanvas, options) {
 		this.update = libcanvas.update;
 

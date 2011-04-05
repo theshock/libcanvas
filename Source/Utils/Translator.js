@@ -25,9 +25,9 @@ var Point = LibCanvas.Point;
 
 LibCanvas.namespace('Utils').Translator = atom.Class({
 	initialize : function (rectTo) {
+		this.shapes = [];
 		this.rectTo = rectTo;
 	},
-	shapes : [],
 	add : function (shape) {
 		shape.translated = shape.clone();
 		this.shapes.include(shape);

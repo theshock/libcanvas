@@ -24,6 +24,7 @@ LibCanvas.namespace('Utils').AudioElement = atom.Class({
 	Implements: [LibCanvas.Behaviors.Animatable],
 	stub   : true,
 	initialize : function (container, file) {
+		this.events = [];
 		if (container.support) {
 			this.stub = false;
 			this.container = container;
@@ -93,7 +94,6 @@ LibCanvas.namespace('Utils').AudioElement = atom.Class({
 		}
 		return this;
 	},
-	events : [],
 	event : function (event, fn) {
 		if (this.stub) return this;
 		this.events.push([event, fn]);

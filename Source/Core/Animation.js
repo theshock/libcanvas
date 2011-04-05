@@ -20,7 +20,10 @@ provides: Animation
 
 LibCanvas.Animation = atom.Class({
 	Implements: [atom.Class.Events],
-	sprites : {},
+	sprites : null,
+	initialize: function () {
+		this.sprites = {};
+	},
 	addSprite : function (index, sprite) {
 		this.sprites[index] = sprite;
 		return this;

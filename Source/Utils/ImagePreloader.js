@@ -21,15 +21,15 @@ provides: Utils.ImagePreloader
 
 LibCanvas.namespace('Utils').ImagePreloader = atom.Class({
 	Implements: [atom.Class.Events],
-	count : {
-		errors : 0,
-		aborts : 0,
-		loaded : 0
-	},
-	images : {},
 	processed : 0,
 	number: 0,
 	initialize: function (images) {
+		this.count = {
+			errors : 0,
+			aborts : 0,
+			loaded : 0
+		};
+		this.images = {};
 		this.createImages(images);
 	},
 	onProcessed : function (type) {

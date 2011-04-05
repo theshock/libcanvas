@@ -23,7 +23,7 @@ new function () {
 var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
 	Static: {
 		dumpRec : function (obj, level, plain) {
-			level  = parseInt(level) || 0
+			level  = parseInt(level) || 0;
 			
 			var escape = function (v) {
 				return plain ? v : v.safeHtml();

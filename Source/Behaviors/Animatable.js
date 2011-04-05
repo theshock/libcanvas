@@ -30,14 +30,14 @@ LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 	Implements: [LibCanvas.Invoker.AutoChoose],
 
 	initialize: atom.Class.hiddenMethod(function (element) {
-		this.animate.element = element;
-		this.animate.func    = atom.typeOf(element) == 'function';
+		this['animate.element'] = element;
+		this['animate.func']    = atom.typeOf(element) == 'function';
 	}),
 
-	animatedProperties : {},
-
 	animate : function (key, value) {
-		var args, elem = this.animate.element || this, isFn = !!this.animate.func;
+		if (!this['animate.properties']) this['animate.properties'] = {};
+
+		var args, elem = this['animate.element'] || this, isFn = !!this['animate.func'];
 
 		if (typeof key == 'string' && arguments.length == 2) {
 			args = {};
@@ -64,7 +64,7 @@ LibCanvas.namespace('Behaviors').Animatable = atom.Class({
 		var timeLeft = args.time,
 			diff     = {},
 			start    = {},
-			inAction = this.animatedProperties,
+			inAction = this['animate.properties'],
 			invoker  = this.invoker;
 
 		var animation = {
