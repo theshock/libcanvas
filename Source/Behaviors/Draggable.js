@@ -49,7 +49,7 @@ var moveListener = function () {
 var initDraggable = function () {
 	var dragFn = moveListener.context(this);
 
-	this.listenMouse();
+	this.libcanvas.listenMouse();
 
 	var startDrag = ['mousedown'];
 	var dragging  = ['mousemove', 'away:mousemove'];
