@@ -1,35 +1,22 @@
 #!/usr/bin/env php
 <?php
 
-$name = 'LibCanvas';
-$path = '/Source';
+require dirname(__FILE__) . '/builder.php';
 
 $stderr = fopen('php://stderr', 'w');
-
 array_shift($argv);
 
-require dirname(__FILE__) . '/Packager/packager.php';
-
-$package = dirname(__FILE__) . $path;
-
-$pkg = new Packager($package);
-
-$files = (empty($argv)) ? $pkg->get_all_files() : $pkg->components_to_files($argv);
-
-$files = $pkg->complete_files($files);
+$builder = new LibCanvasBuilder($argv);
 
 fwrite($stderr, "/**\n");
-fwrite($stderr, " * $name\n * \n");
+fwrite($stderr, " * " . LibCanvasBuilder::NAME . "\n * \n");
 fwrite($stderr, " * Included Components:\n");
-foreach ($files as $file){
+foreach ($builder->getProcessedFiles() as $file){
 	fwrite($stderr, " *   $file\n");
 }
 fwrite($stderr, " */\n\n");
 
-$output = $pkg->build($files, array(), array(), array());
-
-echo $output;
+echo $builder->getResult();
 
 fclose($stderr);
 
-?> 
