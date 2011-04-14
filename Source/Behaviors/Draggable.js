@@ -22,6 +22,8 @@ provides: Behaviors.Draggable
 new function () {
 
 LibCanvas.namespace('Behaviors').Draggable = atom.Class({
+    Extends: LibCanvas.Behaviors.MouseListener,
+
 	isDraggable : null,
 	dragStart : null,
 	returnToStart : function (speed) {
@@ -49,7 +51,7 @@ var moveListener = function () {
 var initDraggable = function () {
 	var dragFn = moveListener.context(this);
 
-	this.libcanvas.listenMouse();
+	this.listenMouse();
 
 	var startDrag = ['mousedown'];
 	var dragging  = ['mousemove', 'away:mousemove'];
