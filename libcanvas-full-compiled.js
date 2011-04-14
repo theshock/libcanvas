@@ -1310,6 +1310,8 @@ provides: Behaviors.Draggable
 new function () {
 
 LibCanvas.namespace('Behaviors').Draggable = atom.Class({
+	Extends: LibCanvas.Behaviors.MouseListener,
+
 	isDraggable : null,
 	dragStart : null,
 	returnToStart : function (speed) {
@@ -6133,4 +6135,3 @@ LibCanvas.namespace('Utils').Translator = atom.Class({
 });
 
 }();
- 
