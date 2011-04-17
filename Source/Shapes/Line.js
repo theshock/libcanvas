@@ -46,8 +46,8 @@ LibCanvas.namespace('Shapes').Line = atom.Class({
 			fy = this.from.y,
 			tx = this.to.x,
 			ty = this.to.y,
-			px = this.point.x,
-			py = this.point.y;
+			px = point.x,
+			py = point.y;
 
 		if (!( px.between(min(fx, tx), max(fx, tx))
 		    && py.between(min(fy, ty), max(fy, ty))
