@@ -81,12 +81,12 @@ LibCanvas.Context2D = atom.Class({
 		}
 	},
 	get width () { return this.canvas.width; },
-	get height() { return this.canvas.height; }
-	,
+	get height() { return this.canvas.height; },
+	
 	get fillStyle    () { return this.ctx2d.fillStyle; },
 	get font         () { return this.ctx2d.font; },
 	get globalAlpha  () { return this.ctx2d.globalAlpha; },
-	get globalCompositeOperation() { return this.ctx2d.fillStyle; },
+	get globalCompositeOperation() { return this.ctx2d.globalCompositeOperation; },
 	get lineCap      () { return this.ctx2d.lineCap; },
 	get lineJoin     () { return this.ctx2d.lineJoin; },
 	get lineWidth    () { return this.ctx2d.lineWidth; },
