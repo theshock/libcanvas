@@ -65,77 +65,8 @@ var office = {
 	originalPoint : function (func, args) {
 		var point = Point.from(args);
 		return this.original(func, [point.x, point.y]);
-	},
-	createImageCacheData : function (a) {
-		var draw = Rectangle.from(a.draw);
-		var crop = a.crop ? Rectangle.from(a.crop) : null;
-		return {
-			src : a.image.getAttribute('src') || '',
-			image : a.image,
-			crop : crop ? {
-				x : crop.from.x,
-				y : crop.from.y,
-				w : crop.getWidth(),
-				h : crop.getHeight()
-			} : null,
-			draw : {
-				x : 0,
-				y : 0,
-				w : draw.getWidth(),
-				h : draw.getHeight()
-			}
-		};
-	},
-	getImageCache : function (data) {
-		var src = imageCache[data.src];
-		if (src) for (var i = src.length; i--;) {
-			if (Array.deepEquals(src[i].data, data)) {
-				return src[i].cache;
-			}
-		}
-		return false;
-	},
-	putImageCache : function (data, cache) {
-		data = office.createImageCacheData(data);
-		var src = imageCache[data.src];
-		if (!src) src = imageCache[data.src] = [];
-		src.push({
-			data  : data,
-			cache : cache
-		});
-	},
-	getRotatedImageCache : function (data, length) {
-		var index = data.angle
-			.normalizeAngle()
-			.getDegree()
-			.toFixed(length);
-		var cache = rotatedImageCache[index];
-		if (cache) {
-			for (var i = cache.length; i--;) {
-				if (cache[i].image == data.image) {
-					return cache[i].cache;
-				}
-			}
-		}
-		return null;
-	},
-	putRotatedImageCache : function (data, cache, length) {
-		var index = data.angle
-			.normalizeAngle()
-			.getDegree()
-			.toFixed(length);
-		if (!rotatedImageCache[index]) {
-			rotatedImageCache[index] = [];
-		}
-		rotatedImageCache[index].push({
-			image : data.image,
-			cache : cache
-		});
 	}
 };
-
-var rotatedImageCache = {};
-var imageCache = {};
 
 var canvasProperties = ['width', 'height'].toKeys();
 
@@ -149,15 +80,11 @@ LibCanvas.Context2D = atom.Class({
 			this.ctx2d  = canvas.getOriginalContext('2d');
 		}
 	},
-	get width() {
-		return this.canvas.width;
-	},
-	get height() {
-		return this.canvas.height;
-	},
+	get width () { return this.canvas.width; },
+	get height() { return this.canvas.height; },
 
 	_fullRect: null,
-	getFullRectangle : function () {
+	get rectangle () {
 		var fr = this._fullRect;
 		if(!fr) {
 			this._fullRect = fr = new Rectangle(0, 0, this.width, this.height)
@@ -167,9 +94,13 @@ LibCanvas.Context2D = atom.Class({
 		}
 		return fr;
 	},
-	original : function (method, args) {
+	getFullRectangle : function () {
+		return this.rectangle;
+	},
+	original : function (method, args, returnResult) {
 		try {
-			this.ctx2d[method].apply(this.ctx2d, args || []);
+			var result = this.ctx2d[method].apply(this.ctx2d, args || []);
+			if (returnResult) return result;
 		} catch (e) {
 			atom.log('Error in context2d.original(', method, ',', (args || []), ')');
 			throw e;
@@ -178,7 +109,7 @@ LibCanvas.Context2D = atom.Class({
 	},
 	getClone : function (width, height) {
 		width  = width  || canvas.width;
-		height = height || canvas.height
+		height = height || canvas.height;
 		var canvas = this.canvas, clone  = LibCanvas.Buffer(width, height);
 		var ctx = clone.getContext('2d');
 		!arguments.length ? ctx.drawImage(canvas, 0, 0) :
@@ -308,8 +239,6 @@ LibCanvas.Context2D = atom.Class({
 				points: [a.p]
 			});
 		}
-		// @todo Beauty arguments
-		return this.original('quadraticCurveTo', arguments);
 	},
 	bezierCurveTo : function () {
 		var a = arguments;
@@ -324,12 +253,8 @@ LibCanvas.Context2D = atom.Class({
 		}
 	},
 	isPointInPath : function (x, y) {
-		if (arguments.length == 2) {
-			return this.ctx2d.isPointInPath(x, y);
-		} else {
-			var point = Point.from(x);
-			return this.ctx2d.isPointInPath(point.x, point.y);
-		}		
+		var point = PointFrom(arguments);
+		return this.original('isPointInPath', [point.x, point.y], true);
 	},
 	clip : function (shape) {
 		if (shape && atom.typeOf(shape.processPath) == 'function') {
@@ -342,7 +267,7 @@ LibCanvas.Context2D = atom.Class({
 	rotate : function (angle, pivot) {
 		if (angle) {
 			if (pivot) this.translate(pivot);
-			this.ctx2d.rotate(angle);
+			this.original('rotate', [angle]);
 			if (pivot) this.translate(pivot, true);
 		}
 		return this;
@@ -353,7 +278,7 @@ LibCanvas.Context2D = atom.Class({
 				? point : arguments
 		);
 		var multi = reverse === true ? -1 : 1;
-		this.ctx2d.translate(point.x * multi, point.y * multi);
+		this.original('translate', [point.x * multi, point.y * multi]);
 		return this;
 	},
 	scale : function () {
@@ -381,15 +306,13 @@ LibCanvas.Context2D = atom.Class({
 
 	// text
 	fillText : function (text, x, y, maxWidth) {
-		// @todo Beauty arguments
 		return this.original('fillText', arguments);
 	},
 	strokeText : function (text, x, y, maxWidth) {
-		// @todo Beauty arguments
 		return this.original('strokeText', arguments);
 	},
 	measureText : function (textToMeasure) {
-		return this.ctx2d.measureText.apply(this.ctx2d, arguments);
+		return this.original('measureText', arguments, true);
 	},
 	text : function (cfg) {
 		if (!this.ctx2d.fillText) return this;
@@ -484,61 +407,6 @@ LibCanvas.Context2D = atom.Class({
 		return this.original('createImageData', arguments);
 	},
 
-	// @deprecated
-	cachedDrawImage : function (a) {
-		if (!a.image || !a.draw) {
-			return this.drawImage.apply(this, arguments);
-		}
-		var data = office.createImageCacheData(a);
-		var cache = office.getImageCache(data);
-		if (!cache) {
-			// cache object
-			cache = LibCanvas.Buffer(data.draw.w, data.draw.h);
-			cache.getContext('2d-libcanvas')
-				.drawImage(data);
-			office.putImageCache(data, cache);
-		}
-		var draw = Rectangle.from(a.draw);
-		var result = {
-			image : cache,
-			from  : draw.from
-		};
-		return this.drawImage(result);
-	},
-	// @deprecated
-	rotatedImage : function (data, cacheLength) {
-		var cacheEnabled = cacheLength !== false;
-		cacheLength = (cacheLength * 1) || 0;
-		if (!(data.angle.normalizeAngle().getDegree(3) % 360)) {
-			return this.drawImage(data);
-		}
-		var cache = cacheEnabled && office.getRotatedImageCache(data, cacheLength);
-		if (!cache) {
-			var diagonal = Math.hypotenuse(data.image.width, data.image.height);
-			cache = LibCanvas.Buffer(diagonal, diagonal);
-			cache.getContext('2d-libcanvas')
-				.translate(diagonal/2, diagonal/2)
-				.rotate(data.angle)
-				.drawImage(data.image, -data.image.width/2, -data.image.height/2);
-			cacheEnabled && office.putRotatedImageCache(data, cache, cacheLength);
-		}
-		var from;
-		if (data.center) {
-			from = Point.from(data.center).clone().move({
-				x : -cache.width /2,
-				y : -cache.height/2
-			});
-		} else {
-			from = Point.from(data.from).clone().move({
-				x : from.x - (cache.width  - data.image.width )/2,
-				y : from.y - (cache.height - data.image.height)/2
-			});
-		}
-		return this.drawImage({
-			image : cache,
-			from  : from
-		});
-	},
 	drawImage : function (a) {
 		if (arguments.length > 1) return this.original('drawImage', arguments);
 		if (atom.typeOf(a) == 'element') return this.original('drawImage', [a, 0, 0]);
@@ -609,7 +477,8 @@ LibCanvas.Context2D = atom.Class({
 	},
 	getImageData : function (rectangle) {
 		var rect = office.makeRect.call(this, arguments);
-		return this.ctx2d.getImageData(rect.from.x, rect.from.y, rect.getWidth(), rect.getHeight());
+
+		return this.original('getImageData', [rect.from.x, rect.from.y, rect.width, rect.height], true);
 	},
 	getPixels : function (rectangle) {
 		var rect = office.makeRect.call(this, arguments);
@@ -632,13 +501,13 @@ LibCanvas.Context2D = atom.Class({
 	},
 	// this function is only dublicated as original. maybe, i will change them,
 	createLinearGradient : function () {
-		return this.ctx2d.createLinearGradient.apply(this.ctx2d, arguments);
+		return this.original('createLinearGradient', arguments, true);
 	},
 	createRadialGradient : function () {
-		return this.ctx2d.createRadialGradient.apply(this.ctx2d, arguments);
+		return this.original('createRadialGradient', arguments, true);
 	},
 	createPattern : function () {
-		return this.ctx2d.createPattern.apply(this.ctx2d, arguments);
+		return this.original('createPattern', arguments, true);
 	},
 	drawWindow : function () {
 		return this.original('drawWindow', arguments);
