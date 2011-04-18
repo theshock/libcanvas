@@ -81,7 +81,23 @@ LibCanvas.Context2D = atom.Class({
 		}
 	},
 	get width () { return this.canvas.width; },
-	get height() { return this.canvas.height; },
+	get height() { return this.canvas.height; }
+	,
+	get fillStyle    () { return this.ctx2d.fillStyle; },
+	get font         () { return this.ctx2d.font; },
+	get globalAlpha  () { return this.ctx2d.globalAlpha; },
+	get globalCompositeOperation() { return this.ctx2d.fillStyle; },
+	get lineCap      () { return this.ctx2d.lineCap; },
+	get lineJoin     () { return this.ctx2d.lineJoin; },
+	get lineWidth    () { return this.ctx2d.lineWidth; },
+	get miterLimit   () { return this.ctx2d.miterLimit; },
+	get shadowBlur   () { return this.ctx2d.shadowBlur; },
+	get shadowColor  () { return this.ctx2d.shadowColor; },
+	get shadowOffsetX() { return this.ctx2d.shadowOffsetX; },
+	get shadowOffsetY() { return this.ctx2d.shadowOffsetY; },
+	get strokeStyle  () { return this.ctx2d.strokeStyle; },
+	get textAlign    () { return this.ctx2d.textAlign; },
+	get textBaseline () { return this.ctx2d.textBaseline; },
 
 	_rectangle: null,
 	get rectangle () {
@@ -111,7 +127,7 @@ LibCanvas.Context2D = atom.Class({
 		width  = width  || canvas.width;
 		height = height || canvas.height;
 		var canvas = this.canvas, clone  = LibCanvas.Buffer(width, height);
-		var ctx = clone.getContext('2d');
+		var ctx = clone.getContext('2d-libcanvas');
 		!arguments.length ? ctx.drawImage(canvas, 0, 0) :
 			ctx.drawImage(canvas, 0, 0, width, height);
 		return clone;
