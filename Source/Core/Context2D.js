@@ -85,14 +85,14 @@ LibCanvas.Context2D = atom.Class({
 
 	_rectangle: null,
 	get rectangle () {
-		var fr = this._rectangle;
-		if (!fr) {
-			this._rectangle = fr = new Rectangle(0, 0, this.width, this.height)
+		var rect = this._rectangle;
+		if (!rect) {
+			this._rectangle = rect = new Rectangle(0, 0, this.width, this.height)
 		} else {
-			if (fr.width  != this.width ) fr.width  = this.width;
-			if (fr.height != this.height) fr.height = this.height;
+			if (rect.width  != this.width ) rect.width  = this.width;
+			if (rect.height != this.height) rect.height = this.height;
 		}
-		return fr;
+		return rect;
 	},
 	getFullRectangle : function () {
 		return this.rectangle;
