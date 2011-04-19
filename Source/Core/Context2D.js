@@ -68,9 +68,28 @@ var office = {
 	}
 };
 
-var canvasProperties = ['width', 'height'].toKeys();
-
+var accessors = {};
+[ 'fillStyle','font','globalAlpha','globalCompositeOperation','lineCap',
+  'lineJoin','lineWidth','miterLimit','shadowOffsetX','shadowOffsetY',
+  'shadowBlur','shadowColor','strokeStyle','textAlign','textBaseline'
+].forEach(function (property) {
+	atom.accessors.set(accessors, property, {
+		set: function (value) {
+			try {
+				this.ctx2d[property] = value;
+			} catch (e) {
+				throw TypeError('Exception while setting «' + property + '» to «' + value + '»: ' + e.message);
+			}
+		},
+		get: function () {
+			return this.ctx2d[property];
+		}
+	})
+});
+	
 LibCanvas.Context2D = atom.Class({
+	Implements: [atom.Class(accessors)],
+
 	initialize : function (canvas) {
 		if (canvas instanceof CanvasRenderingContext2D) {
 			this.ctx2d  = canvas;
@@ -82,22 +101,8 @@ LibCanvas.Context2D = atom.Class({
 	},
 	get width () { return this.canvas.width; },
 	get height() { return this.canvas.height; },
-	
-	get fillStyle    () { return this.ctx2d.fillStyle; },
-	get font         () { return this.ctx2d.font; },
-	get globalAlpha  () { return this.ctx2d.globalAlpha; },
-	get globalCompositeOperation() { return this.ctx2d.globalCompositeOperation; },
-	get lineCap      () { return this.ctx2d.lineCap; },
-	get lineJoin     () { return this.ctx2d.lineJoin; },
-	get lineWidth    () { return this.ctx2d.lineWidth; },
-	get miterLimit   () { return this.ctx2d.miterLimit; },
-	get shadowBlur   () { return this.ctx2d.shadowBlur; },
-	get shadowColor  () { return this.ctx2d.shadowColor; },
-	get shadowOffsetX() { return this.ctx2d.shadowOffsetX; },
-	get shadowOffsetY() { return this.ctx2d.shadowOffsetY; },
-	get strokeStyle  () { return this.ctx2d.strokeStyle; },
-	get textAlign    () { return this.ctx2d.textAlign; },
-	get textBaseline () { return this.ctx2d.textBaseline; },
+	set width (width)  { this.canvas.width  = width; },
+	set height(height) { this.canvas.height = height;},
 
 	_rectangle: null,
 	get rectangle () {
@@ -124,32 +129,27 @@ LibCanvas.Context2D = atom.Class({
 		return this;
 	},
 	getClone : function (width, height) {
+		var resize = !!(width || height), canvas = this.canvas;
 		width  = width  || canvas.width;
 		height = height || canvas.height;
-		var canvas = this.canvas, clone  = LibCanvas.Buffer(width, height);
-		var ctx = clone.getContext('2d-libcanvas');
-		!arguments.length ? ctx.drawImage(canvas, 0, 0) :
-			ctx.drawImage(canvas, 0, 0, width, height);
+
+		var args = [canvas, 0, 0];
+		if (resize) args.push(width, height);
+
+		var clone = LibCanvas.Buffer(width, height, true);
+		clone.ctx.original('drawImage', args);
 		return clone;
 	},
 
 	// Values
 	set : function (name, value) {
 		if (typeof name == 'object') {
-			for (var i in name) this.set(i, name[i]);
-			return this;
-		}
-		var object = (name in canvasProperties) ?
-			'canvas' : 'ctx2d';
-		try {
-			this[object][name] = value;
-		} catch (e) {
-			throw TypeError('Exception while setting «' + name + '» to «' + value + '»: ' + e.message);
-		}
+			for (var i in name) this.name = value;
+		} else this[name] = value;
 		return this;
 	},
 	get : function (name) {
-		return this.ctx2d[name];
+		return this[name];
 	},
 
 	// All
