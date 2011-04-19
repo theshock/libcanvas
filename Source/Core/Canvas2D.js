@@ -203,7 +203,7 @@ LibCanvas.Canvas2D = atom.Class({
 	},
 	listenKeyboard : function (elem) {
 		this._keyboard = LibCanvas.isLibCanvas(elem) ? elem.keyboard
-			: new LibCanvas.Keyboard(this, /* preventDefault */elem);
+			: new LibCanvas.Keyboard(/* preventDefault */elem);
 		return this;
 	},
 	createBuffer : function (width, height) {

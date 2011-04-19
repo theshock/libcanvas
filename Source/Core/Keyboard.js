@@ -70,8 +70,7 @@ var Keyboard = LibCanvas.Keyboard = atom.Class({
 			return this[typeof code == 'number' ? 'codeNames' : 'keyCodes'][code] || null;
 		}
 	},
-	initialize : function (libcanvas, preventDefault) {
-		this.libcanvas      = libcanvas;
+	initialize : function (preventDefault) {
 		this.preventDefault = preventDefault;
 		
 		atom.dom(window).bind({
