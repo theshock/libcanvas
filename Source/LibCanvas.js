@@ -72,10 +72,10 @@ var LibCanvas = global.LibCanvas = atom.Class({
 
 		_invoker: null,
 		get invoker () {
-			if (this._invoker == null) {
-				this._invoker = new LibCanvas.Invoker().invoke();
-			}
-			return this._invoker;
+			//if (this._invoker == null) {
+			//	this._invoker = new LibCanvas.Invoker().invoke();
+			//}
+			//return this._invoker;
 		}
 	},
 	initialize: function() {
@@ -84,7 +84,7 @@ var LibCanvas = global.LibCanvas = atom.Class({
 });
 
 atom.dom && atom.dom(function () {
-	LibCanvas.invoker.invoke();
+// LibCanvas.invoker.invoke();
 });
 
 
