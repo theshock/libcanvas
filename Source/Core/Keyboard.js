@@ -114,7 +114,7 @@ var Keyboard = LibCanvas.Keyboard = atom.Class({
 		return this;
 	}),
 	debug : function (on) {
-		this.debugTrace = on === false ? null : new LibCanvas.Utils.Trace();
+		this._debugTrace = on === false ? null : new LibCanvas.Utils.Trace();
 		this.debugUpdate();
 		return this;
 	},
