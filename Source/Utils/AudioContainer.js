@@ -33,7 +33,7 @@ LibCanvas.namespace('Utils').AudioContainer = atom.Class({
 		var elem = document.createElement('audio');
 		if (elem.canPlayType) {
 			var cpt = elem.canPlayType.context(elem);
-			this.support = atom.extend(new Boolean(true), {
+			this.support = {
 				// codecs
 				ogg : cpt('audio/ogg; codecs="vorbis"'),
 				mp3 : cpt('audio/mpeg;'),
@@ -41,7 +41,7 @@ LibCanvas.namespace('Utils').AudioContainer = atom.Class({
 				m4a : cpt('audio/x-m4a;') || cpt('audio/aac;'),
 				// diff
 				loop : 'loop' in elem
-			});
+			};
 		}
 		return this;
 	},

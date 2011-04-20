@@ -88,6 +88,7 @@ LibCanvas.namespace('Utils').AudioElement = atom.Class({
 	},
 	restart: function (elem) {
 		elem = elem || this.getCurrent();
+		// #todo: fix error if audio system not enabled
 		elem.currentTime = 0.025;
 		if (elem.ended || elem.paused) {
 			elem.play();
