@@ -79,7 +79,7 @@ var Keyboard = LibCanvas.Keyboard = atom.Class({
 			keypress: this.keyEvent('press')
 		});
 	},
-	keyEvent: atom.Class.protectedMethod(function (event) {
+	keyEvent: function (event) {
 		return function (e) {
 			var key = this.self.key(e);
 			if (event != 'press') {
@@ -94,16 +94,16 @@ var Keyboard = LibCanvas.Keyboard = atom.Class({
 			this.debugUpdate();
 			return !prevent;
 		}.context(this);
-	}),
-	prevent : atom.Class.protectedMethod(function (key) {
+	},
+	prevent : function (key) {
 		var pD = this.preventDefault;
 		return pD && (!Array.isArray(pD) || pD.contains(key));
-	}),
+	},
 	keyState : function (keyName) {
 		return this.self.keyState(keyName);
 	},
 	_debugTrace: null,
-	debugUpdate: atom.Class.protectedMethod(function () {
+	debugUpdate: function () {
 		if (this._debugTrace) {
 			var keys = '', states = this.self.keyStates;
 			for (var key in states) if (states[key]) {
@@ -112,7 +112,7 @@ var Keyboard = LibCanvas.Keyboard = atom.Class({
 			this._debugTrace.trace( 'Keyboard:' + keys );
 		}
 		return this;
-	}),
+	},
 	debug : function (on) {
 		this._debugTrace = on === false ? null : new LibCanvas.Utils.Trace();
 		this.debugUpdate();
