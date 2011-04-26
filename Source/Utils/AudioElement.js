@@ -53,12 +53,10 @@ LibCanvas.namespace('Utils').AudioElement = atom.Class({
 	},
 	cloneAudio : function () {
 		if (this.stub) return null;
-		if (window.opera) { // opera 10.60 bug. Fixed in 10.61
-			var audioClone = document.createElement('audio');
-			audioClone.src = this.audio.src;
-		} else {
-			audioClone = this.audio.cloneNode(true);
-		}
+		// opera 10.6 bug & IE 9 bug
+		// audioClone = this.audio.cloneNode(true);
+		var audioClone = document.createElement('audio');
+		audioClone.src = this.audio.src;
 		this.events.forEach(function (e) {
 			audioClone.addEventListener(e[0], e[1].bind(this), false);
 		}.context(this));
