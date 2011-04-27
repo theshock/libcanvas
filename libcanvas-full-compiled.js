@@ -3420,7 +3420,7 @@ var accessors = {};
   'lineJoin','lineWidth','miterLimit','shadowOffsetX','shadowOffsetY',
   'shadowBlur','shadowColor','strokeStyle','textAlign','textBaseline'
 ].forEach(function (property) {
-	atom.accessors.set(accessors, property, {
+	atom.accessors.define(accessors, property, {
 		set: function (value) {
 			try {
 				this.ctx2d[property] = value;
