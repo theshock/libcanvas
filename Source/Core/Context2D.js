@@ -370,7 +370,7 @@ LibCanvas.Context2D = atom.Class({
 			       al == 'right' ? to.to.x - lineWidth - pad :
 			           to.from.x + (to.width - lineWidth)/2;
 		};
-		var x, lines = cfg.text.split('\n');
+		var x, lines = String(cfg.text).split('\n');
 		var measure = function (text) {
 			return this.measureText(text).width;
 		}.context(this);
