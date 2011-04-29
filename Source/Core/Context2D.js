@@ -24,11 +24,11 @@ provides: Context2D
 
 (function (LibCanvas) {
 
-var Point     = LibCanvas.Point,
-	Shapes    = LibCanvas.namespace('Shapes'),
-	Rectangle = Shapes.Rectangle,
-	Circle    = Shapes.Circle,
-	PointFrom = Point.from.context(Point);
+var Point  = LibCanvas.Point,
+    Shapes = LibCanvas.namespace('Shapes'),
+    Circle = Shapes.Circle,
+    Rectangle = Shapes.Rectangle,
+    PointFrom = Point.from.context(Point);
 
 
 var office = {
