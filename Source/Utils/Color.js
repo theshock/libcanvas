@@ -22,7 +22,7 @@ new function () {
 
 var math = Math;
 
-LibCanvas.namespace('Utils').Color = atom.Class({
+var Color = LibCanvas.namespace('Utils').Color = atom.Class({
 	Static: {
 		isColorString : function (string) {
 			if (typeof string != 'string') return false;
@@ -48,6 +48,16 @@ LibCanvas.namespace('Utils').Color = atom.Class({
 			fuchsia:'#ff00ff',
 			purple: '#800080',
 			orange: '#ffa500'
+		},
+		/**
+		 *
+		 * @param html - only html color names
+		 */
+		random: function (html) {
+			return new Color(html ?
+				Object.values(this.colorNames).random :
+				Array.create(3, Number.random.bind(Number, 0, 255))
+			);
 		}
 	},
 	r: 0,
