@@ -50,7 +50,6 @@ var Color = LibCanvas.namespace('Utils').Color = atom.Class({
 			orange: '#ffa500'
 		},
 		/**
-		 *
 		 * @param html - only html color names
 		 */
 		random: function (html) {
