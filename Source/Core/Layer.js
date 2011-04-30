@@ -46,10 +46,12 @@ LibCanvas.Layer = atom.Class({
 		}
 	},
 	
-	initialize : function (elem, options) {
+	initialize : function (elem, parentOptions, options) {
 		this.parentLayer = elem;
-		
-		this.parent(elem.createBuffer(), options);
+
+		this.setOptions(parentOptions, options);
+
+		this.parent(elem.createBuffer());
 	},
 
 	listenMouse    : callParent('listenMouse'),

@@ -68,6 +68,14 @@ LibCanvas.Canvas2D = atom.Class({
 	interval: null,
 	name: null,
 
+	options: {
+		name: 'main',
+		autoStart: true,
+		clear: true,
+		backBuffer: 'on',
+		fps: 30
+	},
+
 	initialize : function (elem, options) {
 		this._layers = {};
 		this.funcs = {
@@ -80,13 +88,7 @@ LibCanvas.Canvas2D = atom.Class({
 		var aElem = atom.dom(elem);
 		elem = aElem.first;
 
-		this.setOptions({
-			name: 'main',
-			autoStart: true,
-			clear: true,
-			backBuffer: 'on',
-			fps: 30
-		}, options);
+		this.setOptions(options);
 
 		this.origElem = elem;
 		this.origCtx  = elem.getContext('2d-libcanvas');
@@ -298,11 +300,11 @@ LibCanvas.Canvas2D = atom.Class({
 		}
 	},
 	
-	createLayer: function (name, z) {
+	createLayer: function (name, z, options) {
 		if (name in this._layers) {
 			throw new Error('Layer «' + name + '» already exists');
 		}
-		var layer = this._layers[name] = new LibCanvas.Layer(this, this.options);
+		var layer = this._layers[name] = new LibCanvas.Layer(this, this.options, options);
 		layer._layers = this._layers;
 		layer.zIndex  = z;
 		layer.name    = name;
