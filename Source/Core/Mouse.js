@@ -138,6 +138,7 @@ LibCanvas.Mouse = atom.Class({
 				if (isOffise || wait) mouse.getOffset(e);
 				if (isOffise) mouse.events.event(event, e);
 				if (wait) mouse.fireEvent(event, [e]);
+				if (isOffise) e.preventDefault();
 				return !isOffise;
 			};
 		};
@@ -152,6 +153,8 @@ LibCanvas.Mouse = atom.Class({
 			contextmenu: waitEvent('contextmenu'),
 			mousedown  : waitEvent('mousedown', true),
 			mouseup    : waitEvent('mouseup'  , true),
+			touchstart : waitEvent('mousedown', true),
+			touchend   : waitEvent('mouseup'  , true),
 			mousemove: function (e) {
 				var offset = mouse.getOffset(e);
 				mouse.setCoords(offset);
