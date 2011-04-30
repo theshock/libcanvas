@@ -333,11 +333,11 @@ LibCanvas.Canvas2D = atom.Class({
 			layer.showBuffer();
 		};
 		
-		var current = this._zindex;
+		var current = this._zIndex;
 		
 		if (value == null) value = Infinity;
 		value = value.limit(1, this.maxZIndex + (current ? 1 : 0));
-		
+
 		current = current || Infinity;
 		
 		for (var i in this._layers) if (this._layers[i] != this) {
