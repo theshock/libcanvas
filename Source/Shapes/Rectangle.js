@@ -109,9 +109,15 @@ Rectangle = LibCanvas.namespace('Shapes').Rectangle = atom.Class({
 			&& point.y.between(math.min(this.from.y, this.to.y) + padding, math.max(this.from.y, this.to.y) - padding, 1);
 	},
 	moveTo: function (rect) {
-		rect = Rectangle.from(arguments);
-		this.from.moveTo(rect.from);
-		this.  to.moveTo(rect.to);
+		if (rect instanceof LibCanvas.Point) {
+			var diff = this.from.diff(rect);
+			this.from.move(diff);
+			this.  to.move(diff);
+		} else {
+			rect = Rectangle.from(arguments);
+			this.from.moveTo(rect.from);
+			this.  to.moveTo(rect.to);
+		}
 		return this;
 	},
 	draw : function (ctx, type) {
