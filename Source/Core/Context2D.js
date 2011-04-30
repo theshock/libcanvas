@@ -515,10 +515,19 @@ LibCanvas.Context2D = atom.Class({
 		}
 		return result;
 	},
-	// this function is only dublicated as original. maybe, i will change them,
-	createLinearGradient : function () {
-		return this.original('createLinearGradient', arguments, true);
+	createLinearGradient : function (from, to) {
+		var a = arguments;
+		if (a.length != 4) {
+			if (a.length == 2) {
+				from = PointFrom(from), to = PointFrom(to);
+			} else if (a.length == 1) {
+				from = PointFrom(a[0].from), to = PointFrom(a[0].to);
+			}
+			a = [from.x, from.y, to.x, to.y];
+		}
+		return this.original('createLinearGradient', a, true);
 	},
+	// this function is only dublicated as original. i will change them, later
 	createRadialGradient : function () {
 		return this.original('createRadialGradient', arguments, true);
 	},
