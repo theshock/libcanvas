@@ -519,9 +519,12 @@ LibCanvas.Context2D = atom.Class({
 		var a = arguments;
 		if (a.length != 4) {
 			if (a.length == 2) {
-				from = PointFrom(from), to = PointFrom(to);
+				to   = PointFrom(to);
+				from = PointFrom(from);
 			} else if (a.length == 1) {
-				from = PointFrom(a[0].from), to = PointFrom(a[0].to);
+				// we must set `to` before `from`
+				to   = PointFrom(a[0].to);
+				from = PointFrom(a[0].from);
 			}
 			a = [from.x, from.y, to.x, to.y];
 		}
