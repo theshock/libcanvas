@@ -144,7 +144,7 @@ LibCanvas.Context2D = atom.Class({
 	// Values
 	set : function (name, value) {
 		if (typeof name == 'object') {
-			for (var i in name) this.name = value;
+			for (var i in name) this.name = name[i];
 		} else this[name] = value;
 		return this;
 	},
@@ -522,7 +522,7 @@ LibCanvas.Context2D = atom.Class({
 				to   = PointFrom(to);
 				from = PointFrom(from);
 			} else if (a.length == 1) {
-				// we must set `to` before `from`
+				// wee
 				to   = PointFrom(a[0].to);
 				from = PointFrom(a[0].from);
 			}
