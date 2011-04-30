@@ -144,7 +144,7 @@ LibCanvas.Context2D = atom.Class({
 	// Values
 	set : function (name, value) {
 		if (typeof name == 'object') {
-			for (var i in name) this.name = name[i];
+			for (var i in name) this[i] = name[i];
 		} else this[name] = value;
 		return this;
 	},
