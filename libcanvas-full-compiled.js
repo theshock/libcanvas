@@ -1142,40 +1142,27 @@ LibCanvas.Mouse = atom.Class({
 			};
 		};
 
-		var move = function (e) {
-			var offset = mouse.getOffset(e);
-			mouse.setCoords(offset);
-			mouse.events.event('mousemove', e);
-			mouse.isOut = false;
-			e.preventDefault();
-			return false;
-		};
-
-		var out = function (e) {
-			mouse.getOffset(e);
-			mouse.setCoords(null);
-			mouse.events.event('mouseout', e);
-			mouse.fireEvent('mouseout', [e]);
-			mouse.isOut = true;
-			e.preventDefault();
-			return false;
-		};
-
 		atom.dom(mouse.elem).bind({
-			/* bug in Linux Google Chrome
-			 * if moving mouse while some text is selected
-			 * mouse becomes disable.
-			 */
 			click      : waitEvent('click'),
 			dblclick   : waitEvent('dblclick'),
 			contextmenu: waitEvent('contextmenu'),
 			mousedown  : waitEvent('mousedown', true),
 			mouseup    : waitEvent('mouseup'  , true),
-			touchstart : waitEvent('mousedown', true),
-			touchmove  : move,
-			mousemove  : move,
-			mouseout   : out,
-			touchend   : out,
+			mousemove: function (e) {
+				var offset = mouse.getOffset(e);
+				mouse.setCoords(offset);
+				mouse.events.event('mousemove', e);
+				mouse.isOut = false;
+				return false;
+			},
+			mouseout : function (e) {
+				mouse.getOffset(e);
+				mouse.setCoords(null);
+				mouse.events.event('mouseout', e);
+				mouse.fireEvent('mouseout', [e]);
+				mouse.isOut = true;
+				return false;
+			},
 			selectstart: false
 		});
 		return this;
