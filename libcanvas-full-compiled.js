@@ -4217,7 +4217,6 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 	},
 	countSize: function () {
 		var margin = this.margin;
-		atom.log( this.cellWidth, this.cellHeight, margin, this.width, this.height );
 		return {
 			width : (this.cellWidth  + margin ) * this.width  - margin,
 			height: (this.cellHeight + margin ) * this.height - margin
