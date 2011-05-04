@@ -120,6 +120,16 @@ var Point = LibCanvas.Point = atom.Class({
 	getNeighbour : function (dir) {
 		return this.clone().move(shifts[dir]);
 	},
+	get neighbours () {
+		return this.getNeighbours( true );
+	},
+	getNeighbours: function (corners) {
+		var shifts = ['t', 'l', 'r', 'b'];
+
+		if (corners) shifts.push('tl', 'tr', 'bl', 'br');
+
+		return shifts.map(this.getNeighbour.bind(this));
+	},
 	equals : function (to, accuracy) {
 		to = Point.from(to);
 		return accuracy == null ? (to.x == this.x && to.y == this.y) :
