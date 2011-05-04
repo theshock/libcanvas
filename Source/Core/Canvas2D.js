@@ -49,6 +49,19 @@ LibCanvas.Canvas2D = atom.Class({
 			wrapper.parent = atom.dom().create('div').addClass('libcanvas-layers-container');
 			return wrapper.appendTo(wrapper.parent);
 		},
+		// Needs for right mouse behaviour
+		cover: function () {
+			if (this.parentLayer) return this.parentLayer.cover;
+			return atom.dom()
+				.create('div')
+				.css({
+					position: 'absolute',
+					width : '100%',
+					height: '100%'
+				})
+				.addClass('libcanvas-layers-cover')
+				.appendTo(this.wrapper);
+		},
 		invoker: function () {
 			return new LibCanvas.Invoker({
 				context: this,
@@ -83,7 +96,7 @@ LibCanvas.Canvas2D = atom.Class({
 			render: []
 		};
 		this.elems = [];
-				
+
 
 		var aElem = atom.dom(elem);
 		elem = aElem.first;
@@ -96,20 +109,22 @@ LibCanvas.Canvas2D = atom.Class({
 
 		this.createProjectBuffer().addClearer();
 
+		var wrapper = this.wrapper, cover = this.cover;
 		if (this.parentLayer) {
-			aElem.appendTo(this.wrapper);
+			aElem.appendTo(wrapper);
 		} else {
 			this.name = this.options.name;
 			this._layers[this.name] = this;
 			aElem
 				.attr('data-layer-name', this.name)
-				.replaceWith(this.wrapper.parent)
-				.appendTo(this.wrapper);
-			
+				.replaceWith(wrapper.parent)
+				.appendTo(wrapper);
+
 			if (elem.width && elem.height) {
 				this.size(elem.width, elem.height, true);
 			}
 		}
+		cover.css('zIndex', this.maxZIndex + 100);
 
 		this.update = this.update.context(this);
 
