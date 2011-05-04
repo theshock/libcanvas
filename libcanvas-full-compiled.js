@@ -4217,6 +4217,7 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 	},
 	countSize: function () {
 		var margin = this.margin;
+		atom.log( this.cellWidth, this.cellHeight, margin, this.width, this.height );
 		return {
 			width : (this.cellWidth  + margin ) * this.width  - margin,
 			height: (this.cellHeight + margin ) * this.height - margin
@@ -4279,7 +4280,7 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 		return this;
 	},
 	each : function (fn) {
-		var m = this.matrix, height = this.height(), width = this.width(), x, y;
+		var m = this.matrix, height = this.height, width = this.width, x, y;
 		for (y = 0; y < height; y++) for (x = 0; x < width; x++) {
 			fn.call(this, {
 				t : m[y][x],
@@ -4289,10 +4290,10 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 		}
 		return this;
 	},
-	width : function () {
+	get width () {
 		return (this.matrix[0] && this.matrix[0].length) || 0;
 	},
-	height : function () {
+	get height () {
 		return this.matrix.length || 0;
 	},
 	draw: function () {
