@@ -91,6 +91,13 @@ LibCanvas.namespace('Engines').Tile = atom.Class({
 		this.margin = margin || 0;
 		return this;
 	},
+	countSize: function () {
+		var margin = this.margin;
+		return {
+			width : (this.cellWidth  + margin ) * this.width  - margin,
+			height: (this.cellHeight + margin ) * this.height - margin
+		};
+	},
 	update : function () {
 		var changed = false, old = this.oldMatrix;
 		this.each(function (cell) {
