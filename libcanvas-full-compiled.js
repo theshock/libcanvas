@@ -1151,6 +1151,14 @@ LibCanvas.Mouse = atom.Class({
 				return !isOffise;
 			};
 		};
+		var wheel = function (e) {
+			e.delta =
+				// IE, Opera, Chrome - multiplicity is 120
+				e.wheelDelta ?  e.wheelDelta / 120 :
+				// Fx
+				e.detail     ? -e.detail / 3 : null;
+			mouse.fireEvent('wheel', [e]);
+		};
 
 		atom.dom(mouse.elem).bind({
 			click      : waitEvent('click'),
@@ -1173,7 +1181,9 @@ LibCanvas.Mouse = atom.Class({
 				mouse.isOut = true;
 				return false;
 			},
-			selectstart: false
+			selectstart: false,
+			DOMMouseScroll: wheel,
+			mousewheel: wheel
 		});
 		return this;
 	},
@@ -2895,7 +2905,7 @@ LibCanvas.Canvas2D = atom.Class({
 			wrapper.parent = atom.dom().create('div').addClass('libcanvas-layers-container');
 			return wrapper.appendTo(wrapper.parent);
 		},
-		// Needs for mobile some phones (we dont want activating of canvas)
+		// Needs for right mouse behaviour
 		cover: function () {
 			if (this.parentLayer) return this.parentLayer.cover;
 			return atom.dom()
