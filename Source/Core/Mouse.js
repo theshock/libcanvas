@@ -150,6 +150,8 @@ LibCanvas.Mouse = atom.Class({
 				e.wheelDelta ?  e.wheelDelta / 120 :
 				// Fx
 				e.detail     ? -e.detail / 3 : null;
+			e.up   = e.delta > 0;
+			e.down = e.delta < 0;
 			waitWheel(e);
 		};
 
