@@ -132,23 +132,25 @@ LibCanvas.Mouse = atom.Class({
 		return e;
 	},
 	setEvents : function () {
-		var mouse = this, waitEvent = function (event, isOffise) {
+		var mouse = this,
+		waitEvent = function (event, isOffice) {
 			return function (e) {
 				var wait = mouse.isEventAdded(event);
-				if (isOffise || wait) mouse.getOffset(e);
-				if (isOffise) mouse.events.event(event, e);
+				if (isOffice || wait) mouse.getOffset(e);
+				if (isOffice) mouse.events.event(event, e);
 				if (wait) mouse.fireEvent(event, [e]);
-				if (isOffise) e.preventDefault();
-				return !isOffise;
+				if (isOffice) e.preventDefault();
+				return !isOffice;
 			};
-		};
-		var wheel = function (e) {
+		},
+		waitWheel = waitEvent('wheel'),
+		wheel = function (e) {
 			e.delta =
 				// IE, Opera, Chrome - multiplicity is 120
 				e.wheelDelta ?  e.wheelDelta / 120 :
 				// Fx
 				e.detail     ? -e.detail / 3 : null;
-			mouse.fireEvent('wheel', [e]);
+			waitWheel(e);
 		};
 
 		atom.dom(mouse.elem).bind({
