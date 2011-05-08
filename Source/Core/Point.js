@@ -134,6 +134,7 @@ var Point = LibCanvas.Point = atom.Class({
 				dir = shifts[i];
 				result[dir] = this.getNeighbour( dir );
 			}
+			return result;
 		} else {
 			return shifts.map(this.getNeighbour.bind(this));
 		}
