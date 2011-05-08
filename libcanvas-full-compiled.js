@@ -863,12 +863,20 @@ var Point = LibCanvas.Point = atom.Class({
 	get neighbours () {
 		return this.getNeighbours( true );
 	},
-	getNeighbours: function (corners) {
-		var shifts = ['t', 'l', 'r', 'b'];
+	getNeighbours: function (corners, asObject) {
+		var shifts = ['t', 'l', 'r', 'b'], result, i, dir;
 
 		if (corners) shifts.push('tl', 'tr', 'bl', 'br');
 
-		return shifts.map(this.getNeighbour.bind(this));
+		if (asObject) {
+			result = {};
+			for (i = shifts.length; i--;) {
+				dir = shifts[i];
+				result[dir] = this.getNeighbour( dir );
+			}
+		} else {
+			return shifts.map(this.getNeighbour.bind(this));
+		}
 	},
 	equals : function (to, accuracy) {
 		to = Point.from(to);
