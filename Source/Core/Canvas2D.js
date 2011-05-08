@@ -96,6 +96,7 @@ LibCanvas.Canvas2D = atom.Class({
 			render: []
 		};
 		this.elems = [];
+		this.processors = { pre: [], post: [] };
 
 
 		var aElem = atom.dom(elem);
@@ -237,16 +238,11 @@ LibCanvas.Canvas2D = atom.Class({
 
 	// post-/pre- procesing
 	addProcessor : function (type, processor) {
-		if (!this.processors) {
-			this.processors = { pre: [], post: [] };
-		}
 		this.processors[type].push(processor);
 		return this;
 	},
 	rmProcessor : function (type, processor) {
-		if (this.processors) {
-			this.processors[type].erase(processor);
-		}
+		this.processors[type].erase(processor);
 		return this;
 	},
 
