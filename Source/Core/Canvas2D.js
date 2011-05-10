@@ -40,19 +40,19 @@ LibCanvas.Canvas2D = atom.Class({
 			throw new Error('Keyboard is not listened by libcanvas');
 		},
 		wrapper: function () {
-			var wrapper = atom.dom().create('div').css({
+			var wrapper = atom.dom.create('div').css({
 				width   : '100%',
 				height  : '100%',
 				overflow: 'hidden',
 				position: 'absolute'
 			});
-			wrapper.parent = atom.dom().create('div').addClass('libcanvas-layers-container');
+			wrapper.parent = atom.dom.create('div').addClass('libcanvas-layers-container');
 			return wrapper.appendTo(wrapper.parent);
 		},
 		// Needs for right mouse behaviour
 		cover: function () {
 			if (this.parentLayer) return this.parentLayer.cover;
-			return atom.dom()
+			return atom.dom
 				.create('div')
 				.css({
 					position: 'absolute',

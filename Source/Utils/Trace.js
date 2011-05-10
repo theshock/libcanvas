@@ -96,7 +96,7 @@ var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
 	getContainer : function () {
 		var cont = atom.dom('#traceContainer');
 		return cont.length ? cont :
-			atom.dom().create('div', { 'id' : 'traceContainer'})
+			atom.dom.create('div', { 'id' : 'traceContainer'})
 				.css({
 					'zIndex'   : '87223',
 					'position' : 'absolute',
@@ -145,7 +145,7 @@ var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
 			return this.node;
 		}
 
-		this.node = atom.dom()
+		this.node = atom.dom
 			.create('div')
 			.css({
 				background : '#000',
