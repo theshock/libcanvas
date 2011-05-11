@@ -1153,8 +1153,8 @@ LibCanvas.Mouse = atom.Class({
 	setEvents : function () {
 		var mouse = this,
 		waitEvent = function (event, isOffice) {
-			if (/^mouse/.match(event)) {
-				var shortE = mouse.substr(5);
+			if (event.match(/^mouse/)) {
+				var shortE = event.substr(5);
 			}
 
 			return function (e) {
