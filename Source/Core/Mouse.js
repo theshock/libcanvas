@@ -135,11 +135,18 @@ LibCanvas.Mouse = atom.Class({
 	setEvents : function () {
 		var mouse = this,
 		waitEvent = function (event, isOffice) {
+			if (/^mouse/.match(event)) {
+				var shortE = mouse.substr(5);
+			}
+
 			return function (e) {
 				var wait = mouse.isEventAdded(event);
 				if (isOffice || wait) mouse.getOffset(e);
 				if (isOffice) mouse.events.event(event, e);
-				if (wait) mouse.fireEvent(event, [e]);
+				if (wait) {
+					mouse.fireEvent(event, [e]);
+					if (shortE) mouse.fireEvent(shortE, [e]);
+				}
 				if (isOffice) e.preventDefault();
 				return !isOffice;
 			};
@@ -161,6 +168,7 @@ LibCanvas.Mouse = atom.Class({
 			var offset = mouse.getOffset(e);
 			mouse.setCoords(offset);
 			mouse.events.event('mousemove', e);
+			mouse.fireEvent('move', [e]);
 			mouse.isOut = false;
 			e.preventDefault();
 			return false;
@@ -170,6 +178,7 @@ LibCanvas.Mouse = atom.Class({
 			mouse.setCoords(null);
 			mouse.events.event('mouseout', e);
 			mouse.fireEvent('mouseout', [e]);
+			mouse.fireEvent('out', [e]);
 			mouse.isOut = true;
 			e.preventDefault();
 			return false;

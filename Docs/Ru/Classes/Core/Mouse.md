@@ -39,10 +39,10 @@ LibCanvas.Mouse
 * click
 * dblclick
 * contextmenu
-* mousedown
-* mouseup
-* mousemove
-* mouseout
+* down
+* up
+* move
+* out
 * wheel
 
 При использовании события wheel `e.delta` равно направлению колёсика мыши: 1 для движения вверх и -1 для движения вниз.
