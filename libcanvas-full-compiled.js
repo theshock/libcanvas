@@ -2890,7 +2890,10 @@ LibCanvas.namespace('Inner').DownloadingProgress = atom.Class({
 	isReady : function () {
 		this.createPreloader();
 		if (this.parentLayer) return this.parentLayer.isReady();
-		return !this.options.preloadImages || (this.imagePreloader && this.imagePreloader.isReady());
+
+		var pI = this.options.preloadImages;
+		return !pI || !Object.getLength(pI)
+			|| (this.imagePreloader && this.imagePreloader.isReady());
 	}
 });
 
