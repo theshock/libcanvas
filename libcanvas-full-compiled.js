@@ -5243,17 +5243,20 @@ LibCanvas.namespace('Shapes').Line = atom.Class({
 		       between(x, c.x, d.x) && between (y, c.y, d.y) ?
 		            (point ? new Point(x, y) : true) : FALSE;
 	},
-	distanceTo: function (p) {
+	distanceTo: function (p, asInfiniteLine) {
 		var f = this.from, t = this.t, degree, s, x, y;
 		if (p instanceof Point) {
-			degree = math.atan2(p.x-t.x, p.y - t.y).getDegree();
-			if ( degree.between(-90, 90) ) {
-				return t.distanceTo( p );
-			}
+			
+			if (!asInfiniteLine) {
+				degree = math.atan2(p.x-t.x, p.y - t.y).getDegree();
+				if ( degree.between(-90, 90) ) {
+					return t.distanceTo( p );
+				}
 
-			degree = math.atan2(f.x - p.x, f.y - p.y).getDegree();
-			if ( degree.between(-90, 90) ) {
-				return f.distanceTo( p );
+				degree = math.atan2(f.x - p.x, f.y - p.y).getDegree();
+				if ( degree.between(-90, 90) ) {
+					return f.distanceTo( p );
+				}
 			}
 
 			s = (
