@@ -95,7 +95,7 @@ LibCanvas.namespace('Shapes').Line = atom.Class({
 		if (p instanceof Point) {
 			
 			if (!asInfiniteLine) {
-				degree = math.atan2(p.x-t.x, p.y - t.y).getDegree();
+				degree = math.atan2(p.x - t.x, p.y - t.y).getDegree();
 				if ( degree.between(-90, 90) ) {
 					return t.distanceTo( p );
 				}
