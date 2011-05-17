@@ -36,8 +36,13 @@ LibCanvas.namespace('Shapes').Line = atom.Class({
 	set : function (from, to) {
 		var a = Array.pickFrom(arguments);
 
-		this.from = Point.from(a[0] || a.from);
-		this.to   = Point.from(a[1] || a.to);
+		if (a.length === 4) {
+			this.from = new Point( a[0], a[1] );
+			this.to   = new Point( a[2], a[3] );
+		} else {
+			this.from = Point.from(a[0] || a.from);
+			this.to   = Point.from(a[1] || a.to);
+		}
 		
 		return this;
 	},
