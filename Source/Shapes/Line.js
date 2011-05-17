@@ -93,13 +93,13 @@ LibCanvas.namespace('Shapes').Line = atom.Class({
 	distanceTo: function (p) {
 		var f = this.from, t = this.t, degree, s, x, y;
 		if (p instanceof Point) {
-			degree = (p.x-t.x, p.y - t.y).atan2();
-			if ( degree.between((-90).degree(), (90).degree()) ) {
+			degree = math.atan2(p.x-t.x, p.y - t.y).getDegree();
+			if ( degree.between(-90, 90) ) {
 				return t.distanceTo( p );
 			}
 
-			degree = (f.x - p.x, f.y - p.y).atan2();
-			if ( degree.between((-90).degree(), (90).degree()) ) {
+			degree = math.atan2(f.x - p.x, f.y - p.y).getDegree();
+			if ( degree.between(-90, 90) ) {
 				return f.distanceTo( p );
 			}
 

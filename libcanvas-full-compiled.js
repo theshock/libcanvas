@@ -5189,8 +5189,13 @@ LibCanvas.namespace('Shapes').Line = atom.Class({
 	set : function (from, to) {
 		var a = Array.pickFrom(arguments);
 
-		this.from = Point.from(a[0] || a.from);
-		this.to   = Point.from(a[1] || a.to);
+		if (a.length === 4) {
+			this.from = new Point( a[0], a[1] );
+			this.to   = new Point( a[2], a[3] );
+		} else {
+			this.from = Point.from(a[0] || a.from);
+			this.to   = Point.from(a[1] || a.to);
+		}
 		
 		return this;
 	},
@@ -5241,13 +5246,13 @@ LibCanvas.namespace('Shapes').Line = atom.Class({
 	distanceTo: function (p) {
 		var f = this.from, t = this.t, degree, s, x, y;
 		if (p instanceof Point) {
-			degree = (p.x-t.x, p.y - t.y).atan2();
-			if ( degree.between((-90).degree(), (90).degree()) ) {
+			degree = math.atan2(p.x-t.x, p.y - t.y).getDegree();
+			if ( degree.between(-90, 90) ) {
 				return t.distanceTo( p );
 			}
 
-			degree = (f.x - p.x, f.y - p.y).atan2();
-			if ( degree.between((-90).degree(), (90).degree()) ) {
+			degree = math.atan2(f.x - p.x, f.y - p.y).getDegree();
+			if ( degree.between(-90, 90) ) {
 				return f.distanceTo( p );
 			}
 
