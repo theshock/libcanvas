@@ -5238,6 +5238,31 @@ LibCanvas.namespace('Shapes').Line = atom.Class({
 		       between(x, c.x, d.x) && between (y, c.y, d.y) ?
 		            (point ? new Point(x, y) : true) : FALSE;
 	},
+	distanceTo: function (p) {
+		var f = this.from, t = this.t, degree, s, x, y;
+		if (p instanceof Point) {
+			degree = (p.x-t.x, p.y - t.y).atan2();
+			if ( degree.between((-90).degree(), (90).degree()) ) {
+				return t.distanceTo( p );
+			}
+
+			degree = (f.x - p.x, f.y - p.y).atan2();
+			if ( degree.between((-90).degree(), (90).degree()) ) {
+				return f.distanceTo( p );
+			}
+
+			s = (
+				f.x * (t.y - p.y) +
+				t.x * (p.y - f.y) +
+				p.x * (f.y - t.y)
+			).abs() / 2;
+
+			x = f.x - t.x;
+			y = f.y - t.y;
+			return 2 * s / math.sqrt(x*x+y*y);
+		}
+		return null;
+	},
 	get length () {
 		return this.to.distanceTo(this.from);
 	},
