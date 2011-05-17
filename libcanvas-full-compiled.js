@@ -3879,8 +3879,11 @@ LibCanvas.Context2D = atom.Class({
 
 	drawImage : function (a) {
 		if (arguments.length > 2) return this.original('drawImage', arguments);
-		if (arguments.length == 2) a = { image: a, draw: arguments[1] };
-		if (atom.typeOf(a) == 'element') return this.original('drawImage', [a, 0, 0]);
+		if (arguments.length == 2) {
+			a = { image: a, draw: arguments[1] };
+		} else if (atom.typeOf(a) == 'element') {
+			return this.original('drawImage', [a, 0, 0]);
+		}
 
 		if (!a.image) throw new TypeError('No image');
 		var center, from = a.center || a.from;
