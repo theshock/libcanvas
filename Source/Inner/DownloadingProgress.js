@@ -90,7 +90,7 @@ LibCanvas.namespace('Inner').DownloadingProgress = atom.Class({
 		if (this.parentLayer) return this.parentLayer.isReady();
 
 		var pI = this.options.preloadImages;
-		return !pI || !Object.getLength(pI)
+		return !pI || !Object.values(pI).length
 			|| (this.imagePreloader && this.imagePreloader.isReady());
 	}
 });
