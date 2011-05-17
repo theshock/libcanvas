@@ -2407,6 +2407,13 @@ Rectangle = LibCanvas.namespace('Shapes').Rectangle = atom.Class({
 		if (!noWrap) ctx.closePath();
 		return ctx;
 	},
+	intersect : function (obj) {
+		if (obj instanceof this.self) {
+			return this.from.x < obj.to.x && this.to.x > obj.from.x
+			    && this.from.y < obj.to.y && this.to.y > obj.from.y;
+		}
+		return false;
+	},
 	getRandomPoint : function (margin) {
 		margin = margin || 0;
 		return new Point(
