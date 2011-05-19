@@ -2306,8 +2306,12 @@ Rectangle = LibCanvas.Shapes.Rectangle = atom.Class({
 			this.from = new Point(a[0], a[1]);
 			this.to   = this.from.clone().move({x:a[2], y:a[3]});
 		} else if (a.length == 2) {
-			this.from = Point.from(a[0]);
-			this.to   = Point.from(a[1]);
+			if ('width' in a[1] && 'height' in a[1]) {
+				this.set({ from: a[0], size: a[1] });
+			} else {
+				this.from = Point.from(a[0]);
+				this.to   = Point.from(a[1]);
+			}
 		} else {
 			a = a[0];
 			if (a.from) {
