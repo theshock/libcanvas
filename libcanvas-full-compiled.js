@@ -47,8 +47,9 @@ var LibCanvas = this.LibCanvas = atom.Class({
 			return elem && elem instanceof LibCanvas.Canvas2D;
 		},
 		namespace: function (namespace) {
-			var current = LibCanvas;
+			var current;
 			Array.from(arguments).forEach(function (namespace) {
+				current = LibCanvas;
 				namespace.split('.').forEach(function(part){
 					if (current[part] == null) current[part] = {};
 					current = current[part];
@@ -88,7 +89,7 @@ atom.dom && atom.dom(function () {
 });
 
 LibCanvas.namespace( 'Behaviors', 'Engines', 'Inner', 'Processors', 'Shapes', 'Ui', 'Utils' );
-
+	
 })();
 
 /*
