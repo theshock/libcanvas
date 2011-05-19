@@ -26,15 +26,18 @@ var Point = LibCanvas.Point, Shapes = LibCanvas.Shapes;
 
 var Path = LibCanvas.namespace('Shapes').Path = atom.Class({
 	Extends: LibCanvas.Shape,
+
+	Generators : {
+		buffer: function () {
+			return LibCanvas.Buffer(1, 1, true);
+		}
+	},
+
 	// todo : refactoring
 	set : function (builder) {
 		this.builder = builder;
 		builder.path = this;
 		return this;
-	},
-	getBuffer : function () {
-		if (!this.buffer) this.buffer = LibCanvas.Buffer(1, 1, true);
-		return this.buffer;
 	},
 	processPath : function (ctx, noWrap) {
 		if (!noWrap) ctx.beginPath();
@@ -45,7 +48,7 @@ var Path = LibCanvas.namespace('Shapes').Path = atom.Class({
 		return ctx;
 	},
 	hasPoint : function (point) {
-		var ctx = this.getBuffer().ctx;
+		var ctx = this.buffer.ctx;
 		if (this.builder.changed) {
 			this.builder.changed = false;
 			this.processPath(ctx);
@@ -57,8 +60,7 @@ var Path = LibCanvas.namespace('Shapes').Path = atom.Class({
 		return this;
 	},
 	move : function (distance) {
-		var moved = [];
-		var move = function (a) {
+		var moved = [], move = function (a) {
 			if (!moved.contains(a)) {
 				a.move(distance);
 				moved.push(a);
@@ -66,7 +68,7 @@ var Path = LibCanvas.namespace('Shapes').Path = atom.Class({
 		};
 		this.builder.parts.forEach(function (part) {
 			var a = part.args[0];
-			switch(part.method) {
+			switch (part.method) {
 				case 'moveTo':
 				case 'lineTo':
 					move(a);

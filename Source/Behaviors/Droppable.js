@@ -20,7 +20,7 @@ provides: Behaviors.Droppable
 ...
 */
 
-LibCanvas.namespace('Behaviors').Droppable = atom.Class({
+LibCanvas.Behaviors.Droppable = atom.Class({
 	drops : null,
 	drop : function (obj) {
 		if (this.drops === null) {

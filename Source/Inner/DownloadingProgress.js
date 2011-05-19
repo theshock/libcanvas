@@ -19,7 +19,7 @@ provides: Inner.DownloadingProgress
 
 ...
 */
-LibCanvas.namespace('Inner').DownloadingProgress = atom.Class({
+LibCanvas.Inner.DownloadingProgress = atom.Class({
 	getImage : function (name) {
 		if (this.parentLayer) return this.parentLayer.getImage(name);
 		

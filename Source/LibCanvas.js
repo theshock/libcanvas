@@ -20,9 +20,7 @@ provides: LibCanvas
 
 (function () {
 
-var global = (this.window || GLOBAL);
-
-var LibCanvas = global.LibCanvas = atom.Class({
+var LibCanvas = this.LibCanvas = atom.Class({
 	Static: {
 		Buffer: function (width, height, withCtx) {
 			var a = Array.pickFrom(arguments), zero = (width == null || width === true);
@@ -50,9 +48,11 @@ var LibCanvas = global.LibCanvas = atom.Class({
 		},
 		namespace: function (namespace) {
 			var current = LibCanvas;
-			namespace.split('.').forEach(function(part){
-				if (current[part] == null) current[part] = {};
-				current = current[part];
+			Array.from(arguments).forEach(function (namespace) {
+				namespace.split('.').forEach(function(part){
+					if (current[part] == null) current[part] = {};
+					current = current[part];
+				});
 			});
 			return current;
 		},
@@ -87,5 +87,6 @@ atom.dom && atom.dom(function () {
 	LibCanvas.invoker.invoke();
 });
 
+LibCanvas.namespace( 'Behaviors', 'Engines', 'Inner', 'Processors', 'Shapes', 'Ui', 'Utils' );
 
 })();

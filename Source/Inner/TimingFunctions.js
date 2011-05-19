@@ -25,7 +25,7 @@ new function () {
 
 var math = Math;
 
-var TF = LibCanvas.namespace('Inner').TimingFunctions = atom.Class({
+var TF = LibCanvas.Inner.TimingFunctions = atom.Class({
 	Static: {
 		_instance: null,
 		get instance () {

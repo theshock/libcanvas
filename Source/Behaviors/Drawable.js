@@ -29,7 +29,7 @@ var stop = function () {
 	return 'remove';
 };
 
-LibCanvas.namespace('Behaviors').Drawable = atom.Class({
+LibCanvas.Behaviors.Drawable = atom.Class({
 	Implements: [atom.Class.Events],
 	libcanvasIsReady: false,
 	setLibcanvas : function (libcanvas) {

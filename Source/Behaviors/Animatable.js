@@ -26,7 +26,7 @@ provides: Behaviors.Animatable
 var TF    = LibCanvas.Inner.TimingFunctions,
 	Color = LibCanvas.Utils.Color;
 
-LibCanvas.namespace('Behaviors').Animatable = atom.Class({
+LibCanvas.Behaviors.Animatable = atom.Class({
 	Implements: [LibCanvas.Invoker.AutoChoose],
 
 	initialize: atom.Class.hiddenMethod(function (element) {

@@ -61,6 +61,9 @@ Rectangle
 ### topRight (get)
 Создает новую точку с координатами, которые соотвутствуют правому верхнему углу прямоугольника
 
+### center (get)
+Создает новую точку с координатами, которые соотвутствуют центру прямоугольника
+
 ## Метод hasPoint
 
 	bool hasPoint(LibCanvas.Point point, int padding);
@@ -134,6 +137,8 @@ Rectangle
 		.stroke(rect, 'black');
 
 ## Метод getCenter
+
+deprecated, используйте свойство `center`
 
 	LibCanvas.Point getCenter();
 

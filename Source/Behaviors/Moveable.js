@@ -18,7 +18,7 @@ provides: Behaviors.Moveable
 
 ...
 */
-LibCanvas.namespace('Behaviors').Moveable = atom.Class({
+LibCanvas.Behaviors.Moveable = atom.Class({
 	stopMoving : function () {
 		var sm = this.stopMoving;
 		if (sm.animation) {

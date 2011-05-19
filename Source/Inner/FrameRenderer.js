@@ -20,7 +20,7 @@ provides: Inner.FrameRenderer
 ...
 */
 
-LibCanvas.namespace('Inner').FrameRenderer = atom.Class({
+LibCanvas.Inner.FrameRenderer = atom.Class({
 	checkAutoDraw : function () {
 		if (!this._freezed && this.updateFrame) {
 			this.updateFrame = false;

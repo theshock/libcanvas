@@ -21,7 +21,7 @@ provides: Behaviors.Draggable
 
 new function () {
 
-LibCanvas.namespace('Behaviors').Draggable = atom.Class({
+LibCanvas.Behaviors.Draggable = atom.Class({
 	Extends: LibCanvas.Behaviors.MouseListener,
 
 	isDraggable : null,

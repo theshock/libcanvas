@@ -19,7 +19,7 @@ provides: Inner.MouseEvents
 ...
 */
 
-LibCanvas.namespace('Inner').MouseEvents = atom.Class({
+LibCanvas.Inner.MouseEvents = atom.Class({
 	initialize : function (mouse) {
 		this.subscribers   = [];
 		this.lastMouseMove = [];

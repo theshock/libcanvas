@@ -22,7 +22,7 @@ provides: Engines.Tile
 ...
 */
 
-LibCanvas.namespace('Engines').Tile = atom.Class({
+LibCanvas.Engines.Tile = atom.Class({
 	Implements: [
 		LibCanvas.Behaviors.Drawable,
 		atom.Class.Events

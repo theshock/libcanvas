@@ -20,7 +20,7 @@ provides: Inner.ProjectiveTexture
 
 new function () {
 
-LibCanvas.namespace('Inner').ProjectiveTexture = atom.Class({
+LibCanvas.Inner.ProjectiveTexture = atom.Class({
 	initialize : function (image) {
 		if (typeof image == 'string') {
 			this.image = new Image;
