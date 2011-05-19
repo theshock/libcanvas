@@ -2235,11 +2235,14 @@ LibCanvas.Shape = atom.Class({
 	get topRight () {
 		return new LibCanvas.Point(this.to.x, this.from.y);
 	},
-	getCenter : function () {
+	get center () {
 		return new LibCanvas.Point(
 			(this.from.x + this.to.x) / 2,
 			(this.from.y + this.to.y) / 2
 		);
+	},
+	getCenter : function () {
+		return this.center;
 	},
 	move : function (distance, reverse) {
 		distance = this.invertDirection(distance, reverse);
@@ -3316,6 +3319,8 @@ var Point = LibCanvas.Point;
 LibCanvas.namespace('Shapes').Circle = atom.Class({
 	Extends: LibCanvas.Shape,
 	set : function () {
+		delete this.center;
+
 		var a = Array.pickFrom(arguments);
 
 		if (a.length >= 3) {
@@ -3907,7 +3912,7 @@ LibCanvas.Context2D = atom.Class({
 			]);
 		} else if (a.draw) {
 			var draw = Rectangle.from(a.draw);
-			if (a.angle) this.rotate(a.angle, draw.getCenter());
+			if (a.angle) this.rotate(a.angle, draw.center);
 
 			if (a.crop) {
 				var crop = Rectangle.from(a.crop);
@@ -5176,9 +5181,7 @@ provides: Shapes.Line
 new function () {
 
 var Point = LibCanvas.Point,
-	math = Math,
-	max = math.max,
-	min = math.min,
+	math  = Math,
 	between = function (x, a, b) {
 		return x === a || x === b || (a < x && x < b) || (b < x && x < a);
 	};
@@ -5207,8 +5210,8 @@ LibCanvas.namespace('Shapes').Line = atom.Class({
 			px = point.x,
 			py = point.y;
 
-		if (!( px.between(min(fx, tx), max(fx, tx))
-		    && py.between(min(fy, ty), max(fy, ty))
+		if (!( point.x.between(math.min(fx, tx), math.max(fx, tx))
+		    && point.y.between(math.min(fy, ty), math.max(fy, ty))
 		)) return false;
 
 		// if triangle square is zero - points are on one line

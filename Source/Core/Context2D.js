@@ -459,7 +459,7 @@ LibCanvas.Context2D = atom.Class({
 			]);
 		} else if (a.draw) {
 			var draw = Rectangle.from(a.draw);
-			if (a.angle) this.rotate(a.angle, draw.getCenter());
+			if (a.angle) this.rotate(a.angle, draw.center);
 
 			if (a.crop) {
 				var crop = Rectangle.from(a.crop);

@@ -23,9 +23,7 @@ provides: Shapes.Line
 new function () {
 
 var Point = LibCanvas.Point,
-	math = Math,
-	max = math.max,
-	min = math.min,
+	math  = Math,
 	between = function (x, a, b) {
 		return x === a || x === b || (a < x && x < b) || (b < x && x < a);
 	};
@@ -54,8 +52,8 @@ LibCanvas.namespace('Shapes').Line = atom.Class({
 			px = point.x,
 			py = point.y;
 
-		if (!( px.between(min(fx, tx), max(fx, tx))
-		    && py.between(min(fy, ty), max(fy, ty))
+		if (!( point.x.between(math.min(fx, tx), math.max(fx, tx))
+		    && point.y.between(math.min(fy, ty), math.max(fy, ty))
 		)) return false;
 
 		// if triangle square is zero - points are on one line

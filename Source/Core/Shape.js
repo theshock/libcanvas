@@ -50,11 +50,14 @@ LibCanvas.Shape = atom.Class({
 	get topRight () {
 		return new LibCanvas.Point(this.to.x, this.from.y);
 	},
-	getCenter : function () {
+	get center () {
 		return new LibCanvas.Point(
 			(this.from.x + this.to.x) / 2,
 			(this.from.y + this.to.y) / 2
 		);
+	},
+	getCenter : function () {
+		return this.center;
 	},
 	move : function (distance, reverse) {
 		distance = this.invertDirection(distance, reverse);
