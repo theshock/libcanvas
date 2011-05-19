@@ -22,7 +22,7 @@ new function () {
 
 var math = Math;
 
-LibCanvas.namespace('Processors').Color = atom.Class({
+LibCanvas.Processors.Color = atom.Class({
 	rgbToHsb: function(red, green, blue){
 		var hue = 0,
 			max = math.max(red, green, blue),

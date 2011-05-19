@@ -24,7 +24,7 @@ provides: Shapes.Path
 
 var Point = LibCanvas.Point, Shapes = LibCanvas.Shapes;
 
-var Path = LibCanvas.namespace('Shapes').Path = atom.Class({
+var Path = LibCanvas.Shapes.Path = atom.Class({
 	Extends: LibCanvas.Shape,
 
 	Generators : {

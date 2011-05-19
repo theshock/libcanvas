@@ -20,7 +20,7 @@ provides: Processors.HsbShift
 */
 
 
-LibCanvas.namespace('Processors').HsbShift = atom.Class({
+LibCanvas.Processors.HsbShift = atom.Class({
 	Extends: LibCanvas.Processors.Color,
 	shift : 0,
 	param : 'hue',

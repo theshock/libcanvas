@@ -20,7 +20,7 @@ provides: Shapes.Ellipse
 ...
 */
 
-LibCanvas.namespace('Shapes').Ellipse = atom.Class({
+LibCanvas.Shapes.Ellipse = atom.Class({
 	Extends: LibCanvas.Shapes.Rectangle,
 	set : function () {
 		this.parent.apply(this, arguments);

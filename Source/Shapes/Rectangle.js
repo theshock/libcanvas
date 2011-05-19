@@ -26,7 +26,7 @@ var Point  = LibCanvas.Point,
 	math   = Math,
 	random = Number.random,
 
-Rectangle = LibCanvas.namespace('Shapes').Rectangle = atom.Class({
+Rectangle = LibCanvas.Shapes.Rectangle = atom.Class({
 	Extends: LibCanvas.Shape,
 	set : function () {
 		var a = Array.pickFrom(arguments);

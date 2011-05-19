@@ -31,7 +31,7 @@ new function () {
 var Beh = LibCanvas.Behaviors,
 	Sh  = LibCanvas.Shapes;
 
-LibCanvas.namespace('Ui').Shaper = atom.Class({
+LibCanvas.Ui.Shaper = atom.Class({
 	Extends: atom.Class.Options,
 	Implements: [
 		Beh.Drawable,

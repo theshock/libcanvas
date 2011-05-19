@@ -23,7 +23,7 @@ new function () {
 
 var Utils = LibCanvas.Utils;
 
-LibCanvas.namespace('Utils').TimeLogger = atom.Class({
+LibCanvas.Utils.TimeLogger = atom.Class({
 	last : 10,
 	sw   : null,
 	trace: null,

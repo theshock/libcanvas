@@ -19,7 +19,7 @@ provides: Utils.Storage
 */
 
 
-LibCanvas.namespace('Utils').Storage = atom.Class({
+LibCanvas.Utils.Storage = atom.Class({
 	initialize : function () {
 		this.store = this.getStorage();
 	},

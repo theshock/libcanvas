@@ -20,7 +20,7 @@ provides: Utils.AudioElement
 ...
 */
 
-LibCanvas.namespace('Utils').AudioElement = atom.Class({
+LibCanvas.Utils.AudioElement = atom.Class({
 	Implements: [LibCanvas.Behaviors.Animatable],
 	stub   : true,
 	initialize : function (container, file) {

@@ -24,7 +24,7 @@ new function () {
 
 var Point = LibCanvas.Point;
 	
-LibCanvas.namespace('Shapes').Circle = atom.Class({
+LibCanvas.Shapes.Circle = atom.Class({
 	Extends: LibCanvas.Shape,
 	set : function () {
 		delete this.center;

@@ -18,7 +18,7 @@ provides: Utils.StopWatch
 ...
 */
 
-LibCanvas.namespace('Utils').StopWatch = atom.Class({
+LibCanvas.Utils.StopWatch = atom.Class({
 	startTime : 0,
 	initialize : function (autoStart) {
 		autoStart && this.start();

@@ -29,7 +29,7 @@ var Point = LibCanvas.Point,
 	};
 
 
-LibCanvas.namespace('Shapes').Line = atom.Class({
+LibCanvas.Shapes.Line = atom.Class({
 	Extends: LibCanvas.Shape,
 	set : function (from, to) {
 		var a = Array.pickFrom(arguments);

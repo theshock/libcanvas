@@ -18,7 +18,7 @@ provides: Processors.Grayscale
 ...
 */
 
-LibCanvas.namespace('Processors').Grayscale = atom.Class({
+LibCanvas.Processors.Grayscale = atom.Class({
 	style : null,
 	initialize : function (type) {
 		// sepia, luminance, average, red, green, blue, default

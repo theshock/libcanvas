@@ -22,7 +22,7 @@ new function () {
 
 var math = Math;
 
-var Color = LibCanvas.namespace('Utils').Color = atom.Class({
+var Color = LibCanvas.Utils.Color = atom.Class({
 	Static: {
 		isColorString : function (string) {
 			if (typeof string != 'string') return false;

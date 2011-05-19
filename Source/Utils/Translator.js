@@ -23,7 +23,7 @@ new function () {
 
 var Point = LibCanvas.Point;
 
-LibCanvas.namespace('Utils').Translator = atom.Class({
+LibCanvas.Utils.Translator = atom.Class({
 	initialize : function (rectTo) {
 		this.shapes = [];
 		this.rectTo = rectTo;

@@ -30,7 +30,7 @@ var Buffer    = LibCanvas.Buffer,
 	Polygon   = LibCanvas.Shapes.Polygon,
 	Point     = LibCanvas.Point;
 
-LibCanvas.namespace('Utils').ProgressBar = atom.Class({
+LibCanvas.Utils.ProgressBar = atom.Class({
 	Implements: [LibCanvas.Behaviors.Animatable],
 	initialize : function () {
 		this.coord = new Point(0,0);

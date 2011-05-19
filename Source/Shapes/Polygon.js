@@ -43,7 +43,7 @@ var linesIntersect = function (a,b,c,d) {
 
 var Point = LibCanvas.Point;
 
-LibCanvas.namespace('Shapes').Polygon = atom.Class({
+LibCanvas.Shapes.Polygon = atom.Class({
 	Extends: LibCanvas.Shape,
 	initialize: function () {
 		this.points = [];

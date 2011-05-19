@@ -18,7 +18,7 @@ provides: Utils.AudioContainer
 ...
 */
 
-LibCanvas.namespace('Utils').AudioContainer = atom.Class({
+LibCanvas.Utils.AudioContainer = atom.Class({
 	support : false,
 	initialize: function (files) {
 		this.allAudios = [];

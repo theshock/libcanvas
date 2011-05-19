@@ -352,7 +352,7 @@ new function () {
 
 var math = Math;
 
-var Color = LibCanvas.namespace('Utils').Color = atom.Class({
+var Color = LibCanvas.Utils.Color = atom.Class({
 	Static: {
 		isColorString : function (string) {
 			if (typeof string != 'string') return false;
@@ -1852,7 +1852,7 @@ provides: Utils.Trace
 
 new function () {
 
-var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
+var Trace = LibCanvas.Utils.Trace = atom.Class({
 	Static: {
 		dumpRec : function (obj, level, plain) {
 			level  = parseInt(level) || 0;
@@ -2124,7 +2124,7 @@ provides: Utils.FpsMeter
 ...
 */
 
-LibCanvas.namespace('Utils').FpsMeter = atom.Class({
+LibCanvas.Utils.FpsMeter = atom.Class({
 	initialize : function (framesMax) {
 		this.trace = new LibCanvas.Utils.Trace();
 		this.genTime   = [];
@@ -2296,7 +2296,7 @@ var Point  = LibCanvas.Point,
 	math   = Math,
 	random = Number.random,
 
-Rectangle = LibCanvas.namespace('Shapes').Rectangle = atom.Class({
+Rectangle = LibCanvas.Shapes.Rectangle = atom.Class({
 	Extends: LibCanvas.Shape,
 	set : function () {
 		var a = Array.pickFrom(arguments);
@@ -2466,7 +2466,7 @@ provides: Utils.ImagePreloader
 ...
 */
 
-LibCanvas.namespace('Utils').ImagePreloader = atom.Class({
+LibCanvas.Utils.ImagePreloader = atom.Class({
 	Implements: [atom.Class.Events],
 	processed : 0,
 	number: 0,
@@ -2568,7 +2568,7 @@ var linesIntersect = function (a,b,c,d) {
 
 var Point = LibCanvas.Point;
 
-LibCanvas.namespace('Shapes').Polygon = atom.Class({
+LibCanvas.Shapes.Polygon = atom.Class({
 	Extends: LibCanvas.Shape,
 	initialize: function () {
 		this.points = [];
@@ -2690,7 +2690,7 @@ var Buffer    = LibCanvas.Buffer,
 	Polygon   = LibCanvas.Shapes.Polygon,
 	Point     = LibCanvas.Point;
 
-LibCanvas.namespace('Utils').ProgressBar = atom.Class({
+LibCanvas.Utils.ProgressBar = atom.Class({
 	Implements: [LibCanvas.Behaviors.Animatable],
 	initialize : function () {
 		this.coord = new Point(0,0);
@@ -3317,7 +3317,7 @@ new function () {
 
 var Point = LibCanvas.Point;
 	
-LibCanvas.namespace('Shapes').Circle = atom.Class({
+LibCanvas.Shapes.Circle = atom.Class({
 	Extends: LibCanvas.Shape,
 	set : function () {
 		delete this.center;
@@ -4786,7 +4786,7 @@ provides: Processors.Clearer
 ...
 */
 
-LibCanvas.namespace('Processors').Clearer = atom.Class({
+LibCanvas.Processors.Clearer = atom.Class({
 	style : null,
 	initialize : function (style) {
 		this.style = style || null;
@@ -4825,7 +4825,7 @@ new function () {
 
 var math = Math;
 
-LibCanvas.namespace('Processors').Color = atom.Class({
+LibCanvas.Processors.Color = atom.Class({
 	rgbToHsb: function(red, green, blue){
 		var hue = 0,
 			max = math.max(red, green, blue),
@@ -4890,7 +4890,7 @@ provides: Processors.Grayscale
 ...
 */
 
-LibCanvas.namespace('Processors').Grayscale = atom.Class({
+LibCanvas.Processors.Grayscale = atom.Class({
 	style : null,
 	initialize : function (type) {
 		// sepia, luminance, average, red, green, blue, default
@@ -4949,7 +4949,7 @@ provides: Processors.HsbShift
 */
 
 
-LibCanvas.namespace('Processors').HsbShift = atom.Class({
+LibCanvas.Processors.HsbShift = atom.Class({
 	Extends: LibCanvas.Processors.Color,
 	shift : 0,
 	param : 'hue',
@@ -5008,7 +5008,7 @@ provides: Processors.Invert
 ...
 */
 
-LibCanvas.namespace('Processors').Invert = atom.Class({
+LibCanvas.Processors.Invert = atom.Class({
 	processPixels : function (data) {
 		var d = data.data, i = 0, l = d.length;
 		for (;i < l; i++) if (i % 4 != 3) d[i] = 255 - d[i];
@@ -5037,7 +5037,7 @@ provides: Processors.Mask
 ...
 */
 
-LibCanvas.namespace('Processors').Mask = atom.Class({
+LibCanvas.Processors.Mask = atom.Class({
 	color : null,
 	initialize : function (color) { // [r,g,b]
 		this.color = color || [0,0,0];
@@ -5077,7 +5077,7 @@ provides: Shapes.Ellipse
 ...
 */
 
-LibCanvas.namespace('Shapes').Ellipse = atom.Class({
+LibCanvas.Shapes.Ellipse = atom.Class({
 	Extends: LibCanvas.Shapes.Rectangle,
 	set : function () {
 		this.parent.apply(this, arguments);
@@ -5188,7 +5188,7 @@ var Point = LibCanvas.Point,
 	};
 
 
-LibCanvas.namespace('Shapes').Line = atom.Class({
+LibCanvas.Shapes.Line = atom.Class({
 	Extends: LibCanvas.Shape,
 	set : function (from, to) {
 		var a = Array.pickFrom(arguments);
@@ -5322,7 +5322,7 @@ provides: Shapes.Path
 
 var Point = LibCanvas.Point, Shapes = LibCanvas.Shapes;
 
-var Path = LibCanvas.namespace('Shapes').Path = atom.Class({
+var Path = LibCanvas.Shapes.Path = atom.Class({
 	Extends: LibCanvas.Shape,
 
 	Generators : {
@@ -5523,7 +5523,7 @@ provides: Shapes.RoundedRectangle
 ...
 */
 
-LibCanvas.namespace('Shapes').RoundedRectangle = atom.Class({
+LibCanvas.Shapes.RoundedRectangle = atom.Class({
 	Extends: LibCanvas.Shapes.Rectangle,
 
 	radius: 0,
@@ -5589,7 +5589,7 @@ new function () {
 var Beh = LibCanvas.Behaviors,
 	Sh  = LibCanvas.Shapes;
 
-LibCanvas.namespace('Ui').Shaper = atom.Class({
+LibCanvas.Ui.Shaper = atom.Class({
 	Extends: atom.Class.Options,
 	Implements: [
 		Beh.Drawable,
@@ -5708,7 +5708,7 @@ provides: Utils.AudioContainer
 ...
 */
 
-LibCanvas.namespace('Utils').AudioContainer = atom.Class({
+LibCanvas.Utils.AudioContainer = atom.Class({
 	support : false,
 	initialize: function (files) {
 		this.allAudios = [];
@@ -5768,7 +5768,7 @@ provides: Utils.AudioElement
 ...
 */
 
-LibCanvas.namespace('Utils').AudioElement = atom.Class({
+LibCanvas.Utils.AudioElement = atom.Class({
 	Implements: [LibCanvas.Behaviors.Animatable],
 	stub   : true,
 	initialize : function (container, file) {
@@ -6051,7 +6051,7 @@ provides: Utils.StopWatch
 ...
 */
 
-LibCanvas.namespace('Utils').StopWatch = atom.Class({
+LibCanvas.Utils.StopWatch = atom.Class({
 	startTime : 0,
 	initialize : function (autoStart) {
 		autoStart && this.start();
@@ -6108,7 +6108,7 @@ provides: Utils.Storage
 */
 
 
-LibCanvas.namespace('Utils').Storage = atom.Class({
+LibCanvas.Utils.Storage = atom.Class({
 	initialize : function () {
 		this.store = this.getStorage();
 	},
@@ -6172,7 +6172,7 @@ new function () {
 
 var Utils = LibCanvas.Utils;
 
-LibCanvas.namespace('Utils').TimeLogger = atom.Class({
+LibCanvas.Utils.TimeLogger = atom.Class({
 	last : 10,
 	sw   : null,
 	trace: null,
@@ -6222,7 +6222,7 @@ new function () {
 
 var Point = LibCanvas.Point;
 
-LibCanvas.namespace('Utils').Translator = atom.Class({
+LibCanvas.Utils.Translator = atom.Class({
 	initialize : function (rectTo) {
 		this.shapes = [];
 		this.rectTo = rectTo;

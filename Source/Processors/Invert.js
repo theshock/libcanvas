@@ -18,7 +18,7 @@ provides: Processors.Invert
 ...
 */
 
-LibCanvas.namespace('Processors').Invert = atom.Class({
+LibCanvas.Processors.Invert = atom.Class({
 	processPixels : function (data) {
 		var d = data.data, i = 0, l = d.length;
 		for (;i < l; i++) if (i % 4 != 3) d[i] = 255 - d[i];

@@ -19,7 +19,7 @@ provides: Shapes.RoundedRectangle
 ...
 */
 
-LibCanvas.namespace('Shapes').RoundedRectangle = atom.Class({
+LibCanvas.Shapes.RoundedRectangle = atom.Class({
 	Extends: LibCanvas.Shapes.Rectangle,
 
 	radius: 0,

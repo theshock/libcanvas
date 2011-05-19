@@ -19,7 +19,7 @@ provides: Utils.ImagePreloader
 ...
 */
 
-LibCanvas.namespace('Utils').ImagePreloader = atom.Class({
+LibCanvas.Utils.ImagePreloader = atom.Class({
 	Implements: [atom.Class.Events],
 	processed : 0,
 	number: 0,

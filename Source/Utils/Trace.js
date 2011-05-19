@@ -20,7 +20,7 @@ provides: Utils.Trace
 
 new function () {
 
-var Trace = LibCanvas.namespace('Utils').Trace = atom.Class({
+var Trace = LibCanvas.Utils.Trace = atom.Class({
 	Static: {
 		dumpRec : function (obj, level, plain) {
 			level  = parseInt(level) || 0;
