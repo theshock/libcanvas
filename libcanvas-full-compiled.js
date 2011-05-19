@@ -58,7 +58,7 @@ var LibCanvas = this.LibCanvas = atom.Class({
 			return current;
 		},
 		extract: function (to) {
-			to = to || global;
+			to = to || atom.global;
 
 			for (var i in {Shapes: 1, Behaviors: 1, Utils: 1}) {
 				for (var k in LibCanvas[i]) {
@@ -3348,6 +3348,12 @@ LibCanvas.Shapes.Circle = atom.Class({
 		if (this.center == null) throw new TypeError('center is null');
 		if (this.radius == null) throw new TypeError('radius is null');
 	},
+	get center () {
+		return this._center;
+	},
+	set center (center) {
+		this._center = center;
+	},
 	getCoords : function () {
 		return this.center;
 	},
@@ -5934,8 +5940,8 @@ provides: Utils.Image
 var Point     = LibCanvas.Point,
 	Buffer    = LibCanvas.Buffer,
 	Rectangle = LibCanvas.Shapes.Rectangle,
-	math      = Math,
-	ImgProto  = HTMLImageElement.prototype;
+	ImgProto  = HTMLImageElement.prototype,
+	math      = Math;
 
 // <image> tag
 atom.implement(HTMLImageElement, {

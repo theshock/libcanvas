@@ -24,8 +24,8 @@ provides: Utils.Image
 var Point     = LibCanvas.Point,
 	Buffer    = LibCanvas.Buffer,
 	Rectangle = LibCanvas.Shapes.Rectangle,
-	math      = Math,
-	ImgProto  = HTMLImageElement.prototype;
+	ImgProto  = HTMLImageElement.prototype,
+	math      = Math;
 
 // <image> tag
 atom.implement(HTMLImageElement, {

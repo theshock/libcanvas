@@ -58,7 +58,7 @@ var LibCanvas = this.LibCanvas = atom.Class({
 			return current;
 		},
 		extract: function (to) {
-			to = to || global;
+			to = to || atom.global;
 
 			for (var i in {Shapes: 1, Behaviors: 1, Utils: 1}) {
 				for (var k in LibCanvas[i]) {
