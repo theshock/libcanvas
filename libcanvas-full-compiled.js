@@ -5356,11 +5356,17 @@ var Path = LibCanvas.Shapes.Path = atom.Class({
 	},
 	processPath : function (ctx, noWrap) {
 		if (!noWrap) ctx.beginPath();
-		this.builder.parts.forEach(function (part) {
-			ctx[part.method].apply(ctx, part.args);
+		this.each(function (method, args) {
+			ctx[method].apply(ctx, args);
 		});
 		if (!noWrap) ctx.closePath();
 		return ctx;
+	},
+	each: function (fn) {
+		this.builder.parts.forEach(function (part) {
+			fn( part.method, part.args );
+		});
+		return this;
 	},
 	hasPoint : function (point) {
 		var ctx = this.buffer.ctx;
