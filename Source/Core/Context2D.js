@@ -228,15 +228,24 @@ LibCanvas.Context2D = atom.Class({
 		return this.original('arcTo', arguments);
 	},
 	curveTo: function (curve) {
-		if (arguments.length === 4) {
-			return this.original('quadraticCurveTo', arguments);
-		} else if (arguments.length === 6) {
-			return this.original('bezierCurveTo', arguments);
+		var p, l, to;
+
+		if (typeof curve == 'number') {
+			if (arguments.length === 4) {
+				return this.original('quadraticCurveTo', arguments);
+			} else if (arguments.length === 6) {
+				return this.original('bezierCurveTo', arguments);
+			}
+		} else if (arguments.length > 1) {
+			p  = Array.from(curve.points || []).map(PointFrom);
+			to = Point.from(curve.to);
+		} else {
+			p  = Array.from( arguments ).map(PointFrom);
+			to = p.shift()
 		}
 
-		var p  = Array.from(curve.points || []).map(PointFrom),
-			l  = p.length,
-			to = Point.from(curve.to);
+		l = p.length;
+
 		if (l == 2) {
 			this.original('bezierCurveTo', [
 				p[0].x, p[0].y, p[1].x, p[1].y, to.x, to.y
