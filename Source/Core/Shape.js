@@ -24,6 +24,7 @@ LibCanvas.Shape = atom.Class({
 	Extends : LibCanvas.Geometry,
 	set     : atom.Class.abstractMethod,
 	hasPoint: atom.Class.abstractMethod,
+	processPath: atom.Class.abstractMethod,
 	draw : function (ctx, type) {
 		this.processPath(ctx)[type]();
 		return this;
