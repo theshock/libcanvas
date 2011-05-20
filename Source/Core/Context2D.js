@@ -237,11 +237,11 @@ LibCanvas.Context2D = atom.Class({
 				return this.original('bezierCurveTo', arguments);
 			}
 		} else if (arguments.length > 1) {
-			p  = Array.from(curve.points || []).map(PointFrom);
-			to = Point.from(curve.to);
-		} else {
 			p  = Array.from( arguments ).map(PointFrom);
 			to = p.shift()
+		} else {
+			p  = Array.from(curve.points || []).map(PointFrom);
+			to = Point.from(curve.to);
 		}
 
 		l = p.length;
