@@ -5505,8 +5505,9 @@ LibCanvas.Shapes.Path.Builder = atom.Class({
 	},
 	
 	// stringing
-	stringify : function () {
-		var p = function (p) { return ' ' + p.x.round(2) + ' ' + p.y.round(2); };
+	stringify : function (sep) {
+		if (!sep) sep = ' ';
+		var p = function (p) { return sep + p.x.round(2) + sep + p.y.round(2); };
 		return this.parts.map(function (part) {
 			var a = part.args[0];
 			switch(part.method) {
@@ -5514,14 +5515,14 @@ LibCanvas.Shapes.Path.Builder = atom.Class({
 				case 'lineTo' : return 'L' + p(a);
 				case 'curveTo': return 'C' + part.args.map(p).join('');
 				case 'arc': return 'A'
-					+ p( a.circle.center ) + ' ' + a.circle.radius.round(2) + ' '
-					+ a.angle.start.round(2) + ' ' + a.angle.end.round(2) + ' ' + (a.acw ? 1 : 0);
+					+ p( a.circle.center ) + sep + a.circle.radius.round(2) + sep
+					+ a.angle.start.round(2) + sep + a.angle.end.round(2) + sep + (a.acw ? 1 : 0);
 			}
-		}).join(' ');
+		}).join(sep);
 	},
 
 	parse : function (string) {
-		var parts = string.split(' '), full  = [];
+		var parts = string.split(/[ ,|]/), full  = [];
 
 		parts.forEach(function (part) {
 			if (!part.length) return;
