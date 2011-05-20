@@ -24,32 +24,31 @@ new function () {
 LibCanvas.Behaviors.Draggable = atom.Class({
 	Extends: LibCanvas.Behaviors.MouseListener,
 
-	isDraggable : null,
-	dragStart : null,
-	returnToStart : function (speed) {
-		return !this.dragStart ? this : this.moveTo(this.dragStart, speed);
-	},
 	draggable : function (stopDrag) {
-		if (this.isDraggable === null) {
-			this.addEvent('libcanvasSet', initDraggable.context(this));
+		if (! ('draggable.isDraggable' in this) ) {
+			this.addEvent('libcanvasSet', initDraggable);
 		}
-		this.isDraggable = !stopDrag;
+		this['draggable.isDraggable'] = !stopDrag;
 		return this;
 	}
 });
 
+var isDraggable = function (elem, started) {
+	return elem['draggable.isDraggable'] && (!started || elem['draggable.mouse']);
+};
+
 var moveListener = function () {
-	if (this.isDraggable && this.prevMouseCoord) {
-		var mouse = this.libcanvas.mouse;
-			var move  = this.prevMouseCoord.diff(mouse.point);
-		this.shape.move(move);
-		this.fireEvent('moveDrag', [move]);
-		this.prevMouseCoord.set(mouse.point)
-	}
+	if (!isDraggable(this, true)) return;
+
+	var mouse = this.libcanvas.mouse.point;
+	var move  = this['draggable.mouse'].diff(mouse);
+	this.shape.move(move);
+	this.fireEvent('moveDrag', [move]);
+	this['draggable.mouse'].set(mouse)
 };
 
 var initDraggable = function () {
-	var dragFn = moveListener.context(this);
+	var dragFn = moveListener.bind(this);
 
 	this.listenMouse();
 
@@ -59,18 +58,17 @@ var initDraggable = function () {
 
 	return this
 		.addEvent(startDrag, function () {
-			if (this.isDraggable) {
-				this.fireEvent('startDrag');
-				if (this.getCoords) this.dragStart = this.getCoords().clone();
-				this.prevMouseCoord = this.libcanvas.mouse.point.clone();
-				this.addEvent(dragging, dragFn);
-			}
+			if (!isDraggable(this, false)) return;
+		
+			this.fireEvent('startDrag');
+			this['draggable.mouse'] = this.libcanvas.mouse.point.clone();
+			this.addEvent(dragging, dragFn);
 		})
 		.addEvent(stopDrag, function () {
-			if (this.isDraggable && this.prevMouseCoord) {
-				this.fireEvent('stopDrag').removeEvent(dragging, dragFn);
-				delete this.prevMouseCoord;
-			}
+			if (!isDraggable(this, true)) return;
+
+			this.fireEvent('stopDrag').removeEvent(dragging, dragFn);
+			delete this['draggable.mouse'];
 		});
 };
 
