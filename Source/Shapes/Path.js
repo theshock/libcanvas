@@ -89,8 +89,13 @@ var Path = LibCanvas.Shapes.Path = atom.Class({
 
 LibCanvas.Shapes.Path.Builder = atom.Class({
 	initialize: function (str) {
-		this.parts = [];
+		this.update = this.update.bind( this );
+		this.parts  = [];
 		if (str) this.parse( str );
+	},
+	update: function () {
+		this.changed = true;
+		return this;
 	},
 	build : function (str) {
 		if ( str != null ) this.parse(str);
@@ -109,36 +114,37 @@ LibCanvas.Shapes.Path.Builder = atom.Class({
 		});
 		return this;
 	},
+	listenPoint: function (p) {
+		return Point.from( p )
+			.removeEvent( 'move', this.update )
+			.   addEvent( 'move', this.update );
+	},
 
 	// queue/stack
 	changed : true,
 	push : function (method, args) {
-		this.changed = true;
 		this.parts.push({ method : method, args : args });
-		return this;
+		return this.update();
 	},
 	unshift: function (method, args) {
-		this.changed = true;
 		this.parts.unshift({ method : method, args : args });
-		return this;
+		return this.update();
 	},
 	pop : function () {
-		this.changed = true;
 		this.parts.pop();
-		return this;
+		return this.update();
 	},
 	shift: function () {
-		this.changed = true;
 		this.parts.shift();
-		return this;
+		return this.update();
 	},
 
 	// methods
 	move : function () {
-		return this.push('moveTo', [Point.from(arguments)]);
+		return this.push('moveTo', [ this.listenPoint(arguments) ]);
 	},
 	line : function () {
-		return this.push('lineTo', [Point.from(arguments)]);
+		return this.push('lineTo', [ this.listenPoint(arguments) ]);
 	},
 	curve : function (to, p1, p2) {
 		var args = Array.pickFrom(arguments);
@@ -156,7 +162,7 @@ LibCanvas.Shapes.Path.Builder = atom.Class({
 			];
 		}
 
-		return this.push('curveTo', args.map( Point.from.bind(Point) ));
+		return this.push('curveTo', args.map( this.listenPoint.bind( this ) ));
 	},
 	arc : function (circle, angle, acw) {
 		var a = Array.pickFrom(arguments);
@@ -185,6 +191,9 @@ LibCanvas.Shapes.Path.Builder = atom.Class({
 				end   : a.angle[1]
 			};
 		}
+
+		this.listenPoint( a.circle.center );
+
 		a.acw = !!(a.acw || a.anticlockwise);
 		return this.push('arc', [a]);
 	},
