@@ -184,7 +184,7 @@ LibCanvas.Shapes.Path.Builder = atom.Class({
 	
 	// stringing
 	stringify : function () {
-		var p = function (p) { return ' ' + p.x.toFixed(2) + ' ' + p.y.toFixed(2); };
+		var p = function (p) { return ' ' + p.x.round(2) + ' ' + p.y.round(2); };
 		return this.parts.map(function (part) {
 			var a = part.args[0];
 			switch(part.method) {
@@ -192,8 +192,8 @@ LibCanvas.Shapes.Path.Builder = atom.Class({
 				case 'lineTo' : return 'L' + p(a);
 				case 'curveTo': return 'C' + part.args.map(p);
 				case 'arc': return 'A'
-					+ p( a.circle.center ) + ' ' + a.circle.radius.toFixed(2) + ' '
-					+ a.angle.start.toFixed(2) + ' ' + a.angle.end.toFixed(2) + ' ' + (a.acw ? 1 : 0);
+					+ p( a.circle.center ) + ' ' + a.circle.radius.round(2) + ' '
+					+ a.angle.start.round(2) + ' ' + a.angle.end.round(2) + ' ' + (a.acw ? 1 : 0);
 			}
 		}).join(' ');
 	},
