@@ -33,7 +33,7 @@ var Path = LibCanvas.Shapes.Path = atom.Class({
 		}
 	},
 
-	// todo : refactoring
+	getCoords: null,
 	set : function (builder) {
 		this.builder = builder;
 		builder.path = this;
@@ -67,18 +67,11 @@ var Path = LibCanvas.Shapes.Path = atom.Class({
 			}
 		};
 		this.builder.parts.forEach(function (part) {
-			var a = part.args[0];
-			switch (part.method) {
-				case 'moveTo':
-				case 'lineTo':
-					move(a);
-					break;
-				case 'bezierCurveTo':
-					for (var prop in ['p1', 'p2', 'to'].toKeys()) move(prop);
-					break;
-				case 'arc':
-					move(a.circle);
-					break;
+			var a = part.args;
+			if (part.method == 'arc') {
+				move(a.circle.center);
+			} else {
+				part.args.map(move);
 			}
 		});
 		return this;
@@ -86,19 +79,27 @@ var Path = LibCanvas.Shapes.Path = atom.Class({
 	toString: Function.lambda('[object LibCanvas.Shapes.Path]')
 });
 
-LibCanvas.namespace('Shapes.Path').Builder = atom.Class({
-	Extends: LibCanvas.Shape,
+LibCanvas.Shapes.Path.Builder = atom.Class({
 	initialize: function () {
 		this.parts = [];
-		this.parent.apply(this, arguments);
 	},
+	build : function (str) {
+		if ( str != null ) this.parse(str);
+		if ( !this.path  ) this.path = new Path(this);
+
+		return this.path;
+	},
+
+	// queue/stack
 	changed : true,
-	add : function (method, args) {
+	push : function (method, args) {
 		this.changed = true;
-		this.parts.push({
-			method : method,
-			args : args
-		});
+		this.parts.push({ method : method, args : args });
+		return this;
+	},
+	unshift: function (method, args) {
+		this.changed = true;
+		this.parts.unshift({ method : method, args : args });
 		return this;
 	},
 	pop : function () {
@@ -106,41 +107,51 @@ LibCanvas.namespace('Shapes.Path').Builder = atom.Class({
 		this.parts.pop();
 		return this;
 	},
+	shift: function () {
+		this.changed = true;
+		this.parts.shift();
+		return this;
+	},
+
+	// methods
 	move : function () {
-		return this.add('moveTo', [Point.from(arguments)]);
+		return this.push('moveTo', [Point.from(arguments)]);
 	},
 	line : function () {
-		return this.add('lineTo', [Point.from(arguments)]);
+		return this.push('lineTo', [Point.from(arguments)]);
 	},
-	curve : function (p1, p2, to) {
+	curve : function (to, p1, p2) {
 		var args = Array.pickFrom(arguments);
 		
-		if (args.length >= 6) {
-			return this.curve(
+		if (args.length >= 4) {
+			args = [
 				[ args[0], args[1] ],
-				[ args[2], args[3] ],
-				[ args[4], args[5] ]
-			);
+				[ args[2], args[3] ]
+			];
+			if (args.length == 6) {
+				args.push([ args[4], args[5] ]);
+			}
 		}
-		if (args[0] != null) {
-			args = {
-				p1 : args[0],
-				p2 : args[1],
-				to : args[2]
-			};
-		}
-		for (var i in args) args[i] = Point.from(args[i]);
-		return this.add('bezierCurveTo', [args]);
+
+		args.map( Point.from.bind(Point) );
+
+		return this.push('curveTo', [args]);
 	},
 	arc : function (circle, angle, acw) {
 		var a = Array.pickFrom(arguments);
 
 		if (a.length >= 6) {
-			return this.arc({
+			a = {
 				circle : [ a[0], a[1], a[2] ],
 				angle : [ a[3], a[4] ],
 				acw : a[5]
-			});
+			};
+		} else if (a.length > 1) {
+			a.circle = circle;
+			a.angle  = angle;
+			a.acw    = acw;
+		} else if (circle instanceof Shapes.Circle) {
+			a = { circle: circle, angle: [0, (360).degree()] };
 		}
 		a.circle = Shapes.Circle.from(a.circle);
 		if (Array.isArray(a.angle)) {
@@ -149,57 +160,51 @@ LibCanvas.namespace('Shapes.Path').Builder = atom.Class({
 				end   : a.angle[1]
 			};
 		}
-		a.acw = !!a.acw;
-		return this.add('arc', [a]);
+		a.acw = !!(a.acw || a.anticlockwise);
+		return this.push('arc', [a]);
 	},
-	hasPoint : function () {
-		var path = this.build();
-		return path.hasPoint.apply(path, arguments);
-	},
-	string : function () {
-		var string = '';
-		this.parts.forEach(function (part) {
+	
+	// stringing
+	stringify : function () {
+		var p = function (p) { return ' ' + p.x.toFixed(2) + ' ' + p.y.toFixed(2); };
+		return this.parts.map(function (part) {
 			var a = part.args[0];
 			switch(part.method) {
-				case 'moveTo':
-					string += 'move,' + a.x.round(2) + ',' + a.y.round(2);
-					break;
-				case 'lineTo':
-					string += 'line,' + a.x.round(2) + ',' + a.y.round(2);
-					break;
-				case 'bezierCurveTo':
-					string += 'curve,';
-					for (var prop in ['p1', 'p2', 'to'].toKeys()) {
-						string += a[prop].x.round(2) + ',' + a[prop].y.round(2);
-						if (prop != 'to') string += ',';
-					}
-					break;
-				case 'arc':
-					string += 'arc,';
-					string += a.circle.center.x.round(2) + ',' + a.circle.center.y.round(2) + ',';
-					string += a.circle.radius.round(2) + ',' + a.angle.start.round(2) + ',';
-					string += a.angle.end.round(2) + ',' + (a.acw ? 1 : 0);
-					break;
+				case 'moveTo' : return 'M' + p(a);
+				case 'lineTo' : return 'L' + p(a);
+				case 'curveTo': return 'C' + part.args.map(p);
+				case 'arc': return 'A'
+					+ p( a.circle.center ) + ' ' + a.circle.radius.toFixed(2) + ' '
+					+ a.angle.start.toFixed(2) + ' ' + a.angle.end.toFixed(2) + ' ' + (a.acw ? 1 : 0);
 			}
-			string += '/';
-		}.context(this));
-		return string;
+		}).join(' ');
 	},
-	parseString : function (string) {
-		string.split('/').forEach(function (line) {
-			if (line) {
-				var parts  = line.split(',');
-				var method = parts.shift();
-				for (var i = parts.length; i--;) parts[i] *= 1;
-				this[method].apply(this, parts);
+
+	parse : function (string) {
+		var parts = string.split(' '), full  = [];
+
+		parts.forEach(function (part) {
+			if (!part.length) return;
+			
+			if (isNaN(part)) {
+				full.push({ method : part, args : [] });
+			} else if (full.length) {
+				full.last.args.push( Number(part) );
 			}
-		}.context(this));
+		});
+
+		full.forEach(function (p) {
+			var method = {
+				M : 'moveTo', L: 'lineTo', C: 'curveTo', A: 'arc'
+			}[p.method];
+
+			return this[method].apply(this, p.args);
+		}.bind(this));
+
+		return this;
 	},
-	build : function () {
-		if (arguments.length == 1) this.parseString(arguments[0]);
-		if (!this.path) this.path = new Path(this);
-		return this.path;
-	}
+
+	toString: Function.lambda('[object LibCanvas.Shapes.Path]')
 });
 
 })(LibCanvas);
