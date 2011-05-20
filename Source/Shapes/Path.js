@@ -82,8 +82,9 @@ var Path = LibCanvas.Shapes.Path = atom.Class({
 });
 
 LibCanvas.Shapes.Path.Builder = atom.Class({
-	initialize: function () {
+	initialize: function (str) {
 		this.parts = [];
+		if (str) this.parse( str );
 	},
 	build : function (str) {
 		if ( str != null ) this.parse(str);
