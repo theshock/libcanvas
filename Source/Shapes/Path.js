@@ -197,7 +197,7 @@ LibCanvas.Shapes.Path.Builder = atom.Class({
 			switch(part.method) {
 				case 'moveTo' : return 'M' + p(a);
 				case 'lineTo' : return 'L' + p(a);
-				case 'curveTo': return 'C' + part.args.map(p);
+				case 'curveTo': return 'C' + part.args.map(p).join('');
 				case 'arc': return 'A'
 					+ p( a.circle.center ) + ' ' + a.circle.radius.round(2) + ' '
 					+ a.angle.start.round(2) + ' ' + a.angle.end.round(2) + ' ' + (a.acw ? 1 : 0);
@@ -219,10 +219,7 @@ LibCanvas.Shapes.Path.Builder = atom.Class({
 		});
 
 		full.forEach(function (p) {
-			var method = {
-				M : 'moveTo', L: 'lineTo', C: 'curveTo', A: 'arc'
-			}[p.method];
-
+			var method = { M : 'move', L: 'line', C: 'curve', A: 'arc' }[p.method];
 			return this[method].apply(this, p.args);
 		}.bind(this));
 
