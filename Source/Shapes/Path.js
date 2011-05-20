@@ -133,8 +133,7 @@ LibCanvas.Shapes.Path.Builder = atom.Class({
 			}
 		}
 
-		args = args.map( Point.from.bind(Point) );
-		return this.push('curveTo', [args]);
+		return this.push('curveTo', args.map( Point.from.bind(Point) ));
 	},
 	arc : function (circle, angle, acw) {
 		var a = Array.pickFrom(arguments);
