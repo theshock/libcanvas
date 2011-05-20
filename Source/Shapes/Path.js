@@ -60,6 +60,8 @@ var Path = LibCanvas.Shapes.Path = atom.Class({
 		return this;
 	},
 	move : function (distance) {
+		this.builder.changed = true;
+
 		var moved = [], move = function (a) {
 			if (!moved.contains(a)) {
 				a.move(distance);
@@ -71,7 +73,7 @@ var Path = LibCanvas.Shapes.Path = atom.Class({
 			if (part.method == 'arc') {
 				move(a[0].circle);
 			} else {
-				part.args.map(move);
+				a.map(move);
 			}
 		});
 		return this;
@@ -88,6 +90,17 @@ LibCanvas.Shapes.Path.Builder = atom.Class({
 		if ( !this.path  ) this.path = new Path(this);
 
 		return this.path;
+	},
+	snapToPixel: function () {
+		this.parts.forEach(function (part) {
+			var a = part.args;
+			if (part.method == 'arc') {
+				a[0].circle.center.snapToPixel();
+			} else {
+				a.invoke('snapToPixel');
+			}
+		});
+		return this;
 	},
 
 	// queue/stack
