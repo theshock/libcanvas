@@ -27,8 +27,6 @@ var Point = LibCanvas.Point;
 LibCanvas.Shapes.Circle = atom.Class({
 	Extends: LibCanvas.Shape,
 	set : function () {
-		delete this.center;
-
 		var a = Array.pickFrom(arguments);
 
 		if (a.length >= 3) {

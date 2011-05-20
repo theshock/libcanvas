@@ -3324,8 +3324,6 @@ var Point = LibCanvas.Point;
 LibCanvas.Shapes.Circle = atom.Class({
 	Extends: LibCanvas.Shape,
 	set : function () {
-		delete this.center;
-
 		var a = Array.pickFrom(arguments);
 
 		if (a.length >= 3) {
@@ -5358,6 +5356,7 @@ var Path = LibCanvas.Shapes.Path = atom.Class({
 	},
 	processPath : function (ctx, noWrap) {
 		if (!noWrap) ctx.beginPath();
+		console.log( 0 );
 		this.builder.parts.forEach(function (part) {
 			ctx[part.method].apply(ctx, part.args);
 		});
@@ -5386,7 +5385,7 @@ var Path = LibCanvas.Shapes.Path = atom.Class({
 		this.builder.parts.forEach(function (part) {
 			var a = part.args;
 			if (part.method == 'arc') {
-				move(a.circle.center);
+				move(a[0].circle);
 			} else {
 				part.args.map(move);
 			}
@@ -5439,15 +5438,18 @@ LibCanvas.Shapes.Path.Builder = atom.Class({
 	},
 	curve : function (to, p1, p2) {
 		var args = Array.pickFrom(arguments);
-		
-		if (args.length >= 4) {
+
+		if (args.length == 6) {
+			args = [
+				[ args[0], args[1] ],
+				[ args[2], args[3] ],
+				[ args[4], args[5] ]
+			];
+		} else if (args.length == 4){
 			args = [
 				[ args[0], args[1] ],
 				[ args[2], args[3] ]
 			];
-			if (args.length == 6) {
-				args.push([ args[4], args[5] ]);
-			}
 		}
 
 		return this.push('curveTo', args.map( Point.from.bind(Point) ));
@@ -5467,8 +5469,12 @@ LibCanvas.Shapes.Path.Builder = atom.Class({
 			a.acw    = acw;
 		} else if (circle instanceof Shapes.Circle) {
 			a = { circle: circle, angle: [0, (360).degree()] };
+		} else {
+			a = a[0];
 		}
+
 		a.circle = Shapes.Circle.from(a.circle);
+
 		if (Array.isArray(a.angle)) {
 			a.angle = {
 				start : a.angle[0],
