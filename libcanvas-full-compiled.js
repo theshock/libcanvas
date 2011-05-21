@@ -4137,6 +4137,7 @@ var Keyboard = LibCanvas.Keyboard = atom.Class({
 			}
 			var prevent = this.prevent(key);
 			if (prevent) e.preventDefault();
+			this.fireEvent( event, [e] );
 			this.debugUpdate();
 			return !prevent;
 		}.context(this);
