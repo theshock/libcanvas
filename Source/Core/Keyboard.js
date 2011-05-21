@@ -59,12 +59,17 @@ var Keyboard = LibCanvas.Keyboard = atom.Class({
 		},
 		keyStates: {},
 		keyState: function (keyName) {
-			return this.keyStates[this.keyName(keyName)];
+			if (keyName == null) {
+				return !!Object.values( this.keyStates ).length;
+			} else {
+				return this.keyStates[this.keyName(keyName)];
+			}
 		},
 		keyName: function (code) {
 			return typeof code == 'string' && code in this.keyCodes ? 
 				code : this.key(code);
 		},
+		// @deprecated
 		key: function (code) {
 			if ('keyCode' in code) return this.codeNames[code.keyCode];
 			return this[typeof code == 'number' ? 'codeNames' : 'keyCodes'][code] || null;
@@ -83,7 +88,11 @@ var Keyboard = LibCanvas.Keyboard = atom.Class({
 		return function (e) {
 			var key = this.self.key(e);
 			if (event != 'press') {
-				this.self.keyStates[key] = {'down':true, 'up':false}[event] || false;
+				if (event == 'down') {
+					this.self.keyStates[key] = true;
+				} else if ( key in this.self.keyStates ) {
+					delete this.self.keyStates[key];
+				}
 				if (event == 'down') this.fireEvent(key, [e]);
 				if (event == 'up')   this.fireEvent(key + ':up', [e]);
 			} else {
