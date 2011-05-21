@@ -2444,6 +2444,11 @@ Rectangle = LibCanvas.Shapes.Rectangle = atom.Class({
 	dump: function () {
 		return this.parent('Rectangle');
 	},
+	toPolygon: function () {
+		return new LibCanvas.Shapes.Polygon([
+			this.from, this.topRight, this.to, this.bottomLeft
+		]);
+	},
 	toString: Function.lambda('[object LibCanvas.Shapes.Rectangle]')
 });
 
