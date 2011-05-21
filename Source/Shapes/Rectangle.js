@@ -175,9 +175,9 @@ Rectangle = LibCanvas.Shapes.Rectangle = atom.Class({
 		return this.parent('Rectangle');
 	},
 	toPolygon: function () {
-		return new LibCanvas.Shapes.Polygon([
-			this.from, this.topRight, this.to, this.bottomLeft
-		]);
+		return new LibCanvas.Shapes.Polygon(
+			this.from.clone(), this.topRight, this.to.clone(), this.bottomLeft
+		);
 	},
 	toString: Function.lambda('[object LibCanvas.Shapes.Rectangle]')
 });

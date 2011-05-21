@@ -2445,9 +2445,9 @@ Rectangle = LibCanvas.Shapes.Rectangle = atom.Class({
 		return this.parent('Rectangle');
 	},
 	toPolygon: function () {
-		return new LibCanvas.Shapes.Polygon([
-			this.from, this.topRight, this.to, this.bottomLeft
-		]);
+		return new LibCanvas.Shapes.Polygon(
+			this.from.clone(), this.topRight, this.to.clone(), this.bottomLeft
+		);
 	},
 	toString: Function.lambda('[object LibCanvas.Shapes.Rectangle]')
 });
@@ -2634,11 +2634,11 @@ LibCanvas.Shapes.Polygon = atom.Class({
 		return this;
 	},
 	rotate : function (angle, pivot) {
-		this.points.invoke('rotate', arguments);
+		this.points.invoke('rotate', angle, pivot);
 		return this;
 	},
 	scale : function (x, y) {
-		this.points.invoke('scale', arguments);
+		this.points.invoke('scale', x, y);
 		return this;
 	},
 	intersect : function (poly) {

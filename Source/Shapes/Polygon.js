@@ -100,11 +100,11 @@ LibCanvas.Shapes.Polygon = atom.Class({
 		return this;
 	},
 	rotate : function (angle, pivot) {
-		this.points.invoke('rotate', arguments);
+		this.points.invoke('rotate', angle, pivot);
 		return this;
 	},
 	scale : function (x, y) {
-		this.points.invoke('scale', arguments);
+		this.points.invoke('scale', x, y);
 		return this;
 	},
 	intersect : function (poly) {
