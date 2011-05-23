@@ -98,7 +98,7 @@ atom.implement(HTMLImageElement, {
 		if (!this.isLoaded()) throw new Error('Not loaded in Image.sprite, logged');
 
 		if (arguments.length) {
-			var rect  = Rectangle.from(arguments),
+			var rect  = Rectangle(arguments),
 				index = [rect.from.x,rect.from.y,rect.width,rect.height].join('.'),
 				cache = (this.spriteCache = (this.spriteCache || {}));
 			if (!cache[index]) cache[index] = this.createSprite(rect);

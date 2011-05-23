@@ -42,7 +42,7 @@ LibCanvas.Shapes.Ellipse = atom.Class({
 	},
 	hasPoint : function () {
 		var ctx = this.processPath(this.getBufferCtx()); 
-		return ctx.isPointInPath(LibCanvas.Point.from(arguments));
+		return ctx.isPointInPath(LibCanvas.Point(arguments));
 	},
 	cache : null,
 	updateCache : true,

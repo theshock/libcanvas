@@ -33,15 +33,15 @@ LibCanvas.Shapes.Circle = atom.Class({
 			this.center = new Point(a[0], a[1]);
 			this.radius = a[2];
 		} else if (a.length == 2) {
-			this.center = Point.from(a[0]);
+			this.center = Point(a[0]);
 			this.radius = a[1];
 		} else {
 			a = a[0];
 			this.radius = [a.r, a.radius].pick();
 			if ('x' in a && 'y' in a) {
-				this.center = new Point(a[0], a[1]);
+				this.center = new Point(a.x, a.y);
 			} else if ('center' in a) {
-				this.center = Point.from(a.center);
+				this.center = Point(a.center);
 			} else if ('from' in a) {
 				this.center = new Point(a.from).move({
 					x: this.radius,
@@ -62,7 +62,6 @@ LibCanvas.Shapes.Circle = atom.Class({
 		return this.center;
 	},
 	hasPoint : function (point) {
-		point = Point.from(arguments);
 		return this.center.distanceTo(point) <= this.radius;
 	},
 	scale : function (factor) {

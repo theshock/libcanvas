@@ -128,7 +128,7 @@ LibCanvas.Engines.Tile = atom.Class({
 		return this.rects[cell.x + '.' + cell.y];
 	},
 	getCell : function (point) {
-		point = LibCanvas.Point.from(arguments);
+		point = LibCanvas.Point(arguments);
 		var x = parseInt(point.x / (this.cellWidth  + this.margin)),
 			y = parseInt(point.y / (this.cellHeight + this.margin)),
 			row = this.matrix[y];

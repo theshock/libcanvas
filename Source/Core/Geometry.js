@@ -22,9 +22,12 @@ provides: Geometry
 LibCanvas.Geometry = atom.Class({
 	Implements: [atom.Class.Events],
 	Static: {
-		from : function (obj) {
+		invoke: function (obj) {
 			return (typeof obj == 'object' && obj[0] instanceof this) ? obj[0]
 					: (obj instanceof this ? obj : new this(obj));
+		},
+		from : function (obj) {
+			return this(obj);
 		}
 	},
 	initialize : function () {

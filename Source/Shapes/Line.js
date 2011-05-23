@@ -38,8 +38,8 @@ LibCanvas.Shapes.Line = atom.Class({
 			this.from = new Point( a[0], a[1] );
 			this.to   = new Point( a[2], a[3] );
 		} else {
-			this.from = Point.from(a[0] || a.from);
-			this.to   = Point.from(a[1] || a.to);
+			this.from = Point(a[0] || a.from);
+			this.to   = Point(a[1] || a.to);
 		}
 		
 		return this;

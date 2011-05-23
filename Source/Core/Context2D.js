@@ -27,8 +27,7 @@ provides: Context2D
 var Point  = LibCanvas.Point,
     Shapes = LibCanvas.namespace('Shapes'),
     Circle = Shapes.Circle,
-    Rectangle = Shapes.Rectangle,
-    PointFrom = Point.from.context(Point);
+    Rectangle = Shapes.Rectangle;
 
 
 var office = {
@@ -45,9 +44,7 @@ var office = {
 			[rect.from.x, rect.from.y, rect.width, rect.height]);
 	},
 	makeRect: function (args) {
-		return args.length ?
-			Rectangle.from(args) :
-			this.getFullRectangle();
+		return args.length ? Rectangle(args) : this.rectangle;
 	},
 	fillStroke : function (type, args) {
 		if (args.length >= 1 && args[0] instanceof LibCanvas.Shape) {
@@ -63,7 +60,7 @@ var office = {
 		return this;
 	},
 	originalPoint : function (func, args) {
-		var point = Point.from(args);
+		var point = Point(args);
 		return this.original(func, [point.x, point.y]);
 	}
 };
@@ -201,7 +198,7 @@ LibCanvas.Context2D = atom.Class({
 		if (a.length > 1) {
 			return this.original('arc', a);
 		} else if ('circle' in a[0]) {
-			circle = Circle.from(a[0].circle);
+			circle = Circle(a[0].circle);
 			angle  = Array.isArray(a[0].angle) ?
 				a[0].angle.associate(['start', 'end']) :
 				Object.collect(a[0].angle, ['start', 'end', 'size']);
@@ -237,11 +234,11 @@ LibCanvas.Context2D = atom.Class({
 				return this.original('bezierCurveTo', arguments);
 			}
 		} else if (arguments.length > 1) {
-			p  = Array.from( arguments ).map(PointFrom);
+			p  = Array.from( arguments ).map(Point);
 			to = p.shift()
 		} else {
-			p  = Array.from(curve.points || []).map(PointFrom);
-			to = Point.from(curve.to);
+			p  = Array.from(curve.points || []).map(Point);
+			to = Point(curve.to);
 		}
 
 		l = p.length;
@@ -284,7 +281,7 @@ LibCanvas.Context2D = atom.Class({
 		}
 	},
 	isPointInPath : function (x, y) {
-		var point = PointFrom(arguments);
+		var point = Point(arguments);
 		return this.original('isPointInPath', [point.x, point.y], true);
 	},
 	clip : function (shape) {
@@ -304,7 +301,7 @@ LibCanvas.Context2D = atom.Class({
 		return this;
 	},
 	translate : function (point, reverse) {
-		point = Point.from(
+		point = Point(
 			(arguments.length === 1 || typeof reverse === 'boolean')
 				? point : arguments
 		);
@@ -366,7 +363,7 @@ LibCanvas.Context2D = atom.Class({
 		if (atom.typeOf(cfg.padding) == 'number') {
 			cfg.padding = [cfg.padding, cfg.padding];
 		}
-		var to = cfg.to ? Rectangle.from(cfg.to) : this.getFullRectangle();
+		var to = cfg.to ? Rectangle(cfg.to) : this.rectangle;
 		var lh = (cfg.lineHeight || (cfg.size * 1.15)).round();
 		this.set('font', '{style}{weight}{size}px {family}'
 			.substitute({
@@ -451,7 +448,7 @@ LibCanvas.Context2D = atom.Class({
 
 		this.save();
 		if (from) {
-			from = Point.from(from);
+			from = Point(from);
 			if (a.center) from = {
 				x : from.x - a.image.width/2,
 				y : from.y - a.image.height/2
@@ -467,11 +464,11 @@ LibCanvas.Context2D = atom.Class({
 				a.image, from.x, from.y
 			]);
 		} else if (a.draw) {
-			var draw = Rectangle.from(a.draw);
+			var draw = Rectangle(a.draw);
 			if (a.angle) this.rotate(a.angle, draw.center);
 
 			if (a.crop) {
-				var crop = Rectangle.from(a.crop);
+				var crop = Rectangle(a.crop);
 				this.original('drawImage', [
 					a.image,
 					crop.from.x, crop.from.y, crop.width, crop.height,
@@ -501,10 +498,10 @@ LibCanvas.Context2D = atom.Class({
 		if (a.length == 1 && typeof a == 'object') {
 			a = a[0];
 			put.image = a.image;
-			put.from  = Point.from(a.from);
+			put.from  = Point(a.from);
 		} else if (a.length >= 2) {
 			put.image = a[0];
-			put.from = Point.from(a.length > 2 ? [a[1], a[2]] : a[1]);
+			put.from = Point(a.length > 2 ? [a[1], a[2]] : a[1]);
 		}
 		return this.original('putImageData', [
 			put.image, put.from.x, put.from.y
@@ -538,12 +535,12 @@ LibCanvas.Context2D = atom.Class({
 		var a = arguments;
 		if (a.length != 4) {
 			if (a.length == 2) {
-				to   = PointFrom(to);
-				from = PointFrom(from);
+				to   = Point(to);
+				from = Point(from);
 			} else if (a.length == 1) {
 				// wee
-				to   = PointFrom(a[0].to);
-				from = PointFrom(a[0].from);
+				to   = Point(a[0].to);
+				from = Point(a[0].from);
 			}
 			a = [from.x, from.y, to.x, to.y];
 		}

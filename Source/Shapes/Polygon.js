@@ -53,7 +53,7 @@ LibCanvas.Shapes.Polygon = atom.Class({
 		this.points.empty().append(
 			Array.pickFrom(arguments)
 				.map(function (elem) {
-					if (elem) return Point.from(elem);
+					if (elem) return Point(elem);
 				})
 				.clean()
 		);
@@ -66,7 +66,7 @@ LibCanvas.Shapes.Polygon = atom.Class({
 		return this.points[index];
 	},
 	hasPoint : function (point) {
-		point = Point.from(Array.pickFrom(arguments));
+		point = Point(Array.pickFrom(arguments));
 
 		var result = false, points = this.points;
 		for (var i = 0, l = this.length; i < l; i++) {

@@ -59,7 +59,7 @@ var Path = LibCanvas.Shapes.Path = atom.Class({
 			this.builder.changed = false;
 			this.processPath(ctx);
 		}
-		return ctx.isPointInPath(Point.from(arguments));
+		return ctx.isPointInPath(Point(arguments));
 	},
 	draw : function (ctx, type) {
 		this.processPath(ctx)[type]();
@@ -115,7 +115,7 @@ LibCanvas.Shapes.Path.Builder = atom.Class({
 		return this;
 	},
 	listenPoint: function (p) {
-		return Point.from( p )
+		return Point( p )
 			.removeEvent( 'move', this.update )
 			.   addEvent( 'move', this.update );
 	},
@@ -183,7 +183,7 @@ LibCanvas.Shapes.Path.Builder = atom.Class({
 			a = a[0];
 		}
 
-		a.circle = Shapes.Circle.from(a.circle);
+		a.circle = Shapes.Circle(a.circle);
 
 		if (Array.isArray(a.angle)) {
 			a.angle = {

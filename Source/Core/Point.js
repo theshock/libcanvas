@@ -74,19 +74,18 @@ var Point = LibCanvas.Point = atom.Class({
 		return this.move(this.diff(newCoord));
 	},
 	angleTo : function (point) {
-		var diff = Point.from(arguments).diff(this);
+		var diff = Point(arguments).diff(this);
 		return Math.atan2(diff.y, diff.x).normalizeAngle();
 	},
 	distanceTo : function (point) {
-		var diff = Point.from(arguments).diff(this);
+		var diff = Point(arguments).diff(this);
 		return Math.hypotenuse(diff.x, diff.y);
 	},
 	diff : function (point) {
-		return Point.from(arguments)
-			.clone().move(this, true);
+		return new Point(arguments).move(this, true);
 	},
 	rotate : function (angle, pivot) {
-		pivot = Point.from(pivot || {x: 0, y: 0});
+		pivot = Point(pivot || {x: 0, y: 0});
 		if (this.equals(pivot)) return this;
 		
 		var radius = pivot.distanceTo(this);
@@ -99,7 +98,7 @@ var Point = LibCanvas.Point = atom.Class({
 		});
 	},
 	scale : function (power, pivot) {
-		pivot = Point.from(pivot || {x: 0, y: 0});
+		pivot = Point(pivot || {x: 0, y: 0});
 		var diff = this.diff(pivot), isObject = typeof power == 'object';
 		return this.moveTo({
 			x : pivot.x - diff.x  * (isObject ? power.x : power),
@@ -140,7 +139,7 @@ var Point = LibCanvas.Point = atom.Class({
 		}
 	},
 	equals : function (to, accuracy) {
-		to = Point.from(to);
+		to = Point(to);
 		return accuracy == null ? (to.x == this.x && to.y == this.y) :
 			(this.x.equals(to.x, accuracy) && this.y.equals(to.y, accuracy));
 	},

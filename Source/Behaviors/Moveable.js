@@ -26,7 +26,7 @@ LibCanvas.Behaviors.Moveable = atom.Class({
 	},
 	moveTo    : function (point, speed, fn) { // speed == pixels per sec
 		this.stopMoving();
-		point = LibCanvas.Point.from(point);
+		point = LibCanvas.Point(point);
 		var diff = this.getCoords().diff(point), shape = this.getShape();
 		if (!speed) {
 			shape.move(diff);

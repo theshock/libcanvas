@@ -38,17 +38,17 @@ Rectangle = LibCanvas.Shapes.Rectangle = atom.Class({
 			if ('width' in a[1] && 'height' in a[1]) {
 				this.set({ from: a[0], size: a[1] });
 			} else {
-				this.from = Point.from(a[0]);
-				this.to   = Point.from(a[1]);
+				this.from = Point(a[0]);
+				this.to   = Point(a[1]);
 			}
 		} else {
 			a = a[0];
 			if (a.from) {
-				this.from = Point.from(a.from);
+				this.from = Point(a.from);
 			} else if ('x' in a && 'y' in a) {
 				this.from = new Point(a.x, a.y);
 			}
-			if (a.to) this.to = Point.from(a.to);
+			if (a.to) this.to = Point(a.to);
 		
 			if (!a.from || !a.to) {
 				var as = a.size, size = {
@@ -106,7 +106,7 @@ Rectangle = LibCanvas.Shapes.Rectangle = atom.Class({
 		return this;
 	},
 	hasPoint : function (point, padding) {
-		point   = Point.from(arguments);
+		point   = Point(arguments);
 		padding = padding || 0;
 		return point.x != null && point.y != null
 			&& point.x.between(math.min(this.from.x, this.to.x) + padding, math.max(this.from.x, this.to.x) - padding, 1)
@@ -118,7 +118,7 @@ Rectangle = LibCanvas.Shapes.Rectangle = atom.Class({
 			this.from.move(diff);
 			this.  to.move(diff);
 		} else {
-			rect = Rectangle.from(arguments);
+			rect = Rectangle(arguments);
 			this.from.moveTo(rect.from);
 			this.  to.moveTo(rect.to);
 		}
