@@ -32,7 +32,7 @@ LibCanvas.Behaviors.Moveable = atom.Class({
 		var diff = this.getCoords().diff(point), shape = this.getShape();
 		if (!speed) {
 			shape.move(diff);
-			this.fireEvent('stopMove')
+			this.fireEvent('stopMove');
 			return this;
 		}
 		var distance = Math.hypotenuse(diff.x, diff.y), prev = 0;
@@ -44,7 +44,7 @@ LibCanvas.Behaviors.Moveable = atom.Class({
 			});
 			prev = change;
 		}).animate({
-			fn        : fn,
+			fn        : fn || 'linear',
 			time      : distance / speed * 1000,
 			onProccess: this.fireEvent.context(this, ['move']),
 			onAbort   : this.fireEvent.context(this, ['stopMove']),
