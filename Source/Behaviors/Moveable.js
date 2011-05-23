@@ -20,10 +20,8 @@ provides: Behaviors.Moveable
 */
 LibCanvas.Behaviors.Moveable = atom.Class({
 	stopMoving : function () {
-		var sm = this.stopMoving;
-		if (sm.animation) {
-			sm.animation.stop();
-		}
+		var anim = this['moveTo.animation'];
+		if (anim) anim.stop();
 		return this;
 	},
 	moveTo    : function (point, speed, fn) { // speed == pixels per sec
@@ -37,7 +35,7 @@ LibCanvas.Behaviors.Moveable = atom.Class({
 		}
 		var distance = Math.hypotenuse(diff.x, diff.y), prev = 0;
 
-		this.stopMoving.animation = new LibCanvas.Behaviors.Animatable(function (change) {
+		this['moveTo.animation'] = new LibCanvas.Behaviors.Animatable(function (change) {
 			shape.move({
 				x : diff.x * (change - prev),
 				y : diff.y * (change - prev)
