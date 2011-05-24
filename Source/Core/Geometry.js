@@ -12,7 +12,6 @@ authors:
 
 requires:
 	- LibCanvas
-	- Bindable
 
 provides: Geometry
 
