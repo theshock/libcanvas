@@ -617,7 +617,6 @@ authors:
 
 requires:
 	- LibCanvas
-	- Bindable
 
 provides: Geometry
 
@@ -3009,7 +3008,6 @@ LibCanvas.Canvas2D = atom.Class({
 	},
 
 	initialize : function (elem, options) {
-		this._layers = {};
 		this.funcs = {
 			plain : [],
 			render: []
@@ -3030,11 +3028,13 @@ LibCanvas.Canvas2D = atom.Class({
 		this.createProjectBuffer().addClearer();
 
 		var wrapper = this.wrapper, cover = this.cover;
+
+		this.name = this.options.name;
 		if (this.parentLayer) {
+			this._layers = this.parentLayer._layers;
 			aElem.appendTo(wrapper);
 		} else {
-			this.name = this.options.name;
-			this._layers[this.name] = this;
+			this._layers = {};
 			aElem
 				.attr('data-layer-name', this.name)
 				.replaceWith(wrapper.parent)
@@ -3044,6 +3044,7 @@ LibCanvas.Canvas2D = atom.Class({
 				this.size(elem.width, elem.height, true);
 			}
 		}
+		this._layers[this.name] = this;
 		cover.css('zIndex', this.maxZIndex + 100);
 
 		this.update = this.update.context(this);
@@ -3234,21 +3235,23 @@ LibCanvas.Canvas2D = atom.Class({
 		if (name in this._layers) {
 			throw new Error('Layer «' + name + '» already exists');
 		}
+		options = atom.extend({ name: name }, options || {});
 		var layer = this._layers[name] = new LibCanvas.Layer(this, this.options, options);
 		layer._layers = this._layers;
 		layer.zIndex  = z;
-		layer.name    = name;
 		layer.origElem.atom.attr({ 'data-layer-name': name });
 		return layer;
 	},
 	
 	get topLayer () {
-		var max = 0, layers = this._layers, nameMax = null;
-		for (var name in layers) if (layers[name].zIndex > max) {
-			nameMax = name;
-			max     = layers[name].zIndex;
+		var max = 0, layers = this._layers, nameMax = null, layer = null;
+		for (var name in layers) {
+			if (layers[name].zIndex > max) {
+				layer = layers[name];
+				max   = layer.zIndex;
+			}
 		}
-		return layers[nameMax] || null;
+		return layer;
 	},
 	
 	get maxZIndex () {
@@ -3264,12 +3267,16 @@ LibCanvas.Canvas2D = atom.Class({
 			layer.origElem.atom.css('zIndex', z);
 			layer.showBuffer();
 		};
-		
+
+		if (Object.values(this._layers).length == 1) {
+			set(this, 1);
+			return;
+		}
+
 		var current = this._zIndex;
 		
 		if (value == null) value = Infinity;
-		value = value.limit(1, this.maxZIndex + (current ? 1 : 0));
-
+		value = value.limit(1, this.maxZIndex + (current ? 0 : 1));
 		current = current || Infinity;
 		
 		for (var i in this._layers) if (this._layers[i] != this) {
@@ -4225,7 +4232,7 @@ LibCanvas.Layer = atom.Class({
 	initialize : function (elem, parentOptions, options) {
 		this.parentLayer = elem;
 
-		this.setOptions(parentOptions, options);
+		this.setOptions(parentOptions).setOptions(options);
 
 		this.parent(elem.createBuffer());
 	},
