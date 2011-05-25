@@ -581,7 +581,7 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 			} else {
 				for (var i in diff) {
 					if (start[i] instanceof Color) {
-						elem[i] = start[i].shift(diff[i].mul(factor)).toString();
+						elem[i] = start[i].shift(diff[i].clone().mul(factor)).toString();
 					} else {
 						elem[i] = start[i] + diff[i] * factor;
 					}
