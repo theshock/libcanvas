@@ -73,7 +73,7 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 			}.context(this),
 			stop : function () {
 				// avoid calling twice
-				animation.stop = function () { return this };
+				animation.stop = Function.lambda();
 
 				if (isFn) for (var i in args.props) inAction[i] = null;
 				invoker.rmFunction(fn);

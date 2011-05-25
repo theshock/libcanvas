@@ -58,20 +58,19 @@ var Point = LibCanvas.Point = atom.Class({
 				throw new TypeError('Wrong Arguments In Point.Set: [' + atom.toArray(arguments).join(', ') + ']');
 			}
 		}
-		this.x = x == null ? x : Number(x);
-		this.y = y == null ? y : Number(y);
+		this.x = x == null ? null : Number(x);
+		this.y = y == null ? null : Number(y);
 		return this;
 	},
 	move: function (distance, reverse) {
-		distance = this.self.from(distance);
-		distance = this.invertDirection(distance, reverse);
+		distance = this.invertDirection(Point(distance), reverse);
 		this.x += distance.x;
 		this.y += distance.y;
 
 		return this.parent(distance, false);
 	},
 	moveTo : function (newCoord) {
-		return this.move(this.diff(newCoord));
+		return this.move(this.diff(Point(arguments)));
 	},
 	angleTo : function (point) {
 		var diff = Point(arguments).diff(this);
@@ -155,7 +154,7 @@ var Point = LibCanvas.Point = atom.Class({
 		return this;
 	},
 	clone : function () {
-		return new this.self(this);
+		return new Point(this);
 	},
 	dump: function () {
 		return '[Point(' + this.x + ', ' + this.y + ')]';
