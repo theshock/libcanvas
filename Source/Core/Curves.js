@@ -84,6 +84,12 @@ EC.angle = function (a, b) {
 };
 
 EC.curves = {
+	linear: function (p, t) {
+		return new Point(
+			p[0].x + (p[1].x - p[0].x) * t,
+			p[0].y + (p[1].y - p[0].y) * t
+		);
+	},
 	quadratic: function (p,t) {
 		return new Point(
 			(1-t)*(1-t)*p[0].x + 2*t*(1-t)*p[1].x + t*t*p[2].x,
@@ -100,22 +106,23 @@ EC.curves = {
 
 LibCanvas.Context2D.implement({
 	drawCurve:function (obj) {
-		console.time('curve');
 		var gradient = EC.gradient(obj);   //Getting gradient function
 		var widthFn  = EC.width(obj);         //Getting width function
 		
-		var points = obj.points.concat([obj.to] || []).map(Point);  //Getting array of points
+		var points = obj.points.map(Point);  //Getting array of points
 		
-		var fn = points.length == 3 ? EC.curves.quadratic :
-		         points.length == 4 ? EC.curves.qubic : null;  //Define function 
-				 
-		if(!fn){
-			throw new Error('LibCanvas.Context2D.drawCurve -- unexpected number of points');
-		}  //If function not defined throw error
+		var fn =
+			points.length == 0 ? EC.curves.linear    :
+			points.length == 1 ? EC.curves.quadratic :
+			points.length == 2 ? EC.curves.qubic     : null;  //Define function 
 		
-		var step = obj.step || 0.0003;  //Found one step
+		points = [Point(obj.from)].append(points, [Point(obj.to)] );
 		
-		var imgd = this.original('createImageData', [this.canvas.width, this.canvas.height], true);  //Create image data
+		if (!fn) throw new Error('LibCanvas.Context2D.drawCurve -- unexpected number of points');
+		
+		var step = obj.step || 0.0003;
+		
+		var imgd = this.createImageData();
 		
 		var last = fn(points,0), point, color, width, angle, w, dx, dy, sin, cos;
 		
@@ -125,9 +132,14 @@ LibCanvas.Context2D.implement({
 			color = gradient(t);   //Find color
 			width = widthFn(t);    //Find width
 			
+			var w = point.x-last.x, h = point.y-last.y, d = Math.hypotenuse(w, h);
+			
 			angle = EC.angle(point, last);   //Found angle
-			sin = Math.sin(angle);
-			cos = Math.cos(angle);
+			if (obj.inverted) {
+				sin = w/d; cos = h/d;
+			} else {
+				sin = h/d; cos = w/d;
+			}
 			
 			for(w=0;w<width;w++){
 				dx = sin * w;
@@ -145,8 +157,6 @@ LibCanvas.Context2D.implement({
 		}
 		
 		this.putImageData(imgd,0,0); //Put new image data
-		
-		console.timeEnd('curve');
 		return this;	
 	}
 });
