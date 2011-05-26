@@ -35,6 +35,7 @@ var TF = LibCanvas.Inner.TimingFunctions = atom.Class({
 			return this._instance;
 		},
 		count: function (fn, progress, params) {
+			if (typeof fn == 'string') fn = fn.split('-');
 			if (typeof (this.instance[fn[0]]) != 'function') {
 				throw new TypeError('No timing function «' + fn[0] + '»');
 			}
