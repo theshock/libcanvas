@@ -431,8 +431,12 @@ LibCanvas.Context2D = atom.Class({
 	},
 
 	// image
-	createImageData : function () {
-		return this.original('createImageData', arguments);
+	createImageData : function (w, h) {
+		if (w == null || h == null) {
+			w = this.canvas.width;
+			h = this.canvas.height;
+		}
+		return this.original('createImageData', [w, h], true);
 	},
 
 	drawImage : function (a) {
