@@ -100,7 +100,7 @@ EC.curves = {
 
 LibCanvas.Context2D.implement({
 	drawCurve:function (obj) {
-		console.time('curve');
+		// console.time('curve');
 		var gradient = EC.gradient(obj);   //Getting gradient function
 		var widthFn  = EC.width(obj);         //Getting width function
 		
@@ -151,7 +151,7 @@ LibCanvas.Context2D.implement({
 		}
 		
 		this.putImageData(imgd,0,0);
-		console.timeEnd('curve');
+		// console.timeEnd('curve');
 		return this;	
 	}
 });
