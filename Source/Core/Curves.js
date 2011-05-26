@@ -40,9 +40,7 @@ EC.gradient = function (obj) {
 	} else if(typeof obj.gradient == 'function') {
 		return obj.gradient;
 	} else {
-		var gradient = {}
-		
-		gradient.fn = obj.gradient.fn || 'linear'
+		var gradient = { fn: obj.gradient.fn || 'linear' };
 		
 		if (typeof gradient.fn != 'string') {
 			throw new Error('Unexpected type of gradient function');
@@ -79,33 +77,30 @@ EC.width.range = function (width) {
 	}
 };
 
-EC.angle = function (a, b) {
-	return Math.atan( (a.y-b.y)/(a.x-b.x) );
-};
-
 EC.curves = {
 	linear: function (p, t) {
-		return new Point(
-			p[0].x + (p[1].x - p[0].x) * t,
-			p[0].y + (p[1].y - p[0].y) * t
-		);
+		return {
+			x:p[0].x + (p[1].x - p[0].x) * t,
+			y:p[0].y + (p[1].y - p[0].y) * t
+		};
 	},
 	quadratic: function (p,t) {
-		return new Point(
-			(1-t)*(1-t)*p[0].x + 2*t*(1-t)*p[1].x + t*t*p[2].x,
-			(1-t)*(1-t)*p[0].y + 2*t*(1-t)*p[1].y + t*t*p[2].y
-		);
+		return {
+			x:(1-t)*(1-t)*p[0].x + 2*t*(1-t)*p[1].x + t*t*p[2].x,
+			y:(1-t)*(1-t)*p[0].y + 2*t*(1-t)*p[1].y + t*t*p[2].y
+		};
 	},
 	qubic:  function (p, t) {
-		return new Point(
-			(1-t)*(1-t)*(1-t)*p[0].x + 3*t*(1-t)*(1-t)*p[1].x + 3*t*t*(1-t)*p[2].x + t*t*t*p[3].x,
-			(1-t)*(1-t)*(1-t)*p[0].y + 3*t*(1-t)*(1-t)*p[1].y + 3*t*t*(1-t)*p[2].y + t*t*t*p[3].y
-		);
+		return {
+			x:(1-t)*(1-t)*(1-t)*p[0].x + 3*t*(1-t)*(1-t)*p[1].x + 3*t*t*(1-t)*p[2].x + t*t*t*p[3].x,
+			y:(1-t)*(1-t)*(1-t)*p[0].y + 3*t*(1-t)*(1-t)*p[1].y + 3*t*t*(1-t)*p[2].y + t*t*t*p[3].y
+		};
 	}
 };
 
 LibCanvas.Context2D.implement({
 	drawCurve:function (obj) {
+		console.time('curve');
 		var gradient = EC.gradient(obj);   //Getting gradient function
 		var widthFn  = EC.width(obj);         //Getting width function
 		
@@ -134,7 +129,6 @@ LibCanvas.Context2D.implement({
 			
 			var w = point.x-last.x, h = point.y-last.y, d = Math.hypotenuse(w, h);
 			
-			angle = EC.angle(point, last);   //Found angle
 			if (obj.inverted) {
 				sin = w/d; cos = h/d;
 			} else {
@@ -156,7 +150,8 @@ LibCanvas.Context2D.implement({
 			last = point;
 		}
 		
-		this.putImageData(imgd,0,0); //Put new image data
+		this.putImageData(imgd,0,0);
+		console.timeEnd('curve');
 		return this;	
 	}
 });
