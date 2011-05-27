@@ -94,7 +94,7 @@ LibCanvas.Context2D.implement({
 		
 		var imgd = this.original('createImageData', [this.canvas.width, this.canvas.height], true);  //Create image data
 		
-		var last = fn(points,0), point, color, width, angle, w, dx, dy, sin, cos;
+		var last = fn(points,0), point, color, width, angle, w, dx, dy, sin, cos, f;
 		
 		for(var t=step;t<=1;t+=step){
 			point = fn(points, t); //Find x,y
@@ -106,17 +106,19 @@ LibCanvas.Context2D.implement({
 			sin = Math.sin(angle);
 			cos = Math.cos(angle);
 			
-			for(w=0;w<width;w++){
+			for(w=0;w<width+1;w++){
 				dx = sin * w;
 				dy = cos * w;
 				
 				p1 = (~~(point.y - dy))*4*imgd.width + (~~(point.x + dx))*4;
 				p2 = (~~(point.y + dy))*4*imgd.width + (~~(point.x - dx))*4;
 				
+				f = w>width?width%1/3.5:1;
+				
 				imgd.data[p1  ] = imgd.data[p2  ] = color[0];
 				imgd.data[p1+1] = imgd.data[p2+1] = color[1];
 				imgd.data[p1+2] = imgd.data[p2+2] = color[2];
-				imgd.data[p1+3] = imgd.data[p2+3] = color[3];
+				imgd.data[p1+3] = imgd.data[p2+3] = color[3]*f;
 			}
 			last = point;
 		}
