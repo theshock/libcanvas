@@ -143,10 +143,12 @@ LibCanvas.Context2D.implement({
 			}
 			
 			for(var d=0;d<=dist;d+=0.4){
+				
 				point.x = last.x + cos * d;
 				point.y = last.y + sin * d;
 				
-				for(w=0; w<=width; w++){
+				// for(w=0;w<=width;w++){ // без сглаживания
+				for(w=0;w<width+1;w++){
 					dx = sin * w;
 					dy = cos * w;
 					
