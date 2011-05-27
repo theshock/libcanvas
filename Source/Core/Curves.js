@@ -115,38 +115,55 @@ LibCanvas.Context2D.implement({
 		
 		if (!fn) throw new Error('LibCanvas.Context2D.drawCurve -- unexpected number of points');
 		
-		var step = obj.step || 0.0003;
+		var step = obj.step || 0.0015;
 		
 		var imgd = this.createImageData();
 		
-		var last = fn(points,0), point, color, width, angle, w, dx, dy, sin, cos;
+		var last = fn(points,0), point, color, width, angle, w, dx, dy, sin, cos, f;
+		
+		var lastStep = -1;
+		var alias;
 		
 		for(var t=step;t<=1;t+=step){
 			point = fn(points, t); //Find x,y
 			
-			color = gradient(t);   //Find color
-			width = widthFn(t);    //Find width
+			if(lastStep < t - step*10){
+				color = gradient(t);   //Find color
+				width = widthFn(t);    //Find width
+				alias = Math.sqrt(width%1)/3.3; //Find alias for this width
+				lastStep = t;
+			} //On every 10 steps find new color and width
+			
+			var dist = Point(point).distanceTo(last);
 			
 			var w = point.x-last.x, h = point.y-last.y, d = Math.hypotenuse(w, h);
-			
+				
 			if (obj.inverted) {
 				sin = w/d; cos = h/d;
 			} else {
 				sin = h/d; cos = w/d;
 			}
 			
-			for(w=0;w<width;w++){
-				dx = sin * w;
-				dy = cos * w;
+			for(var d=0;d<=dist;d+=0.4){
 				
-				p1 = (~~(point.y - dy))*4*imgd.width + (~~(point.x + dx))*4;
-				p2 = (~~(point.y + dy))*4*imgd.width + (~~(point.x - dx))*4;
+				point.x = last.x + cos * d;
+				point.y = last.y + sin * d;
 				
-				imgd.data[p1  ] = imgd.data[p2  ] = color[0];
-				imgd.data[p1+1] = imgd.data[p2+1] = color[1];
-				imgd.data[p1+2] = imgd.data[p2+2] = color[2];
-				imgd.data[p1+3] = imgd.data[p2+3] = color[3];
+				for(w=0;w<width+1;w++){
+					dx = sin * w;
+					dy = cos * w;
+					
+					p1 = (~~(point.y - dy))*4*imgd.width + (~~(point.x + dx))*4;
+					p2 = (~~(point.y + dy))*4*imgd.width + (~~(point.x - dx))*4;
+
+					imgd.data[p1  ] = imgd.data[p2  ] = color[0];
+					imgd.data[p1+1] = imgd.data[p2+1] = color[1];
+					imgd.data[p1+2] = imgd.data[p2+2] = color[2];
+					imgd.data[p1+3] = imgd.data[p2+3] = w>width?color[3]*alias:color[3];
+				}
+			
 			}
+			
 			last = point;
 		}
 		
