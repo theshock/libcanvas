@@ -147,7 +147,7 @@ LibCanvas.Context2D.implement({
 				point.x = last.x + cos * d;
 				point.y = last.y + sin * d;
 				
-				for(w=0;w<width+1;w++){
+				for(w=0; w<=width; w++){
 					dx = sin * w;
 					dy = cos * w;
 					
