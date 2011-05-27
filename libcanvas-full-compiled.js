@@ -4170,7 +4170,7 @@ LibCanvas.Context2D.implement({
 	drawCurve:function (obj) {
 		// console.time('curve');
 		var gradient = EC.gradient(obj);   //Getting gradient function
-		var widthFn  = EC.width(obj);         //Getting width function
+		var widthFn  = EC.width(obj);      //Getting width function
 		
 		var points = obj.points.map(Point);  //Getting array of points
 		
@@ -4211,11 +4211,10 @@ LibCanvas.Context2D.implement({
 			}
 			
 			for(var d=0;d<=dist;d+=0.4){
-				
 				point.x = last.x + cos * d;
 				point.y = last.y + sin * d;
 				
-				for(w=0;w<width+1;w++){
+				for(w=0; w<=width; w++){
 					dx = sin * w;
 					dy = cos * w;
 					
@@ -4239,6 +4238,7 @@ LibCanvas.Context2D.implement({
 	}
 });
 };
+
 
 /*
 ---
