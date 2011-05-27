@@ -918,7 +918,7 @@ var Point = LibCanvas.Point = atom.Class({
 		return this;
 	},
 	clone : function () {
-		return new Point(this);
+		return new this.self(this);
 	},
 	dump: function () {
 		return '[Point(' + this.x + ', ' + this.y + ')]';
@@ -4168,7 +4168,7 @@ EC.curves = {
 
 LibCanvas.Context2D.implement({
 	drawCurve:function (obj) {
-		console.time('curve');
+		// console.time('curve');
 		var gradient = EC.gradient(obj);   //Getting gradient function
 		var widthFn  = EC.width(obj);         //Getting width function
 		
@@ -4219,7 +4219,7 @@ LibCanvas.Context2D.implement({
 		}
 		
 		this.putImageData(imgd,0,0);
-		console.timeEnd('curve');
+		// console.timeEnd('curve');
 		return this;	
 	}
 });
