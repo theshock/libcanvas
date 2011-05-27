@@ -121,11 +121,18 @@ LibCanvas.Context2D.implement({
 		
 		var last = fn(points,0), point, color, width, angle, w, dx, dy, sin, cos, f;
 		
+		var lastStep = -1;
+		var alias;
+		
 		for(var t=step;t<=1;t+=step){
 			point = fn(points, t); //Find x,y
 			
-			color = gradient(t);   //Find color
-			width = widthFn(t);    //Find width
+			if(lastStep < t - step*10){
+				color = gradient(t);   //Find color
+				width = widthFn(t);    //Find width
+				alias = Math.sqrt(width%1)/3.3; //Find alias for this width
+				lastStep = t;
+			} //On every 10 steps find new color and width
 			
 			var w = point.x-last.x, h = point.y-last.y, d = Math.hypotenuse(w, h);
 			
@@ -141,13 +148,11 @@ LibCanvas.Context2D.implement({
 				
 				p1 = (~~(point.y - dy))*4*imgd.width + (~~(point.x + dx))*4;
 				p2 = (~~(point.y + dy))*4*imgd.width + (~~(point.x - dx))*4;
-				
-				f = w>width?width%1/3.5:1;
-				
+
 				imgd.data[p1  ] = imgd.data[p2  ] = color[0];
 				imgd.data[p1+1] = imgd.data[p2+1] = color[1];
 				imgd.data[p1+2] = imgd.data[p2+2] = color[2];
-				imgd.data[p1+3] = imgd.data[p2+3] = color[3]*f;
+				imgd.data[p1+3] = imgd.data[p2+3] = w>width?color[3]*alias:color[3];
 			}
 			last = point;
 		}
