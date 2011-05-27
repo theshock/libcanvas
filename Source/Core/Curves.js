@@ -119,7 +119,7 @@ LibCanvas.Context2D.implement({
 		
 		var imgd = this.createImageData();
 		
-		var last = fn(points,0), point, color, width, angle, w, dx, dy, sin, cos, f;
+		var last = fn(points,0), point, color, width, angle, w, dx, dy, sin, cos, f, c;
 		
 		var lastStep = -1;
 		var alias;
@@ -135,12 +135,10 @@ LibCanvas.Context2D.implement({
 			} //On every 10 steps find new color and width
 			
 			var w = point.x-last.x, h = point.y-last.y, dist = Math.hypotenuse(w, h);
-				
-			if (obj.inverted) {
-				sin = w/dist; cos = h/dist;
-			} else {
-				sin = h/dist; cos = w/dist;
-			}
+			
+			sin = w/dist; cos = h/dist;
+			
+			c = obj.inverted?1:-1;
 			
 			for(var d=0;d<=dist;d+=0.4){
 				
@@ -152,8 +150,8 @@ LibCanvas.Context2D.implement({
 					dx = sin * w;
 					dy = cos * w;
 					
-					p1 = (~~(point.y - dy))*4*imgd.width + (~~(point.x + dx))*4;
-					p2 = (~~(point.y + dy))*4*imgd.width + (~~(point.x - dx))*4;
+					p1 = (~~(point.y + (dy)*c))*4*imgd.width + (~~(point.x + dx))*4;
+					p2 = (~~(point.y - (dy)*c)*4*imgd.width + (~~(point.x - dx))*4;
 
 					imgd.data[p1  ] = imgd.data[p2  ] = color[0];
 					imgd.data[p1+1] = imgd.data[p2+1] = color[1];
