@@ -100,7 +100,7 @@ EC.curves = {
 
 LibCanvas.Context2D.implement({
 	drawCurve:function (obj) {
-		// console.time('curve');
+		 console.time('curve');
 		var gradient = EC.gradient(obj);   //Getting gradient function
 		var widthFn  = EC.width(obj);         //Getting width function
 		
@@ -115,7 +115,7 @@ LibCanvas.Context2D.implement({
 		
 		if (!fn) throw new Error('LibCanvas.Context2D.drawCurve -- unexpected number of points');
 		
-		var step = obj.step || 0.0003;
+		var step = obj.step || 0.0015;
 		
 		var imgd = this.createImageData();
 		
@@ -134,31 +134,41 @@ LibCanvas.Context2D.implement({
 				lastStep = t;
 			} //On every 10 steps find new color and width
 			
-			var w = point.x-last.x, h = point.y-last.y, d = Math.hypotenuse(w, h);
+			var dist = Point(point).distanceTo(last);
 			
+			var w = point.x-last.x, h = point.y-last.y, d = Math.hypotenuse(w, h);
+				
 			if (obj.inverted) {
 				sin = w/d; cos = h/d;
 			} else {
 				sin = h/d; cos = w/d;
 			}
 			
-			for(w=0;w<width+1;w++){
-				dx = sin * w;
-				dy = cos * w;
+			for(var d=0;d<=dist;d+=0.4){
 				
-				p1 = (~~(point.y - dy))*4*imgd.width + (~~(point.x + dx))*4;
-				p2 = (~~(point.y + dy))*4*imgd.width + (~~(point.x - dx))*4;
+				point.x = last.x + cos * d;
+				point.y = last.y + sin * d;
+				
+				for(w=0;w<width+1;w++){
+					dx = sin * w;
+					dy = cos * w;
+					
+					p1 = (~~(point.y - dy))*4*imgd.width + (~~(point.x + dx))*4;
+					p2 = (~~(point.y + dy))*4*imgd.width + (~~(point.x - dx))*4;
 
-				imgd.data[p1  ] = imgd.data[p2  ] = color[0];
-				imgd.data[p1+1] = imgd.data[p2+1] = color[1];
-				imgd.data[p1+2] = imgd.data[p2+2] = color[2];
-				imgd.data[p1+3] = imgd.data[p2+3] = w>width?color[3]*alias:color[3];
+					imgd.data[p1  ] = imgd.data[p2  ] = color[0];
+					imgd.data[p1+1] = imgd.data[p2+1] = color[1];
+					imgd.data[p1+2] = imgd.data[p2+2] = color[2];
+					imgd.data[p1+3] = imgd.data[p2+3] = w>width?color[3]*alias:color[3];
+				}
+			
 			}
+			
 			last = point;
 		}
 		
 		this.putImageData(imgd,0,0);
-		// console.timeEnd('curve');
+		 console.timeEnd('curve');
 		return this;	
 	}
 });
