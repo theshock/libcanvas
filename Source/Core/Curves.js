@@ -1,98 +1,123 @@
-﻿/*
+/*
+---
 
+name: "EC"
 
+description: ""
 
-drawArc,drawArcTo,drawLine
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+
+authors:
+	- "Artem Smirnov <art543484@ya.ru>"
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- Inner.TimingFunctions
+	- Context2D
+
+provides: EC
+
+...
 */
 
+new function () {
+	
 var Color = LibCanvas.Utils.Color, 
 	TimingFunctions = LibCanvas.Inner.TimingFunctions,
 	Point = LibCanvas.Point;
 
-var ExtendedCurve = {};
-ExtendedCurve.gradient = function (obj) {
-	if(!obj.gradient){
-		var color = new Color(obj.color || 'rgba(0,0,0,1)').toArray();
-		color[3] = (color[3] || 1) * 255;
-		return function(){
-			return color;
-		}
-	}else if(typeof obj.gradient == 'function'){
+var EC = {};
+EC.color = function (color) {
+	color   = new Color(color || [0,0,0,1]);
+	color.a = (color.a || 1) * 255;
+	return color;
+};
+
+EC.gradient = function (obj) {
+	if (!obj.gradient) {
+		return Function.lambda( EC.color(obj.color).toArray() );
+	} else if(typeof obj.gradient == 'function') {
 		return obj.gradient;
-	}else{
-		var gradient = {}
+	} else {
+		var gradient = { fn: obj.gradient.fn || 'linear' };
 		
-		gradient.fn = obj.gradient.fn || 'linear'
-		gradient.motion = obj.gradient.motion || 'out';
-		
-		if(typeof gradient.fn == 'string'){
-			gradient.from = new Color(obj.gradient.from || 'rgba(0,0,0,1)');
-			gradient.from.a = (gradient.from.a || 1) * 255;
-			
-			gradient.to = new Color(obj.gradient.to || 'rgba(0,0,0,1)');
-			gradient.to.a = (gradient.from.a || 1) * 255;
-			
-			var diff = gradient.from.diff(gradient.to);
-			
-			return function(t){
-				var factor = TimingFunctions.count([gradient.fn,gradient.motion], t);
-				return gradient.from.shift(diff.clone().mul(factor)).toArray()
-			}
-		}else{
+		if (typeof gradient.fn != 'string') {
 			throw new Error('Unexpected type of gradient function');
 		}
-			
+		
+		gradient.from = EC.color(obj.gradient.from);
+		gradient.to   = EC.color(obj.gradient.to  );
+		
+		var diff = gradient.from.diff( gradient.to );
+		
+		return function(t) {
+			var factor = TimingFunctions.count(gradient.fn, t);
+			return gradient.from.shift( diff.clone().mul(factor) ).toArray()
+		}
 	}
 }
-ExtendedCurve.width = function (obj) {
+EC.width = function (obj) {
 	obj.width = obj.width || 1;
-	if(typeof obj.width == 'number'){
-		return function(){
-			return obj.width;
-		}
-	}else if(typeof obj.width == 'function'){
-		return obj.width;
-	}else if(typeof obj.width == 'object'){
-		if(!obj.width.from || !obj.width.to){
-			throw new Error('width.from or width.to undefined');
-		}else{
-			return function(t){
-				obj.width.fn = obj.width.fn || 'linear';
-				obj.width.motion = obj.width.motion || 'out';
-				return obj.width.from + (obj.width.to - obj.width.from) * TimingFunctions.count([obj.width.fn,obj.width.motion], t);
-			}
-		}
-	}else{
-		throw new Error('Unexpected type of width');
+	switch (typeof obj.width) {
+		case 'number'  : return Function.lambda(obj.width);
+		case 'function': return obj.width;
+		case 'object'  : return EC.width.range( obj.width );
+		default: throw new Error('Unexpected type of width');
+	};
+};
+
+EC.width.range = function (width) {
+	if(!width.from || !width.to){
+		throw new Error('width.from or width.to undefined');
 	}
-}
-ExtendedCurve.quadraticCurve = function (p,t) {
-	//(1-t)*(1-t)*p0 + 2*t*(1-t)*p1 + t*t*p2 
-	return new Point( (1-t)*(1-t)*p[0].x + 2*t*(1-t)*p[1].x + t*t*p[2].x,
-                      (1-t)*(1-t)*p[0].y + 2*t*(1-t)*p[1].y + t*t*p[2].y );
-}
-ExtendedCurve.bezierCurve = function (p, t) {
-	return new Point( (1-t)*(1-t)*(1-t)*p[0].x + 3*t*(1-t)*(1-t)*p[1].x + 3*t*t*(1-t)*p[2].x + t*t*t*p[3].x,
-                      (1-t)*(1-t)*(1-t)*p[0].y + 3*t*(1-t)*(1-t)*p[1].y + 3*t*t*(1-t)*p[2].y + t*t*t*p[3].y	);
-}
+	var diff = width.to - width.from;
+	return function(t){
+		return width.from + diff * TimingFunctions.count(width.fn || 'linear', t);
+	}
+};
+
+EC.curves = {
+	linear: function (p, t) {
+		return {
+			x:p[0].x + (p[1].x - p[0].x) * t,
+			y:p[0].y + (p[1].y - p[0].y) * t
+		};
+	},
+	quadratic: function (p,t) {
+		return {
+			x:(1-t)*(1-t)*p[0].x + 2*t*(1-t)*p[1].x + t*t*p[2].x,
+			y:(1-t)*(1-t)*p[0].y + 2*t*(1-t)*p[1].y + t*t*p[2].y
+		};
+	},
+	qubic:  function (p, t) {
+		return {
+			x:(1-t)*(1-t)*(1-t)*p[0].x + 3*t*(1-t)*(1-t)*p[1].x + 3*t*t*(1-t)*p[2].x + t*t*t*p[3].x,
+			y:(1-t)*(1-t)*(1-t)*p[0].y + 3*t*(1-t)*(1-t)*p[1].y + 3*t*t*(1-t)*p[2].y + t*t*t*p[3].y
+		};
+	}
+};
 
 LibCanvas.Context2D.implement({
 	drawCurve:function (obj) {
-		var gradient = ExtendedCurve.gradient(obj);   //Getting gradient function
-		var widthFn = ExtendedCurve.width(obj);         //Getting width function
+		// console.time('curve');
+		var gradient = EC.gradient(obj);   //Getting gradient function
+		var widthFn  = EC.width(obj);         //Getting width function
 		
-		var points = obj.points.concat([obj.to] || []).map(Point);  //Getting array of points
+		var points = obj.points.map(Point);  //Getting array of points
 		
-		var fn = points.length == 3 ? ExtendedCurve.quadraticCurve :
-		         points.length == 4 ? ExtendedCurve.bezierCurve : undefined;  //Define function 
-				 
-		if(!fn){
-			throw new Error('LibCanvas.Context2D.drawCurve -- unexpected number of points');
-		}  //If function not defined throw error
+		var fn =
+			points.length == 0 ? EC.curves.linear    :
+			points.length == 1 ? EC.curves.quadratic :
+			points.length == 2 ? EC.curves.qubic     : null;  //Define function 
 		
-		var step = obj.step || 0.0003;  //Found one step
+		points = [Point(obj.from)].append(points, [Point(obj.to)] );
 		
-		var imgd = this.original('createImageData', [this.canvas.width, this.canvas.height], true);  //Create image data
+		if (!fn) throw new Error('LibCanvas.Context2D.drawCurve -- unexpected number of points');
+		
+		var step = obj.step || 0.0003;
+		
+		var imgd = this.createImageData();
 		
 		var last = fn(points,0), point, color, width, angle, w, dx, dy, sin, cos, f;
 		
@@ -102,9 +127,13 @@ LibCanvas.Context2D.implement({
 			color = gradient(t);   //Find color
 			width = widthFn(t);    //Find width
 			
-			angle = Math.atan((point.y-last.y)/(point.x-last.x));   //Found angle
-			sin = Math.sin(angle);
-			cos = Math.cos(angle);
+			var w = point.x-last.x, h = point.y-last.y, d = Math.hypotenuse(w, h);
+			
+			if (obj.inverted) {
+				sin = w/d; cos = h/d;
+			} else {
+				sin = h/d; cos = w/d;
+			}
 			
 			for(w=0;w<width+1;w++){
 				dx = sin * w;
@@ -123,8 +152,9 @@ LibCanvas.Context2D.implement({
 			last = point;
 		}
 		
-		this.putImageData(imgd,0,0); //Put new image data
-		
+		this.putImageData(imgd,0,0);
+		// console.timeEnd('curve');
 		return this;	
 	}
 });
+};
