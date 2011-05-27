@@ -4168,9 +4168,9 @@ EC.curves = {
 
 LibCanvas.Context2D.implement({
 	drawCurve:function (obj) {
-		console.time('curve');
+		// console.time('curve');
 		var gradient = EC.gradient(obj);   //Getting gradient function
-		var widthFn  = EC.width(obj);         //Getting width function
+		var widthFn  = EC.width(obj);      //Getting width function
 		
 		var points = obj.points.map(Point);  //Getting array of points
 		
@@ -4202,22 +4202,19 @@ LibCanvas.Context2D.implement({
 				lastStep = t;
 			} //On every 10 steps find new color and width
 			
-			// var dist = Point(point).distanceTo(last);
-			
-			var w = point.x-last.x, h = point.y-last.y, dist = d = Math.hypotenuse(w, h);
+			var w = point.x-last.x, h = point.y-last.y, dist = Math.hypotenuse(w, h);
 				
 			if (obj.inverted) {
-				sin = w/d; cos = h/d;
+				sin = w/dist; cos = h/dist;
 			} else {
-				sin = h/d; cos = w/d;
+				sin = h/dist; cos = w/dist;
 			}
 			
 			for(var d=0;d<=dist;d+=0.4){
-				
 				point.x = last.x + cos * d;
 				point.y = last.y + sin * d;
 				
-				for(w=0;w<width+1;w++){
+				for(w=0; w<=width; w++){
 					dx = sin * w;
 					dy = cos * w;
 					
@@ -4236,7 +4233,7 @@ LibCanvas.Context2D.implement({
 		}
 		
 		this.putImageData(imgd,0,0);
-		console.timeEnd('curve');
+		// console.timeEnd('curve');
 		return this;	
 	}
 });
