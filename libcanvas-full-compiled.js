@@ -4170,7 +4170,7 @@ LibCanvas.Context2D.implement({
 	drawCurve:function (obj) {
 		// console.time('curve');
 		var gradient = EC.gradient(obj);   //Getting gradient function
-		var widthFn  = EC.width(obj);         //Getting width function
+		var widthFn  = EC.width(obj);      //Getting width function
 		
 		var points = obj.points.map(Point);  //Getting array of points
 		
@@ -4203,24 +4203,21 @@ LibCanvas.Context2D.implement({
 			} //On every 10 steps find new color and width
 			
 			var w = point.x-last.x, h = point.y-last.y, dist = Math.hypotenuse(w, h);
-				
-			if (obj.inverted) {
-				sin = w/dist; cos = h/dist;
-			} else {
-				sin = h/dist; cos = w/dist;
-			}
+			
+			sin = h/dist; cos = w/dist;
+			
+			c = obj.inverted?1:-1;
 			
 			for(var d=0;d<=dist;d+=0.4){
-				
 				point.x = last.x + cos * d;
 				point.y = last.y + sin * d;
 				
-				for(w=0;w<width+1;w++){
+				for(w=0; w<=width; w++){
 					dx = sin * w;
 					dy = cos * w;
 					
-					p1 = (~~(point.y - dy))*4*imgd.width + (~~(point.x + dx))*4;
-					p2 = (~~(point.y + dy))*4*imgd.width + (~~(point.x - dx))*4;
+					p1 = (~~(point.y + dy*c))*4*imgd.width + (~~(point.x + dx))*4;
+					p2 = (~~(point.y - dy*c))*4*imgd.width + (~~(point.x - dx))*4;
 
 					imgd.data[p1  ] = imgd.data[p2  ] = color[0];
 					imgd.data[p1+1] = imgd.data[p2+1] = color[1];
@@ -4239,6 +4236,7 @@ LibCanvas.Context2D.implement({
 	}
 });
 };
+
 
 /*
 ---
