@@ -100,7 +100,7 @@ EC.curves = {
 
 LibCanvas.Context2D.implement({
 	drawCurve:function (obj) {
-		 console.time('curve');
+		console.time('curve');
 		var gradient = EC.gradient(obj);   //Getting gradient function
 		var widthFn  = EC.width(obj);      //Getting width function
 		
@@ -115,55 +115,87 @@ LibCanvas.Context2D.implement({
 		
 		if (!fn) throw new Error('LibCanvas.Context2D.drawCurve -- unexpected number of points');
 		
-		var step = obj.step || 0.0015;
+		var step = obj.step || 0.03;
+		var inv  = obj.inverted?1:-1;
 		
 		var imgd = this.createImageData();
+			
+		var point    , p1    , p2,
+			prevPoint, prevP1, prevP2,
+			h, w, d,
+			color, width, 
+			dx, dy,
+			maxX,minX,maxY,minY,
+			x, y;
 		
-		var last = fn(points,0), point, color, width, angle, w, dx, dy, sin, cos, f;
+		prevPoint = fn(points, -step);
 		
-		var lastStep = -1;
-		var alias;
+		buffer = document.createElement('canvas').getContext('2d');
+		buffer.canvas.width = 1000;
+		buffer.canvas.height = 1000;
 		
-		for(var t=step;t<=1;t+=step){
-			point = fn(points, t); //Find x,y
+		for (t=0 ; t<1 ; t+=step) {
+			point = fn(points, t);      //Find position of curret point
 			
-			if(lastStep < t - step*10){
-				color = gradient(t);   //Find color
-				width = widthFn(t);    //Find width
-				alias = Math.sqrt(width%1)/3.3; //Find alias for this width
-				lastStep = t;
-			} //On every 10 steps find new color and width
+			width = widthFn(t);         //Find color
+			color = gradient(t);        //Find width
 			
-			var w = point.x-last.x, h = point.y-last.y, dist = Math.hypotenuse(w, h);
+			h = point.x - prevPoint.x;  //Find delta by x
+			w = point.y - prevPoint.y;  //Find delta by y
+			d = Math.hypotenuse(h, w);  //Find distacne beetwen point and prevPoint
 			
-			sin = h/dist; cos = w/dist;
+			sin = h / d;  //Find cos
+			cos = w / d;  //Find sin
 			
-			c = obj.inverted?1:-1;
+			dy = sin*width*inv;  //Find delta by x
+			dx = cos*width;      //Find delta by y
 			
-			for(var d=0;d<=dist;d+=0.4){
-				point.x = last.x + cos * d;
-				point.y = last.y + sin * d;
+			p1 = Point([point.x + dx, point.y + dy]);  //Find first point
+			p2 = Point([point.x - dx, point.y - dy]);  //Find second point
+			
+			//404 Not found
+			
+			if (t) {
 				
-				for(w=0; w<=width; w++){
-					dx = sin * w;
-					dy = cos * w;
-					
-					p1 = (~~(point.y + dy*c))*4*imgd.width + (~~(point.x + dx))*4;
-					p2 = (~~(point.y - dy*c))*4*imgd.width + (~~(point.x - dx))*4;
+				buffer.beginPath();
+				buffer.moveTo(p1.x,p1.y);
+				buffer.lineTo(p2.x,p2.y);
+				buffer.lineTo(prevP2.x,prevP2.y);
+				buffer.lineTo(prevP1.x,prevP1.y);
+				buffer.lineTo(p1.x,p1.y);
 
-					imgd.data[p1  ] = imgd.data[p2  ] = color[0];
-					imgd.data[p1+1] = imgd.data[p2+1] = color[1];
-					imgd.data[p1+2] = imgd.data[p2+2] = color[2];
-					imgd.data[p1+3] = imgd.data[p2+3] = w>width?color[3]*alias:color[3];
+				maxX = Math.max(prevP1.x,prevP2.x,p1.x,p2.x);
+				minX = Math.min(prevP1.x,prevP2.x,p1.x,p2.x);
+				
+				maxY = Math.max(prevP1.y,prevP2.y,p1.y,p2.y);
+				minY = Math.min(prevP1.y,prevP2.y,p1.y,p2.y);
+				
+				for(x=minX;x<=maxX;x++){
+					for(y=minY;y<=maxY;y++){
+						if(buffer.isPointInPath(x,y)){
+							p = (~~y)*4*imgd.width + (~~x)*4;
+							imgd.data[p] = imgd.data[p+1] = imgd.data[p+2] = 0;
+							imgd.data[p+3] = 255;
+						}
+					}
 				}
+				
+				p = (~~p1.y)*4*imgd.width + (~~p1.x)*4;
+				imgd.data[p] = imgd.data[p+1] = imgd.data[p+2] = 0;
+				imgd.data[p+3] = 255;
 			
+				p = (~~p2.y)*4*imgd.width + (~~p2.x)*4;
+				imgd.data[p] = imgd.data[p+1] = imgd.data[p+2] = 0;
+				imgd.data[p+3] = 255;
+				
 			}
-			
-			last = point;
+			prevP1 = p1;       //p1    -> prevP1
+			prevP2 = p2;       //p2    -> prevP1
+			prevPoint = point; //point -> prevPoint
 		}
-		
+
 		this.putImageData(imgd,0,0);
-		 console.timeEnd('curve');
+		console.timeEnd('curve');
 		return this;	
 	}
 });
