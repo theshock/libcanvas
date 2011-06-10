@@ -53,7 +53,7 @@ EC.gradient = function (obj) {
 		
 		return function(t) {
 			var factor = TimingFunctions.count(gradient.fn, t);
-			return gradient.from.shift( diff.clone().mul(factor) ).toArray()
+			return gradient.from.shift( diff.clone().mul(factor) ).toString();
 		}
 	}
 }
@@ -85,15 +85,17 @@ EC.curves = {
 		};
 	},
 	quadratic: function (p,t) {
+		var i = 1-t;
 		return {
-			x:(1-t)*(1-t)*p[0].x + 2*t*(1-t)*p[1].x + t*t*p[2].x,
-			y:(1-t)*(1-t)*p[0].y + 2*t*(1-t)*p[1].y + t*t*p[2].y
+			x:i*i*p[0].x + 2*t*i*p[1].x + t*t*p[2].x,
+			y:i*i*p[0].y + 2*t*i*p[1].y + t*t*p[2].y
 		};
 	},
 	qubic:  function (p, t) {
+		var i = 1-t;
 		return {
-			x:(1-t)*(1-t)*(1-t)*p[0].x + 3*t*(1-t)*(1-t)*p[1].x + 3*t*t*(1-t)*p[2].x + t*t*t*p[3].x,
-			y:(1-t)*(1-t)*(1-t)*p[0].y + 3*t*(1-t)*(1-t)*p[1].y + 3*t*t*(1-t)*p[2].y + t*t*t*p[3].y
+			x:i*i*i*p[0].x + 3*t*i*i*p[1].x + 3*t*t*i*p[2].x + t*t*t*p[3].x,
+			y:i*i*i*p[0].y + 3*t*i*i*p[1].y + 3*t*t*i*p[2].y + t*t*t*p[3].y
 		};
 	}
 };
@@ -115,86 +117,42 @@ LibCanvas.Context2D.implement({
 		
 		if (!fn) throw new Error('LibCanvas.Context2D.drawCurve -- unexpected number of points');
 		
-		var step = obj.step || 0.03;
-		var inv  = obj.inverted?1:-1;
+		var step = obj.step || 0.02;
 		
-		var imgd = this.createImageData();
-			
-		var point    , p1    , p2,
-			prevPoint, prevP1, prevP2,
-			h, w, d,
-			color, width, 
-			dx, dy,
-			maxX,minX,maxY,minY,
-			x, y;
+		var c = obj.inverted?1:-1;
 		
-		prevPoint = fn(points, -step);
+		var prevPos, pos, width, color, p1, p2, prevP1, prevP2, w, h, dist, sin, cos, dx,dy;
+        		
+		prevPos = fn(points, -step);
+		for (var t=-step ; t<1.02 ; t += step) {
 		
-		buffer = document.createElement('canvas').getContext('2d');
-		buffer.canvas.width = 1000;
-		buffer.canvas.height = 1000;
-		
-		for (t=0 ; t<1 ; t+=step) {
-			point = fn(points, t);      //Find position of curret point
-			
-			width = widthFn(t);         //Find color
-			color = gradient(t);        //Find width
-			
-			h = point.x - prevPoint.x;  //Find delta by x
-			w = point.y - prevPoint.y;  //Find delta by y
-			d = Math.hypotenuse(h, w);  //Find distacne beetwen point and prevPoint
-			
-			sin = h / d;  //Find cos
-			cos = w / d;  //Find sin
-			
-			dy = sin*width*inv;  //Find delta by x
-			dx = cos*width;      //Find delta by y
-			
-			p1 = Point([point.x + dx, point.y + dy]);  //Find first point
-			p2 = Point([point.x - dx, point.y - dy]);  //Find second point
-			
-			//404 Not found
-			
-			if (t) {
-				
-				buffer.beginPath();
-				buffer.moveTo(p1.x,p1.y);
-				buffer.lineTo(p2.x,p2.y);
-				buffer.lineTo(prevP2.x,prevP2.y);
-				buffer.lineTo(prevP1.x,prevP1.y);
-				buffer.lineTo(p1.x,p1.y);
+			pos = fn(points, t);
+			color = gradient(t);
+			width = widthFn(t);
 
-				maxX = Math.max(prevP1.x,prevP2.x,p1.x,p2.x);
-				minX = Math.min(prevP1.x,prevP2.x,p1.x,p2.x);
-				
-				maxY = Math.max(prevP1.y,prevP2.y,p1.y,p2.y);
-				minY = Math.min(prevP1.y,prevP2.y,p1.y,p2.y);
-				
-				for(x=minX;x<=maxX;x++){
-					for(y=minY;y<=maxY;y++){
-						if(buffer.isPointInPath(x,y)){
-							p = (~~y)*4*imgd.width + (~~x)*4;
-							imgd.data[p] = imgd.data[p+1] = imgd.data[p+2] = 0;
-							imgd.data[p+3] = 255;
-						}
-					}
-				}
-				
-				p = (~~p1.y)*4*imgd.width + (~~p1.x)*4;
-				imgd.data[p] = imgd.data[p+1] = imgd.data[p+2] = 0;
-				imgd.data[p+3] = 255;
+			w = pos.x-prevPos.x;
+			h = pos.y-prevPos.y;
+			dist = Math.hypotenuse(w, h);
 			
-				p = (~~p2.y)*4*imgd.width + (~~p2.x)*4;
-				imgd.data[p] = imgd.data[p+1] = imgd.data[p+2] = 0;
-				imgd.data[p+3] = 255;
-				
-			}
-			prevP1 = p1;       //p1    -> prevP1
-			prevP2 = p2;       //p2    -> prevP1
-			prevPoint = point; //point -> prevPoint
+			sin = h/dist;
+			cos = w/dist;
+			
+			dx = sin * width;
+			dy = cos * width;
+			
+			p1 = Point([pos.x + dx, pos.y + dy*c]);
+			p2 = Point([pos.x - dx, pos.y - dy*c]);
+			
+			if (t >= step) {
+				this.beginPath().moveTo(prevP1).lineTo(prevP2).lineTo(p2).lineTo(p1).fill(color).stroke(color);				
+			};
+			
+			prevP1  = p1;
+			prevP2  = p2;
+			prevPos = pos;
+			
 		}
-
-		this.putImageData(imgd,0,0);
+		
 		console.timeEnd('curve');
 		return this;	
 	}
