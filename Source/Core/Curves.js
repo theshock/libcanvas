@@ -53,7 +53,7 @@ EC.gradient = function (obj) {
 		
 		return function(t) {
 			var factor = TimingFunctions.count(gradient.fn, t);
-			return gradient.from.shift( diff.clone().mul(factor) ).toArray()
+			return gradient.from.shift( diff.clone().mul(factor) ).toString();
 		}
 	}
 }
@@ -85,22 +85,24 @@ EC.curves = {
 		};
 	},
 	quadratic: function (p,t) {
+		var i = 1-t;
 		return {
-			x:(1-t)*(1-t)*p[0].x + 2*t*(1-t)*p[1].x + t*t*p[2].x,
-			y:(1-t)*(1-t)*p[0].y + 2*t*(1-t)*p[1].y + t*t*p[2].y
+			x:i*i*p[0].x + 2*t*i*p[1].x + t*t*p[2].x,
+			y:i*i*p[0].y + 2*t*i*p[1].y + t*t*p[2].y
 		};
 	},
 	qubic:  function (p, t) {
+		var i = 1-t;
 		return {
-			x:(1-t)*(1-t)*(1-t)*p[0].x + 3*t*(1-t)*(1-t)*p[1].x + 3*t*t*(1-t)*p[2].x + t*t*t*p[3].x,
-			y:(1-t)*(1-t)*(1-t)*p[0].y + 3*t*(1-t)*(1-t)*p[1].y + 3*t*t*(1-t)*p[2].y + t*t*t*p[3].y
+			x:i*i*i*p[0].x + 3*t*i*i*p[1].x + 3*t*t*i*p[2].x + t*t*t*p[3].x,
+			y:i*i*i*p[0].y + 3*t*i*i*p[1].y + 3*t*t*i*p[2].y + t*t*t*p[3].y
 		};
 	}
 };
 
 LibCanvas.Context2D.implement({
 	drawCurve:function (obj) {
-		// console.time('curve');
+		console.time('curve');
 		var gradient = EC.gradient(obj);   //Getting gradient function
 		var widthFn  = EC.width(obj);      //Getting width function
 		
@@ -115,57 +117,43 @@ LibCanvas.Context2D.implement({
 		
 		if (!fn) throw new Error('LibCanvas.Context2D.drawCurve -- unexpected number of points');
 		
-		var step = obj.step || 0.0015;
+		var step = obj.step || 0.02;
 		
-		var imgd = this.createImageData();
+		var c = obj.inverted?1:-1;
 		
-		var last = fn(points,0), point, color, width, angle, w, dx, dy, sin, cos, f;
+		var prevPos, pos, width, color, p1, p2, prevP1, prevP2, w, h, dist, sin, cos, dx,dy;
+        		
+		prevPos = fn(points, -step);
+		for (var t=-step ; t<1.02 ; t += step) {
 		
-		var lastStep = -1;
-		var alias;
-		
-		for(var t=step;t<=1;t+=step){
-			point = fn(points, t); //Find x,y
-			
-			if(lastStep < t - step*10){
-				color = gradient(t);   //Find color
-				width = widthFn(t);    //Find width
-				alias = Math.sqrt(width%1)/3.3; //Find alias for this width
-				lastStep = t;
-			} //On every 10 steps find new color and width
-			
-			var w = point.x-last.x, h = point.y-last.y, dist = Math.hypotenuse(w, h);
-			
-			sin = h/dist; cos = w/dist;
-			
-			c = obj.inverted?1:-1;
-			
-			for(var d=0;d<=dist;d+=0.4){
-				
-				point.x = last.x + cos * d;
-				point.y = last.y + sin * d;
-				
-				// for(w=0;w<=width;w++){ // без сглаживания
-				for(w=0;w<width+1;w++){
-					dx = sin * w;
-					dy = cos * w;
-					
-					p1 = (~~(point.y + dy*c))*4*imgd.width + (~~(point.x + dx))*4;
-					p2 = (~~(point.y - dy*c))*4*imgd.width + (~~(point.x - dx))*4;
+			pos = fn(points, t);
+			color = gradient(t);
+			width = widthFn(t);
 
-					imgd.data[p1  ] = imgd.data[p2  ] = color[0];
-					imgd.data[p1+1] = imgd.data[p2+1] = color[1];
-					imgd.data[p1+2] = imgd.data[p2+2] = color[2];
-					imgd.data[p1+3] = imgd.data[p2+3] = w>width?color[3]*alias:color[3];
-				}
+			w = pos.x-prevPos.x;
+			h = pos.y-prevPos.y;
+			dist = Math.hypotenuse(w, h);
 			
-			}
+			sin = h/dist;
+			cos = w/dist;
 			
-			last = point;
+			dx = sin * width;
+			dy = cos * width;
+			
+			p1 = Point([pos.x + dx, pos.y + dy*c]);
+			p2 = Point([pos.x - dx, pos.y - dy*c]);
+			
+			if (t >= step) {
+				this.beginPath().moveTo(prevP1).lineTo(prevP2).lineTo(p2).lineTo(p1).fill(color).stroke(color);				
+			};
+			
+			prevP1  = p1;
+			prevP2  = p2;
+			prevPos = pos;
+			
 		}
 		
-		this.putImageData(imgd,0,0);
-		// console.timeEnd('curve');
+		console.timeEnd('curve');
 		return this;	
 	}
 });
