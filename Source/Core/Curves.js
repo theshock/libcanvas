@@ -102,11 +102,10 @@ EC.curves = [
 
 LibCanvas.Context2D.implement({
 	drawCurve:function (obj) {
-		console.time('curve');
 		var gradient = EC.gradient(obj);   //Getting gradient function
 		var widthFn  = EC.width(obj);      //Getting width function
 		
-		var fn = EC.curves[ points.length ]; //Define function
+		var fn = EC.curves[ obj.points.length ]; //Define function
 		
 		if (!fn) throw new Error('LibCanvas.Context2D.drawCurve -- unexpected number of points');
 
@@ -151,8 +150,7 @@ LibCanvas.Context2D.implement({
 			prevP2  = p2;
 			prevPos = pos;
 		}
-		
-		console.timeEnd('curve');
+
 		return this;
 	}
 });
