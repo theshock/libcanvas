@@ -22,7 +22,11 @@ provides: EC
 */
 
 new function () {
-	
+
+/*
+	The following text contains bad code and due to it's code it should not be readed by ANYONE!
+*/
+
 var Color = LibCanvas.Utils.Color, 
 	TimingFunctions = LibCanvas.Inner.TimingFunctions,
 	Point = LibCanvas.Point;
@@ -33,6 +37,21 @@ EC.color = function (color) {
 	color.a = (color.a || 1) * 255;
 	return color;
 };
+
+EC.getPoints = function (prevPos, pos, width, c) {
+	var w = pos.x-prevPos.x,
+	    h = pos.y-prevPos.y,
+	    dist = Math.hypotenuse(w, h);
+		
+	var sin = h/dist,
+	    cos = w/dist;
+		
+	var dx = sin * width,
+	    dy = cos * width;
+		
+	return [new Point(pos.x + dx, pos.y + dy*c),
+	        new Point(pos.x - dx, pos.y - dy*c), Math.asin(sin)];
+}
 
 EC.gradient = function (obj) {
 	if (!obj.gradient) {
@@ -84,22 +103,14 @@ EC.curves = [
 			y:p[0].y + (p[1].y - p[0].y) * t
 		};
 	},
-<<<<<<< HEAD
-	quadratic: function (p,t) {
-=======
 	function (p,t) { // quadratic
->>>>>>> 6c413651d93775b179a2ae69fa3ae08adba12bde
 		var i = 1-t;
 		return {
 			x:i*i*p[0].x + 2*t*i*p[1].x + t*t*p[2].x,
 			y:i*i*p[0].y + 2*t*i*p[1].y + t*t*p[2].y
 		};
 	},
-<<<<<<< HEAD
-	qubic:  function (p, t) {
-=======
 	function (p, t) { // qubic
->>>>>>> 6c413651d93775b179a2ae69fa3ae08adba12bde
 		var i = 1-t;
 		return {
 			x:i*i*i*p[0].x + 3*t*i*i*p[1].x + 3*t*t*i*p[2].x + t*t*t*p[3].x,
@@ -110,10 +121,6 @@ EC.curves = [
 
 LibCanvas.Context2D.implement({
 	drawCurve:function (obj) {
-<<<<<<< HEAD
-		console.time('curve');
-=======
->>>>>>> 6c413651d93775b179a2ae69fa3ae08adba12bde
 		var gradient = EC.gradient(obj);   //Getting gradient function
 		var widthFn  = EC.width(obj);      //Getting width function
 		
@@ -124,82 +131,66 @@ LibCanvas.Context2D.implement({
 		var points = [Point(obj.from)].append( obj.points.map(Point), [Point(obj.to)] );
 		
 		var step = obj.step || 0.02;
-<<<<<<< HEAD
 		
 		var c = obj.inverted?1:-1;
 		
-		var prevPos, pos, width, color, p1, p2, prevP1, prevP2, w, h, dist, sin, cos, dx,dy;
+		var pos    , p,
+			prevPos, prevP,
+			specPos, specP,
+			angle  , prevAngle,
+			width  , color;
+			
         		
 		prevPos = fn(points, -step);
 		for (var t=-step ; t<1.02 ; t += step) {
-		
-=======
-		
-		var c = obj.inverted?1:-1;
-		
-		var prevPos, pos, width, color, p1, p2, prevP1, prevP2, w, h, dist, sin, cos, dx,dy;
-        		
-		prevPos = fn(points, -step);
-		for (var t=-step ; t<1.02 ; t += step) {
->>>>>>> 6c413651d93775b179a2ae69fa3ae08adba12bde
 			pos = fn(points, t);
 			color = gradient(t);
 			width = widthFn(t);
 
-			w = pos.x-prevPos.x;
-			h = pos.y-prevPos.y;
-			dist = Math.hypotenuse(w, h);
-<<<<<<< HEAD
-			
-			sin = h/dist;
-			cos = w/dist;
-			
-			dx = sin * width;
-			dy = cos * width;
-			
-			p1 = Point([pos.x + dx, pos.y + dy*c]);
-			p2 = Point([pos.x - dx, pos.y - dy*c]);
-			
+			p = EC.getPoints(prevPos, pos, width, c);
+						
 			if (t >= step) {
-				this.beginPath().moveTo(prevP1).lineTo(prevP2).lineTo(p2).lineTo(p1).fill(color).stroke(color);				
-			};
-			
-			prevP1  = p1;
-			prevP2  = p2;
-			prevPos = pos;
-			
-		}
-		
-		console.timeEnd('curve');
-		return this;	
-=======
-			
-			sin = h/dist;
-			cos = w/dist;
-			
-			dx = sin * width;
-			dy = cos * width;
-			
-			p1 = new Point(pos.x + dx, pos.y + dy*c);
-			p2 = new Point(pos.x - dx, pos.y - dy*c);
-			
-			if (t >= step) {
-				this
-					.beginPath(prevP1)
-					.lineTo(prevP2)
-					.lineTo(p2)
-					.lineTo(p1)
-					.fill(color)
-					.stroke(color);
+				if (Math.abs(p[2] - prevP[2]) > 0.1) {
+				
+					this.beginPath(prevP[0]);
+					
+					for (var f=0.002 ; f<0.02 ; f += 0.002) {
+						var specPos = fn(points, t - step + f);
+						var specP = EC.getPoints(prevPos, specPos, width, c);
+						this.lineTo(specP[0]);
+					}
+					
+					this
+						.lineTo(p[0])
+						.lineTo(p[1]);
+					
+					for (; f>0.002 ; f -= 0.002) {
+						var specPos = fn(points, t - step + f);
+						var specP = EC.getPoints(prevPos, specPos, width, c);
+						this.lineTo(specP[1]);
+					}
+					
+					this
+						.lineTo(prevP[1])
+						.fill(color)
+						.stroke(color);
+						
+				} else {
+					this
+						.beginPath(prevP[0])
+						.lineTo(prevP[1])
+						.lineTo(p[1])
+						.lineTo(p[0])
+						.fill(color)
+						.stroke(color);
+				}
 			}
 			
-			prevP1  = p1;
-			prevP2  = p2;
+			prevP   = p;
 			prevPos = pos;
 		}
 
 		return this;
->>>>>>> 6c413651d93775b179a2ae69fa3ae08adba12bde
 	}
 });
 };
