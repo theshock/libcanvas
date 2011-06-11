@@ -45,6 +45,7 @@ LibCanvas.Canvas2D
 ## Разметка
 
 Достаточно создать один тег и передать ссылку на него в LibCanvas:
+
 	<body>
 		<canvas id="my-first-canvas"></canvas>
 	</body>
@@ -53,6 +54,7 @@ LibCanvas.Canvas2D
 	</script>
 
 В итоге ваша вёрстка будет приведена приблизительно к такому виду:
+
 	<body>
 		<div class="libcanvas-layers-container">
 			<!-- Главный слой - элемент, который вы создаёте на странице -->
