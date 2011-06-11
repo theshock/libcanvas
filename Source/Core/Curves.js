@@ -56,7 +56,7 @@ EC.gradient = function (obj) {
 			return gradient.from.shift( diff.clone().mul(factor) ).toString();
 		}
 	}
-}
+};
 EC.width = function (obj) {
 	obj.width = obj.width || 1;
 	switch (typeof obj.width) {
@@ -64,7 +64,7 @@ EC.width = function (obj) {
 		case 'function': return obj.width;
 		case 'object'  : return EC.width.range( obj.width );
 		default: throw new Error('Unexpected type of width');
-	};
+	}
 };
 
 EC.width.range = function (width) {
@@ -77,28 +77,28 @@ EC.width.range = function (width) {
 	}
 };
 
-EC.curves = {
-	linear: function (p, t) {
+EC.curves = [
+	function (p, t) { // linear
 		return {
 			x:p[0].x + (p[1].x - p[0].x) * t,
 			y:p[0].y + (p[1].y - p[0].y) * t
 		};
 	},
-	quadratic: function (p,t) {
+	function (p,t) { // quadratic
 		var i = 1-t;
 		return {
 			x:i*i*p[0].x + 2*t*i*p[1].x + t*t*p[2].x,
 			y:i*i*p[0].y + 2*t*i*p[1].y + t*t*p[2].y
 		};
 	},
-	qubic:  function (p, t) {
+	function (p, t) { // qubic
 		var i = 1-t;
 		return {
 			x:i*i*i*p[0].x + 3*t*i*i*p[1].x + 3*t*t*i*p[2].x + t*t*t*p[3].x,
 			y:i*i*i*p[0].y + 3*t*i*i*p[1].y + 3*t*t*i*p[2].y + t*t*t*p[3].y
 		};
 	}
-};
+];
 
 LibCanvas.Context2D.implement({
 	drawCurve:function (obj) {
@@ -106,16 +106,11 @@ LibCanvas.Context2D.implement({
 		var gradient = EC.gradient(obj);   //Getting gradient function
 		var widthFn  = EC.width(obj);      //Getting width function
 		
-		var points = obj.points.map(Point);  //Getting array of points
-		
-		var fn =
-			points.length == 0 ? EC.curves.linear    :
-			points.length == 1 ? EC.curves.quadratic :
-			points.length == 2 ? EC.curves.qubic     : null;  //Define function 
-		
-		points = [Point(obj.from)].append(points, [Point(obj.to)] );
+		var fn = EC.curves[ points.length ]; //Define function
 		
 		if (!fn) throw new Error('LibCanvas.Context2D.drawCurve -- unexpected number of points');
+
+		var points = [Point(obj.from)].append( obj.points.map(Point), [Point(obj.to)] );
 		
 		var step = obj.step || 0.02;
 		
@@ -125,7 +120,6 @@ LibCanvas.Context2D.implement({
         		
 		prevPos = fn(points, -step);
 		for (var t=-step ; t<1.02 ; t += step) {
-		
 			pos = fn(points, t);
 			color = gradient(t);
 			width = widthFn(t);
@@ -140,21 +134,26 @@ LibCanvas.Context2D.implement({
 			dx = sin * width;
 			dy = cos * width;
 			
-			p1 = Point([pos.x + dx, pos.y + dy*c]);
-			p2 = Point([pos.x - dx, pos.y - dy*c]);
+			p1 = new Point(pos.x + dx, pos.y + dy*c);
+			p2 = new Point(pos.x - dx, pos.y - dy*c);
 			
 			if (t >= step) {
-				this.beginPath().moveTo(prevP1).lineTo(prevP2).lineTo(p2).lineTo(p1).fill(color).stroke(color);				
-			};
+				this
+					.beginPath(prevP1)
+					.lineTo(prevP2)
+					.lineTo(p2)
+					.lineTo(p1)
+					.fill(color)
+					.stroke(color);
+			}
 			
 			prevP1  = p1;
 			prevP2  = p2;
 			prevPos = pos;
-			
 		}
 		
 		console.timeEnd('curve');
-		return this;	
+		return this;
 	}
 });
 };
