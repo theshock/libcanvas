@@ -555,7 +555,7 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 		var animation = {
 			repeat: function () {
 				this.animate(args);
-			}.context(this),
+			}.bind(this),
 			stop : function () {
 				// avoid calling twice
 				animation.stop = Function.lambda();
@@ -564,14 +564,12 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 				invoker.rmFunction(fn);
 				args.onAbort && args.onAbort.call(this, animation, start);
 				return this;
-			}.context(this),
+			}.bind(this),
 			instance: this
 		};
 		
 		var fn = function (time) {
-			var timeElapsed = Math.min(time, timeLeft);
-
-			timeLeft -= timeElapsed;
+			timeLeft -= Math.min(time, timeLeft);
 
 			var progress = (args.time - timeLeft) / args.time;
 
@@ -581,11 +579,11 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 				elem(factor);
 			} else {
 				for (var i in diff) {
-					if (start[i] instanceof Color) {
-						elem[i] = start[i].shift(diff[i].clone().mul(factor)).toString();
-					} else {
-						elem[i] = start[i] + diff[i] * factor;
-					}
+					Object.path.set( elem, i,
+						start[i] instanceof Color ?
+							start[i].shift(diff[i].clone().mul(factor)).toString() :
+							start[i] + diff[i] * factor
+					);
 				}
 			}
 
@@ -599,20 +597,22 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 			}
 
 			return true;
-		}.context(this);
-
+		}.bind(this);
 
 
 		if (!isFn) for (var i in args.props) {
+			var elemValue = Object.path.get(elem, i);
+
 			// if this property is already animating - remove
 			if (i in inAction) invoker.rmFunction(inAction[i]);
 			inAction[i] = fn;
-			if (Color.isColorString(elem[i])) {
-				start[i] = new Color(elem[i]);
+
+			if (Color.isColorString(elemValue)) {
+				start[i] = new Color(elemValue);
 				diff[i]  = start[i].diff(args.props[i]);
 			} else {
-				start[i] = elem[i];
-				diff[i]  = args.props[i] - elem[i];
+				start[i] = elemValue;
+				diff[i]  = args.props[i] - elemValue;
 			}
 		}
 
@@ -4090,7 +4090,11 @@ provides: EC
 */
 
 new function () {
-	
+
+/*
+	The following text contains bad code and due to it's code it should not be readed by ANYONE!
+*/
+
 var Color = LibCanvas.Utils.Color, 
 	TimingFunctions = LibCanvas.Inner.TimingFunctions,
 	Point = LibCanvas.Point;
@@ -4101,6 +4105,21 @@ EC.color = function (color) {
 	color.a = (color.a || 1) * 255;
 	return color;
 };
+
+EC.getPoints = function (prevPos, pos, width, c) {
+	var w = pos.x-prevPos.x,
+	    h = pos.y-prevPos.y,
+	    dist = Math.hypotenuse(w, h);
+		
+	var sin = h/dist,
+	    cos = w/dist;
+		
+	var dx = sin * width,
+	    dy = cos * width;
+		
+	return [new Point(pos.x + dx, pos.y + dy*c),
+	        new Point(pos.x - dx, pos.y - dy*c), Math.asin(sin)];
+}
 
 EC.gradient = function (obj) {
 	if (!obj.gradient) {
@@ -4183,7 +4202,12 @@ LibCanvas.Context2D.implement({
 		
 		var c = obj.inverted?1:-1;
 		
-		var prevPos, pos, width, color, p1, p2, prevP1, prevP2, w, h, dist, sin, cos, dx,dy;
+		var pos    , p,
+			prevPos, prevP,
+			specPos, specP,
+			angle  , prevAngle,
+			width  , color;
+			
         		
 		prevPos = fn(points, -step);
 		for (var t=-step ; t<1.02 ; t += step) {
@@ -4191,31 +4215,46 @@ LibCanvas.Context2D.implement({
 			color = gradient(t);
 			width = widthFn(t);
 
-			w = pos.x-prevPos.x;
-			h = pos.y-prevPos.y;
-			dist = Math.hypotenuse(w, h);
-			
-			sin = h/dist;
-			cos = w/dist;
-			
-			dx = sin * width;
-			dy = cos * width;
-			
-			p1 = new Point(pos.x + dx, pos.y + dy*c);
-			p2 = new Point(pos.x - dx, pos.y - dy*c);
-			
+			p = EC.getPoints(prevPos, pos, width, c);
+						
 			if (t >= step) {
-				this
-					.beginPath(prevP1)
-					.lineTo(prevP2)
-					.lineTo(p2)
-					.lineTo(p1)
-					.fill(color)
-					.stroke(color);
+				if (Math.abs(p[2] - prevP[2]) > 0.1) {
+				
+					this.beginPath(prevP[0]);
+					
+					for (var f=0.002 ; f<0.02 ; f += 0.002) {
+						var specPos = fn(points, t - step + f);
+						var specP = EC.getPoints(prevPos, specPos, width, c);
+						this.lineTo(specP[0]);
+					}
+					
+					this
+						.lineTo(p[0])
+						.lineTo(p[1]);
+					
+					for (; f>0.002 ; f -= 0.002) {
+						var specPos = fn(points, t - step + f);
+						var specP = EC.getPoints(prevPos, specPos, width, c);
+						this.lineTo(specP[1]);
+					}
+					
+					this
+						.lineTo(prevP[1])
+						.fill(color)
+						.stroke(color);
+						
+				} else {
+					this
+						.beginPath(prevP[0])
+						.lineTo(prevP[1])
+						.lineTo(p[1])
+						.lineTo(p[0])
+						.fill(color)
+						.stroke(color);
+				}
 			}
 			
-			prevP1  = p1;
-			prevP2  = p2;
+			prevP   = p;
 			prevPos = pos;
 		}
 
