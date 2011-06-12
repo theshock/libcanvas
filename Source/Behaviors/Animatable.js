@@ -42,6 +42,8 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 		if (typeof key == 'string' && arguments.length == 2) {
 			args = {};
 			args[key] = value;
+		} else if (typeof key == 'function') {
+			elem = key;
 		} else {
 			args = key;
 		}
@@ -91,7 +93,7 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 			var factor = TF.count(args.fn, progress, args.params);
 
 			if (isFn) {
-				elem(factor);
+				elem.call(this, factor);
 			} else {
 				for (var i in diff) {
 					Object.path.set( elem, i,
