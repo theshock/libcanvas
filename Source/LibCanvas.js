@@ -88,6 +88,6 @@ atom.dom && atom.dom(function () {
 	LibCanvas.invoker.invoke();
 });
 
-LibCanvas.namespace( 'Behaviors', 'Engines', 'Inner', 'Processors', 'Shapes', 'Ui', 'Utils' );
+LibCanvas.namespace( 'Animation', 'Behaviors', 'Engines', 'Inner', 'Processors', 'Shapes', 'Ui', 'Utils' );
 	
 })();

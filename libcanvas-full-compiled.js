@@ -88,9 +88,171 @@ atom.dom && atom.dom(function () {
 	LibCanvas.invoker.invoke();
 });
 
-LibCanvas.namespace( 'Behaviors', 'Engines', 'Inner', 'Processors', 'Shapes', 'Ui', 'Utils' );
+LibCanvas.namespace( 'Animation', 'Behaviors', 'Engines', 'Inner', 'Processors', 'Shapes', 'Ui', 'Utils' );
 	
 })();
+
+/*
+---
+
+name: "Animation.Sprite"
+
+description: "Provides basic animation via sprites"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+
+provides: Animation.Sprite
+
+...
+*/
+
+LibCanvas.Animation.Sprite = atom.Class({
+	Implements: [atom.Class.Events],
+	sprites : null,
+
+	initialize: function () {
+		this.sprites = {};
+	},
+	addSprite : function (index, sprite) {
+		this.sprites[index] = sprite;
+		return this;
+	},
+	addSprites : function (sprites, width) {
+		if (atom.typeOf(sprites) == 'object') {
+			atom.extend(this.sprites, sprites);
+		} else {
+			for (var w = 0; (w * width) < sprites.width; w++) {
+				this.addSprite(w, sprites.sprite(width*w, 0, width, sprites.height));
+			}
+		}
+		return this;
+	},
+	defaultSprite : null,
+	setDefaultSprite : function (index) {
+		this.defaultSprite = index;
+		return this;
+	},
+	get sprite () {
+		return this._getFrame() ? this.sprites[this._getFrame().sprite] :
+			this.defaultSprite != null ? this.sprites[this.defaultSprite] : null;
+	},
+	getSprite : function () {
+		return this.sprite;
+	},
+
+	animations : {},
+	add : function (animation, line) {
+		if (arguments.length == 2) {
+			return this.add({ name: animation, line: line });
+		}
+
+		if (!animation.frames && animation.line) {
+			animation.frames = [];
+			animation.line.forEach(function (f, i) {
+				animation.frames.push({sprite: f, delay: animation.delay || 40, name: i});
+			});
+			delete animation.line;
+			return this.add(animation);
+		}
+		this.animations[animation.name] = animation;
+		return this;
+	},
+
+	_singleAnimationId: 0,
+	runOnce: function (cfg) {
+		var name = '_singleAnimation' + this._singleAnimationId++;
+		if (Array.isArray(cfg)) cfg = { line: cfg };
+
+		return this
+			.add(atom.extend({ name : name }, cfg))
+			.run(name);
+	},
+
+	_current : null,
+	_queue : [],
+	run : function (name, cfg) {
+		if (typeof name != 'string') {
+			return this.runOnce(name);
+		}
+		if (!name in this.animations) {
+			throw new Error('No animation «' + name + '»');
+		}
+		var args = {
+			name : name,
+			cfg  : cfg || {}
+		};
+		if (this._current) {
+			this._queue.push(args);
+		} else {
+			this._init(args);
+		}
+		return this;
+	},
+	stop : function (force) {
+		this._current = null;
+		if (force) {
+			this._queue = [];
+		} else {
+			this._stopped();
+		}
+		return this;
+	},
+	_stopped : function () {
+		var next = this._queue.shift();
+		return next != null && this._init(next);
+	},
+	_init : function (args) {
+		this._current = {
+			animation : this.animations[args.name],
+			index     : -1,
+			cfg       : args.cfg
+		};
+		this._current.repeat = this._getCfg('repeat');
+		return this._nextFrame();
+	},
+	_nextFrame : function () {
+		if (!this._current) return this;
+
+		this._current.index++;
+		var frame = this._getFrame();
+		if (!frame && (this._getCfg('loop') || this._current.repeat)) {
+			this._current.repeat && this._current.repeat--;
+			this._current.index = 0;
+			frame = this._getFrame();
+		}
+		var aniName = this._current.animation.name;
+		if (frame) {
+			var frameName = frame.name ? 'frame:' + frame.name : 'frame';
+			this.fireEvent('changed', [frameName, aniName]);
+			this.fireEvent(frameName, [frameName, aniName]);
+			// use invoker instead
+			if (frame.delay != null) this._nextFrame.delay(frame.delay, this);
+		} else {
+			this.fireEvent('changed', ['stop:' + aniName]);
+			this.fireEvent('stop:' + aniName, ['stop:' + aniName]);
+			this.fireEvent('stop', [aniName]);
+			this._current = null;
+			this._stopped();
+		}
+		return this;
+	},
+	_getFrame : function () {
+		return this._current ? this._current.animation.frames[this._current.index] : null;
+	},
+	_getCfg : function (index) {
+		return index in this._current.cfg ?
+			this._current.cfg[index] :
+			this._current.animation[index];
+	},
+	toString: Function.lambda('[object LibCanvas.Animation]')
+});
+
 
 /*
 ---
@@ -555,7 +717,7 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 		var animation = {
 			repeat: function () {
 				this.animate(args);
-			}.context(this),
+			}.bind(this),
 			stop : function () {
 				// avoid calling twice
 				animation.stop = Function.lambda();
@@ -564,14 +726,12 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 				invoker.rmFunction(fn);
 				args.onAbort && args.onAbort.call(this, animation, start);
 				return this;
-			}.context(this),
+			}.bind(this),
 			instance: this
 		};
 		
 		var fn = function (time) {
-			var timeElapsed = Math.min(time, timeLeft);
-
-			timeLeft -= timeElapsed;
+			timeLeft -= Math.min(time, timeLeft);
 
 			var progress = (args.time - timeLeft) / args.time;
 
@@ -581,11 +741,11 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 				elem(factor);
 			} else {
 				for (var i in diff) {
-					if (start[i] instanceof Color) {
-						elem[i] = start[i].shift(diff[i].clone().mul(factor)).toString();
-					} else {
-						elem[i] = start[i] + diff[i] * factor;
-					}
+					Object.path.set( elem, i,
+						start[i] instanceof Color ?
+							start[i].shift(diff[i].clone().mul(factor)).toString() :
+							start[i] + diff[i] * factor
+					);
 				}
 			}
 
@@ -599,20 +759,22 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 			}
 
 			return true;
-		}.context(this);
-
+		}.bind(this);
 
 
 		if (!isFn) for (var i in args.props) {
+			var elemValue = Object.path.get(elem, i);
+
 			// if this property is already animating - remove
 			if (i in inAction) invoker.rmFunction(inAction[i]);
 			inAction[i] = fn;
-			if (Color.isColorString(elem[i])) {
-				start[i] = new Color(elem[i]);
+
+			if (Color.isColorString(elemValue)) {
+				start[i] = new Color(elemValue);
 				diff[i]  = start[i].diff(args.props[i]);
 			} else {
-				start[i] = elem[i];
-				diff[i]  = args.props[i] - elem[i];
+				start[i] = elemValue;
+				diff[i]  = args.props[i] - elemValue;
 			}
 		}
 
@@ -1690,162 +1852,6 @@ LibCanvas.Behaviors.Moveable = atom.Class({
 		return this;
 	}
 });
-
-/*
----
-
-name: "Animation"
-
-description: "Provides basic animation for sprites"
-
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-
-provides: Animation
-
-...
-*/
-
-LibCanvas.Animation = atom.Class({
-	Implements: [atom.Class.Events],
-	sprites : null,
-	initialize: function () {
-		this.sprites = {};
-	},
-	addSprite : function (index, sprite) {
-		this.sprites[index] = sprite;
-		return this;
-	},
-	addSprites : function (sprites, width) {
-		if (atom.typeOf(sprites) == 'object') {
-			atom.extend(this.sprites, sprites);
-		} else {
-			for (var w = 0; (w * width) < sprites.width; w++) {
-				this.addSprite(w, sprites.sprite(width*w, 0, width, sprites.height));
-			}
-		}
-		return this;
-	},
-	defaultSprite : null,
-	setDefaultSprite : function (index) {
-		this.defaultSprite = index;
-		return this;
-	},
-	getSprite : function () {
-		return this.getFrame() ? this.sprites[this.getFrame().sprite] : 
-			this.defaultSprite != null ? this.sprites[this.defaultSprite] : null;
-	},
-
-	animations : {},
-	add : function (animation) {
-		if (!animation.frames && animation.line) {
-			animation.frames = [];
-			animation.line.forEach(function (f, i) {
-				animation.frames.push({sprite: f, delay: animation.delay, name: i});
-			});
-			delete animation.line;
-			return this.add(animation);
-		}
-		this.animations[animation.name] = animation;
-		return this;
-	},
-
-	singleAnimationId: 0,
-	runOnce: function (cfg) {
-		var name = '_singleAnimation' + this.singleAnimationId++;
-		return this
-			.add(atom.extend({
-				name : name,
-				delay: 40
-			}, cfg))
-			.run(name);
-	},
-
-	current : null,
-	queue : [],
-	run : function (name, cfg) {
-		if (typeof name != 'string') {
-			return this.runOnce(name);
-		}
-		if (!name in this.animations) {
-			throw new Error('No animation «' + name + '»');
-		}
-		var args = {
-			name : name,
-			cfg  : cfg || {}
-		};
-		if (this.current) {
-			this.queue.push(args);
-		} else {
-			this.init(args);
-		}
-		return this;
-	},
-	stop : function (force) {
-		this.current = null;
-		if (force) {
-			this.queue = [];
-		} else {
-			this.stopped();
-		}
-		return this;
-	},
-	stopped : function () {
-		var next = this.queue.shift();
-		return next != null && this.init(next);
-	},
-	init : function (args) {
-		this.current = {
-			animation : this.animations[args.name],
-			index     : -1,
-			cfg       : args.cfg
-		};
-		this.current.repeat = this.getCfg('repeat');
-		return this.nextFrame();
-	},
-	nextFrame : function () {
-		if (!this.current) return this;
-		
-		this.current.index++;
-		var frame = this.getFrame();
-		if (!frame && (this.getCfg('loop') || this.current.repeat)) {
-			this.current.repeat && this.current.repeat--;
-			this.current.index = 0;
-			frame = this.getFrame();
-		}
-		var aniName = this.current.animation.name;
-		if (frame) {
-			var frameName = frame.name ? 'frame:' + frame.name : 'frame';
-			this.fireEvent('changed', [frameName, aniName]);
-			this.fireEvent(frameName, [frameName, aniName]);
-			// use invoker instead
-			if (frame.delay != null) this.nextFrame.delay(frame.delay, this);
-		} else {
-			this.fireEvent('changed', ['stop:' + aniName]);
-			this.fireEvent('stop:' + aniName, ['stop:' + aniName]);
-			this.fireEvent('stop', [aniName]);
-			this.current = null;
-			this.stopped();
-		}
-		return this;
-	},
-	getFrame : function () {
-		return !this.current ? null :
-			this.current.animation.frames[this.current.index];
-	},
-	getCfg : function (index) {
-		return index in this.current.cfg ?
-			this.current.cfg[index] :
-			this.current.animation[index];
-	},
-	toString: Function.lambda('[object LibCanvas.Animation]')
-});
-
 
 /*
 ---
@@ -4090,7 +4096,11 @@ provides: EC
 */
 
 new function () {
-	
+
+/*
+	The following text contains bad code and due to it's code it should not be readed by ANYONE!
+*/
+
 var Color = LibCanvas.Utils.Color, 
 	TimingFunctions = LibCanvas.Inner.TimingFunctions,
 	Point = LibCanvas.Point;
@@ -4101,6 +4111,21 @@ EC.color = function (color) {
 	color.a = (color.a || 1) * 255;
 	return color;
 };
+
+EC.getPoints = function (prevPos, pos, width, c) {
+	var w = pos.x-prevPos.x,
+	    h = pos.y-prevPos.y,
+	    dist = Math.hypotenuse(w, h);
+		
+	var sin = h/dist,
+	    cos = w/dist;
+		
+	var dx = sin * width,
+	    dy = cos * width;
+		
+	return [new Point(pos.x + dx, pos.y + dy*c),
+	        new Point(pos.x - dx, pos.y - dy*c), Math.asin(sin)];
+}
 
 EC.gradient = function (obj) {
 	if (!obj.gradient) {
@@ -4183,7 +4208,12 @@ LibCanvas.Context2D.implement({
 		
 		var c = obj.inverted?1:-1;
 		
-		var prevPos, pos, width, color, p1, p2, prevP1, prevP2, w, h, dist, sin, cos, dx,dy;
+		var pos    , p,
+			prevPos, prevP,
+			specPos, specP,
+			angle  , prevAngle,
+			width  , color;
+			
         		
 		prevPos = fn(points, -step);
 		for (var t=-step ; t<1.02 ; t += step) {
@@ -4191,31 +4221,46 @@ LibCanvas.Context2D.implement({
 			color = gradient(t);
 			width = widthFn(t);
 
-			w = pos.x-prevPos.x;
-			h = pos.y-prevPos.y;
-			dist = Math.hypotenuse(w, h);
-			
-			sin = h/dist;
-			cos = w/dist;
-			
-			dx = sin * width;
-			dy = cos * width;
-			
-			p1 = new Point(pos.x + dx, pos.y + dy*c);
-			p2 = new Point(pos.x - dx, pos.y - dy*c);
-			
+			p = EC.getPoints(prevPos, pos, width, c);
+						
 			if (t >= step) {
-				this
-					.beginPath(prevP1)
-					.lineTo(prevP2)
-					.lineTo(p2)
-					.lineTo(p1)
-					.fill(color)
-					.stroke(color);
+				if (Math.abs(p[2] - prevP[2]) > 0.1) {
+				
+					this.beginPath(prevP[0]);
+					
+					for (var f=0.002 ; f<0.02 ; f += 0.002) {
+						var specPos = fn(points, t - step + f);
+						var specP = EC.getPoints(prevPos, specPos, width, c);
+						this.lineTo(specP[0]);
+					}
+					
+					this
+						.lineTo(p[0])
+						.lineTo(p[1]);
+					
+					for (; f>0.002 ; f -= 0.002) {
+						var specPos = fn(points, t - step + f);
+						var specP = EC.getPoints(prevPos, specPos, width, c);
+						this.lineTo(specP[1]);
+					}
+					
+					this
+						.lineTo(prevP[1])
+						.fill(color)
+						.stroke(color);
+						
+				} else {
+					this
+						.beginPath(prevP[0])
+						.lineTo(prevP[1])
+						.lineTo(p[1])
+						.lineTo(p[0])
+						.fill(color)
+						.stroke(color);
+				}
 			}
 			
-			prevP1  = p1;
-			prevP2  = p2;
+			prevP   = p;
 			prevPos = pos;
 		}
 

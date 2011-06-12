@@ -1,9 +1,9 @@
 /*
 ---
 
-name: "Animation"
+name: "Animation.Sprite"
 
-description: "Provides basic animation for sprites"
+description: "Provides basic animation via sprites"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
@@ -13,14 +13,15 @@ authors:
 requires:
 	- LibCanvas
 
-provides: Animation
+provides: Animation.Sprite
 
 ...
 */
 
-LibCanvas.Animation = atom.Class({
+LibCanvas.Animation.Sprite = atom.Class({
 	Implements: [atom.Class.Events],
 	sprites : null,
+
 	initialize: function () {
 		this.sprites = {};
 	},
@@ -43,17 +44,24 @@ LibCanvas.Animation = atom.Class({
 		this.defaultSprite = index;
 		return this;
 	},
-	getSprite : function () {
-		return this.getFrame() ? this.sprites[this.getFrame().sprite] : 
+	get sprite () {
+		return this._getFrame() ? this.sprites[this._getFrame().sprite] :
 			this.defaultSprite != null ? this.sprites[this.defaultSprite] : null;
+	},
+	getSprite : function () {
+		return this.sprite;
 	},
 
 	animations : {},
-	add : function (animation) {
+	add : function (animation, line) {
+		if (arguments.length == 2) {
+			return this.add({ name: animation, line: line });
+		}
+
 		if (!animation.frames && animation.line) {
 			animation.frames = [];
 			animation.line.forEach(function (f, i) {
-				animation.frames.push({sprite: f, delay: animation.delay, name: i});
+				animation.frames.push({sprite: f, delay: animation.delay || 40, name: i});
 			});
 			delete animation.line;
 			return this.add(animation);
@@ -62,19 +70,18 @@ LibCanvas.Animation = atom.Class({
 		return this;
 	},
 
-	singleAnimationId: 0,
+	_singleAnimationId: 0,
 	runOnce: function (cfg) {
-		var name = '_singleAnimation' + this.singleAnimationId++;
+		var name = '_singleAnimation' + this._singleAnimationId++;
+		if (Array.isArray(cfg)) cfg = { line: cfg };
+
 		return this
-			.add(atom.extend({
-				name : name,
-				delay: 40
-			}, cfg))
+			.add(atom.extend({ name : name }, cfg))
 			.run(name);
 	},
 
-	current : null,
-	queue : [],
+	_current : null,
+	_queue : [],
 	run : function (name, cfg) {
 		if (typeof name != 'string') {
 			return this.runOnce(name);
@@ -86,69 +93,68 @@ LibCanvas.Animation = atom.Class({
 			name : name,
 			cfg  : cfg || {}
 		};
-		if (this.current) {
-			this.queue.push(args);
+		if (this._current) {
+			this._queue.push(args);
 		} else {
-			this.init(args);
+			this._init(args);
 		}
 		return this;
 	},
 	stop : function (force) {
-		this.current = null;
+		this._current = null;
 		if (force) {
-			this.queue = [];
+			this._queue = [];
 		} else {
-			this.stopped();
+			this._stopped();
 		}
 		return this;
 	},
-	stopped : function () {
-		var next = this.queue.shift();
-		return next != null && this.init(next);
+	_stopped : function () {
+		var next = this._queue.shift();
+		return next != null && this._init(next);
 	},
-	init : function (args) {
-		this.current = {
+	_init : function (args) {
+		this._current = {
 			animation : this.animations[args.name],
 			index     : -1,
 			cfg       : args.cfg
 		};
-		this.current.repeat = this.getCfg('repeat');
-		return this.nextFrame();
+		this._current.repeat = this._getCfg('repeat');
+		return this._nextFrame();
 	},
-	nextFrame : function () {
-		if (!this.current) return this;
-		
-		this.current.index++;
-		var frame = this.getFrame();
-		if (!frame && (this.getCfg('loop') || this.current.repeat)) {
-			this.current.repeat && this.current.repeat--;
-			this.current.index = 0;
-			frame = this.getFrame();
+	_nextFrame : function () {
+		if (!this._current) return this;
+
+		this._current.index++;
+		var frame = this._getFrame();
+		if (!frame && (this._getCfg('loop') || this._current.repeat)) {
+			this._current.repeat && this._current.repeat--;
+			this._current.index = 0;
+			frame = this._getFrame();
 		}
-		var aniName = this.current.animation.name;
+		var aniName = this._current.animation.name;
 		if (frame) {
 			var frameName = frame.name ? 'frame:' + frame.name : 'frame';
 			this.fireEvent('changed', [frameName, aniName]);
 			this.fireEvent(frameName, [frameName, aniName]);
 			// use invoker instead
-			if (frame.delay != null) this.nextFrame.delay(frame.delay, this);
+			if (frame.delay != null) this._nextFrame.delay(frame.delay, this);
 		} else {
 			this.fireEvent('changed', ['stop:' + aniName]);
 			this.fireEvent('stop:' + aniName, ['stop:' + aniName]);
 			this.fireEvent('stop', [aniName]);
-			this.current = null;
-			this.stopped();
+			this._current = null;
+			this._stopped();
 		}
 		return this;
 	},
-	getFrame : function () {
-		return !this.current ? null :
-			this.current.animation.frames[this.current.index];
+	_getFrame : function () {
+		return this._current ? this._current.animation.frames[this._current.index] : null;
 	},
-	getCfg : function (index) {
-		return index in this.current.cfg ?
-			this.current.cfg[index] :
-			this.current.animation[index];
+	_getCfg : function (index) {
+		return index in this._current.cfg ?
+			this._current.cfg[index] :
+			this._current.animation[index];
 	},
-	toString: Function.lambda('[object LibCanvas.Animation]')
+	toString: Function.lambda('[object LibCanvas.Animation.Sprite]')
 });

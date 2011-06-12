@@ -126,7 +126,7 @@ LibCanvas.Shapes.Polygon = atom.Class({
 		return Array.toHash(this.points);
 	},
 	clone: function () {
-		return new this.self(this.points);
+		return new this.self(this.points.invoke('clone'));
 	},
 	toString: Function.lambda('[object LibCanvas.Shapes.Polygon]')
 });
