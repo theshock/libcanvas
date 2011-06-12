@@ -55,11 +55,15 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 			time  : 500
 		}, args);
 
+		if (typeof args.props == 'function') {
+			elem = args.props;
+			isFn = true;
+		}
+		args.params = Array.from(args.params);
+
 		if (!Array.isArray(args.fn)) {
 			args.fn = args.fn.split('-');
 		}
-
-		args.params = Array.from(args.params);
 
 		var timeLeft = args.time,
 			diff     = {},
@@ -70,7 +74,7 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 		var animation = {
 			repeat: function () {
 				this.animate(args);
-			}.context(this),
+			}.bind(this),
 			stop : function () {
 				// avoid calling twice
 				animation.stop = Function.lambda();
@@ -79,28 +83,26 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 				invoker.rmFunction(fn);
 				args.onAbort && args.onAbort.call(this, animation, start);
 				return this;
-			}.context(this),
+			}.bind(this),
 			instance: this
 		};
 		
 		var fn = function (time) {
-			var timeElapsed = Math.min(time, timeLeft);
-
-			timeLeft -= timeElapsed;
+			timeLeft -= Math.min(time, timeLeft);
 
 			var progress = (args.time - timeLeft) / args.time;
 
 			var factor = TF.count(args.fn, progress, args.params);
 
 			if (isFn) {
-				elem(factor);
+				elem.call(this, factor);
 			} else {
 				for (var i in diff) {
-					if (start[i] instanceof Color) {
-						elem[i] = start[i].shift(diff[i].clone().mul(factor)).toString();
-					} else {
-						elem[i] = start[i] + diff[i] * factor;
-					}
+					Object.path.set( elem, i,
+						start[i] instanceof Color ?
+							start[i].shift(diff[i].clone().mul(factor)).toString() :
+							start[i] + diff[i] * factor
+					);
 				}
 			}
 
@@ -114,20 +116,22 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 			}
 
 			return true;
-		}.context(this);
-
+		}.bind(this);
 
 
 		if (!isFn) for (var i in args.props) {
+			var elemValue = Object.path.get(elem, i);
+
 			// if this property is already animating - remove
 			if (i in inAction) invoker.rmFunction(inAction[i]);
 			inAction[i] = fn;
-			if (Color.isColorString(elem[i])) {
-				start[i] = new Color(elem[i]);
+
+			if (Color.isColorString(elemValue)) {
+				start[i] = new Color(elemValue);
 				diff[i]  = start[i].diff(args.props[i]);
 			} else {
-				start[i] = elem[i];
-				diff[i]  = args.props[i] - elem[i];
+				start[i] = elemValue;
+				diff[i]  = args.props[i] - elemValue;
 			}
 		}
 
