@@ -55,12 +55,11 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 			time  : 500
 		}, args);
 
-		if (typeof args.params == 'function') {
-			elem = args.params;
+		if (typeof args.props == 'function') {
+			elem = args.props;
 			isFn = true;
-		} else {
-			args.params = Array.from(args.params);
 		}
+		args.params = Array.from(args.params);
 
 		if (!Array.isArray(args.fn)) {
 			args.fn = args.fn.split('-');
