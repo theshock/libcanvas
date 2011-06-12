@@ -89,6 +89,7 @@ var Point = LibCanvas.Point = atom.Class({
 		
 		var radius = pivot.distanceTo(this);
 		var sides  = pivot.diff(this);
+		// TODO: check, maybe here should be "sides.y, sides.x" ?
 		var newAngle = Math.atan2(sides.x, sides.y) - angle;
 
 		return this.moveTo({

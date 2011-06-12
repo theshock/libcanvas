@@ -42,8 +42,6 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 		if (typeof key == 'string' && arguments.length == 2) {
 			args = {};
 			args[key] = value;
-		} else if (typeof key == 'function') {
-			elem = key;
 		} else {
 			args = key;
 		}
@@ -57,11 +55,16 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 			time  : 500
 		}, args);
 
+		if (typeof args.params == 'function') {
+			elem = args.params;
+			isFn = true;
+		} else {
+			args.params = Array.from(args.params);
+		}
+
 		if (!Array.isArray(args.fn)) {
 			args.fn = args.fn.split('-');
 		}
-
-		args.params = Array.from(args.params);
 
 		var timeLeft = args.time,
 			diff     = {},
