@@ -733,6 +733,8 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 			}.bind(this),
 			instance: this
 		};
+
+		if ('onProccess' in args) args.onProcess = args.onProccess;
 		
 		var fn = function (time) {
 			timeLeft -= Math.min(time, timeLeft);
@@ -753,7 +755,7 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 				}
 			}
 
-			args.onProccess && args.onProccess.call(this, animation, start);
+			args.onProcess && args.onProcess.call(this, animation, start);
 
 			if (timeLeft <= 0) {
 				args.onFinish && invoker.after(0, function() {
