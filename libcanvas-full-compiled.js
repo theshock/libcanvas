@@ -2078,14 +2078,21 @@ LibCanvas.Inner.FrameRenderer = atom.Class({
 		}
 		return this;
 	},
-	drawAll : function () {
+	invokeAll : function (method, time) {
 		var elems = this.elems.sortBy('getZIndex');
 		for (var i = elems.length; i--;) {
 			if (elems[i].isReady()) {
-				elems[i].draw();
+				elems[i][method](time);
 			}
 		}
 		return this;
+	},
+	updateAll : function (time) {
+		if (!this.options.invoke) return this;
+		return this.invokeAll('update', time);
+	},
+	drawAll : function (time) {
+		return this.invokeAll('draw', time);
 	},
 	processing : function (type) {
 		this.processors[type].forEach(function (processor) {
@@ -2108,12 +2115,13 @@ LibCanvas.Inner.FrameRenderer = atom.Class({
 		return this;
 	},
 	renderLayer: function (layer, time) {
-		layer.innerInvoke('plain', time);
+		layer.innerInvoke('plain', time).updateAll(time);
+
 		if (layer.checkAutoDraw()) {
 			layer.processing('pre');
 			if (layer.isReady()) {
 				layer.innerInvoke('render', time);
-				layer.drawAll();
+				layer.drawAll(time);
 			} else {
 				layer.renderProgress();
 			}
@@ -3033,6 +3041,7 @@ LibCanvas.Canvas2D = atom.Class({
 		name: 'main',
 		autoStart: true,
 		clear: true,
+		invoke: false, // invoke objects each frame
 		backBuffer: 'off',
 		fps: 30
 	},

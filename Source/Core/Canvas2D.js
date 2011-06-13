@@ -85,6 +85,7 @@ LibCanvas.Canvas2D = atom.Class({
 		name: 'main',
 		autoStart: true,
 		clear: true,
+		invoke: false, // invoke objects each frame
 		backBuffer: 'off',
 		fps: 30
 	},
