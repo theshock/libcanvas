@@ -136,8 +136,7 @@ LibCanvas.Context2D.implement({
 		
 		var pos    , p,
 			prevPos, prevP,
-			specPos, specP,
-			angle  , prevAngle,
+			specPos, line1k, line2k, lin1b, line2b,
 			width  , color;
 			
         		
@@ -145,37 +144,38 @@ LibCanvas.Context2D.implement({
 		for (var t=-step ; t<1.02 ; t += step) {
 			pos = fn(points, t);
 			color = gradient(t);
-			width = widthFn(t);
+			width = widthFn(t) / 2;
 
 			p = EC.getPoints(prevPos, pos, width, c);
 						
 			if (t >= step) {
-				if (Math.abs(p[2] - prevP[2]) > 0.1) {
-				
-					this.beginPath(prevP[0]);
-					
-					for (var f=0.002 ; f<0.02 ; f += 0.002) {
-						var specPos = fn(points, t - step + f);
-						var specP = EC.getPoints(prevPos, specPos, width, c);
-						this.lineTo(specP[0]);
-					}
-					
-					this
-						.lineTo(p[0])
-						.lineTo(p[1]);
-					
-					for (; f>0.002 ; f -= 0.002) {
-						var specPos = fn(points, t - step + f);
-						var specP = EC.getPoints(prevPos, specPos, width, c);
-						this.lineTo(specP[1]);
-					}
-					
-					this
-						.lineTo(prevP[1])
-						.fill(color)
-						.stroke(color);
+				if (Math.abs(p[2] - prevP[2]) > 0.3) {
+						this
+							.save()
+							
+							.beginPath()
+								.moveTo( prevP[0] )
+								.arc ( prevP[0].clone().scale(0.5, p[0]).x , prevP[0].clone().scale(0.5, p[0]).y , width, 0, Math.PI*2, false )
+								.lineTo( p[1] )
+								.arc ( prevP[1].clone().scale(0.5, p[1]).x , prevP[1].clone().scale(0.5, p[1]).y , width, 0, Math.PI*2, false )
+								.clip()
+							
+							.set('globalCompositeOperation', 'destination-over')
+							.set('lineWidth',width*2)
+							.beginPath(obj.from)
+								.curveTo(obj)
+								.stroke(color)
 						
+							.restore()
+						
+							.beginPath(prevP[0])
+								.lineTo(prevP[1])
+								.lineTo(p[0])
+								.lineTo(p[1])
+								.stroke(color);
+							
 				} else {
+					this.lineWidth = 1;
 					this
 						.beginPath(prevP[0])
 						.lineTo(prevP[1])
@@ -184,8 +184,9 @@ LibCanvas.Context2D.implement({
 						.fill(color)
 						.stroke(color);
 				}
+				this
+					
 			}
-			
 			prevP   = p;
 			prevPos = pos;
 		}
