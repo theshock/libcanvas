@@ -81,7 +81,8 @@ LibCanvas.Behaviors.Drawable = atom.Class({
 		  .removeEvent('libcanvasSet', start)
 		     .addEvent('libcanvasSet', stop);
 	},
-	draw : atom.Class.abstractMethod
+	update : atom.Class.abstractMethod,
+	draw   : atom.Class.abstractMethod
 });
 
 };
