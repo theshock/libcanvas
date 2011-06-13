@@ -250,7 +250,7 @@ LibCanvas.Animation.Sprite = atom.Class({
 			this._current.cfg[index] :
 			this._current.animation[index];
 	},
-	toString: Function.lambda('[object LibCanvas.Animation]')
+	toString: Function.lambda('[object LibCanvas.Animation.Sprite]')
 });
 
 
@@ -702,11 +702,15 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 			time  : 500
 		}, args);
 
+		if (typeof args.props == 'function') {
+			elem = args.props;
+			isFn = true;
+		}
+		args.params = Array.from(args.params);
+
 		if (!Array.isArray(args.fn)) {
 			args.fn = args.fn.split('-');
 		}
-
-		args.params = Array.from(args.params);
 
 		var timeLeft = args.time,
 			diff     = {},
@@ -738,7 +742,7 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 			var factor = TF.count(args.fn, progress, args.params);
 
 			if (isFn) {
-				elem(factor);
+				elem.call(this, factor);
 			} else {
 				for (var i in diff) {
 					Object.path.set( elem, i,
@@ -1015,6 +1019,7 @@ var Point = LibCanvas.Point = atom.Class({
 		
 		var radius = pivot.distanceTo(this);
 		var sides  = pivot.diff(this);
+		// TODO: check, maybe here should be "sides.y, sides.x" ?
 		var newAngle = Math.atan2(sides.x, sides.y) - angle;
 
 		return this.moveTo({
@@ -1954,7 +1959,7 @@ var Trace = LibCanvas.Utils.Trace = atom.Class({
 			atom.dom.create('div', { 'id' : 'traceContainer'})
 				.css({
 					'zIndex'   : '87223',
-					'position' : 'absolute',
+					'position' : 'fixed',
 					'top'      : '3px',
 					'right'    : '6px',
 					'maxWidth' : '70%'
@@ -2684,7 +2689,7 @@ LibCanvas.Shapes.Polygon = atom.Class({
 		return Array.toHash(this.points);
 	},
 	clone: function () {
-		return new this.self(this.points);
+		return new this.self(this.points.invoke('clone'));
 	},
 	toString: Function.lambda('[object LibCanvas.Shapes.Polygon]')
 });
@@ -3929,11 +3934,35 @@ LibCanvas.Context2D = atom.Class({
 	},
 
 	// image
-	createImageData : function (w, h) {
-		if (w == null || h == null) {
-			w = this.canvas.width;
-			h = this.canvas.height;
+	createImageData : function () {
+		var w, h;
+
+		var args = Array.pickFrom(arguments);
+		switch (args.length) {
+			case 0:{
+				w = this.canvas.width;
+				h = this.canvas.height;
+			} break;
+
+			case 1: {
+				var obj = args[0];
+				if (atom.typeOf(obj) == 'object' && ('width' in obj) && ('height' in obj)) {
+					w = obj.width;
+					h = obj.height;
+				}
+				else {
+					throw new TypeError('Wrong argument in the Context.createImageData');
+				}
+			} break;
+
+			case 2: {
+				w = args[0];
+				h = args[1];
+			} break;
+
+			default: throw new TypeError('Wrong args number in the Context.createImageData');
 		}
+
 		return this.original('createImageData', [w, h], true);
 	},
 
@@ -3994,21 +4023,51 @@ LibCanvas.Context2D = atom.Class({
 			.render(new Shapes.Polygon(Array.collect(arg, [0, 1, 3, 2])));
 		return this;
 	},
+
 	putImageData : function () {
 		var a = arguments;
 		var put = {};
-		if (a.length == 1 && typeof a == 'object') {
-			a = a[0];
-			put.image = a.image;
-			put.from  = Point(a.from);
-		} else if (a.length >= 2) {
-			put.image = a[0];
-			put.from = Point(a.length > 2 ? [a[1], a[2]] : a[1]);
+
+		switch (a.length) {
+			case 1: {
+				if (!typeof a == 'object') {
+					throw new TypeError('Wrong argument in the Context.putImageData');
+				}
+
+				a = a[0];
+				put.image = a.image;
+				put.from = Point(a.from);
+
+				if (a.crop) {
+					put.crop = (a.crop instanceof Rectangle) ? a.crop : new Rectangle(a.crop);
+				}
+			} break;
+
+			case 3: {
+				put.image = a[0];
+				put.from = Point([a[1], a[2]]);
+			} break;
+
+			case 7: {
+				put.image = a[0];
+				put.from = Point([a[1], a[2]]);
+
+				put.crop = new Rectangle(a[3], a[4], a[5], a[6]);
+			} break;
+
+			default : throw new TypeError('Wrong args number in the Context.putImageData');
 		}
-		return this.original('putImageData', [
-			put.image, put.from.x, put.from.y
-		]);
+
+		var args = [put.image, put.from.x, put.from.y];
+
+		if (put.crop) {
+			var rect = put.crop;
+			args.append([rect.from.x, rect.from.y, rect.width, rect.height])
+		}
+
+		return this.original('putImageData', args);
 	},
+
 	getImageData : function (rectangle) {
 		var rect = office.makeRect.call(this, arguments);
 
@@ -4210,8 +4269,7 @@ LibCanvas.Context2D.implement({
 		
 		var pos    , p,
 			prevPos, prevP,
-			specPos, specP,
-			angle  , prevAngle,
+			specPos, line1k, line2k, lin1b, line2b,
 			width  , color;
 			
         		
@@ -4219,37 +4277,38 @@ LibCanvas.Context2D.implement({
 		for (var t=-step ; t<1.02 ; t += step) {
 			pos = fn(points, t);
 			color = gradient(t);
-			width = widthFn(t);
+			width = widthFn(t) / 2;
 
 			p = EC.getPoints(prevPos, pos, width, c);
 						
 			if (t >= step) {
-				if (Math.abs(p[2] - prevP[2]) > 0.1) {
-				
-					this.beginPath(prevP[0]);
-					
-					for (var f=0.002 ; f<0.02 ; f += 0.002) {
-						var specPos = fn(points, t - step + f);
-						var specP = EC.getPoints(prevPos, specPos, width, c);
-						this.lineTo(specP[0]);
-					}
-					
-					this
-						.lineTo(p[0])
-						.lineTo(p[1]);
-					
-					for (; f>0.002 ; f -= 0.002) {
-						var specPos = fn(points, t - step + f);
-						var specP = EC.getPoints(prevPos, specPos, width, c);
-						this.lineTo(specP[1]);
-					}
-					
-					this
-						.lineTo(prevP[1])
-						.fill(color)
-						.stroke(color);
+				if (Math.abs(p[2] - prevP[2]) > 0.3) {
+						this
+							.save()
+							
+							.beginPath()
+								.moveTo( prevP[0] )
+								.arc ( prevP[0].clone().scale(0.5, p[0]).x , prevP[0].clone().scale(0.5, p[0]).y , width, 0, Math.PI*2, false )
+								.lineTo( p[1] )
+								.arc ( prevP[1].clone().scale(0.5, p[1]).x , prevP[1].clone().scale(0.5, p[1]).y , width, 0, Math.PI*2, false )
+								.clip()
+							
+							.set('globalCompositeOperation', 'destination-over')
+							.set('lineWidth',width*2)
+							.beginPath(obj.from)
+								.curveTo(obj)
+								.stroke(color)
 						
+							.restore()
+						
+							.beginPath(prevP[0])
+								.lineTo(prevP[1])
+								.lineTo(p[0])
+								.lineTo(p[1])
+								.stroke(color);
+							
 				} else {
+					this.lineWidth = 1;
 					this
 						.beginPath(prevP[0])
 						.lineTo(prevP[1])
@@ -4258,8 +4317,9 @@ LibCanvas.Context2D.implement({
 						.fill(color)
 						.stroke(color);
 				}
+				this
+					
 			}
-			
 			prevP   = p;
 			prevPos = pos;
 		}
