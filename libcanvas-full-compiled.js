@@ -71,7 +71,6 @@ var LibCanvas = this.LibCanvas = atom.Class({
 			return to;
 		},
 
-		_invoker: null,
 		get invoker () {
 			if (this._invoker == null) {
 				this._invoker = new LibCanvas.Invoker().invoke();
@@ -83,10 +82,6 @@ var LibCanvas = this.LibCanvas = atom.Class({
 		return LibCanvas.Canvas2D.factory(arguments);
 	}
 });
-
-// atom.dom && atom.dom(function () {
-//	LibCanvas.invoker.invoke();
-//});
 
 LibCanvas.namespace( 'Animation', 'Behaviors', 'Engines', 'Inner', 'Processors', 'Shapes', 'Ui', 'Utils' );
 	
