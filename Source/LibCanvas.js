@@ -84,9 +84,9 @@ var LibCanvas = this.LibCanvas = atom.Class({
 	}
 });
 
-atom.dom && atom.dom(function () {
-	LibCanvas.invoker.invoke();
-});
+// atom.dom && atom.dom(function () {
+//	LibCanvas.invoker.invoke();
+//});
 
 LibCanvas.namespace( 'Animation', 'Behaviors', 'Engines', 'Inner', 'Processors', 'Shapes', 'Ui', 'Utils' );
 	

@@ -84,9 +84,9 @@ var LibCanvas = this.LibCanvas = atom.Class({
 	}
 });
 
-atom.dom && atom.dom(function () {
-	LibCanvas.invoker.invoke();
-});
+// atom.dom && atom.dom(function () {
+//	LibCanvas.invoker.invoke();
+//});
 
 LibCanvas.namespace( 'Animation', 'Behaviors', 'Engines', 'Inner', 'Processors', 'Shapes', 'Ui', 'Utils' );
 	
@@ -289,10 +289,6 @@ LibCanvas.Invoker = atom.Class({
 		this.funcs = [];
 		this.time  = [0];
 		this.setOptions(options);
-	},
-	execTime: function (fn, context, args) {
-		fn.apply(context, args || []);
-		return ;
 	},
 	get minDelay () {
 		return 1000 / this.options.fpsLimit;
