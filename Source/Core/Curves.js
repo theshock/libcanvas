@@ -149,7 +149,7 @@ LibCanvas.Context2D.implement({
 			p = EC.getPoints(prevPos, pos, width, c);
 						
 			if (t >= step) {
-				if (Math.abs(p[2] - prevP[2]) > 0.3) {
+				if (Math.abs(p[2] - prevP[2]) > 0.3 && !obj.inverted) {
 						this
 							.save()
 							
