@@ -195,7 +195,7 @@ LibCanvas.Canvas2D = atom.Class({
 
 	addClearer: atom.Class.protectedMethod(function () {
 		var clear = this.options.clear;
-		if (clear != null) {
+		if (!clear) {
 			this.addProcessor('pre',
 				new LibCanvas.Processors.Clearer(
 					typeof clear === 'string' ? clear : null
