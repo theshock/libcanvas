@@ -634,6 +634,20 @@ LibCanvas.Context2D = atom.Class({
 	// shadowOffsetX shadowOffsetY shadowBlur shadowColor
 });
 
+CanvasGradient.prototype.addColorStop = function () {
+	var addColorStop = CanvasGradient.prototype.addColorStop;
+	return function (colors) {
+		if (typeof colors == 'object') {
+			for (var position in colors) {
+				addColorStop.call( this, parseFloat(position), colors[position] );
+			}
+		} else {
+			addColorStop.apply( this, arguments );
+		}
+		return this;
+	}
+}();
+
 LibCanvas.Context2D.office = office;
 
 HTMLCanvasElement.addContext('2d-libcanvas', LibCanvas.Context2D);
