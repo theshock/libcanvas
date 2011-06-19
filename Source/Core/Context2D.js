@@ -273,7 +273,7 @@ LibCanvas.Context2D = atom.Class({
 		if (a.length == 6) {
 			return this.original('bezierCurveTo', arguments);
 		} else {
-			a = a.length == 3 ? a.associate(['p1', 'p2', 'to']) : a[0];
+			a = a.length == 3 ? {p1:a[0], p2:a[1], to:a[2]} : a[0];
 			return this.curveTo({
 				to: a.to,
 				points: [a.p1, a.p2]
