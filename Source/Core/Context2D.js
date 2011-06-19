@@ -604,10 +604,31 @@ LibCanvas.Context2D = atom.Class({
 		}
 		return this.original('createLinearGradient', a, true);
 	},
-	// this function is only dublicated as original. i will change them, later
-	createRadialGradient : function () {
-		return this.original('createRadialGradient', arguments, true);
+
+	createRadialGradient: function () {
+		var points;
+		switch (arguments.length) {
+			case 2: {
+				var c1 = arguments[0], c2 = arguments[1];
+
+				if ((c1 instanceof Shapes.Circle) && (c2 instanceof Shapes.Circle)) {
+					points = [c1.center.x, c1.center.y, c1.radius, c2.center.x, c2.center.y, c2.radius];
+				}
+				else {
+					throw new TypeError('Wrong arguments in the Context.createRadialGradient');
+				}
+			} break;
+
+			case 6: {
+				points = arguments;
+			} break;
+
+			default : throw new TypeError('Wrong args number in the Context.createRadialGradient');
+		}
+
+		return this.original('createRadialGradient', points, true);
 	},
+
 	createPattern : function () {
 		return this.original('createPattern', arguments, true);
 	},
