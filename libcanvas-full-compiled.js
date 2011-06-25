@@ -1595,15 +1595,18 @@ var initDraggable = function () {
 	return this
 		.addEvent(startDrag, function () {
 			if (!isDraggable(this, false)) return;
-		
-			this.fireEvent('startDrag');
+
 			this['draggable.mouse'] = this.libcanvas.mouse.point.clone();
-			this.addEvent(dragging, dragFn);
+			this
+				.fireEvent('startDrag', [this.libcanvas.mouse.point.clone()])
+				.addEvent(dragging, dragFn);
 		})
 		.addEvent(stopDrag, function () {
 			if (!isDraggable(this, true)) return;
 
-			this.fireEvent('stopDrag').removeEvent(dragging, dragFn);
+			this
+				.fireEvent('stopDrag', [this.libcanvas.mouse.point.clone()])
+				.removeEvent(dragging, dragFn);
 			delete this['draggable.mouse'];
 		});
 };
