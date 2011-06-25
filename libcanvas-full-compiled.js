@@ -1634,11 +1634,11 @@ new function () {
 	
 var start = function () {
 	this.libcanvas.addElement(this);
-	return 'remove';
+	return 'removeEvent';
 };
 var stop = function () {
 	this.libcanvas.rmElement(this);
-	return 'remove';
+	return 'removeEvent';
 };
 
 LibCanvas.Behaviors.Drawable = atom.Class({
@@ -3231,7 +3231,9 @@ LibCanvas.Canvas2D = atom.Class({
 	// Element : add, rm
 	addElement : function (elem) {
 		this.elems.include(elem);
-		elem.setLibcanvas(this);
+		if (elem.libcanvas != this) {
+			elem.setLibcanvas(this);
+		}
 		return this;
 	},
 	rmElement : function (elem) {
