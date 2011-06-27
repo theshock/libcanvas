@@ -1598,14 +1598,14 @@ var initDraggable = function () {
 
 			this['draggable.mouse'] = this.libcanvas.mouse.point.clone();
 			this
-				.fireEvent('startDrag', [this.libcanvas.mouse.point.clone()])
+				.fireEvent('startDrag')
 				.addEvent(dragging, dragFn);
 		})
 		.addEvent(stopDrag, function () {
 			if (!isDraggable(this, true)) return;
 
 			this
-				.fireEvent('stopDrag', [this.libcanvas.mouse.point.clone()])
+				.fireEvent('stopDrag')
 				.removeEvent(dragging, dragFn);
 			delete this['draggable.mouse'];
 		});
@@ -1875,7 +1875,7 @@ LibCanvas.Behaviors.Moveable = atom.Class({
 		}).animate({
 			fn        : fn || 'linear',
 			time      : distance / speed * 1000,
-			onProccess: this.fireEvent.context(this, ['move']),
+			onProcess : this.fireEvent.context(this, ['move']),
 			onAbort   : this.fireEvent.context(this, ['stopMove']),
 			onFinish  : this.fireEvent.context(this, ['stopMove'])
 		});

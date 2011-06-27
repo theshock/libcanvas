@@ -62,14 +62,14 @@ var initDraggable = function () {
 
 			this['draggable.mouse'] = this.libcanvas.mouse.point.clone();
 			this
-				.fireEvent('startDrag', [this.libcanvas.mouse.point.clone()])
+				.fireEvent('startDrag')
 				.addEvent(dragging, dragFn);
 		})
 		.addEvent(stopDrag, function () {
 			if (!isDraggable(this, true)) return;
 
 			this
-				.fireEvent('stopDrag', [this.libcanvas.mouse.point.clone()])
+				.fireEvent('stopDrag')
 				.removeEvent(dragging, dragFn);
 			delete this['draggable.mouse'];
 		});
