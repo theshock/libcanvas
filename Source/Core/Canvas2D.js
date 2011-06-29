@@ -147,7 +147,7 @@ LibCanvas.Canvas2D = atom.Class({
 	},
 	
 	hide: function () {
-		this.origElem.atom.css('display', 'hide');
+		this.origElem.atom.css('display', 'none');
 		return this;
 	},
 
