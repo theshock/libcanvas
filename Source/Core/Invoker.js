@@ -34,10 +34,6 @@ LibCanvas.Invoker = atom.Class({
 		this.time  = [0];
 		this.setOptions(options);
 	},
-	execTime: function (fn, context, args) {
-		fn.apply(context, args || []);
-		return ;
-	},
 	get minDelay () {
 		return 1000 / this.options.fpsLimit;
 	},

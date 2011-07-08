@@ -71,7 +71,6 @@ var LibCanvas = this.LibCanvas = atom.Class({
 			return to;
 		},
 
-		_invoker: null,
 		get invoker () {
 			if (this._invoker == null) {
 				this._invoker = new LibCanvas.Invoker().invoke();
@@ -82,10 +81,6 @@ var LibCanvas = this.LibCanvas = atom.Class({
 	initialize: function() {
 		return LibCanvas.Canvas2D.factory(arguments);
 	}
-});
-
-atom.dom && atom.dom(function () {
-	LibCanvas.invoker.invoke();
 });
 
 LibCanvas.namespace( 'Animation', 'Behaviors', 'Engines', 'Inner', 'Processors', 'Shapes', 'Ui', 'Utils' );
@@ -250,7 +245,7 @@ LibCanvas.Animation.Sprite = atom.Class({
 			this._current.cfg[index] :
 			this._current.animation[index];
 	},
-	toString: Function.lambda('[object LibCanvas.Animation]')
+	toString: Function.lambda('[object LibCanvas.Animation.Sprite]')
 });
 
 
@@ -289,10 +284,6 @@ LibCanvas.Invoker = atom.Class({
 		this.funcs = [];
 		this.time  = [0];
 		this.setOptions(options);
-	},
-	execTime: function (fn, context, args) {
-		fn.apply(context, args || []);
-		return ;
 	},
 	get minDelay () {
 		return 1000 / this.options.fpsLimit;
@@ -702,11 +693,15 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 			time  : 500
 		}, args);
 
+		if (typeof args.props == 'function') {
+			elem = args.props;
+			isFn = true;
+		}
+		args.params = Array.from(args.params);
+
 		if (!Array.isArray(args.fn)) {
 			args.fn = args.fn.split('-');
 		}
-
-		args.params = Array.from(args.params);
 
 		var timeLeft = args.time,
 			diff     = {},
@@ -729,6 +724,8 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 			}.bind(this),
 			instance: this
 		};
+
+		if ('onProccess' in args) args.onProcess = args.onProccess;
 		
 		var fn = function (time) {
 			timeLeft -= Math.min(time, timeLeft);
@@ -738,7 +735,7 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 			var factor = TF.count(args.fn, progress, args.params);
 
 			if (isFn) {
-				elem(factor);
+				elem.call(this, factor);
 			} else {
 				for (var i in diff) {
 					Object.path.set( elem, i,
@@ -749,7 +746,7 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 				}
 			}
 
-			args.onProccess && args.onProccess.call(this, animation, start);
+			args.onProcess && args.onProcess.call(this, animation, start);
 
 			if (timeLeft <= 0) {
 				args.onFinish && invoker.after(0, function() {
@@ -1015,6 +1012,7 @@ var Point = LibCanvas.Point = atom.Class({
 		
 		var radius = pivot.distanceTo(this);
 		var sides  = pivot.diff(this);
+		// TODO: check, maybe here should be "sides.y, sides.x" ?
 		var newAngle = Math.atan2(sides.x, sides.y) - angle;
 
 		return this.moveTo({
@@ -1597,15 +1595,18 @@ var initDraggable = function () {
 	return this
 		.addEvent(startDrag, function () {
 			if (!isDraggable(this, false)) return;
-		
-			this.fireEvent('startDrag');
+
 			this['draggable.mouse'] = this.libcanvas.mouse.point.clone();
-			this.addEvent(dragging, dragFn);
+			this
+				.fireEvent('startDrag')
+				.addEvent(dragging, dragFn);
 		})
 		.addEvent(stopDrag, function () {
 			if (!isDraggable(this, true)) return;
 
-			this.fireEvent('stopDrag').removeEvent(dragging, dragFn);
+			this
+				.fireEvent('stopDrag')
+				.removeEvent(dragging, dragFn);
 			delete this['draggable.mouse'];
 		});
 };
@@ -1636,11 +1637,11 @@ new function () {
 	
 var start = function () {
 	this.libcanvas.addElement(this);
-	return 'remove';
+	return 'removeEvent';
 };
 var stop = function () {
 	this.libcanvas.rmElement(this);
-	return 'remove';
+	return 'removeEvent';
 };
 
 LibCanvas.Behaviors.Drawable = atom.Class({
@@ -1695,10 +1696,40 @@ LibCanvas.Behaviors.Drawable = atom.Class({
 		  .removeEvent('libcanvasSet', start)
 		     .addEvent('libcanvasSet', stop);
 	},
-	draw : atom.Class.abstractMethod
+	update : atom.Class.abstractMethod,
+	draw   : atom.Class.abstractMethod
 });
 
 };
+
+/*
+---
+
+name: "Behaviors.DrawableSprite"
+
+description: "Abstract class for drawable canvas sprites"
+
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- Behaviors.Drawable
+
+provides: Behaviors.DrawableSprite
+
+...
+*/
+
+LibCanvas.Behaviors.DrawableSprite = atom.Class({
+	Extends: LibCanvas.Behaviors.Drawable,
+
+	draw: function () {
+		this.libcanvas.ctx.drawImage( this.sprite, this.shape );
+	}
+});
 
 /*
 ---
@@ -1844,7 +1875,7 @@ LibCanvas.Behaviors.Moveable = atom.Class({
 		}).animate({
 			fn        : fn || 'linear',
 			time      : distance / speed * 1000,
-			onProccess: this.fireEvent.context(this, ['move']),
+			onProcess : this.fireEvent.context(this, ['move']),
 			onAbort   : this.fireEvent.context(this, ['stopMove']),
 			onFinish  : this.fireEvent.context(this, ['stopMove'])
 		});
@@ -1954,7 +1985,7 @@ var Trace = LibCanvas.Utils.Trace = atom.Class({
 			atom.dom.create('div', { 'id' : 'traceContainer'})
 				.css({
 					'zIndex'   : '87223',
-					'position' : 'absolute',
+					'position' : 'fixed',
 					'top'      : '3px',
 					'right'    : '6px',
 					'maxWidth' : '70%'
@@ -2073,14 +2104,21 @@ LibCanvas.Inner.FrameRenderer = atom.Class({
 		}
 		return this;
 	},
-	drawAll : function () {
+	invokeAll : function (method, time) {
 		var elems = this.elems.sortBy('getZIndex');
 		for (var i = elems.length; i--;) {
 			if (elems[i].isReady()) {
-				elems[i].draw();
+				elems[i][method](time);
 			}
 		}
 		return this;
+	},
+	updateAll : function (time) {
+		if (!this.options.invoke) return this;
+		return this.invokeAll('update', time);
+	},
+	drawAll : function (time) {
+		return this.invokeAll('draw', time);
 	},
 	processing : function (type) {
 		this.processors[type].forEach(function (processor) {
@@ -2103,12 +2141,13 @@ LibCanvas.Inner.FrameRenderer = atom.Class({
 		return this;
 	},
 	renderLayer: function (layer, time) {
-		layer.innerInvoke('plain', time);
+		layer.innerInvoke('plain', time).updateAll(time);
+
 		if (layer.checkAutoDraw()) {
 			layer.processing('pre');
 			if (layer.isReady()) {
 				layer.innerInvoke('render', time);
-				layer.drawAll();
+				layer.drawAll(time);
 			} else {
 				layer.renderProgress();
 			}
@@ -2684,7 +2723,7 @@ LibCanvas.Shapes.Polygon = atom.Class({
 		return Array.toHash(this.points);
 	},
 	clone: function () {
-		return new this.self(this.points);
+		return new this.self(this.points.invoke('clone'));
 	},
 	toString: Function.lambda('[object LibCanvas.Shapes.Polygon]')
 });
@@ -3028,6 +3067,7 @@ LibCanvas.Canvas2D = atom.Class({
 		name: 'main',
 		autoStart: true,
 		clear: true,
+		invoke: false, // invoke objects each frame
 		backBuffer: 'off',
 		fps: 30
 	},
@@ -3089,7 +3129,7 @@ LibCanvas.Canvas2D = atom.Class({
 	},
 	
 	hide: function () {
-		this.origElem.atom.css('display', 'hide');
+		this.origElem.atom.css('display', 'none');
 		return this;
 	},
 
@@ -3137,7 +3177,7 @@ LibCanvas.Canvas2D = atom.Class({
 
 	addClearer: atom.Class.protectedMethod(function () {
 		var clear = this.options.clear;
-		if (clear != null) {
+		if (clear) {
 			this.addProcessor('pre',
 				new LibCanvas.Processors.Clearer(
 					typeof clear === 'string' ? clear : null
@@ -3194,7 +3234,9 @@ LibCanvas.Canvas2D = atom.Class({
 	// Element : add, rm
 	addElement : function (elem) {
 		this.elems.include(elem);
-		elem.setLibcanvas(this);
+		if (elem.libcanvas != this) {
+			elem.setLibcanvas(this);
+		}
 		return this;
 	},
 	rmElement : function (elem) {
@@ -3771,7 +3813,7 @@ LibCanvas.Context2D = atom.Class({
 		if (a.length == 6) {
 			return this.original('bezierCurveTo', arguments);
 		} else {
-			a = a.length == 3 ? a.associate(['p1', 'p2', 'to']) : a[0];
+			a = a.length == 3 ? {p1:a[0], p2:a[1], to:a[2]} : a[0];
 			return this.curveTo({
 				to: a.to,
 				points: [a.p1, a.p2]
@@ -3929,11 +3971,35 @@ LibCanvas.Context2D = atom.Class({
 	},
 
 	// image
-	createImageData : function (w, h) {
-		if (w == null || h == null) {
-			w = this.canvas.width;
-			h = this.canvas.height;
+	createImageData : function () {
+		var w, h;
+
+		var args = Array.pickFrom(arguments);
+		switch (args.length) {
+			case 0:{
+				w = this.canvas.width;
+				h = this.canvas.height;
+			} break;
+
+			case 1: {
+				var obj = args[0];
+				if (atom.typeOf(obj) == 'object' && ('width' in obj) && ('height' in obj)) {
+					w = obj.width;
+					h = obj.height;
+				}
+				else {
+					throw new TypeError('Wrong argument in the Context.createImageData');
+				}
+			} break;
+
+			case 2: {
+				w = args[0];
+				h = args[1];
+			} break;
+
+			default: throw new TypeError('Wrong args number in the Context.createImageData');
 		}
+
 		return this.original('createImageData', [w, h], true);
 	},
 
@@ -3994,31 +4060,57 @@ LibCanvas.Context2D = atom.Class({
 			.render(new Shapes.Polygon(Array.collect(arg, [0, 1, 3, 2])));
 		return this;
 	},
+
 	putImageData : function () {
-		var a = arguments;
-		var put = {};
-		if (a.length == 1 && typeof a == 'object') {
-			a = a[0];
-			put.image = a.image;
-			put.from  = Point(a.from);
-		} else if (a.length >= 2) {
-			put.image = a[0];
-			put.from = Point(a.length > 2 ? [a[1], a[2]] : a[1]);
+		var a = arguments, put = {}, args, rect;
+
+		switch (a.length) {
+			case 1: {
+				if (!typeof a == 'object') {
+					throw new TypeError('Wrong argument in the Context.putImageData');
+				}
+
+				a = a[0];
+				put.image = a.image;
+				put.from = Point(a.from);
+
+				if (a.crop) put.crop = Rectangle(a.crop);
+			} break;
+
+			case 3: {
+				put.image = a[0];
+				put.from = Point([a[1], a[2]]);
+			} break;
+
+			case 7: {
+				put.image = a[0];
+				put.from = new Point(a[1], a[2]);
+				put.crop = new Rectangle(a[3], a[4], a[5], a[6]);
+			} break;
+
+			default : throw new TypeError('Wrong args number in the Context.putImageData');
 		}
-		return this.original('putImageData', [
-			put.image, put.from.x, put.from.y
-		]);
+
+		args = [put.image, put.from.x, put.from.y];
+
+		if (put.crop) {
+			rect = put.crop;
+			args.append([rect.from.x, rect.from.y, rect.width, rect.height])
+		}
+
+		return this.original('putImageData', args);
 	},
+
 	getImageData : function (rectangle) {
 		var rect = office.makeRect.call(this, arguments);
 
 		return this.original('getImageData', [rect.from.x, rect.from.y, rect.width, rect.height], true);
 	},
 	getPixels : function (rectangle) {
-		var rect = office.makeRect.call(this, arguments);
-		var data = this.getImageData(rect).data;
-
-		var result = [], line = [];
+		var rect = Rectangle(arguments),
+			data = this.getImageData(rect).data,
+			result = [],
+			line = [];
 		for (var i = 0, L = data.length; i < L; i+=4)  {
 			line.push({
 				r : data[i],
@@ -4048,10 +4140,26 @@ LibCanvas.Context2D = atom.Class({
 		}
 		return this.original('createLinearGradient', a, true);
 	},
-	// this function is only dublicated as original. i will change them, later
-	createRadialGradient : function () {
-		return this.original('createRadialGradient', arguments, true);
+	createRadialGradient: function () {
+		var points, c1, c2, a = arguments;
+		if (a.length == 1 || a.length == 2) {
+			if (a.length == 2) {
+				c1 = Circle( a[0] );
+				c2 = Circle( a[1] );
+			} else {
+				c1 = Circle( a.start );
+				c2 = Circle( a.end   );
+			}
+			points = [c1.center.x, c1.center.y, c1.radius, c2.center.x, c2.center.y, c2.radius];
+		} else if (a.length == 6) {
+			points = a;
+		} else {
+			throw new TypeError('Wrong args number in the Context.createRadialGradient');
+		}
+
+		return this.original('createRadialGradient', points, true);
 	},
+
 	createPattern : function () {
 		return this.original('createPattern', arguments, true);
 	},
@@ -4065,6 +4173,20 @@ LibCanvas.Context2D = atom.Class({
 	// is this just properties , that can be used by set ?
 	// shadowOffsetX shadowOffsetY shadowBlur shadowColor
 });
+
+CanvasGradient.prototype.addColorStop = function () {
+	var addColorStop = CanvasGradient.prototype.addColorStop;
+	return function (colors) {
+		if (typeof colors == 'object') {
+			for (var position in colors) {
+				addColorStop.call( this, parseFloat(position), colors[position] );
+			}
+		} else {
+			addColorStop.apply( this, arguments );
+		}
+		return this;
+	}
+}();
 
 LibCanvas.Context2D.office = office;
 
@@ -4210,8 +4332,7 @@ LibCanvas.Context2D.implement({
 		
 		var pos    , p,
 			prevPos, prevP,
-			specPos, specP,
-			angle  , prevAngle,
+			specPos, line1k, line2k, lin1b, line2b,
 			width  , color;
 			
         		
@@ -4219,37 +4340,38 @@ LibCanvas.Context2D.implement({
 		for (var t=-step ; t<1.02 ; t += step) {
 			pos = fn(points, t);
 			color = gradient(t);
-			width = widthFn(t);
+			width = widthFn(t) / 2;
 
 			p = EC.getPoints(prevPos, pos, width, c);
 						
 			if (t >= step) {
-				if (Math.abs(p[2] - prevP[2]) > 0.1) {
-				
-					this.beginPath(prevP[0]);
-					
-					for (var f=0.002 ; f<0.02 ; f += 0.002) {
-						var specPos = fn(points, t - step + f);
-						var specP = EC.getPoints(prevPos, specPos, width, c);
-						this.lineTo(specP[0]);
-					}
-					
-					this
-						.lineTo(p[0])
-						.lineTo(p[1]);
-					
-					for (; f>0.002 ; f -= 0.002) {
-						var specPos = fn(points, t - step + f);
-						var specP = EC.getPoints(prevPos, specPos, width, c);
-						this.lineTo(specP[1]);
-					}
-					
-					this
-						.lineTo(prevP[1])
-						.fill(color)
-						.stroke(color);
+				if (Math.abs(p[2] - prevP[2]) > 0.3) {
+						this
+							.save()
+							
+							.beginPath()
+								.moveTo( prevP[0] )
+								.arc ( prevP[0].clone().scale(0.5, p[0]).x , prevP[0].clone().scale(0.5, p[0]).y , width, 0, Math.PI*2, false )
+								.lineTo( p[1] )
+								.arc ( prevP[1].clone().scale(0.5, p[1]).x , prevP[1].clone().scale(0.5, p[1]).y , width, 0, Math.PI*2, false )
+								.clip()
+							
+							.set('globalCompositeOperation', 'destination-over')
+							.set('lineWidth',width*2)
+							.beginPath(obj.from)
+								.curveTo(obj)
+								.stroke(color)
 						
+							.restore()
+						
+							.beginPath(prevP[0])
+								.lineTo(prevP[1])
+								.lineTo(p[0])
+								.lineTo(p[1])
+								.stroke(color);
+							
 				} else {
+					this.lineWidth = 1;
 					this
 						.beginPath(prevP[0])
 						.lineTo(prevP[1])
@@ -4258,8 +4380,9 @@ LibCanvas.Context2D.implement({
 						.fill(color)
 						.stroke(color);
 				}
+				this
+					
 			}
-			
 			prevP   = p;
 			prevPos = pos;
 		}

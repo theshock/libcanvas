@@ -22,11 +22,11 @@ new function () {
 	
 var start = function () {
 	this.libcanvas.addElement(this);
-	return 'remove';
+	return 'removeEvent';
 };
 var stop = function () {
 	this.libcanvas.rmElement(this);
-	return 'remove';
+	return 'removeEvent';
 };
 
 LibCanvas.Behaviors.Drawable = atom.Class({
@@ -81,7 +81,8 @@ LibCanvas.Behaviors.Drawable = atom.Class({
 		  .removeEvent('libcanvasSet', start)
 		     .addEvent('libcanvasSet', stop);
 	},
-	draw : atom.Class.abstractMethod
+	update : atom.Class.abstractMethod,
+	draw   : atom.Class.abstractMethod
 });
 
 };

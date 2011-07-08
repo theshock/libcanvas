@@ -273,7 +273,7 @@ LibCanvas.Context2D = atom.Class({
 		if (a.length == 6) {
 			return this.original('bezierCurveTo', arguments);
 		} else {
-			a = a.length == 3 ? a.associate(['p1', 'p2', 'to']) : a[0];
+			a = a.length == 3 ? {p1:a[0], p2:a[1], to:a[2]} : a[0];
 			return this.curveTo({
 				to: a.to,
 				points: [a.p1, a.p2]
@@ -431,11 +431,35 @@ LibCanvas.Context2D = atom.Class({
 	},
 
 	// image
-	createImageData : function (w, h) {
-		if (w == null || h == null) {
-			w = this.canvas.width;
-			h = this.canvas.height;
+	createImageData : function () {
+		var w, h;
+
+		var args = Array.pickFrom(arguments);
+		switch (args.length) {
+			case 0:{
+				w = this.canvas.width;
+				h = this.canvas.height;
+			} break;
+
+			case 1: {
+				var obj = args[0];
+				if (atom.typeOf(obj) == 'object' && ('width' in obj) && ('height' in obj)) {
+					w = obj.width;
+					h = obj.height;
+				}
+				else {
+					throw new TypeError('Wrong argument in the Context.createImageData');
+				}
+			} break;
+
+			case 2: {
+				w = args[0];
+				h = args[1];
+			} break;
+
+			default: throw new TypeError('Wrong args number in the Context.createImageData');
 		}
+
 		return this.original('createImageData', [w, h], true);
 	},
 
@@ -496,31 +520,57 @@ LibCanvas.Context2D = atom.Class({
 			.render(new Shapes.Polygon(Array.collect(arg, [0, 1, 3, 2])));
 		return this;
 	},
+
 	putImageData : function () {
-		var a = arguments;
-		var put = {};
-		if (a.length == 1 && typeof a == 'object') {
-			a = a[0];
-			put.image = a.image;
-			put.from  = Point(a.from);
-		} else if (a.length >= 2) {
-			put.image = a[0];
-			put.from = Point(a.length > 2 ? [a[1], a[2]] : a[1]);
+		var a = arguments, put = {}, args, rect;
+
+		switch (a.length) {
+			case 1: {
+				if (!typeof a == 'object') {
+					throw new TypeError('Wrong argument in the Context.putImageData');
+				}
+
+				a = a[0];
+				put.image = a.image;
+				put.from = Point(a.from);
+
+				if (a.crop) put.crop = Rectangle(a.crop);
+			} break;
+
+			case 3: {
+				put.image = a[0];
+				put.from = Point([a[1], a[2]]);
+			} break;
+
+			case 7: {
+				put.image = a[0];
+				put.from = new Point(a[1], a[2]);
+				put.crop = new Rectangle(a[3], a[4], a[5], a[6]);
+			} break;
+
+			default : throw new TypeError('Wrong args number in the Context.putImageData');
 		}
-		return this.original('putImageData', [
-			put.image, put.from.x, put.from.y
-		]);
+
+		args = [put.image, put.from.x, put.from.y];
+
+		if (put.crop) {
+			rect = put.crop;
+			args.append([rect.from.x, rect.from.y, rect.width, rect.height])
+		}
+
+		return this.original('putImageData', args);
 	},
+
 	getImageData : function (rectangle) {
 		var rect = office.makeRect.call(this, arguments);
 
 		return this.original('getImageData', [rect.from.x, rect.from.y, rect.width, rect.height], true);
 	},
 	getPixels : function (rectangle) {
-		var rect = office.makeRect.call(this, arguments);
-		var data = this.getImageData(rect).data;
-
-		var result = [], line = [];
+		var rect = Rectangle(arguments),
+			data = this.getImageData(rect).data,
+			result = [],
+			line = [];
 		for (var i = 0, L = data.length; i < L; i+=4)  {
 			line.push({
 				r : data[i],
@@ -550,10 +600,26 @@ LibCanvas.Context2D = atom.Class({
 		}
 		return this.original('createLinearGradient', a, true);
 	},
-	// this function is only dublicated as original. i will change them, later
-	createRadialGradient : function () {
-		return this.original('createRadialGradient', arguments, true);
+	createRadialGradient: function () {
+		var points, c1, c2, a = arguments;
+		if (a.length == 1 || a.length == 2) {
+			if (a.length == 2) {
+				c1 = Circle( a[0] );
+				c2 = Circle( a[1] );
+			} else {
+				c1 = Circle( a.start );
+				c2 = Circle( a.end   );
+			}
+			points = [c1.center.x, c1.center.y, c1.radius, c2.center.x, c2.center.y, c2.radius];
+		} else if (a.length == 6) {
+			points = a;
+		} else {
+			throw new TypeError('Wrong args number in the Context.createRadialGradient');
+		}
+
+		return this.original('createRadialGradient', points, true);
 	},
+
 	createPattern : function () {
 		return this.original('createPattern', arguments, true);
 	},
@@ -567,6 +633,20 @@ LibCanvas.Context2D = atom.Class({
 	// is this just properties , that can be used by set ?
 	// shadowOffsetX shadowOffsetY shadowBlur shadowColor
 });
+
+CanvasGradient.prototype.addColorStop = function () {
+	var addColorStop = CanvasGradient.prototype.addColorStop;
+	return function (colors) {
+		if (typeof colors == 'object') {
+			for (var position in colors) {
+				addColorStop.call( this, parseFloat(position), colors[position] );
+			}
+		} else {
+			addColorStop.apply( this, arguments );
+		}
+		return this;
+	}
+}();
 
 LibCanvas.Context2D.office = office;
 

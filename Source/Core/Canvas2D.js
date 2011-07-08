@@ -85,6 +85,7 @@ LibCanvas.Canvas2D = atom.Class({
 		name: 'main',
 		autoStart: true,
 		clear: true,
+		invoke: false, // invoke objects each frame
 		backBuffer: 'off',
 		fps: 30
 	},
@@ -146,7 +147,7 @@ LibCanvas.Canvas2D = atom.Class({
 	},
 	
 	hide: function () {
-		this.origElem.atom.css('display', 'hide');
+		this.origElem.atom.css('display', 'none');
 		return this;
 	},
 
@@ -194,7 +195,7 @@ LibCanvas.Canvas2D = atom.Class({
 
 	addClearer: atom.Class.protectedMethod(function () {
 		var clear = this.options.clear;
-		if (clear != null) {
+		if (clear) {
 			this.addProcessor('pre',
 				new LibCanvas.Processors.Clearer(
 					typeof clear === 'string' ? clear : null
@@ -251,7 +252,9 @@ LibCanvas.Canvas2D = atom.Class({
 	// Element : add, rm
 	addElement : function (elem) {
 		this.elems.include(elem);
-		elem.setLibcanvas(this);
+		if (elem.libcanvas != this) {
+			elem.setLibcanvas(this);
+		}
 		return this;
 	},
 	rmElement : function (elem) {
