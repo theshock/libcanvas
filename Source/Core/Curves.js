@@ -126,6 +126,7 @@ EC.curvesFunctions = [
 
 LibCanvas.Context2D.implement({
 	drawCurve:function (obj) {
+	console.time('curve')
 		var points = [Point(obj.from)].append( obj.points.map(Point), [Point(obj.to)] );
 		
 		var gradientFunction = EC.getGradientFunction(obj),             //Getting gradient function
@@ -140,7 +141,7 @@ LibCanvas.Context2D.implement({
 		
 		var controlPoint, prevContorolPoint,
 			drawPoints  , prevDrawPoints   ,
-			width , color;
+			width , color, prevColor, style;
 			
         		
 		prevContorolPoint = curveFunction(points, -step);
@@ -152,20 +153,37 @@ LibCanvas.Context2D.implement({
 
 			drawPoints = EC.getPoints(prevContorolPoint, controlPoint, width, invertedMultipler);
 						
-			if (t >= step) {
+			if (t >= step) {			
+				if (
+					EC.getColor(prevColor)
+						.diff(color)
+						.reduce(
+							function (a, b) {
+								return a + b
+							}
+						) > 150
+				) {
+					style = this.createLinearGradient(prevContorolPoint.x, prevContorolPoint.y, controlPoint.x, controlPoint.y);
+					style.addColorStop(0, prevColor);
+					style.addColorStop(1,     color);
+				} else {
+					style = color;
+				}
+				
 					this
 						.set("lineWidth",1)
 						.beginPath(prevDrawPoints[0])
-						.lineTo(prevDrawPoints[1])
-						.lineTo(drawPoints[1])
-						.lineTo(drawPoints[0])
-						.fill(color)
-						.stroke(color);
+						.lineTo   (prevDrawPoints[1])
+						.lineTo   (drawPoints[1])
+						.lineTo   (drawPoints[0])
+						.fill  (style)
+						.stroke(style);
 			}
 			prevDrawPoints    = drawPoints;
 			prevContorolPoint = controlPoint;
+			prevColor         = color;
 		}
-
+	console.timeEnd('curve');
 		return this;
 	}
 });
