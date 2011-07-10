@@ -142,8 +142,11 @@ LibCanvas.Context2D.implement({
 		var controlPoint, prevContorolPoint,
 			drawPoints  , prevDrawPoints   ,
 			width , color, prevColor, style;
-			
-        		
+		
+		var add = function (a, b) {
+			return a + b;
+		}
+        
 		prevContorolPoint = curveFunction(points, -step);
 		
 		for (var t=-step ; t<1.02 ; t += step) {
@@ -152,18 +155,10 @@ LibCanvas.Context2D.implement({
 			width = widthFunction(t) / 2;
 
 			drawPoints = EC.getPoints(prevContorolPoint, controlPoint, width, invertedMultipler);
-						
+			
 			if (t >= step) {			
-				if (
-					EC.getColor(prevColor)
-						.diff(color)
-						.reduce(
-							function (a, b) {
-								return a + b
-							}
-						) > 150
-				) {
-					style = this.createLinearGradient(prevContorolPoint.x, prevContorolPoint.y, controlPoint.x, controlPoint.y);
+				if ( EC.getColor(prevColor).diff(color).reduce(add) > 150 ) {
+					style = this.createLinearGradient(prevContorolPoint, controlPoint);
 					style.addColorStop(0, prevColor);
 					style.addColorStop(1,     color);
 				} else {
