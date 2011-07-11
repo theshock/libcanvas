@@ -3,7 +3,7 @@
 
 name: "EC"
 
-description: ""
+description: "Curves with dynamic width and color"
 
 license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
