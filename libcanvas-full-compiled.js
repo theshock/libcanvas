@@ -3303,6 +3303,10 @@ LibCanvas.Canvas2D = atom.Class({
 		if (name in this._layers) {
 			throw new Error('Layer «' + name + '» already exists');
 		}
+		if (typeof z == 'object') {
+			options = z;
+			z = null;
+		}
 		options = atom.extend({ name: name }, options || {});
 		var layer = this._layers[name] = new LibCanvas.Layer(this, this.options, options);
 		layer._layers = this._layers;
