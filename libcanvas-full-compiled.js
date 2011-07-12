@@ -2310,6 +2310,7 @@ LibCanvas.Shape = atom.Class({
 	},
 	move : function (distance, reverse) {
 		distance = this.invertDirection(distance, reverse);
+		this.fireEvent('beforeMove', distance);
 		this.from.move(distance);
 		this. to .move(distance);
 		return this.parent(distance);
