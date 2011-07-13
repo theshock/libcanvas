@@ -1728,6 +1728,7 @@ LibCanvas.Behaviors.DrawableSprite = atom.Class({
 
 	draw: function () {
 		this.libcanvas.ctx.drawImage( this.sprite, this.shape );
+		return this;
 	}
 });
 
