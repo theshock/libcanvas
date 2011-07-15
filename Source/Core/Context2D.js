@@ -602,7 +602,7 @@ LibCanvas.Context2D = atom.Class({
 			}
 			a = [from.x, from.y, to.x, to.y];
 		}
-		return this.original('createLinearGradient', a, true);
+		return fixGradient( this.original('createLinearGradient', a, true) );
 	},
 	createRadialGradient: function () {
 		var points, c1, c2, a = arguments;
@@ -621,7 +621,7 @@ LibCanvas.Context2D = atom.Class({
 			throw new TypeError('Wrong args number in the Context.createRadialGradient');
 		}
 
-		return this.original('createRadialGradient', points, true);
+		return fixGradient( this.original('createRadialGradient', points, true) );
 	},
 
 	createPattern : function () {
@@ -638,8 +638,13 @@ LibCanvas.Context2D = atom.Class({
 	// shadowOffsetX shadowOffsetY shadowBlur shadowColor
 });
 
-CanvasGradient.prototype.addColorStop = function () {
-	var addColorStop = CanvasGradient.prototype.addColorStop;
+var addColorStop = function () {
+	var orig = document
+		.createElement('canvas')
+		.getContext('2d')
+		.createLinearGradient(0,0,1,1)
+		.addColorStop;
+		
 	return function (colors) {
 		if (typeof colors == 'object') {
 			for (var position in colors) {
@@ -651,6 +656,11 @@ CanvasGradient.prototype.addColorStop = function () {
 		return this;
 	}
 }();
+
+var fixGradient = function (grad) {
+	grad.addColorStop = addColorStop;
+	return grad;
+};
 
 LibCanvas.Context2D.office = office;
 
