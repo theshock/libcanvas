@@ -4191,13 +4191,13 @@ var addColorStop = function () {
 	return function (colors) {
 		if (typeof colors == 'object') {
 			for (var position in colors) {
-				addColorStop.call( this, parseFloat(position), colors[position] );
+				orig.call( this, parseFloat(position), colors[position] );
 			}
 		} else {
-			addColorStop.apply( this, arguments );
+			orig.apply( this, arguments );
 		}
 		return this;
-	}
+	};
 }();
 
 var fixGradient = function (grad) {
