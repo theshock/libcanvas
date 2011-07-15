@@ -3934,11 +3934,13 @@ LibCanvas.Context2D = atom.Class({
 		}.context(this);
 		if (cfg.wrap == 'no') {
 			lines.forEach(function (line, i) {
+				if (!line) return;
 				this.fillText(line, xGet(cfg.align == 'left' ? 0 : this.measureText(line).width), to.from.y + (i+1)*lh);
 			}.context(this));
 		} else {
 			var lNum = 0;
 			lines.forEach(function (line) {
+				if (!line) return;
 				var words = line.match(/.+?(\s|$)/g);
 				var L  = '';
 				var Lw = 0;
