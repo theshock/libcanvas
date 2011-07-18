@@ -100,7 +100,19 @@ LibCanvas.Context2D = atom.Class({
 	get height() { return this.canvas.height; },
 	set width (width)  { this.canvas.width  = width; },
 	set height(height) { this.canvas.height = height;},
-
+				 
+	get shadow () {
+		return [this.shadowOffsetX, this.shadowOffsetY, this.shadowBlur, this.shadowColor].join( ' ' );
+	},
+	
+	set shadow (value) {
+		value = value.join( ' ' );
+		this.shadowOffsetX = value[0];
+		this.shadowOffsetY = value[1];
+		this.shadowBlur    = value[2];
+		this.shadowColor   = value[3];
+	},
+	
 	_rectangle: null,
 	get rectangle () {
 		var rect = this._rectangle;
@@ -633,9 +645,6 @@ LibCanvas.Context2D = atom.Class({
 	toString: Function.lambda('[object LibCanvas.Context2D]')
 	// Such moz* methods wasn't duplicated:
 	// mozTextStyle, mozDrawText, mozMeasureText, mozPathText, mozTextAlongPath
-
-	// is this just properties , that can be used by set ?
-	// shadowOffsetX shadowOffsetY shadowBlur shadowColor
 });
 
 var addColorStop = function () {
