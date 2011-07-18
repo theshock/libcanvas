@@ -359,6 +359,7 @@ LibCanvas.Context2D = atom.Class({
 			overflow   : 'visible', /* hidden|visible */
 			padding : [0,0]
 		}, cfg);
+		
 		this.save();
 		if (atom.typeOf(cfg.padding) == 'number') {
 			cfg.padding = [cfg.padding, cfg.padding];
