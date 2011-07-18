@@ -345,7 +345,7 @@ LibCanvas.Context2D = atom.Class({
 	text : function (cfg) {
 		if (!this.ctx2d.fillText) return this;
 		
-		cfg = atom.extend({
+		cfg = atom.add({
 			text   : '',
 			color  : null, /* @color */
 			wrap   : 'normal', /* no|normal */
@@ -373,7 +373,7 @@ LibCanvas.Context2D = atom.Class({
 				family : cfg.family
 			})
 		);
-		if (cfg.color) this.set('fillStyle', cfg.color);
+		if (cfg.color) this.fillStyle = cfg.color;
 		if (cfg.overflow == 'hidden') this.clip(to);
 		
 		var xGet = function (lineWidth) {

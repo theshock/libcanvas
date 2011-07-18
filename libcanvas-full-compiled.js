@@ -3891,7 +3891,7 @@ LibCanvas.Context2D = atom.Class({
 	text : function (cfg) {
 		if (!this.ctx2d.fillText) return this;
 		
-		cfg = atom.extend({
+		cfg = atom.add({
 			text   : '',
 			color  : null, /* @color */
 			wrap   : 'normal', /* no|normal */
@@ -3919,7 +3919,7 @@ LibCanvas.Context2D = atom.Class({
 				family : cfg.family
 			})
 		);
-		if (cfg.color) this.set('fillStyle', cfg.color);
+		if (cfg.color) this.fillStyle = cfg.color;
 		if (cfg.overflow == 'hidden') this.clip(to);
 		
 		var xGet = function (lineWidth) {
@@ -3935,12 +3935,14 @@ LibCanvas.Context2D = atom.Class({
 		if (cfg.wrap == 'no') {
 			lines.forEach(function (line, i) {
 				if (!line) return;
+				
 				this.fillText(line, xGet(cfg.align == 'left' ? 0 : this.measureText(line).width), to.from.y + (i+1)*lh);
 			}.context(this));
 		} else {
 			var lNum = 0;
 			lines.forEach(function (line) {
 				if (!line) return;
+				
 				var words = line.match(/.+?(\s|$)/g);
 				var L  = '';
 				var Lw = 0;
@@ -4181,6 +4183,7 @@ LibCanvas.Context2D = atom.Class({
 	// is this just properties , that can be used by set ?
 	// shadowOffsetX shadowOffsetY shadowBlur shadowColor
 });
+
 var addColorStop = function () {
 	var orig = document
 		.createElement('canvas')
@@ -4199,11 +4202,6 @@ var addColorStop = function () {
 		return this;
 	};
 }();
-
-var fixGradient = function (grad) {
-	grad.addColorStop = addColorStop;
-	return grad;
-};
 
 LibCanvas.Context2D.office = office;
 
@@ -4362,7 +4360,7 @@ LibCanvas.Context2D.implement({
 			p = EC.getPoints(prevPos, pos, width, c);
 						
 			if (t >= step) {
-				if (Math.abs(p[2] - prevP[2]) > 0.3) {
+				if (Math.abs(p[2] - prevP[2]) > 0.3 && !obj.inverted) {
 						this
 							.save()
 							
