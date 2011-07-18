@@ -3891,7 +3891,7 @@ LibCanvas.Context2D = atom.Class({
 	text : function (cfg) {
 		if (!this.ctx2d.fillText) return this;
 		
-		cfg = atom.add({
+		cfg = atom.append({
 			text   : '',
 			color  : null, /* @color */
 			wrap   : 'normal', /* no|normal */
@@ -3920,7 +3920,7 @@ LibCanvas.Context2D = atom.Class({
 				family : cfg.family
 			})
 		);
-		if (cfg.color) this.fillStyle = cfg.color;
+		if (cfg.color) this.set({ fillStyle: cfg.color });
 		if (cfg.overflow == 'hidden') this.clip(to);
 		
 		var xGet = function (lineWidth) {
@@ -3930,15 +3930,14 @@ LibCanvas.Context2D = atom.Class({
 			           to.from.x + (to.width - lineWidth)/2;
 		};
 		var x, lines = String(cfg.text).split('\n');
-		var measure = function (text) {
-			return this.measureText(text).width;
-		}.context(this);
+		
+		var measure = function (text) { return this.measureText(text).width; }.bind(this);
 		if (cfg.wrap == 'no') {
 			lines.forEach(function (line, i) {
 				if (!line) return;
 				
-				this.fillText(line, xGet(cfg.align == 'left' ? 0 : this.measureText(line).width), to.from.y + (i+1)*lh);
-			}.context(this));
+				this.fillText(line, xGet(cfg.align == 'left' ? 0 : measure(line)), to.from.y + (i+1)*lh);
+			}.bind(this));
 		} else {
 			var lNum = 0;
 			lines.forEach(function (line) {
@@ -3952,7 +3951,7 @@ LibCanvas.Context2D = atom.Class({
 					if (!last) {
 						var text = words[i];
 						// @todo too slow. 2-4ms for 50words
-						var wordWidth = this.measureText(text).width;
+						var wordWidth = measure(text);
 						if (!Lw || Lw + wordWidth < to.width) {
 							Lw += wordWidth;
 							L  += text;
@@ -3975,7 +3974,7 @@ LibCanvas.Context2D = atom.Class({
 					L  = '';
 					Lw = 0;
 				}
-			}.context(this));
+			}.bind(this));
 			
 		}
 		return this.restore();
@@ -4203,6 +4202,12 @@ var addColorStop = function () {
 		return this;
 	};
 }();
+
+
+var fixGradient = function (grad) {
+	grad.addColorStop = addColorStop;
+	return grad;
+};
 
 LibCanvas.Context2D.office = office;
 
