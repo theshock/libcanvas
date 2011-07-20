@@ -604,6 +604,21 @@ LibCanvas.Context2D = atom.Class({
 		}
 		return result;
 	},
+	createGradient: function (from, to, colors) {
+		var gradient;
+		if ( from instanceof Rectangle ) {
+			colors   = to;
+			gradient = this.createLinearGradient( from );
+		} else if (from instanceof Circle) {
+			gradient = this.createRadialGradient( from, to );
+		} else if (from instanceof Point) {
+			gradient = this.createLinearGradient( from, to, colors );
+		} else {
+			throw new Error('Unknown arguments');
+		}
+		if (typeof colors == 'object') gradient.addColorStop( colors );
+		return gradient;
+	},
 	createLinearGradient : function (from, to) {
 		var a = arguments;
 		if (a.length != 4) {
