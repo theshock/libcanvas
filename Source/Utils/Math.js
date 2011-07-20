@@ -5,7 +5,9 @@ name: "Utils.Math"
 
 description: "Helpers for basic math operations, such as degree, hypotenuse from two cathetus, etc"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"

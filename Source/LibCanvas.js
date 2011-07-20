@@ -5,7 +5,9 @@ name: "LibCanvas"
 
 description: "LibCanvas initialization"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>

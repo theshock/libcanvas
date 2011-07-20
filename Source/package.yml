@@ -6,7 +6,9 @@ web: "[libcanvas.com](http://libcanvas.com/)"
 
 description: "LibCanvas - html5 canvas framework"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 copyright: "&copy; [LibCanvas](http://libcanvas.com)"
 
