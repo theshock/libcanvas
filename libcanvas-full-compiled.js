@@ -3951,8 +3951,12 @@ LibCanvas.Context2D = atom.Class({
 				this.fillText(line, xGet(cfg.align == 'left' ? 0 : measure(line)), to.from.y + (i+1)*lh);
 			}.bind(this));
 		} else {
-			lines.forEach(function (line, lNum) {
-				if (!line) return;
+			var lNum = 0;
+			lines.forEach(function (line) {
+				if (!line) {
+					lNum++;
+					return;
+				}
 				
 				var words = line.match(/.+?(\s|$)/g);
 				var L  = '';
@@ -3970,7 +3974,7 @@ LibCanvas.Context2D = atom.Class({
 						}
 					}
 					if (Lw) {
-						this.fillText(L, xGet(Lw), to.from.y + (1+lNum)*lh + cfg.padding[0]);
+						this.fillText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
 						if (last) {
 							L  = '';
 							Lw = 0;
@@ -3981,7 +3985,7 @@ LibCanvas.Context2D = atom.Class({
 					}
 				}
 				if (Lw) {
-					this.fillText(L, xGet(Lw), to.from.y + (1+lNum)*lh + cfg.padding[0]);
+					this.fillText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
 					L  = '';
 					Lw = 0;
 				}
