@@ -22,12 +22,11 @@ provides: Shapes.Line
 ...
 */
 
-var Line = LibCanvas.Shapes.Line =new function () {
+var Line = LibCanvas.Shapes.Line = function () {
 
 var between = function (x, a, b) {
 	return x === a || x === b || (a < x && x < b) || (b < x && x < a);
 };
-
 
 return Class({
 	Extends: Shape,
@@ -134,4 +133,4 @@ return Class({
 	toString: Function.lambda('[object LibCanvas.Shapes.Line]')
 });
 
-};
+}();

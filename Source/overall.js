@@ -17,6 +17,8 @@ authors:
 
 (function (atom, Math) { // LibCanvas
 
+'use strict';
+
 var undefined,
 	Class = atom.Class;
 /*** [Code] ***/
