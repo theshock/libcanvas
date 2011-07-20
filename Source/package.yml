@@ -13,3 +13,7 @@ copyright: "&copy; [LibCanvas](http://libcanvas.com)"
 authors: "[LibCanvas Development Team](http://libcanvas.com)"
 
 sources: "*.js"
+
+intro: "intro.js"
+
+outro: "outro.js"
