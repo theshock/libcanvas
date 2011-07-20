@@ -108,7 +108,7 @@ return Class({
 	['quad', 'cubic', 'quart', 'quint']
 		.associate(function(name, i){
 			return function (p) {
-				return Math.pow(p, [i + 2]);
+				return Math.pow(p, i + 2);
 			}
 		})
 );
