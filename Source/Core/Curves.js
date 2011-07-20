@@ -27,10 +27,6 @@ new function () {
 	The following text contains bad code and due to it's code it should not be readed by ANYONE!
 */
 
-var Color = LibCanvas.Utils.Color, 
-	TimingFunctions = LibCanvas.Inner.TimingFunctions,
-	Point = LibCanvas.Point;
-
 var EC = {};
 EC.color = function (color) {
 	color   = new Color(color || [0,0,0,1]);
@@ -149,31 +145,26 @@ LibCanvas.Context2D.implement({
 			p = EC.getPoints(prevPos, pos, width, c);
 						
 			if (t >= step) {
+				this.save();
 				if (Math.abs(p[2] - prevP[2]) > 0.3 && !obj.inverted) {
-						this
-							.save()
-							
-							.beginPath()
-								.moveTo( prevP[0] )
-								.arc ( prevP[0].clone().scale(0.5, p[0]).x , prevP[0].clone().scale(0.5, p[0]).y , width, 0, Math.PI*2, false )
-								.lineTo( p[1] )
-								.arc ( prevP[1].clone().scale(0.5, p[1]).x , prevP[1].clone().scale(0.5, p[1]).y , width, 0, Math.PI*2, false )
-								.clip()
-							
-							.set('globalCompositeOperation', 'destination-over')
-							.set('lineWidth',width*2)
-							.beginPath(obj.from)
-								.curveTo(obj)
-								.stroke(color)
-						
-							.restore()
-						
-							.beginPath(prevP[0])
-								.lineTo(prevP[1])
-								.lineTo(p[0])
-								.lineTo(p[1])
-								.stroke(color);
-							
+					this
+						.beginPath( prevP[0] )
+							.arc ( prevP[0].clone().scale(0.5, p[0]).x , prevP[0].clone().scale(0.5, p[0]).y , width, 0, Math.PI*2, false )
+							.lineTo( p[1] )
+							.arc ( prevP[1].clone().scale(0.5, p[1]).x , prevP[1].clone().scale(0.5, p[1]).y , width, 0, Math.PI*2, false )
+							.clip()
+
+						.set('globalCompositeOperation', 'destination-over')
+						.set('lineWidth',width*2)
+						.beginPath(obj.from)
+							.curveTo(obj)
+							.stroke(color)
+
+						.beginPath(prevP[0])
+							.lineTo(prevP[1])
+							.lineTo(p[0])
+							.lineTo(p[1])
+							.stroke(color);
 				} else {
 					this.lineWidth = 1;
 					this
@@ -184,8 +175,7 @@ LibCanvas.Context2D.implement({
 						.fill(color)
 						.stroke(color);
 				}
-				this
-					
+				this.restore();
 			}
 			prevP   = p;
 			prevPos = pos;

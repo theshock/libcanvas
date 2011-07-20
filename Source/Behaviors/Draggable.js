@@ -19,19 +19,7 @@ provides: Behaviors.Draggable
 ...
 */
 
-new function () {
-
-LibCanvas.Behaviors.Draggable = atom.Class({
-	Extends: LibCanvas.Behaviors.MouseListener,
-
-	draggable : function (stopDrag) {
-		if (! ('draggable.isDraggable' in this) ) {
-			this.addEvent('libcanvasSet', initDraggable);
-		}
-		this['draggable.isDraggable'] = !stopDrag;
-		return this;
-	}
-});
+var Draggable = LibCanvas.Behaviors.Draggable = function () {
 
 var isDraggable = function (elem, started) {
 	return elem['draggable.isDraggable'] && (!started || elem['draggable.mouse']);
@@ -75,4 +63,16 @@ var initDraggable = function () {
 		});
 };
 
-};
+return Class({
+	Extends: MouseListener,
+
+	draggable : function (stopDrag) {
+		if (! ('draggable.isDraggable' in this) ) {
+			this.addEvent('libcanvasSet', initDraggable);
+		}
+		this['draggable.isDraggable'] = !stopDrag;
+		return this;
+	}
+});
+	
+}();

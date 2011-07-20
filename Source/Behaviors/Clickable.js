@@ -19,7 +19,7 @@ provides: Behaviors.Clickable
 ...
 */
 
-new function () {
+var Clickable = LibCanvas.Behaviors.Clickable = function () {
 
 var setValFn = function (object, name, val) {
 	return function () {
@@ -29,8 +29,8 @@ var setValFn = function (object, name, val) {
 };
 
 // Should extends drawable, implements mouseListener
-LibCanvas.Behaviors.Clickable = atom.Class({
-	Implements: [LibCanvas.Behaviors.MouseListener],
+return Class({
+	Implements: [ MouseListener ],
 
 	clickable : function () { 
 		this.listenMouse();
@@ -46,4 +46,4 @@ LibCanvas.Behaviors.Clickable = atom.Class({
 	}
 });
 
-};
+}();

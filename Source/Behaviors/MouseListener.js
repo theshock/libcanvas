@@ -33,7 +33,7 @@ events:
 */
 
 // Should extends LibCanvas.Behaviors.Drawable
-LibCanvas.Behaviors.MouseListener = atom.Class({
+var MouseListener = LibCanvas.Behaviors.MouseListener = Class({
 	listenMouse : function (stopListen) {
 		return this.addEvent('libcanvasSet', function () {
 			var command = stopListen ? "unsubscribe" : "subscribe";

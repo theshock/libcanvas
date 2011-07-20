@@ -20,8 +20,8 @@ provides: Shapes.Ellipse
 ...
 */
 
-LibCanvas.Shapes.Ellipse = atom.Class({
-	Extends: LibCanvas.Shapes.Rectangle,
+var Ellipse = LibCanvas.Shapes.Ellipse = Class({
+	Extends: Rectangle,
 	set : function () {
 		this.parent.apply(this, arguments);
 		var update = function () {
@@ -38,11 +38,11 @@ LibCanvas.Shapes.Ellipse = atom.Class({
 		return this;
 	},
 	getBufferCtx : function () {
-		return this.bufferCtx || (this.bufferCtx = LibCanvas.Buffer(1, 1, true).ctx);
+		return this.bufferCtx || (this.bufferCtx = Buffer(1, 1, true).ctx);
 	},
 	hasPoint : function () {
 		var ctx = this.processPath(this.getBufferCtx()); 
-		return ctx.isPointInPath(LibCanvas.Point(arguments));
+		return ctx.isPointInPath(Point(arguments));
 	},
 	cache : null,
 	updateCache : true,
@@ -51,7 +51,7 @@ LibCanvas.Shapes.Ellipse = atom.Class({
 			return this.cache;
 		}
 
-		var Point = LibCanvas.Point;
+		var Point = Point;
 		if (this.cache === null) {
 			this.cache = [];
 			for (var i = 12; i--;) this.cache.push(new Point());

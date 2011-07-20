@@ -19,9 +19,9 @@ provides: Utils.FpsMeter
 ...
 */
 
-LibCanvas.Utils.FpsMeter = atom.Class({
+var FpsMeter = LibCanvas.Utils.FpsMeter = Class({
 	initialize : function (framesMax) {
-		this.trace = new LibCanvas.Utils.Trace();
+		this.trace = new Trace();
 		this.genTime   = [];
 		this.prevTime  = null;
 		this.framesMax = framesMax;

@@ -19,7 +19,7 @@ provides: Layer
 ...
 */
 
-new function () {
+var Layer = LibCanvas.Layer = function () {
 	
 var callParent = function (method) {
 	return function () {
@@ -28,8 +28,8 @@ var callParent = function (method) {
 	};
 };
 
-LibCanvas.Layer = atom.Class({
-	Extends: LibCanvas.Canvas2D,
+return Class({
+	Extends: Canvas2D,
 
 	Generators: {
 		mouse: function () {
@@ -63,4 +63,4 @@ LibCanvas.Layer = atom.Class({
 	toString: Function.lambda('[object LibCanvas.Layer]')
 });
 
-};
+}();

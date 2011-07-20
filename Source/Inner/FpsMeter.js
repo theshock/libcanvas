@@ -18,9 +18,9 @@ provides: Inner.FpsMeter
 
 ...
 */
-LibCanvas.Inner.FpsMeter = atom.Class({
+LibCanvas.Inner.FpsMeter = Class({
 	fpsMeter : function (frames) {
-		var fpsMeter = new LibCanvas.Utils.FpsMeter(frames || (this.fps ? this.fps / 2 : 10));
+		var fpsMeter = new FpsMeter(frames || (this.fps ? this.fps / 2 : 10));
 		return this.addEvent('frameRenderStarted', function () {
 			fpsMeter.frame();
 		});

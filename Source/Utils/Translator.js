@@ -19,11 +19,8 @@ provides: Utils.Translator
 ...
 */
 
-new function () {
-
-var Point = LibCanvas.Point;
-
-LibCanvas.Utils.Translator = atom.Class({
+// @testing
+var Translator = LibCanvas.Utils.Translator = Class({
 	initialize : function (rectTo) {
 		this.shapes = [];
 		this.rectTo = rectTo;
@@ -57,5 +54,3 @@ LibCanvas.Utils.Translator = atom.Class({
 	toString: Function.lambda('[object LibCanvas.Utils.Translator]')
 
 });
-
-}();

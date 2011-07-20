@@ -20,7 +20,7 @@ provides: Point
 ...
 */
 
-new function (undefined) {
+var Point = LibCanvas.Point = function () {
 
 var shifts = {
 	top    : {x: 0, y:-1},
@@ -37,8 +37,8 @@ var shifts = {
 	br     : {x: 1, y: 1}
 };
 
-var Point = LibCanvas.Point = atom.Class({
-	Extends: LibCanvas.Geometry,
+return Class({
+	Extends: Geometry,
 	set : function (x, y) {
 		var args = arguments;
 		if (atom.typeOf(x) == 'arguments') {
@@ -163,4 +163,4 @@ var Point = LibCanvas.Point = atom.Class({
 	toString: Function.lambda('[object LibCanvas.Point]')
 });
 
-};
+}();

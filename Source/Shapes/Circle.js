@@ -20,12 +20,8 @@ provides: Shapes.Circle
 ...
 */
 
-new function () {
-
-var Point = LibCanvas.Point;
-	
-LibCanvas.Shapes.Circle = atom.Class({
-	Extends: LibCanvas.Shape,
+var Circle = LibCanvas.Shapes.Circle = Class({
+	Extends: Shape,
 	set : function () {
 		var a = Array.pickFrom(arguments);
 
@@ -105,5 +101,3 @@ LibCanvas.Shapes.Circle = atom.Class({
 	},
 	toString: Function.lambda('[object LibCanvas.Shapes.Circle]')
 });
-
-}();

@@ -19,8 +19,8 @@ provides: Shapes.RoundedRectangle
 ...
 */
 
-LibCanvas.Shapes.RoundedRectangle = atom.Class({
-	Extends: LibCanvas.Shapes.Rectangle,
+var RoundedRectangle = LibCanvas.Shapes.RoundedRectangle = Class({
+	Extends: Rectangle,
 
 	radius: 0,
 
@@ -28,7 +28,7 @@ LibCanvas.Shapes.RoundedRectangle = atom.Class({
 		this.radius = value;
 		return this;
 	},
-	draw : LibCanvas.Shape.prototype.draw,
+	draw : Shape.prototype.draw,
 	processPath : function (ctx, noWrap) {
 		var from = this.from, to = this.to, radius = this.radius;
 		if (!noWrap) ctx.beginPath();

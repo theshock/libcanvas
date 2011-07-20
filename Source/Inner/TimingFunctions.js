@@ -21,11 +21,9 @@ inspiration:
 ...
 */
 
-new function () {
-
-var math = Math;
-
-var TF = LibCanvas.Inner.TimingFunctions = atom.Class({
+var TimingFunctions = LibCanvas.Inner.TimingFunctions = function () {
+	
+return Class({
 	Static: {
 		_instance: null,
 		get instance () {
@@ -70,31 +68,31 @@ var TF = LibCanvas.Inner.TimingFunctions = atom.Class({
 	},
 
 	pow: function(p, x){
-		return math.pow(p, x && x[0] || 6);
+		return Math.pow(p, x && x[0] || 6);
 	},
 
 	expo: function(p){
-		return math.pow(2, 8 * (p - 1));
+		return Math.pow(2, 8 * (p - 1));
 	},
 
 	circ: function(p){
-		return 1 - math.sin(math.acos(p));
+		return 1 - Math.sin(Math.acos(p));
 	},
 
 	sine: function(p){
-		return 1 - math.sin((1 - p) * math.PI / 2);
+		return 1 - Math.sin((1 - p) * Math.PI / 2);
 	},
 
 	back: function(p, x){
 		x = x && x[0] || 1.618;
-		return math.pow(p, 2) * ((x + 1) * p - x);
+		return Math.pow(p, 2) * ((x + 1) * p - x);
 	},
 
 	bounce: function(p){
 		var value;
 		for (var a = 0, b = 1; 1; a += b, b /= 2){
 			if (p >= (7 - 4 * a) / 11){
-				value = b * b - math.pow((11 - 6 * a - 11 * p) / 4, 2);
+				value = b * b - Math.pow((11 - 6 * a - 11 * p) / 4, 2);
 				break;
 			}
 		}
@@ -102,17 +100,15 @@ var TF = LibCanvas.Inner.TimingFunctions = atom.Class({
 	},
 
 	elastic: function(p, x){
-		return math.pow(2, 10 * --p) * math.cos(20 * p * math.PI * (x && x[0] || 1) / 3);
+		return Math.pow(2, 10 * --p) * Math.cos(20 * p * Math.PI * (x && x[0] || 1) / 3);
 	}
-});
-
-TF.implement(
+}).implement(
 	['quad', 'cubic', 'quart', 'quint']
 		.associate(function(name, i){
 			return function (p) {
-				return math.pow(p, [i + 2]);
+				return Math.pow(p, [i + 2]);
 			}
 		})
 );
 
-};
+}();

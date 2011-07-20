@@ -18,9 +18,9 @@ provides: Inner.ProjectiveTexture
 ...
 */
 
-new function () {
+var ProjectiveTexture = LibCanvas.Inner.ProjectiveTexture = function () {
 
-LibCanvas.Inner.ProjectiveTexture = atom.Class({
+Class({
 	initialize : function (image) {
 		if (typeof image == 'string') {
 			this.image = new Image;
@@ -369,4 +369,5 @@ Matrix.prototype = {
 	}
 };
 
-};
+return ProjectiveTexture;
+}();

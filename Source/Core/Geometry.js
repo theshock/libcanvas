@@ -18,8 +18,8 @@ provides: Geometry
 ...
 */
 
-LibCanvas.Geometry = atom.Class({
-	Implements: [atom.Class.Events],
+var Geometry = LibCanvas.Geometry = Class({
+	Implements: [Class.Events],
 	Static: {
 		invoke: function (obj) {
 			return (typeof obj == 'object' && obj[0] instanceof this) ? obj[0]

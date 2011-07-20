@@ -18,7 +18,7 @@ provides: Processors.Mask
 ...
 */
 
-LibCanvas.Processors.Mask = atom.Class({
+LibCanvas.Processors.Mask = Class({
 	color : null,
 	initialize : function (color) { // [r,g,b]
 		this.color = color || [0,0,0];

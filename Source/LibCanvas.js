@@ -9,18 +9,13 @@ license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgp
 
 authors:
 	- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
-	- Anna Shurubey aka Nutochka <iamnutochka@gmail.com>
-	- Nikita Baksalyar <nikita@baksalyar.ru>
 
 provides: LibCanvas
 
 ...
 */
 
-
-(function () {
-
-var LibCanvas = this.LibCanvas = atom.Class({
+var LibCanvas = this.LibCanvas = Class({
 	Static: {
 		Buffer: function (width, height, withCtx) {
 			var a = Array.pickFrom(arguments), zero = (width == null || width === true);
@@ -44,7 +39,7 @@ var LibCanvas = this.LibCanvas = atom.Class({
 			return canvas;
 		},
 		isLibCanvas: function (elem) {
-			return elem && elem instanceof LibCanvas.Canvas2D;
+			return elem && elem instanceof Canvas2D;
 		},
 		namespace: function (namespace) {
 			var current;
@@ -65,7 +60,7 @@ var LibCanvas = this.LibCanvas = atom.Class({
 					to[k] = LibCanvas[i][k];
 				}
 			}
-			for (i in {Point: 1, Animation: 1}) {
+			for (i in {Point: 1, Animation: 1, Processors: 1}) {
 				to[i] = LibCanvas[i];
 			}
 			return to;
@@ -73,16 +68,19 @@ var LibCanvas = this.LibCanvas = atom.Class({
 
 		get invoker () {
 			if (this._invoker == null) {
-				this._invoker = new LibCanvas.Invoker().invoke();
+				this._invoker = new Invoker().invoke();
 			}
 			return this._invoker;
 		}
 	},
 	initialize: function() {
-		return LibCanvas.Canvas2D.factory(arguments);
+		return Canvas2D.factory(arguments);
 	}
 });
 
 LibCanvas.namespace( 'Animation', 'Behaviors', 'Engines', 'Inner', 'Processors', 'Shapes', 'Ui', 'Utils' );
-	
-})();
+
+var
+	Inner      = LibCanvas.Inner,
+	Processors = LibCanvas.Processors,
+	Buffer     = LibCanvas.Buffer;

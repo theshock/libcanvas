@@ -19,17 +19,12 @@ provides: Shapes.Path
 
 ...
 */
-
-(function (LibCanvas) {
-
-var Point = LibCanvas.Point, Shapes = LibCanvas.Shapes;
-
-var Path = LibCanvas.Shapes.Path = atom.Class({
-	Extends: LibCanvas.Shape,
+var Path = LibCanvas.Shapes.Path = Class({
+	Extends: Shape,
 
 	Generators : {
 		buffer: function () {
-			return LibCanvas.Buffer(1, 1, true);
+			return Buffer(1, 1, true);
 		}
 	},
 
@@ -87,7 +82,7 @@ var Path = LibCanvas.Shapes.Path = atom.Class({
 	toString: Function.lambda('[object LibCanvas.Shapes.Path]')
 });
 
-LibCanvas.Shapes.Path.Builder = atom.Class({
+Path.Builder = LibCanvas.Shapes.Path.Builder = Class({
 	initialize: function (str) {
 		this.update = this.update.bind( this );
 		this.parts  = [];
@@ -238,5 +233,3 @@ LibCanvas.Shapes.Path.Builder = atom.Class({
 
 	toString: Function.lambda('[object LibCanvas.Shapes.Path]')
 });
-
-})(LibCanvas);

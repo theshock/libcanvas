@@ -18,7 +18,7 @@ provides: Behaviors.Linkable
 ...
 */
 
-LibCanvas.Behaviors.Linkable = atom.Class({
+var Linkable = LibCanvas.Behaviors.Linkable = Class({
 	links : null,
 	moveLinks : function (move) {
 		(this.links || []).forEach(function (elem) {

@@ -18,10 +18,10 @@ provides: Keyboard
 ...
 */
 
-new function () {
+var Keyboard = LibCanvas.Keyboard = function () {
 
-var Keyboard = LibCanvas.Keyboard = atom.Class({
-	Implements: [atom.Class.Events],
+var Keyboard = Class({
+	Implements: [Class.Events],
 	Static: {
 		keyCodes : {
 			// Alphabet
@@ -124,7 +124,7 @@ var Keyboard = LibCanvas.Keyboard = atom.Class({
 		return this;
 	},
 	debug : function (on) {
-		this._debugTrace = on === false ? null : new LibCanvas.Utils.Trace();
+		this._debugTrace = on === false ? null : new Trace();
 		this.debugUpdate();
 		return this;
 	},
@@ -133,4 +133,5 @@ var Keyboard = LibCanvas.Keyboard = atom.Class({
 
 Keyboard.extend({ codeNames: Object.invert(Keyboard.keyCodes) });
 
-};
+return Keyboard;
+}();

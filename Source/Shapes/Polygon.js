@@ -19,8 +19,8 @@ provides: Shapes.Polygon
 
 ...
 */
-new function (){
 
+var Polygon = LibCanvas.Shapes.Polygon = function (){
 
 var linesIntersect = function (a,b,c,d) {
 	var x,y;
@@ -41,10 +41,8 @@ var linesIntersect = function (a,b,c,d) {
 		&& (y.between(c.y, d.y, 'LR') || y.between(d.y, c.y, 'LR'));
 };
 
-var Point = LibCanvas.Point;
-
-LibCanvas.Shapes.Polygon = atom.Class({
-	Extends: LibCanvas.Shape,
+return Class({
+	Extends: Shape,
 	initialize: function () {
 		this.points = [];
 		this.parent.apply(this, arguments);

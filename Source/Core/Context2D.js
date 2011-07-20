@@ -22,13 +22,7 @@ provides: Context2D
 ...
 */
 
-(function (LibCanvas) {
-
-var Point  = LibCanvas.Point,
-    Shapes = LibCanvas.namespace('Shapes'),
-    Circle = Shapes.Circle,
-    Rectangle = Shapes.Rectangle;
-
+var Context2D = LibCanvas.Context2D = function () {
 
 var office = {
 	all : function (type, style) {
@@ -47,7 +41,7 @@ var office = {
 		return args.length ? Rectangle(args) : this.rectangle;
 	},
 	fillStroke : function (type, args) {
-		if (args.length >= 1 && args[0] instanceof LibCanvas.Shape) {
+		if (args.length >= 1 && args[0] instanceof Shape) {
 			if (args[1]) this.save().set(type + 'Style', args[1]);
 			args[0].draw(this, type);
 			if (args[1]) this.restore();
@@ -84,8 +78,8 @@ var accessors = {};
 	})
 });
 	
-LibCanvas.Context2D = atom.Class({
-	Implements: [atom.Class(accessors)],
+var Context2D = Class({
+	Implements: [Class(accessors)],
 
 	initialize : function (canvas) {
 		if (canvas instanceof CanvasRenderingContext2D) {
@@ -145,7 +139,7 @@ LibCanvas.Context2D = atom.Class({
 		var args = [canvas, 0, 0];
 		if (resize) args.push(width, height);
 
-		var clone = LibCanvas.Buffer(width, height, true);
+		var clone = Buffer(width, height, true);
 		clone.ctx.original('drawImage', args);
 		return clone;
 	},
@@ -533,10 +527,10 @@ LibCanvas.Context2D = atom.Class({
 	},
 	projectiveImage : function (arg) {
 		// test
-		new LibCanvas.Inner.ProjectiveTexture(arg.image)
+		new ProjectiveTexture(arg.image)
 			.setContext(this.ctx2d)
 			.setQuality(arg.patchSize, arg.limit)
-			.render(new Shapes.Polygon(Array.collect(arg, [0, 1, 3, 2])));
+			.render(new Polygon(Array.collect(arg, [0, 1, 3, 2])));
 		return this;
 	},
 
@@ -690,8 +684,9 @@ var fixGradient = function (grad) {
 	return grad;
 };
 
-LibCanvas.Context2D.office = office;
+Context2D.office = office;
 
-HTMLCanvasElement.addContext('2d-libcanvas', LibCanvas.Context2D);
+HTMLCanvasElement.addContext('2d-libcanvas', Context2D);
 
-})(LibCanvas);
+return Context2D;
+}();

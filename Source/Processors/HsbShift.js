@@ -20,8 +20,8 @@ provides: Processors.HsbShift
 */
 
 
-LibCanvas.Processors.HsbShift = atom.Class({
-	Extends: LibCanvas.Processors.Color,
+LibCanvas.Processors.HsbShift = Class({
+	Extends: Processors.Color,
 	shift : 0,
 	param : 'hue',
 	initialize : function (shift, param) {

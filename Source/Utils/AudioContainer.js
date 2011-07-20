@@ -18,14 +18,14 @@ provides: Utils.AudioContainer
 ...
 */
 
-LibCanvas.Utils.AudioContainer = atom.Class({
+var AudioContainer = LibCanvas.Utils.AudioContainer = Class({
 	support : false,
 	initialize: function (files) {
 		this.allAudios = [];
 		this.checkSupport();
 		var audio = {};
 		for (var i in files) {
-			audio[i] = new LibCanvas.Utils.AudioElement(this, files[i]);
+			audio[i] = new AudioElement(this, files[i]);
 		}
 		this.audio = audio;
 	},

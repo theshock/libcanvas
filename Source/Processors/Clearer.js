@@ -19,7 +19,7 @@ provides: Processors.Clearer
 ...
 */
 
-LibCanvas.Processors.Clearer = atom.Class({
+LibCanvas.Processors.Clearer = Class({
 	style : null,
 	initialize : function (style) {
 		this.style = style || null;

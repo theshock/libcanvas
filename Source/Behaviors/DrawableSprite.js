@@ -19,8 +19,8 @@ provides: Behaviors.DrawableSprite
 ...
 */
 
-LibCanvas.Behaviors.DrawableSprite = atom.Class({
-	Extends: LibCanvas.Behaviors.Drawable,
+var DrawableSprite = LibCanvas.Behaviors.DrawableSprite = Class({
+	Extends: Drawable,
 
 	draw: function () {
 		this.libcanvas.ctx.drawImage( this.sprite, this.shape );

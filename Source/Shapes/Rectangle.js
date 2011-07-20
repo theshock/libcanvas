@@ -20,14 +20,12 @@ provides: Shapes.Rectangle
 ...
 */
 
-new function () {
+var Rectangle = LibCanvas.Shapes.Rectangle = new function () {
 
-var Point  = LibCanvas.Point,
-	math   = Math,
-	random = Number.random,
+var random = Number.random;
 
-Rectangle = LibCanvas.Shapes.Rectangle = atom.Class({
-	Extends: LibCanvas.Shape,
+return Class({
+	Extends: Shape,
 	set : function () {
 		var a = Array.pickFrom(arguments);
 
@@ -109,11 +107,11 @@ Rectangle = LibCanvas.Shapes.Rectangle = atom.Class({
 		point   = Point(arguments);
 		padding = padding || 0;
 		return point.x != null && point.y != null
-			&& point.x.between(math.min(this.from.x, this.to.x) + padding, math.max(this.from.x, this.to.x) - padding, 1)
-			&& point.y.between(math.min(this.from.y, this.to.y) + padding, math.max(this.from.y, this.to.y) - padding, 1);
+			&& point.x.between(Math.min(this.from.x, this.to.x) + padding, Math.max(this.from.x, this.to.x) - padding, 1)
+			&& point.y.between(Math.min(this.from.y, this.to.y) + padding, Math.max(this.from.y, this.to.y) - padding, 1);
 	},
 	moveTo: function (rect) {
-		if (rect instanceof LibCanvas.Point) {
+		if (rect instanceof Point) {
 			var diff = this.from.diff(rect);
 			this.from.move(diff);
 			this.  to.move(diff);
@@ -127,8 +125,8 @@ Rectangle = LibCanvas.Shapes.Rectangle = atom.Class({
 	draw : function (ctx, type) {
 		// fixed Opera bug - cant drawing rectangle with width or height below zero
 		ctx.original(type + 'Rect', [
-			math.min(this.from.x, this.to.x),
-			math.min(this.from.y, this.to.y),
+			Math.min(this.from.x, this.to.x),
+			Math.min(this.from.y, this.to.y),
 			this.width .abs(),
 			this.height.abs()
 		]);
@@ -175,11 +173,11 @@ Rectangle = LibCanvas.Shapes.Rectangle = atom.Class({
 		return this.parent('Rectangle');
 	},
 	toPolygon: function () {
-		return new LibCanvas.Shapes.Polygon(
+		return new Polygon(
 			this.from.clone(), this.topRight, this.to.clone(), this.bottomLeft
 		);
 	},
 	toString: Function.lambda('[object LibCanvas.Shapes.Rectangle]')
 });
 
-};
+}();

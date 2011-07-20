@@ -19,8 +19,8 @@ provides: Utils.ImagePreloader
 ...
 */
 
-LibCanvas.Utils.ImagePreloader = atom.Class({
-	Implements: [atom.Class.Events],
+var ImagePreloader = LibCanvas.Utils.ImagePreloader = Class({
+	Implements: [Class.Events],
 	processed : 0,
 	number: 0,
 	initialize: function (images) {

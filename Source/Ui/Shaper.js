@@ -25,24 +25,15 @@ provides: Ui.Shaper
 ...
 */
 
-
-new function () {
-
-var Beh = LibCanvas.Behaviors,
-	Sh  = LibCanvas.Shapes;
-
-LibCanvas.Ui.Shaper = atom.Class({
-	Extends: atom.Class.Options,
+var Shaper = LibCanvas.Ui.Shaper = Class({
+	Extends: Class.Options,
 	Implements: [
-		Beh.Drawable,
-		Beh.Animatable,
-		Beh.Clickable,
-		Beh.Draggable,
-		Beh.Droppable,
-		Beh.Linkable,
-		Beh.MouseListener,
-		Beh.Moveable
+		Drawable, Animatable, Clickable, MouseListener,
+		Linkable, Draggable , Droppable, Moveable
 	],
+
+	active: false,
+	hover : false,
 
 	initialize : function (libcanvas, options) {
 		this.update = libcanvas.update;
@@ -110,13 +101,13 @@ LibCanvas.Ui.Shaper = atom.Class({
 	},
 
 	get radius () {
-		if (!Sh.Circle.isInstance(this.shape)) {
+		if (!Circle.isInstance(this.shape)) {
 			throw new TypeError('Shape is not circle');
 		}
 		return this.shape.radius;
 	},
 	set radius (value) {
-		if (!Sh.Circle.isInstance(this.shape)) {
+		if (!Circle.isInstance(this.shape)) {
 			throw new TypeError('Shape is not circle');
 		}
 		this.shape.radius = value;
@@ -127,5 +118,3 @@ LibCanvas.Ui.Shaper = atom.Class({
 	},
 	toString: Function.lambda('[object LibCanvas.Ui.Shaper]')
 });
-
-};

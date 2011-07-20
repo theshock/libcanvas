@@ -18,9 +18,7 @@ provides: Utils.Trace
 ...
 */
 
-new function () {
-
-var Trace = LibCanvas.Utils.Trace = atom.Class({
+var Trace = LibCanvas.Utils.Trace = Class({
 	Static: {
 		dumpRec : function (obj, level, plain) {
 			level  = parseInt(level) || 0;
@@ -169,14 +167,14 @@ var Trace = LibCanvas.Utils.Trace = atom.Class({
 	toString: Function.lambda('[object LibCanvas.Utils.Trace]')
 });
 
-window.trace = function (msg) {
-	var L = arguments.length;
-	if (L > 0) {
-		if (L > 1) msg = atom.toArray(arguments);
-		return new Trace(msg);
-	} else {
-		return new Trace();
-	}
-};
-
-}();
+try {
+	window.trace = function (msg) {
+		var L = arguments.length;
+		if (L > 0) {
+			if (L > 1) msg = atom.toArray(arguments);
+			return new Trace(msg);
+		} else {
+			return new Trace();
+		}
+	};
+} catch (ignored) {}

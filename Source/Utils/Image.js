@@ -18,15 +18,6 @@ provides: Utils.Image
 
 ...
 */
-
-(function (LibCanvas) {
-
-var Point     = LibCanvas.Point,
-	Buffer    = LibCanvas.Buffer,
-	Rectangle = LibCanvas.Shapes.Rectangle,
-	ImgProto  = HTMLImageElement.prototype,
-	math      = Math;
-
 // <image> tag
 atom.implement(HTMLImageElement, {
 	// наверное, лучше использовать createPattern
@@ -114,10 +105,8 @@ atom.implement(HTMLImageElement, {
 });
 	// mixin from image
 atom.implement(HTMLCanvasElement, {
-	createSprite : ImgProto.createSprite,
-	sprite   : ImgProto.sprite,
+	createSprite : HTMLImageElement.prototype.createSprite,
+	sprite   : HTMLImageElement.prototype.sprite,
 	isLoaded : function () { return true; },
 	toCanvas : function () { return this; }
 });
-	
-})(LibCanvas);

@@ -18,8 +18,8 @@ provides: Animation.Sprite
 ...
 */
 
-LibCanvas.Animation.Sprite = atom.Class({
-	Implements: [atom.Class.Events],
+LibCanvas.Animation.Sprite = Class({
+	Implements: [Class.Events],
 	sprites : null,
 
 	initialize: function () {

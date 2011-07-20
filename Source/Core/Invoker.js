@@ -18,10 +18,17 @@ provides: Invoker
 ...
 */
 
-LibCanvas.Invoker = atom.Class({
+var Invoker = LibCanvas.Invoker = Class({
+	Static: {
+		AutoChoose: Class({
+			get invoker () {
+				return 'libcanvas' in this ? this.libcanvas.invoker : LibCanvas.invoker;
+			}
+		})
+	},
 	Implements: [
-		atom.Class.Options,
-		atom.Class.Events
+		Class.Options,
+		Class.Events
 	],
 	options: {
 		fpsLimit : 60,
@@ -105,10 +112,4 @@ LibCanvas.Invoker = atom.Class({
 		return this;
 	},
 	toString: Function.lambda('[object LibCanvas.Invoker]')
-});
-
-LibCanvas.Invoker.AutoChoose = atom.Class({
-	get invoker () {
-		return 'libcanvas' in this ? this.libcanvas.invoker : LibCanvas.invoker;
-	}
 });

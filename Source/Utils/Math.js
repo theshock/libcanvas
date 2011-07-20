@@ -16,69 +16,69 @@ provides: Utils.Math
 */
 
 // Number
-new function () {
+(function () {
 
 
-var degreesCache = {};
+	var degreesCache = {};
 
-atom.implement(Number, {
-	/**
-	 * Cast degrees to radians
-	 * (90).degree() == Math.PI/2
-	 */
-	degree: function () {
-		return this in degreesCache ? degreesCache[this] :
-			this * Math.PI / 180;
-	},
-	/**
-	 * Cast radians to degrees
-	 * (Math.PI/2).getDegree() == 90
-	 */
-	getDegree: function (round) {
-		return arguments.length == 0 ?
-			this / Math.PI * 180 :
-			this.getDegree().round(round);
-	},
-	normalizeAngle : function () {
-		var num  = this % d360;
-		return num < 0 ? num + d360 : num;
-	},
-	normalizeDegree : function (base) {
-		return this
-			.getDegree()
-			.round(base || 0)
-			.degree()
-			.normalizeAngle();
-	},
+	atom.implement(Number, {
+		/**
+		 * Cast degrees to radians
+		 * (90).degree() == Math.PI/2
+		 */
+		degree: function () {
+			return this in degreesCache ? degreesCache[this] :
+				this * Math.PI / 180;
+		},
+		/**
+		 * Cast radians to degrees
+		 * (Math.PI/2).getDegree() == 90
+		 */
+		getDegree: function (round) {
+			return arguments.length == 0 ?
+				this / Math.PI * 180 :
+				this.getDegree().round(round);
+		},
+		normalizeAngle : function () {
+			var num  = this % d360;
+			return num < 0 ? num + d360 : num;
+		},
+		normalizeDegree : function (base) {
+			return this
+				.getDegree()
+				.round(base || 0)
+				.degree()
+				.normalizeAngle();
+		},
 
-	toSeconds: function () {
-		return this / 1000;
-	},
-	toMinutes: function () {
-		return this / 60 / 1000;
-	},
-	toHours: function () {
-		return this / 60 / 60 / 1000;
-	},
+		toSeconds: function () {
+			return this / 1000;
+		},
+		toMinutes: function () {
+			return this / 60 / 1000;
+		},
+		toHours: function () {
+			return this / 60 / 60 / 1000;
+		},
 
-	seconds: function () {
-		return this * 1000;
-	},
-	minutes: function () {
-		return this * 60 * 1000;
-	},
-	hours: function () {
-		return this * 60 * 60 * 1000;
+		seconds: function () {
+			return this * 1000;
+		},
+		minutes: function () {
+			return this * 60 * 1000;
+		},
+		hours: function () {
+			return this * 60 * 60 * 1000;
+		}
+
+	});
+
+	for (var degree in [0, 45, 90, 135, 180, 225, 270, 315, 360].toKeys()) {
+		degreesCache[degree] = (degree * 1).degree();
 	}
+	var d360 = degreesCache[360];
 
-});
-
-for (var degree in [0, 45, 90, 135, 180, 225, 270, 315, 360].toKeys()) {
-	degreesCache[degree] = (degree * 1).degree();
-}
-var d360 = degreesCache[360];
-
-};
+})();
 
 atom.extend(Math, {
 	hypotenuse: function (cathetus1, cathetus2)  {

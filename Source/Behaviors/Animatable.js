@@ -21,15 +21,14 @@ provides: Behaviors.Animatable
 ...
 */
 
-(function (LibCanvas) {
+var Animatable = LibCanvas.Behaviors.Animatable = function () {
 
-var TF    = LibCanvas.Inner.TimingFunctions,
-	Color = LibCanvas.Utils.Color;
+var TF = TimingFunctions;
 
-LibCanvas.Behaviors.Animatable = atom.Class({
-	Implements: [LibCanvas.Invoker.AutoChoose],
+return Class({
+	Implements: [ Invoker.AutoChoose ],
 
-	initialize: atom.Class.hiddenMethod(function (element) {
+	initialize: Class.hiddenMethod(function (element) {
 		this['animate.element'] = element;
 		this['animate.func']    = atom.typeOf(element) == 'function';
 	}),
@@ -142,4 +141,4 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 	}
 });
 
-})(LibCanvas);
+}();
