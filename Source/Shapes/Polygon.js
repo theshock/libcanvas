@@ -49,7 +49,7 @@ return Class({
 		this.points = [];
 		this.parent.apply(this, arguments);
 	},
-	set : function () {
+	set : function (poly) {
 		this.points.empty().append(
 			Array.pickFrom(arguments)
 				.map(function (elem) {
@@ -131,4 +131,4 @@ return Class({
 	toString: Function.lambda('[object LibCanvas.Shapes.Polygon]')
 });
 
-};
+}();

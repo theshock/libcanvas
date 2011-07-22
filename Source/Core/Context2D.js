@@ -527,12 +527,13 @@ var Context2D = Class({
 		}
 		return this.restore();
 	},
+
 	projectiveImage : function (arg) {
 		// test
 		new ProjectiveTexture(arg.image)
 			.setContext(this.ctx2d)
 			.setQuality(arg.patchSize, arg.limit)
-			.render(new Polygon(Array.collect(arg, [0, 1, 3, 2])));
+			.render( arg.to );
 		return this;
 	},
 
