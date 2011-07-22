@@ -3298,6 +3298,10 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 		this.elems.erase(elem);
 		return this;
 	},
+	rmAllElements: function () {
+		this.elems.empty();
+		return this;
+	},
 
 	// Each frame funcs
 
