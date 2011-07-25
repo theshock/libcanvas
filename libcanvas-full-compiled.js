@@ -5992,13 +5992,13 @@ Path.Builder = LibCanvas.Shapes.Path.Builder = Class({
 			a.circle = circle;
 			a.angle  = angle;
 			a.acw    = acw;
-		} else if (circle instanceof Shapes.Circle) {
+		} else if (circle instanceof Circle) {
 			a = { circle: circle, angle: [0, (360).degree()] };
 		} else {
 			a = a[0];
 		}
 
-		a.circle = Shapes.Circle(a.circle);
+		a.circle = Circle(a.circle);
 
 		if (Array.isArray(a.angle)) {
 			a.angle = {
