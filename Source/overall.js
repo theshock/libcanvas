@@ -23,4 +23,4 @@ var undefined,
 	Class = atom.Class;
 /*** [Code] ***/
 
-})(atom, Math);
+}).call((0, eval)("this"), atom, Math);

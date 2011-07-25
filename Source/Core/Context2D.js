@@ -102,7 +102,7 @@ var Context2D = Class({
 	},
 	
 	set shadow (value) {
-		value = value.join( ' ' );
+		value = value.split( ' ' );
 		this.shadowOffsetX = value[0];
 		this.shadowOffsetY = value[1];
 		this.shadowBlur    = value[2];
@@ -362,10 +362,11 @@ var Context2D = Class({
 			size   : 16,
 			weigth : 'normal', /* bold|normal */
 			style  : 'normal', /* italic|normal */
-			family : 'sans-serif', /* @fontFamily */
+			family : 'arial,sans-serif', /* @fontFamily */
 			lineHeight : null,
 			overflow   : 'visible', /* hidden|visible */
-			padding : [0,0]
+			padding : [0,0],
+			shadow : null
 		}, cfg);
 		
 		this.save();
@@ -382,6 +383,7 @@ var Context2D = Class({
 				family : cfg.family
 			})
 		);
+		if (cfg.shadow) this.shadow = cfg.shadow;
 		if (cfg.color) this.set({ fillStyle: cfg.color });
 		if (cfg.overflow == 'hidden') this.clip(to);
 		
@@ -600,6 +602,17 @@ var Context2D = Class({
 			}
 		}
 		return result;
+	},
+	getPixel: function (point) {
+		point = Point( arguments );
+		var data = this.getImageData(new Rectangle({ from: point, size: [1,1] })).data;
+
+		return {
+			r: data[0],
+			g: data[1],
+			b: data[2],
+			a: data[3] / 255
+		};
 	},
 	createGradient: function (from, to, colors) {
 		var gradient;

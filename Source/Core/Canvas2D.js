@@ -27,7 +27,9 @@ provides: Canvas2D
 var Canvas2D = LibCanvas.Canvas2D = Class({
 	Extends: LibCanvas,
 	Implements: [
-		FrameRenderer,Inner.FpsMeter, DownloadingProgress,
+		FrameRenderer,
+		Inner.FpsMeter,
+		DownloadingProgress,
 		Class.Events, Class.Options
 	],
 

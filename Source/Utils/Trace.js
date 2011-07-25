@@ -31,7 +31,7 @@ var Trace = LibCanvas.Utils.Trace = Class({
 
 			if (level > 5) return '*TOO_DEEP*';
 
-			if (typeof obj == 'object' && typeof(obj.dump) == 'function') return obj.dump();
+			if (obj && typeof obj == 'object' && typeof(obj.dump) == 'function') return obj.dump();
 
 			var subDump = function (elem, index) {
 					return tabs + '\t' + index + ': ' + this.dumpRec(elem, level+1, plain) + '\n';
