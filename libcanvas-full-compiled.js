@@ -653,7 +653,7 @@ var Color = LibCanvas.Utils.Color = Class({
 		return clone;
 	},
 	dump: function () {
-		return '[Color(' + this + ')]';
+		return '[Color(' + this.toArray().invoke('round', 2) + ')]';
 	},
 	clone: function () {
 		return new Color(this.toArray());
