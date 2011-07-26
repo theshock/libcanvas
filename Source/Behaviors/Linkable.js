@@ -33,7 +33,7 @@ var Linkable = LibCanvas.Behaviors.Linkable = Class({
 		if (this.links === null) {
 			this.links = [];
 			this.getShape().addEvent('move',
-				this.moveLinks.context(this)
+				this.moveLinks.bind(this)
 			);
 		}
 		this.links.include(obj);

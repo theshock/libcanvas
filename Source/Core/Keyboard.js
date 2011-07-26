@@ -105,7 +105,7 @@ var Keyboard = Class({
 			this.fireEvent( event, [e] );
 			this.debugUpdate();
 			return !prevent;
-		}.context(this);
+		}.bind(this);
 	},
 	prevent : function (key) {
 		var pD = this.preventDefault;

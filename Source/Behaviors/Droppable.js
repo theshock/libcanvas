@@ -36,10 +36,10 @@ var Droppable = LibCanvas.Behaviors.Droppable = Class({
 							dropped = true;
 							this.fireEvent('dropped', [obj]);
 						}
-					}.context(this));
+					}.bind(this));
 				}
 				if (!dropped) this.fireEvent('dropped', [null]);
-			}.context(this));
+			}.bind(this));
 		}
 		this.drops.push(obj);
 		return this;

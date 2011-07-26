@@ -106,7 +106,7 @@ LibCanvas.Engines.Tile = Class({
 				this.drawCell(cell);
 				old[cell.y][cell.x] = cell.t;
 			}
-		}.context(this));
+		}.bind(this));
 		this.first = false;
 		if (changed) {
 			this.fireEvent('update');

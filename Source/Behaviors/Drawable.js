@@ -44,7 +44,7 @@ return Class({
 				this.libcanvasIsReady = true;
 			});
 			this.readyEvent('libcanvasSet');
-			this.libcanvas.addEvent('ready', this.readyEvent.context(this, ['libcanvasReady']));
+			this.libcanvas.addEvent('ready', this.readyEvent.bind(this, 'libcanvasReady'));
 		}
 		return this;
 	},

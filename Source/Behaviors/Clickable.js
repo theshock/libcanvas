@@ -37,7 +37,7 @@ return Class({
 	clickable : function () { 
 		this.listenMouse();
 
-		var fn = setValFn.context(null, [this]);
+		var fn = setValFn.bind(null, this);
 		
 		this.addEvent('mouseover', fn('hover', true));
 		this.addEvent('mouseout' , fn('hover', false));

@@ -122,7 +122,7 @@ var ProgressBar = LibCanvas.Utils.ProgressBar = Class({
 		this.update().animate({
 			props: {progress: progress},
 			fn: 'circ-in',
-			onProccess: this.update.context(this),
+			onProccess: this.update.bind(this),
 			time: 200
 		});
 		return this;

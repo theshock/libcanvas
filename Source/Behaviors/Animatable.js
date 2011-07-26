@@ -114,7 +114,7 @@ return Class({
 			if (timeLeft <= 0) {
 				args.onFinish && invoker.after(0, function() {
 					args.onFinish.call(this, animation, start);
-				}.context(this));
+				}.bind(this));
 				return 'remove';
 			}
 

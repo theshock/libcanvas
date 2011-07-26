@@ -46,9 +46,9 @@ var Moveable = LibCanvas.Behaviors.Moveable = Class({
 		}).animate({
 			fn        : fn || 'linear',
 			time      : distance / speed * 1000,
-			onProcess : this.fireEvent.context(this, ['move']),
-			onAbort   : this.fireEvent.context(this, ['stopMove']),
-			onFinish  : this.fireEvent.context(this, ['stopMove'])
+			onProcess : this.fireEvent.bind(this, 'move'),
+			onAbort   : this.fireEvent.bind(this, 'stopMove'),
+			onFinish  : this.fireEvent.bind(this, 'stopMove')
 		});
 
 		return this;

@@ -61,7 +61,7 @@ var AudioElement = LibCanvas.Utils.AudioElement = Class({
 		audioClone.src = this.audio.src;
 		this.events.forEach(function (e) {
 			audioClone.addEventListener(e[0], e[1].bind(this), false);
-		}.context(this));
+		}.bind(this));
 		this.container.allAudios.push(audioClone);
 		audioClone.load();
 		return audioClone;
@@ -135,8 +135,8 @@ var AudioElement = LibCanvas.Utils.AudioElement = Class({
 			this.stop().play();
 		} else {
 			if (!this.loopBinded) {
-				this.event('ended', this.playNext.context(this) ).gatling(2);
-				atom.dom(window).bind('unload', this.pause.context(this));
+				this.event('ended', this.playNext.bind(this) ).gatling(2);
+				atom.dom(window).bind('unload', this.pause.bind(this));
 				this.loopBinded = true;
 			}
 			this.stop().playNext();
@@ -154,7 +154,7 @@ var AudioElement = LibCanvas.Utils.AudioElement = Class({
 			onFinish   : function () {
 				this.stop();
 				this.audio.volume = 0.99;
-			}.context(this)
+			}.bind(this)
 		});
 		return this;
 	},

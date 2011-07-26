@@ -65,7 +65,7 @@ var FrameRenderer = LibCanvas.Inner.FrameRenderer = Class({
 					)
 				);
 			}
-		}.context(this));
+		}.bind(this));
 	},
 	innerInvoke : function (type, time) {
 		var f = this.funcs[type].sortBy('priority');

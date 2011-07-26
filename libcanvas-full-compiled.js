@@ -776,7 +776,7 @@ return Class({
 			if (timeLeft <= 0) {
 				args.onFinish && invoker.after(0, function() {
 					args.onFinish.call(this, animation, start);
-				}.context(this));
+				}.bind(this));
 				return 'remove';
 			}
 
@@ -1517,7 +1517,7 @@ var MouseListener = LibCanvas.Behaviors.MouseListener = Class({
 		return this.addEvent('libcanvasSet', function () {
 			var command = stopListen ? "unsubscribe" : "subscribe";
 			this.libcanvas.mouse[command](this);
-		}.context(this));
+		}.bind(this));
 	}
 });
 
@@ -1560,7 +1560,7 @@ return Class({
 	clickable : function () { 
 		this.listenMouse();
 
-		var fn = setValFn.context(null, [this]);
+		var fn = setValFn.bind(null, this);
 		
 		this.addEvent('mouseover', fn('hover', true));
 		this.addEvent('mouseout' , fn('hover', false));
@@ -1700,7 +1700,7 @@ return Class({
 				this.libcanvasIsReady = true;
 			});
 			this.readyEvent('libcanvasSet');
-			this.libcanvas.addEvent('ready', this.readyEvent.context(this, ['libcanvasReady']));
+			this.libcanvas.addEvent('ready', this.readyEvent.bind(this, 'libcanvasReady'));
 		}
 		return this;
 	},
@@ -1815,10 +1815,10 @@ var Droppable = LibCanvas.Behaviors.Droppable = Class({
 							dropped = true;
 							this.fireEvent('dropped', [obj]);
 						}
-					}.context(this));
+					}.bind(this));
 				}
 				if (!dropped) this.fireEvent('dropped', [null]);
-			}.context(this));
+			}.bind(this));
 		}
 		this.drops.push(obj);
 		return this;
@@ -1864,7 +1864,7 @@ var Linkable = LibCanvas.Behaviors.Linkable = Class({
 		if (this.links === null) {
 			this.links = [];
 			this.getShape().addEvent('move',
-				this.moveLinks.context(this)
+				this.moveLinks.bind(this)
 			);
 		}
 		this.links.include(obj);
@@ -1927,9 +1927,9 @@ var Moveable = LibCanvas.Behaviors.Moveable = Class({
 		}).animate({
 			fn        : fn || 'linear',
 			time      : distance / speed * 1000,
-			onProcess : this.fireEvent.context(this, ['move']),
-			onAbort   : this.fireEvent.context(this, ['stopMove']),
-			onFinish  : this.fireEvent.context(this, ['stopMove'])
+			onProcess : this.fireEvent.bind(this, 'move'),
+			onAbort   : this.fireEvent.bind(this, 'stopMove'),
+			onFinish  : this.fireEvent.bind(this, 'stopMove')
 		});
 
 		return this;
@@ -2003,7 +2003,7 @@ var FrameRenderer = LibCanvas.Inner.FrameRenderer = Class({
 					)
 				);
 			}
-		}.context(this));
+		}.bind(this));
 	},
 	innerInvoke : function (type, time) {
 		var f = this.funcs[type].sortBy('priority');
@@ -2131,7 +2131,7 @@ var DownloadingProgress = LibCanvas.Inner.DownloadingProgress = Class({
 			if (this.parentLayer) {
 				this.parentLayer.addEvent('ready', function () {
 					this.readyEvent('ready');
-				}.context(this));
+				}.bind(this));
 				this.imagePreloader = true;
 				return;
 			}
@@ -2155,7 +2155,7 @@ var DownloadingProgress = LibCanvas.Inner.DownloadingProgress = Class({
 						atom.log(preloader.getInfo());
 						this.readyEvent('ready');
 						this.update();
-					}.context(this));
+					}.bind(this));
 			} else {
 				this.images = {};
 				this.imagePreloader = true;
@@ -2307,7 +2307,7 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 		this._layers[this.name] = this;
 		cover.css('zIndex', this.maxZIndex + 100);
 
-		this.update = this.update.context(this);
+		this.update = this.update.bind(this);
 
 		if (this.options.autoStart) this.isReady();
 
@@ -2474,8 +2474,8 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 		if (this.invoker.timeoutId == 0) {
 			this.invoker
 				.addFunction(0, this.renderFrame)
-				.addEvent('beforeInvoke', this.fireEvent.context(this, ['frameRenderStarted']))
-				.addEvent( 'afterInvoke', this.fireEvent.context(this, ['frameRenderFinished']));
+				.addEvent('beforeInvoke', this.fireEvent.bind(this, 'frameRenderStarted' ))
+				.addEvent( 'afterInvoke', this.fireEvent.bind(this, 'frameRenderFinished'));
 		}
 		this.invoker.invoke();
 		return this;
@@ -4039,7 +4039,7 @@ var Keyboard = Class({
 			this.fireEvent( event, [e] );
 			this.debugUpdate();
 			return !prevent;
-		}.context(this);
+		}.bind(this);
 	},
 	prevent : function (key) {
 		var pD = this.preventDefault;
@@ -4250,7 +4250,7 @@ LibCanvas.Engines.Tile = Class({
 				this.drawCell(cell);
 				old[cell.y][cell.x] = cell.t;
 			}
-		}.context(this));
+		}.bind(this));
 		this.first = false;
 		if (changed) {
 			this.fireEvent('update');
@@ -5034,7 +5034,7 @@ var Ellipse = LibCanvas.Shapes.Ellipse = Class({
 		this.parent.apply(this, arguments);
 		var update = function () {
 			this.updateCache = true;
-		}.context(this);
+		}.bind(this);
 		this.from.addEvent('move', update);
 		this. to .addEvent('move', update);
 	},
@@ -5605,7 +5605,7 @@ return Class({
 		return false;
 	},
 	each : function (fn, context) {
-		return this.points.forEach(context ? fn.context(context) : fn);
+		return this.points.forEach(context ? fn.bind(context) : fn);
 	},
 
 	getPoints : function () {
@@ -5834,7 +5834,7 @@ var AudioContainer = LibCanvas.Utils.AudioContainer = Class({
 	checkSupport : function () {
 		var elem = document.createElement('audio');
 		if (elem.canPlayType) {
-			var cpt = elem.canPlayType.context(elem);
+			var cpt = elem.canPlayType.bind(elem);
 			this.support = {
 				// codecs
 				ogg : cpt('audio/ogg; codecs="vorbis"'),
@@ -5921,7 +5921,7 @@ var AudioElement = LibCanvas.Utils.AudioElement = Class({
 		audioClone.src = this.audio.src;
 		this.events.forEach(function (e) {
 			audioClone.addEventListener(e[0], e[1].bind(this), false);
-		}.context(this));
+		}.bind(this));
 		this.container.allAudios.push(audioClone);
 		audioClone.load();
 		return audioClone;
@@ -5995,8 +5995,8 @@ var AudioElement = LibCanvas.Utils.AudioElement = Class({
 			this.stop().play();
 		} else {
 			if (!this.loopBinded) {
-				this.event('ended', this.playNext.context(this) ).gatling(2);
-				atom.dom(window).bind('unload', this.pause.context(this));
+				this.event('ended', this.playNext.bind(this) ).gatling(2);
+				atom.dom(window).bind('unload', this.pause.bind(this));
 				this.loopBinded = true;
 			}
 			this.stop().playNext();
@@ -6014,7 +6014,7 @@ var AudioElement = LibCanvas.Utils.AudioElement = Class({
 			onFinish   : function () {
 				this.stop();
 				this.audio.volume = 0.99;
-			}.context(this)
+			}.bind(this)
 		});
 		return this;
 	},
@@ -6058,7 +6058,7 @@ var Trace = LibCanvas.Utils.Trace = Class({
 
 			var subDump = function (elem, index) {
 					return tabs + '\t' + index + ': ' + this.dumpRec(elem, level+1, plain) + '\n';
-				}.context(this),
+				}.bind(this),
 				type = atom.typeOf(obj),
 				tabs = '\t'.repeat(level);
 
@@ -6184,8 +6184,8 @@ var Trace = LibCanvas.Utils.Trace = Class({
 			})
 			.appendTo(this.getContainer())
 			.bind({
-				click    : this.destroy.context(this),
-				dblclick : function () { this.stop().destroy(); }.context(this)
+				click    : this.destroy.bind(this),
+				dblclick : function () { this.stop().destroy(); }.bind(this)
 			});
 		return this.events();
 	},
@@ -6583,7 +6583,7 @@ var ProgressBar = LibCanvas.Utils.ProgressBar = Class({
 		this.update().animate({
 			props: {progress: progress},
 			fn: 'circ-in',
-			onProccess: this.update.context(this),
+			onProccess: this.update.bind(this),
 			time: 200
 		});
 		return this;

@@ -35,7 +35,7 @@ var Trace = LibCanvas.Utils.Trace = Class({
 
 			var subDump = function (elem, index) {
 					return tabs + '\t' + index + ': ' + this.dumpRec(elem, level+1, plain) + '\n';
-				}.context(this),
+				}.bind(this),
 				type = atom.typeOf(obj),
 				tabs = '\t'.repeat(level);
 
@@ -161,8 +161,8 @@ var Trace = LibCanvas.Utils.Trace = Class({
 			})
 			.appendTo(this.getContainer())
 			.bind({
-				click    : this.destroy.context(this),
-				dblclick : function () { this.stop().destroy(); }.context(this)
+				click    : this.destroy.bind(this),
+				dblclick : function () { this.stop().destroy(); }.bind(this)
 			});
 		return this.events();
 	},

@@ -28,7 +28,7 @@ var Ellipse = LibCanvas.Shapes.Ellipse = Class({
 		this.parent.apply(this, arguments);
 		var update = function () {
 			this.updateCache = true;
-		}.context(this);
+		}.bind(this);
 		this.from.addEvent('move', update);
 		this. to .addEvent('move', update);
 	},

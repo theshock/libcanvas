@@ -34,7 +34,7 @@ var AudioContainer = LibCanvas.Utils.AudioContainer = Class({
 	checkSupport : function () {
 		var elem = document.createElement('audio');
 		if (elem.canPlayType) {
-			var cpt = elem.canPlayType.context(elem);
+			var cpt = elem.canPlayType.bind(elem);
 			this.support = {
 				// codecs
 				ogg : cpt('audio/ogg; codecs="vorbis"'),

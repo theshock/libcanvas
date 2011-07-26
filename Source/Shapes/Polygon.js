@@ -119,7 +119,7 @@ return Class({
 		return false;
 	},
 	each : function (fn, context) {
-		return this.points.forEach(context ? fn.context(context) : fn);
+		return this.points.forEach(context ? fn.bind(context) : fn);
 	},
 
 	getPoints : function () {

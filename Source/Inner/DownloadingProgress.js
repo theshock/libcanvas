@@ -61,7 +61,7 @@ var DownloadingProgress = LibCanvas.Inner.DownloadingProgress = Class({
 			if (this.parentLayer) {
 				this.parentLayer.addEvent('ready', function () {
 					this.readyEvent('ready');
-				}.context(this));
+				}.bind(this));
 				this.imagePreloader = true;
 				return;
 			}
@@ -85,7 +85,7 @@ var DownloadingProgress = LibCanvas.Inner.DownloadingProgress = Class({
 						atom.log(preloader.getInfo());
 						this.readyEvent('ready');
 						this.update();
-					}.context(this));
+					}.bind(this));
 			} else {
 				this.images = {};
 				this.imagePreloader = true;

@@ -131,7 +131,7 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 		this._layers[this.name] = this;
 		cover.css('zIndex', this.maxZIndex + 100);
 
-		this.update = this.update.context(this);
+		this.update = this.update.bind(this);
 
 		if (this.options.autoStart) this.isReady();
 
@@ -298,8 +298,8 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 		if (this.invoker.timeoutId == 0) {
 			this.invoker
 				.addFunction(0, this.renderFrame)
-				.addEvent('beforeInvoke', this.fireEvent.context(this, ['frameRenderStarted']))
-				.addEvent( 'afterInvoke', this.fireEvent.context(this, ['frameRenderFinished']));
+				.addEvent('beforeInvoke', this.fireEvent.bind(this, 'frameRenderStarted' ))
+				.addEvent( 'afterInvoke', this.fireEvent.bind(this, 'frameRenderFinished'));
 		}
 		this.invoker.invoke();
 		return this;
