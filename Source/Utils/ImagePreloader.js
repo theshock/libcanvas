@@ -43,31 +43,34 @@ var ImagePreloader = LibCanvas.Utils.ImagePreloader = Class({
 		if (this.isReady()) this.readyEvent('ready', [this]);
 		return this;
 	},
-	getInfo : function () {
+	get info () {
 		var stat = "Images loaded: {loaded}; Errors: {errors}; Aborts: {aborts}"
 			.substitute(this.count);
 		var ready = this.isReady() ? "Image preloading has completed;\n" : '';
 		return ready + stat;
 	},
-	getProgress : function () {
+	getInfo : function () {
+		return this.info
+	},
+	get progress () {
 		return this.isReady() ? 1 : (this.processed / this.number).round(3);
+	},
+	getProgress : function () {
+		return this.progress;
 	},
 	isReady : function () {
 		return (this.number == this.processed);
-	},
-	createEvent : function (type) {
-		return this.onProcessed.context(this, [type]);
 	},
 	createImage : function (src, key) {
 		this.number++;
 		return atom.dom
 			.create('img', { src : src })
 			.bind({
-				load  : this.createEvent('loaded'),
-				error : this.createEvent('errors'),
-				abort : this.createEvent('aborts')
+				load : this.onProcessed.bind(this, 'loaded'),
+				error: this.onProcessed.bind(this, 'errors'),
+				abort: this.onProcessed.bind(this, 'aborts')
 			})
-			.get();
+			.first;
 	},
 	createImages : function (images) {
 		var imgs = {};

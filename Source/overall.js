@@ -23,4 +23,4 @@ var undefined,
 	Class = atom.Class;
 /*** [Code] ***/
 
-}).call((0, eval)("this"), atom, Math);
+}).call(typeof window == 'undefined' ? exports : window, atom, Math);

@@ -1939,189 +1939,6 @@ var Moveable = LibCanvas.Behaviors.Moveable = Class({
 /*
 ---
 
-name: "Utils.Trace"
-
-description: "Useful tool which provides windows with user-defined debug information"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-
-provides: Utils.Trace
-
-...
-*/
-
-var Trace = LibCanvas.Utils.Trace = Class({
-	Static: {
-		dumpRec : function (obj, level, plain) {
-			level  = parseInt(level) || 0;
-			
-			var escape = function (v) {
-				return plain ? v : v.safeHtml();
-			};
-
-			if (level > 5) return '*TOO_DEEP*';
-
-			if (obj && typeof obj == 'object' && typeof(obj.dump) == 'function') return obj.dump();
-
-			var subDump = function (elem, index) {
-					return tabs + '\t' + index + ': ' + this.dumpRec(elem, level+1, plain) + '\n';
-				}.context(this),
-				type = atom.typeOf(obj),
-				tabs = '\t'.repeat(level);
-
-			switch (type) {
-				case 'array':
-					return '[\n' + obj.map(subDump).join('') + tabs + ']';
-					break;
-				case 'object':
-					var html = '';
-					for (var index in obj) html += subDump(obj[index], index);
-					return '{\n' + html + tabs + '}';
-				case 'element':
-					var prop = (obj.width && obj.height) ? '('+obj.width+'×'+obj.height+')' : '';
-					return '[DOM ' + obj.tagName.toLowerCase() + prop + ']';
-				case 'textnode':
-				case 'whitespace':
-					return '[DOM ' + type + ']';
-				case 'null':
-					return 'null';
-				case 'boolean':
-					return obj ? 'true' : 'false';
-				case 'string':
-					return escape('"' + obj + '"');
-				default:
-					return escape('' + obj);
-			}
-		},
-		dumpPlain: function (object) {
-			return (this.dumpRec(object, 0, true));
-		},
-		dump : function (object) {
-			return (this.dumpRec(object, 0));
-		}
-	},
-	initialize : function (object) {
-		if (arguments.length) this.trace(object);
-		this.stopped = false;
-		return this;
-	},
-	stop  : function () {
-		this.stopped = true;
-		return this;
-	},
-	set value (value) {
-		if (!this.stopped && !this.blocked) {
-			var html = this.self.dump(value)
-				.replaceAll({
-					'\t': '&nbsp;'.repeat(3),
-					'\n': '<br />'
-				});
-			this.createNode().html(html);
-		}
-	},
-	trace : function (value) {
-		this.value = value;
-		return this;
-	},
-	getContainer : function () {
-		var cont = atom.dom('#traceContainer');
-		return cont.length ? cont :
-			atom.dom.create('div', { 'id' : 'traceContainer'})
-				.css({
-					'zIndex'   : '87223',
-					'position' : 'fixed',
-					'top'      : '3px',
-					'right'    : '6px',
-					'maxWidth' : '70%'
-				})
-				.appendTo('body');
-	},
-	events : function (remove) {
-		var trace = this;
-		// add events unbind
-		!remove || this.node.bind({
-			mouseover : function () {
-				this.css('background', '#222');
-			},
-			mouseout  : function () {
-				this.css('background', '#000');
-			},
-			mousedown : function () {
-				trace.blocked = true;
-			},
-			mouseup : function () {
-				trace.blocked = false;
-			}
-		});
-		return this.node;
-	},
-	destroy : function () {
-		this.node.css('background', '#300');
-		this.timeout = (function () {
-			if (this.node) {
-				this.node.destroy();
-				this.node = null;
-			}
-		}.delay(500, this));
-		return this;
-	},
-	createNode : function () {
-		if (this.node) {
-			if (this.timeout) {
-				this.timeout.stop();
-				this.events(this.node);
-				this.node.css('background', '#000');
-			}
-			return this.node;
-		}
-
-		this.node = atom.dom
-			.create('div')
-			.css({
-				background : '#000',
-				border     : '1px dashed #0c0',
-				color      : '#0c0',
-				cursor     : 'pointer',
-				fontFamily : 'monospace',
-				margin     : '1px',
-				minWidth   : '200px',
-				overflow   : 'auto',
-				padding    : '3px 12px',
-				whiteSpace : 'pre'
-			})
-			.appendTo(this.getContainer())
-			.bind({
-				click    : this.destroy.context(this),
-				dblclick : function () { this.stop().destroy(); }.context(this)
-			});
-		return this.events();
-	},
-	toString: Function.lambda('[object LibCanvas.Utils.Trace]')
-});
-
-try {
-	window.trace = function (msg) {
-		var L = arguments.length;
-		if (L > 0) {
-			if (L > 1) msg = atom.toArray(arguments);
-			return new Trace(msg);
-		} else {
-			return new Trace();
-		}
-	};
-} catch (ignored) {}
-
-/*
----
-
 name: "Inner.FrameRenderer"
 
 description: "Private class for inner usage in LibCanvas.Canvas2D"
@@ -2136,7 +1953,6 @@ authors:
 requires:
 	- LibCanvas
 	- Point
-	- Utils.Trace
 
 provides: Inner.FrameRenderer
 
@@ -2222,60 +2038,6 @@ var FrameRenderer = LibCanvas.Inner.FrameRenderer = Class({
 /*
 ---
 
-name: "Utils.FpsMeter"
-
-description: "Provides FPS indicator"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Utils.Trace
-
-provides: Utils.FpsMeter
-
-...
-*/
-
-var FpsMeter = LibCanvas.Utils.FpsMeter = Class({
-	initialize : function (framesMax) {
-		this.trace = new Trace();
-		this.genTime   = [];
-		this.prevTime  = null;
-		this.framesMax = framesMax;
-	},
-	frame : function () {
-		if (this.prevTime) {
-			this.genTime.push(Date.now() - this.prevTime);
-			if (this.genTime.length > this.framesMax) {
-				this.genTime.shift();
-			}
-		}
-		this.output();
-		this.prevTime = Date.now();
-		return this;
-	},
-	output : function () {
-		if (this.genTime.length) {
-			var fps = 1000 / this.genTime.average();
-			fps = fps.round(fps > 2 ? 0 : fps > 1 ? 1 : 2);
-			this.trace.trace('FPS: ' + fps);
-		} else {
-			this.trace.trace('FPS: counting');
-		}
-		return this;
-	},
-	toString: Function.lambda('[object LibCanvas.Utils.FpsMeter]')
-});
-
-/*
----
-
 name: "Inner.FpsMeter"
 
 description: "Constantly calculates frames per seconds rate"
@@ -2289,7 +2051,6 @@ authors:
 
 requires:
 	- LibCanvas
-	- Utils.FpsMeter
 
 provides: Inner.FpsMeter
 
@@ -2297,667 +2058,14 @@ provides: Inner.FpsMeter
 */
 LibCanvas.Inner.FpsMeter = Class({
 	fpsMeter : function (frames) {
+		if (typeof FpsMeter == 'undefined') {
+			throw new Error('LibCanvas.Utils.FpsMeter is not loaded');
+		}
 		var fpsMeter = new FpsMeter(frames || (this.fps ? this.fps / 2 : 10));
 		return this.addEvent('frameRenderStarted', function () {
 			fpsMeter.frame();
 		});
 	}
-});
-
-/*
----
-
-name: "Shape"
-
-description: "Abstract class LibCanvas.Shape defines interface for drawable canvas objects"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Geometry
-	- Point
-
-provides: Shape
-
-...
-*/
-
-var Shape = LibCanvas.Shape = Class({
-	Extends    : Geometry,
-	set        : Class.abstractMethod,
-	hasPoint   : Class.abstractMethod,
-	processPath: Class.abstractMethod,
-	draw : function (ctx, type) {
-		this.processPath(ctx)[type]();
-		return this;
-	},
-	// Методы ниже рассчитывают на то, что в фигуре есть точки from и to
-	getCoords : function () {
-		return this.from;
-	},
-	get x () {
-		return this.getCoords().x;
-	},
-	get y () {
-		return this.getCoords().y;
-	},
-	set x (x) {
-		return this.move({ x : x - this.x, y : 0 });
-	},
-	set y (y) {
-		return this.move({ x : 0, y : y - this.y });
-	},
-	get bottomLeft () {
-		return new Point(this.from.x, this.to.y);
-	},
-	get topRight () {
-		return new Point(this.to.x, this.from.y);
-	},
-	get center () {
-		return new Point(
-			(this.from.x + this.to.x) / 2,
-			(this.from.y + this.to.y) / 2
-		);
-	},
-	getCenter : function () {
-		return this.center;
-	},
-	move : function (distance, reverse) {
-		distance = this.invertDirection(distance, reverse);
-		this.fireEvent('beforeMove', distance);
-		this.from.move(distance);
-		this. to .move(distance);
-		return this.parent(distance);
-	},
-	equals : function (shape, accuracy) {
-		return shape.from.equals(this.from, accuracy) && shape.to.equals(this.to, accuracy);
-	},
-	clone : function () {
-		return new this.self(this.from.clone(), this.to.clone());
-	},
-	getPoints : function () {
-		return { from : this.from, to : this.to };
-	},
-	dump: function (shape) {
-		if (!shape) return this.toString();
-		var p = function (p) { return '[' + p.x + ', ' + p.y + ']'; };
-		return '[shape ' + shape + '(from'+p(this.from)+', to'+p(this.to)+')]';
-	},
-	toString: Function.lambda('[object LibCanvas.Shape]')
-});
-
-/*
----
-
-name: "Shapes.Rectangle"
-
-description: "Provides rectangle as canvas object"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Point
-	- Shape
-
-provides: Shapes.Rectangle
-
-...
-*/
-
-var Rectangle = LibCanvas.Shapes.Rectangle = new function () {
-
-var random = Number.random;
-
-return Class({
-	Extends: Shape,
-	set : function () {
-		var a = Array.pickFrom(arguments);
-
-		if (a.length == 4) {
-			this.from = new Point(a[0], a[1]);
-			this.to   = this.from.clone().move({x:a[2], y:a[3]});
-		} else if (a.length == 2) {
-			if ('width' in a[1] && 'height' in a[1]) {
-				this.set({ from: a[0], size: a[1] });
-			} else {
-				this.from = Point(a[0]);
-				this.to   = Point(a[1]);
-			}
-		} else {
-			a = a[0];
-			if (a.from) {
-				this.from = Point(a.from);
-			} else if ('x' in a && 'y' in a) {
-				this.from = new Point(a.x, a.y);
-			}
-			if (a.to) this.to = Point(a.to);
-		
-			if (!a.from || !a.to) {
-				var as = a.size, size = {
-					x : (as ? [as.w, as[0], as.width ] : [ a.w, a.width  ]).pick(),
-					y : (as ? [as.h, as[1], as.height] : [ a.h, a.height ]).pick()
-				};
-				this.from ?
-					(this.to = this.from.clone().move(size, 0)) :
-					(this.from = this.to.clone().move(size, 1));
-			}
-		
-		}
-		return this;
-	},
-
-	get width() {
-		return this.to.x - this.from.x;
-	},
-	get height() {
-		return this.to.y - this.from.y;
-	},
-	set width (width) {
-		this.to.moveTo({ x : this.from.x + width, y : this.to.y });
-	},
-	set height (height) {
-		this.to.moveTo({ x : this.to.x, y : this.from.y + height });
-		return this;
-	},
-	get size () {
-		return {
-			width : this.width,
-			height: this.height
-		};
-	},
-	set size (size) {
-		this.width  = size.width;
-		this.height = size.height;
-	},
-	// @deprecated 
-	getWidth : function () {
-		return this.width;
-	},
-	// @deprecated
-	getHeight : function () {
-		return this.height;
-	},
-	// @deprecated 
-	setWidth : function (width) {
-		this.width = width;
-		return this;
-	},
-	// @deprecated
-	setHeight : function (height) {
-		this.height = height;
-		return this;
-	},
-	hasPoint : function (point, padding) {
-		point   = Point(arguments);
-		padding = padding || 0;
-		return point.x != null && point.y != null
-			&& point.x.between(Math.min(this.from.x, this.to.x) + padding, Math.max(this.from.x, this.to.x) - padding, 1)
-			&& point.y.between(Math.min(this.from.y, this.to.y) + padding, Math.max(this.from.y, this.to.y) - padding, 1);
-	},
-	align: function (rect, sides) {
-		var moveTo = this.from.clone();
-		if (sides.indexOf('left') != -1) {
-			moveTo.x = rect.from.x;
-		} else if (sides.indexOf('center') != -1) {
-			moveTo.x = rect.from.x + (rect.width - this.width) / 2;
-		} else if (sides.indexOf('right') != -1) {
-			moveTo.x = rect.to.x - this.width;
-		}
-
-		if (sides.indexOf('top') != -1) {
-			moveTo.y = rect.from.y;
-		} else if (sides.indexOf('middle') != -1) {
-			moveTo.y = rect.from.y + (rect.height - this.height) / 2;
-		} else if (sides.indexOf('bottom') != -1) {
-			moveTo.y = rect.to.y - this.height;
-		}
-
-		return this.moveTo( moveTo );
-	},
-	moveTo: function (rect) {
-		if (rect instanceof Point) {
-			this.move( this.from.diff(rect) );
-		} else {
-			rect = Rectangle(arguments);
-			this.from.moveTo(rect.from);
-			this.  to.moveTo(rect.to);
-		}
-		return this;
-	},
-	draw : function (ctx, type) {
-		// fixed Opera bug - cant drawing rectangle with width or height below zero
-		ctx.original(type + 'Rect', [
-			Math.min(this.from.x, this.to.x),
-			Math.min(this.from.y, this.to.y),
-			this.width .abs(),
-			this.height.abs()
-		]);
-		return this;
-	},
-	processPath : function (ctx, noWrap) {
-		if (!noWrap) ctx.beginPath();
-		ctx
-			.moveTo(this.from.x, this.from.y)
-			.lineTo(this.to.x, this.from.y)
-			.lineTo(this.to.x, this.to.y)
-			.lineTo(this.from.x, this.to.y)
-			.lineTo(this.from.x, this.from.y);
-		if (!noWrap) ctx.closePath();
-		return ctx;
-	},
-	intersect : function (obj) {
-		if (obj instanceof this.self) {
-			return this.from.x < obj.to.x && this.to.x > obj.from.x
-			    && this.from.y < obj.to.y && this.to.y > obj.from.y;
-		}
-		return false;
-	},
-	getRandomPoint : function (margin) {
-		margin = margin || 0;
-		return new Point(
-			random(margin, this.width  - margin),
-			random(margin, this.height - margin)
-		);
-	},
-	translate : function (point, fromRect) {
-		var diff = fromRect.from.diff(point);
-		return new Point({
-			x : (diff.x / fromRect.width ) * this.width,
-			y : (diff.y / fromRect.height) * this.height
-		});
-	},
-	snapToPixel: function () {
-		this.from.snapToPixel();
-		this.to.snapToPixel();
-		return this;
-	},
-	dump: function () {
-		return this.parent('Rectangle');
-	},
-	toPolygon: function () {
-		return new Polygon(
-			this.from.clone(), this.topRight, this.to.clone(), this.bottomLeft
-		);
-	},
-	toString: Function.lambda('[object LibCanvas.Shapes.Rectangle]')
-});
-
-}();
-
-/*
----
-
-name: "Utils.ImagePreloader"
-
-description: "Provides images preloader"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Shapes.Rectangle
-
-provides: Utils.ImagePreloader
-
-...
-*/
-
-var ImagePreloader = LibCanvas.Utils.ImagePreloader = Class({
-	Implements: [Class.Events],
-	processed : 0,
-	number: 0,
-	initialize: function (images) {
-		this.count = {
-			errors : 0,
-			aborts : 0,
-			loaded : 0
-		};
-
-		if (Array.isArray(images)) images = Object.map(images[1], function (src) {
-			return images[0] + src;
-		});
-		this.images = this.createImages(images);
-	},
-	onProcessed : function (type) {
-		this.count[type]++;
-		this.processed++;
-		if (this.isReady()) this.readyEvent('ready', [this]);
-		return this;
-	},
-	getInfo : function () {
-		var stat = "Images loaded: {loaded}; Errors: {errors}; Aborts: {aborts}"
-			.substitute(this.count);
-		var ready = this.isReady() ? "Image preloading has completed;\n" : '';
-		return ready + stat;
-	},
-	getProgress : function () {
-		return this.isReady() ? 1 : (this.processed / this.number).round(3);
-	},
-	isReady : function () {
-		return (this.number == this.processed);
-	},
-	createEvent : function (type) {
-		return this.onProcessed.context(this, [type]);
-	},
-	createImage : function (src, key) {
-		this.number++;
-		return atom.dom
-			.create('img', { src : src })
-			.bind({
-				load  : this.createEvent('loaded'),
-				error : this.createEvent('errors'),
-				abort : this.createEvent('aborts')
-			})
-			.get();
-	},
-	createImages : function (images) {
-		var imgs = {};
-		for (var i in images) imgs[i] = this.createImage(images[i], i);
-		return imgs;
-	},
-	ready : function (fn) {
-		this.addEvent('ready', fn);
-		return this;
-	},
-	toString: Function.lambda('[object LibCanvas.Utils.ImagePreloader]')
-});
-
-/*
----
-
-name: "Shapes.Polygon"
-
-description: "Provides user-defined concave polygon as canvas object"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Point
-	- Shape
-
-provides: Shapes.Polygon
-
-...
-*/
-
-var Polygon = LibCanvas.Shapes.Polygon = function (){
-
-var linesIntersect = function (a,b,c,d) {
-	var x,y;
-	if (d.x == c.x) { // DC == vertical line
-		if (b.x == a.x) {
-			return a.x == d.x && (a.y.between(c.y, d.y) || b.x.between(c.y, d.y));
-		}
-		x = d.x;
-		y = b.y + (x-b.x)*(a.y-b.y)/(a.x-b.x);
-	} else {
-		x = ((a.x*b.y - b.x*a.y)*(d.x-c.x)-(c.x*d.y - d.x*c.y)*(b.x-a.x))/((a.y-b.y)*(d.x-c.x)-(c.y-d.y)*(b.x-a.x));
-		y = ((c.y-d.y)*x-(c.x*d.y-d.x*c.y))/(d.x-c.x);
-		x *= -1;
-	}
-	return (x.between(a.x, b.x, 'LR') || x.between(b.x, a.x, 'LR'))
-		&& (y.between(a.y, b.y, 'LR') || y.between(b.y, a.y, 'LR'))
-		&& (x.between(c.x, d.x, 'LR') || x.between(d.x, c.x, 'LR'))
-		&& (y.between(c.y, d.y, 'LR') || y.between(d.y, c.y, 'LR'));
-};
-
-return Class({
-	Extends: Shape,
-	initialize: function () {
-		this.points = [];
-		this.parent.apply(this, arguments);
-	},
-	set : function (poly) {
-		this.points.empty().append(
-			Array.pickFrom(arguments)
-				.map(function (elem) {
-					if (elem) return Point(elem);
-				})
-				.clean()
-		);
-		return this;
-	},
-	get length () {
-		return this.points.length;
-	},
-	get: function (index) {
-		return this.points[index];
-	},
-	hasPoint : function (point) {
-		point = Point(Array.pickFrom(arguments));
-
-		var result = false, points = this.points;
-		for (var i = 0, l = this.length; i < l; i++) {
-			var k = (i || l) - 1, I = points[i], K = points[k];
-			if (
-				(point.y.between(I.y , K.y, "L") || point.y.between(K.y , I.y, "L"))
-					&&
-				 point.x < (K.x - I.x) * (point.y -I.y) / (K.y - I.y) + I.x
-			) {
-				result = !result;
-			}
-		}
-		return result;
-	},
-	getCoords : function () {
-		return this.points[0];
-	},
-	processPath : function (ctx, noWrap) {
-		if (!noWrap) ctx.beginPath();
-		for (var i = 0, l = this.points.length; i < l; i++) {
-			var point = this.points[i];
-			ctx[i > 0 ? 'lineTo' : 'moveTo'](point.x, point.y);
-		}
-		if (!noWrap) ctx.closePath();
-		return ctx;
-	},
-	move : function (distance, reverse) {
-		distance = this.invertDirection(distance, reverse);
-		this.points.invoke('move', distance);
-		this.fireEvent('move', [distance]);
-		return this;
-	},
-	rotate : function (angle, pivot) {
-		this.points.invoke('rotate', angle, pivot);
-		return this;
-	},
-	scale : function (x, y) {
-		this.points.invoke('scale', x, y);
-		return this;
-	},
-	intersect : function (poly) {
-		var pp = poly.points, tp = this.points, ppL = pp.length, tpL = tp.length;
-		for (var i = 0; i < ppL; i++) for (var k = 0; k < tpL; k++) {
-			var a = tp[k],
-				b = tp[k+1 == tpL ? 0 : k+1],
-				c = pp[i],
-				d = pp[i+1 == ppL ? 0 : i+1];
-			if (linesIntersect(a,b,c,d)) return true;
-		}
-		return false;
-	},
-	each : function (fn, context) {
-		return this.points.forEach(context ? fn.context(context) : fn);
-	},
-
-	getPoints : function () {
-		return Array.toHash(this.points);
-	},
-	clone: function () {
-		return new this.self(this.points.invoke('clone'));
-	},
-	toString: Function.lambda('[object LibCanvas.Shapes.Polygon]')
-});
-
-}();
-
-/*
----
-
-name: "Utils.ProgressBar"
-
-description: "Easy way to draw progress bar"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Point
-	- Shapes.Rectangle
-	- Shapes.Polygon
-	- Shapes.Polygon
-	- Behaviors.Animatable
-
-provides: Utils.ProgressBar
-
-...
-*/
-
-var ProgressBar = LibCanvas.Utils.ProgressBar = Class({
-	Implements: [ Animatable ],
-	initialize : function () {
-		this.coord = new Point(0,0);
-		this.progress = 0;
-	},
-	preRender : function () {
-		if (this.libcanvas && this.style) {
-			var htmlElem = this.libcanvas.ctx.canvas;
-			this.coord.set(
-				(htmlElem.width -this.style['width'] )/2,
-				(htmlElem.height-this.style['height'])/2
-			);
-			this.line = this.renderLine();
-		}
-		return this;
-	},
-	setLibcanvas : function (libcanvas) {
-		this.libcanvas = libcanvas;
-		return this.preRender();
-	},
-	getBuffer : function () {
-		if (!this.buffer) this.buffer = Buffer(this.style.width, this.style.height, true).ctx;
-		return this.buffer;
-	},
-	drawBorder : function () {
-		var s = this.style;
-		
-		var pbRect = new Rectangle({
-			from : this.coord,
-			size : Object.collect(s, ['width', 'height'])
-		}).snapToPixel();
-
-		this.libcanvas.ctx
-			.fillAll(s['bgColor'])
-			.fill   (pbRect, s['barBgColor'])
-			.stroke (pbRect, s['borderColor']);
-		return this;
-	},
-	drawLine : function () {
-		if (this.progress > 0) {
-			var line = this.line;
-			var prog   = this.progress;
-			var width  = ((line.width  - 2) * prog).round();
-			if (width > 1) {
-				var height = line.height - 2;
-				var c = this.coord;
-
-				this.libcanvas.ctx.drawImage({
-					image : line,
-					crop  : [    0,    0 , width-1, height-1],
-					draw  : [c.x+1, c.y+1, width-1, height-1]
-				});
-			}
-		}
-		return this;
-	},
-	renderLine : function () {
-		var b = this.getBuffer(), s = this.style;
-
-		// Закрашиваем фон
-		b.save().fillAll(s['barColor']);
-
-		// Если нужны полоски - рисуем
-		if (s['strips']) {
-			b.set('fillStyle', s['stripColor']);
-			// Смещение верхней части полоски относительно нижней
-			var shift = 1 * s['stripShift'] || 0, stripW = 1*s['stripWidth'];
-			var w = b.canvas.width, h = b.canvas.height;
-			// Рисуем их по очереди , пока на холсте есть место
-			for(var mv = 1; mv < w; mv += s['stripStep']) {
-				b.fill(new Polygon([
-					[mv + shift         , 0 ],
-					[mv + shift + stripW, 0 ],
-					[mv         + stripW, h ],
-					[mv                 , h ]
-				]));
-			}
-		}
-
-		// Добавляем поверх линию, если необходимо
-		if (s['blend']) {
-			b.set({
-				globalAlpha: s['blendOpacity'] < 1 ? s['blendOpacity'] : 0.3,
-				fillStyle  : s['blendColor']
-			})
-			.fillRect({
-				from : [ 0             , s['blendVAlign'] ],
-				size : [ b.canvas.width, s['blendHeight'] ]
-			});
-		}
-		return b.restore().canvas;
-	},
-	setProgress : function (progress) {
-		this.update().animate({
-			props: {progress: progress},
-			fn: 'circ-in',
-			onProccess: this.update.context(this),
-			time: 200
-		});
-		return this;
-	},
-	setStyle : function (newStyle) {
-		this.update().style = newStyle;
-		return this.preRender();
-	},
-	update: function () {
-		if (this.libcanvas) this.libcanvas.update();
-		return this;
-	},
-	draw : function () {
-		this.libcanvas.ctx.save();
-		this.drawBorder().drawLine();
-		this.libcanvas.ctx.restore();
-		return this;
-	},
-	toString: Function.lambda('[object LibCanvas.Utils.ProgressBar]')
 });
 
 /*
@@ -2976,8 +2084,6 @@ authors:
 
 requires:
 	- LibCanvas
-	- Utils.ImagePreloader
-	- Utils.ProgressBar
 
 provides: Inner.DownloadingProgress
 
@@ -3006,6 +2112,9 @@ var DownloadingProgress = LibCanvas.Inner.DownloadingProgress = Class({
 		if (this.parentLayer) return;
 		
 		if (this.options.progressBarStyle && !this.progressBar) {
+			if (typeof ProgressBar == 'undefined') {
+				throw new Error('LibCanvas.Utils.ProgressBar is not loaded');
+			}
 			this.progressBar = new ProgressBar()
 				.setStyle(this.options.progressBarStyle);
 		}
@@ -3028,12 +2137,18 @@ var DownloadingProgress = LibCanvas.Inner.DownloadingProgress = Class({
 			}
 			
 			if (this.options.preloadAudio) {
+				if (typeof AudioContainer == 'undefined') {
+					throw new Error('LibCanvas.Utils.AudioContainer is not loaded');
+				}
 				this._audio = new AudioContainer(this.options.preloadAudio);
 			} else {
 				this._audio = null;
 			}
 
 			if (this.options.preloadImages) {
+				if (typeof AudioContainer == 'ImagePreloader') {
+					throw new Error('LibCanvas.Utils.ImagePreloader is not loaded');
+				}
 				this.imagePreloader = new ImagePreloader(this.options.preloadImages)
 					.addEvent('ready', function (preloader) {
 						this.images = preloader.images;
@@ -3463,6 +2578,298 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 	},
 	toString: Function.lambda('[object LibCanvas.Canvas2D]')
 });
+
+/*
+---
+
+name: "Shape"
+
+description: "Abstract class LibCanvas.Shape defines interface for drawable canvas objects"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- Geometry
+	- Point
+
+provides: Shape
+
+...
+*/
+
+var Shape = LibCanvas.Shape = Class({
+	Extends    : Geometry,
+	set        : Class.abstractMethod,
+	hasPoint   : Class.abstractMethod,
+	processPath: Class.abstractMethod,
+	draw : function (ctx, type) {
+		this.processPath(ctx)[type]();
+		return this;
+	},
+	// Методы ниже рассчитывают на то, что в фигуре есть точки from и to
+	getCoords : function () {
+		return this.from;
+	},
+	get x () {
+		return this.getCoords().x;
+	},
+	get y () {
+		return this.getCoords().y;
+	},
+	set x (x) {
+		return this.move({ x : x - this.x, y : 0 });
+	},
+	set y (y) {
+		return this.move({ x : 0, y : y - this.y });
+	},
+	get bottomLeft () {
+		return new Point(this.from.x, this.to.y);
+	},
+	get topRight () {
+		return new Point(this.to.x, this.from.y);
+	},
+	get center () {
+		return new Point(
+			(this.from.x + this.to.x) / 2,
+			(this.from.y + this.to.y) / 2
+		);
+	},
+	getCenter : function () {
+		return this.center;
+	},
+	move : function (distance, reverse) {
+		distance = this.invertDirection(distance, reverse);
+		this.fireEvent('beforeMove', distance);
+		this.from.move(distance);
+		this. to .move(distance);
+		return this.parent(distance);
+	},
+	equals : function (shape, accuracy) {
+		return shape.from.equals(this.from, accuracy) && shape.to.equals(this.to, accuracy);
+	},
+	clone : function () {
+		return new this.self(this.from.clone(), this.to.clone());
+	},
+	getPoints : function () {
+		return { from : this.from, to : this.to };
+	},
+	dump: function (shape) {
+		if (!shape) return this.toString();
+		var p = function (p) { return '[' + p.x + ', ' + p.y + ']'; };
+		return '[shape ' + shape + '(from'+p(this.from)+', to'+p(this.to)+')]';
+	},
+	toString: Function.lambda('[object LibCanvas.Shape]')
+});
+
+/*
+---
+
+name: "Shapes.Rectangle"
+
+description: "Provides rectangle as canvas object"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- Point
+	- Shape
+
+provides: Shapes.Rectangle
+
+...
+*/
+
+var Rectangle = LibCanvas.Shapes.Rectangle = new function () {
+
+var random = Number.random;
+
+return Class({
+	Extends: Shape,
+	set : function () {
+		var a = Array.pickFrom(arguments);
+
+		if (a.length == 4) {
+			this.from = new Point(a[0], a[1]);
+			this.to   = this.from.clone().move({x:a[2], y:a[3]});
+		} else if (a.length == 2) {
+			if ('width' in a[1] && 'height' in a[1]) {
+				this.set({ from: a[0], size: a[1] });
+			} else {
+				this.from = Point(a[0]);
+				this.to   = Point(a[1]);
+			}
+		} else {
+			a = a[0];
+			if (a.from) {
+				this.from = Point(a.from);
+			} else if ('x' in a && 'y' in a) {
+				this.from = new Point(a.x, a.y);
+			}
+			if (a.to) this.to = Point(a.to);
+		
+			if (!a.from || !a.to) {
+				var as = a.size, size = {
+					x : (as ? [as.w, as[0], as.width ] : [ a.w, a.width  ]).pick(),
+					y : (as ? [as.h, as[1], as.height] : [ a.h, a.height ]).pick()
+				};
+				this.from ?
+					(this.to = this.from.clone().move(size, 0)) :
+					(this.from = this.to.clone().move(size, 1));
+			}
+		
+		}
+		return this;
+	},
+
+	get width() {
+		return this.to.x - this.from.x;
+	},
+	get height() {
+		return this.to.y - this.from.y;
+	},
+	set width (width) {
+		this.to.moveTo({ x : this.from.x + width, y : this.to.y });
+	},
+	set height (height) {
+		this.to.moveTo({ x : this.to.x, y : this.from.y + height });
+		return this;
+	},
+	get size () {
+		return {
+			width : this.width,
+			height: this.height
+		};
+	},
+	set size (size) {
+		this.width  = size.width;
+		this.height = size.height;
+	},
+	// @deprecated 
+	getWidth : function () {
+		return this.width;
+	},
+	// @deprecated
+	getHeight : function () {
+		return this.height;
+	},
+	// @deprecated 
+	setWidth : function (width) {
+		this.width = width;
+		return this;
+	},
+	// @deprecated
+	setHeight : function (height) {
+		this.height = height;
+		return this;
+	},
+	hasPoint : function (point, padding) {
+		point   = Point(arguments);
+		padding = padding || 0;
+		return point.x != null && point.y != null
+			&& point.x.between(Math.min(this.from.x, this.to.x) + padding, Math.max(this.from.x, this.to.x) - padding, 1)
+			&& point.y.between(Math.min(this.from.y, this.to.y) + padding, Math.max(this.from.y, this.to.y) - padding, 1);
+	},
+	align: function (rect, sides) {
+		var moveTo = this.from.clone();
+		if (sides.indexOf('left') != -1) {
+			moveTo.x = rect.from.x;
+		} else if (sides.indexOf('center') != -1) {
+			moveTo.x = rect.from.x + (rect.width - this.width) / 2;
+		} else if (sides.indexOf('right') != -1) {
+			moveTo.x = rect.to.x - this.width;
+		}
+
+		if (sides.indexOf('top') != -1) {
+			moveTo.y = rect.from.y;
+		} else if (sides.indexOf('middle') != -1) {
+			moveTo.y = rect.from.y + (rect.height - this.height) / 2;
+		} else if (sides.indexOf('bottom') != -1) {
+			moveTo.y = rect.to.y - this.height;
+		}
+
+		return this.moveTo( moveTo );
+	},
+	moveTo: function (rect) {
+		if (rect instanceof Point) {
+			this.move( this.from.diff(rect) );
+		} else {
+			rect = Rectangle(arguments);
+			this.from.moveTo(rect.from);
+			this.  to.moveTo(rect.to);
+		}
+		return this;
+	},
+	draw : function (ctx, type) {
+		// fixed Opera bug - cant drawing rectangle with width or height below zero
+		ctx.original(type + 'Rect', [
+			Math.min(this.from.x, this.to.x),
+			Math.min(this.from.y, this.to.y),
+			this.width .abs(),
+			this.height.abs()
+		]);
+		return this;
+	},
+	processPath : function (ctx, noWrap) {
+		if (!noWrap) ctx.beginPath();
+		ctx
+			.moveTo(this.from.x, this.from.y)
+			.lineTo(this.to.x, this.from.y)
+			.lineTo(this.to.x, this.to.y)
+			.lineTo(this.from.x, this.to.y)
+			.lineTo(this.from.x, this.from.y);
+		if (!noWrap) ctx.closePath();
+		return ctx;
+	},
+	intersect : function (obj) {
+		if (obj instanceof this.self) {
+			return this.from.x < obj.to.x && this.to.x > obj.from.x
+			    && this.from.y < obj.to.y && this.to.y > obj.from.y;
+		}
+		return false;
+	},
+	getRandomPoint : function (margin) {
+		margin = margin || 0;
+		return new Point(
+			random(margin, this.width  - margin),
+			random(margin, this.height - margin)
+		);
+	},
+	translate : function (point, fromRect) {
+		var diff = fromRect.from.diff(point);
+		return new Point({
+			x : (diff.x / fromRect.width ) * this.width,
+			y : (diff.y / fromRect.height) * this.height
+		});
+	},
+	snapToPixel: function () {
+		this.from.snapToPixel();
+		this.to.snapToPixel();
+		return this;
+	},
+	dump: function () {
+		return this.parent('Rectangle');
+	},
+	toPolygon: function () {
+		return new Polygon(
+			this.from.clone(), this.topRight, this.to.clone(), this.bottomLeft
+		);
+	},
+	toString: Function.lambda('[object LibCanvas.Shapes.Rectangle]')
+});
+
+}();
 
 /*
 ---
@@ -6080,6 +5487,141 @@ Path.Builder = LibCanvas.Shapes.Path.Builder = Class({
 /*
 ---
 
+name: "Shapes.Polygon"
+
+description: "Provides user-defined concave polygon as canvas object"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- Point
+	- Shape
+
+provides: Shapes.Polygon
+
+...
+*/
+
+var Polygon = LibCanvas.Shapes.Polygon = function (){
+
+var linesIntersect = function (a,b,c,d) {
+	var x,y;
+	if (d.x == c.x) { // DC == vertical line
+		if (b.x == a.x) {
+			return a.x == d.x && (a.y.between(c.y, d.y) || b.x.between(c.y, d.y));
+		}
+		x = d.x;
+		y = b.y + (x-b.x)*(a.y-b.y)/(a.x-b.x);
+	} else {
+		x = ((a.x*b.y - b.x*a.y)*(d.x-c.x)-(c.x*d.y - d.x*c.y)*(b.x-a.x))/((a.y-b.y)*(d.x-c.x)-(c.y-d.y)*(b.x-a.x));
+		y = ((c.y-d.y)*x-(c.x*d.y-d.x*c.y))/(d.x-c.x);
+		x *= -1;
+	}
+	return (x.between(a.x, b.x, 'LR') || x.between(b.x, a.x, 'LR'))
+		&& (y.between(a.y, b.y, 'LR') || y.between(b.y, a.y, 'LR'))
+		&& (x.between(c.x, d.x, 'LR') || x.between(d.x, c.x, 'LR'))
+		&& (y.between(c.y, d.y, 'LR') || y.between(d.y, c.y, 'LR'));
+};
+
+return Class({
+	Extends: Shape,
+	initialize: function () {
+		this.points = [];
+		this.parent.apply(this, arguments);
+	},
+	set : function (poly) {
+		this.points.empty().append(
+			Array.pickFrom(arguments)
+				.map(function (elem) {
+					if (elem) return Point(elem);
+				})
+				.clean()
+		);
+		return this;
+	},
+	get length () {
+		return this.points.length;
+	},
+	get: function (index) {
+		return this.points[index];
+	},
+	hasPoint : function (point) {
+		point = Point(Array.pickFrom(arguments));
+
+		var result = false, points = this.points;
+		for (var i = 0, l = this.length; i < l; i++) {
+			var k = (i || l) - 1, I = points[i], K = points[k];
+			if (
+				(point.y.between(I.y , K.y, "L") || point.y.between(K.y , I.y, "L"))
+					&&
+				 point.x < (K.x - I.x) * (point.y -I.y) / (K.y - I.y) + I.x
+			) {
+				result = !result;
+			}
+		}
+		return result;
+	},
+	getCoords : function () {
+		return this.points[0];
+	},
+	processPath : function (ctx, noWrap) {
+		if (!noWrap) ctx.beginPath();
+		for (var i = 0, l = this.points.length; i < l; i++) {
+			var point = this.points[i];
+			ctx[i > 0 ? 'lineTo' : 'moveTo'](point.x, point.y);
+		}
+		if (!noWrap) ctx.closePath();
+		return ctx;
+	},
+	move : function (distance, reverse) {
+		distance = this.invertDirection(distance, reverse);
+		this.points.invoke('move', distance);
+		this.fireEvent('move', [distance]);
+		return this;
+	},
+	rotate : function (angle, pivot) {
+		this.points.invoke('rotate', angle, pivot);
+		return this;
+	},
+	scale : function (x, y) {
+		this.points.invoke('scale', x, y);
+		return this;
+	},
+	intersect : function (poly) {
+		var pp = poly.points, tp = this.points, ppL = pp.length, tpL = tp.length;
+		for (var i = 0; i < ppL; i++) for (var k = 0; k < tpL; k++) {
+			var a = tp[k],
+				b = tp[k+1 == tpL ? 0 : k+1],
+				c = pp[i],
+				d = pp[i+1 == ppL ? 0 : i+1];
+			if (linesIntersect(a,b,c,d)) return true;
+		}
+		return false;
+	},
+	each : function (fn, context) {
+		return this.points.forEach(context ? fn.context(context) : fn);
+	},
+
+	getPoints : function () {
+		return Array.toHash(this.points);
+	},
+	clone: function () {
+		return new this.self(this.points.invoke('clone'));
+	},
+	toString: Function.lambda('[object LibCanvas.Shapes.Polygon]')
+});
+
+}();
+
+/*
+---
+
 name: "Shapes.RoundedRectangle"
 
 description: "Provides rounded rectangle as canvas object"
@@ -6482,6 +6024,243 @@ var AudioElement = LibCanvas.Utils.AudioElement = Class({
 /*
 ---
 
+name: "Utils.Trace"
+
+description: "Useful tool which provides windows with user-defined debug information"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+
+provides: Utils.Trace
+
+...
+*/
+
+var Trace = LibCanvas.Utils.Trace = Class({
+	Static: {
+		dumpRec : function (obj, level, plain) {
+			level  = parseInt(level) || 0;
+			
+			var escape = function (v) {
+				return plain ? v : v.safeHtml();
+			};
+
+			if (level > 5) return '*TOO_DEEP*';
+
+			if (obj && typeof obj == 'object' && typeof(obj.dump) == 'function') return obj.dump();
+
+			var subDump = function (elem, index) {
+					return tabs + '\t' + index + ': ' + this.dumpRec(elem, level+1, plain) + '\n';
+				}.context(this),
+				type = atom.typeOf(obj),
+				tabs = '\t'.repeat(level);
+
+			switch (type) {
+				case 'array':
+					return '[\n' + obj.map(subDump).join('') + tabs + ']';
+					break;
+				case 'object':
+					var html = '';
+					for (var index in obj) html += subDump(obj[index], index);
+					return '{\n' + html + tabs + '}';
+				case 'element':
+					var prop = (obj.width && obj.height) ? '('+obj.width+'×'+obj.height+')' : '';
+					return '[DOM ' + obj.tagName.toLowerCase() + prop + ']';
+				case 'textnode':
+				case 'whitespace':
+					return '[DOM ' + type + ']';
+				case 'null':
+					return 'null';
+				case 'boolean':
+					return obj ? 'true' : 'false';
+				case 'string':
+					return escape('"' + obj + '"');
+				default:
+					return escape('' + obj);
+			}
+		},
+		dumpPlain: function (object) {
+			return (this.dumpRec(object, 0, true));
+		},
+		dump : function (object) {
+			return (this.dumpRec(object, 0));
+		}
+	},
+	initialize : function (object) {
+		if (arguments.length) this.trace(object);
+		this.stopped = false;
+		return this;
+	},
+	stop  : function () {
+		this.stopped = true;
+		return this;
+	},
+	set value (value) {
+		if (!this.stopped && !this.blocked) {
+			var html = this.self.dump(value)
+				.replaceAll({
+					'\t': '&nbsp;'.repeat(3),
+					'\n': '<br />'
+				});
+			this.createNode().html(html);
+		}
+	},
+	trace : function (value) {
+		this.value = value;
+		return this;
+	},
+	getContainer : function () {
+		var cont = atom.dom('#traceContainer');
+		return cont.length ? cont :
+			atom.dom.create('div', { 'id' : 'traceContainer'})
+				.css({
+					'zIndex'   : '87223',
+					'position' : 'fixed',
+					'top'      : '3px',
+					'right'    : '6px',
+					'maxWidth' : '70%'
+				})
+				.appendTo('body');
+	},
+	events : function (remove) {
+		var trace = this;
+		// add events unbind
+		!remove || this.node.bind({
+			mouseover : function () {
+				this.css('background', '#222');
+			},
+			mouseout  : function () {
+				this.css('background', '#000');
+			},
+			mousedown : function () {
+				trace.blocked = true;
+			},
+			mouseup : function () {
+				trace.blocked = false;
+			}
+		});
+		return this.node;
+	},
+	destroy : function () {
+		this.node.css('background', '#300');
+		this.timeout = (function () {
+			if (this.node) {
+				this.node.destroy();
+				this.node = null;
+			}
+		}.delay(500, this));
+		return this;
+	},
+	createNode : function () {
+		if (this.node) {
+			if (this.timeout) {
+				this.timeout.stop();
+				this.events(this.node);
+				this.node.css('background', '#000');
+			}
+			return this.node;
+		}
+
+		this.node = atom.dom
+			.create('div')
+			.css({
+				background : '#000',
+				border     : '1px dashed #0c0',
+				color      : '#0c0',
+				cursor     : 'pointer',
+				fontFamily : 'monospace',
+				margin     : '1px',
+				minWidth   : '200px',
+				overflow   : 'auto',
+				padding    : '3px 12px',
+				whiteSpace : 'pre'
+			})
+			.appendTo(this.getContainer())
+			.bind({
+				click    : this.destroy.context(this),
+				dblclick : function () { this.stop().destroy(); }.context(this)
+			});
+		return this.events();
+	},
+	toString: Function.lambda('[object LibCanvas.Utils.Trace]')
+});
+
+try {
+	window.trace = function (msg) {
+		var L = arguments.length;
+		if (L > 0) {
+			if (L > 1) msg = atom.toArray(arguments);
+			return new Trace(msg);
+		} else {
+			return new Trace();
+		}
+	};
+} catch (ignored) {}
+
+/*
+---
+
+name: "Utils.FpsMeter"
+
+description: "Provides FPS indicator"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- Utils.Trace
+
+provides: Utils.FpsMeter
+
+...
+*/
+
+var FpsMeter = LibCanvas.Utils.FpsMeter = Class({
+	initialize : function (framesMax) {
+		this.trace = new Trace();
+		this.genTime   = [];
+		this.prevTime  = null;
+		this.framesMax = framesMax;
+	},
+	frame : function () {
+		if (this.prevTime) {
+			this.genTime.push(Date.now() - this.prevTime);
+			if (this.genTime.length > this.framesMax) {
+				this.genTime.shift();
+			}
+		}
+		this.output();
+		this.prevTime = Date.now();
+		return this;
+	},
+	output : function () {
+		if (this.genTime.length) {
+			var fps = 1000 / this.genTime.average();
+			fps = fps.round(fps > 2 ? 0 : fps > 1 ? 1 : 2);
+			this.trace.trace('FPS: ' + fps);
+		} else {
+			this.trace.trace('FPS: counting');
+		}
+		return this;
+	},
+	toString: Function.lambda('[object LibCanvas.Utils.FpsMeter]')
+});
+
+/*
+---
+
 name: "Utils.Image"
 
 description: "Provides some Image extensions"
@@ -6592,6 +6371,238 @@ atom.implement(HTMLCanvasElement, {
 	sprite   : HTMLImageElement.prototype.sprite,
 	isLoaded : function () { return true; },
 	toCanvas : function () { return this; }
+});
+
+/*
+---
+
+name: "Utils.ImagePreloader"
+
+description: "Provides images preloader"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- Shapes.Rectangle
+
+provides: Utils.ImagePreloader
+
+...
+*/
+
+var ImagePreloader = LibCanvas.Utils.ImagePreloader = Class({
+	Implements: [Class.Events],
+	processed : 0,
+	number: 0,
+	initialize: function (images) {
+		this.count = {
+			errors : 0,
+			aborts : 0,
+			loaded : 0
+		};
+
+		if (Array.isArray(images)) images = Object.map(images[1], function (src) {
+			return images[0] + src;
+		});
+		this.images = this.createImages(images);
+	},
+	onProcessed : function (type) {
+		this.count[type]++;
+		this.processed++;
+		if (this.isReady()) this.readyEvent('ready', [this]);
+		return this;
+	},
+	get info () {
+		var stat = "Images loaded: {loaded}; Errors: {errors}; Aborts: {aborts}"
+			.substitute(this.count);
+		var ready = this.isReady() ? "Image preloading has completed;\n" : '';
+		return ready + stat;
+	},
+	getInfo : function () {
+		return this.info
+	},
+	get progress () {
+		return this.isReady() ? 1 : (this.processed / this.number).round(3);
+	},
+	getProgress : function () {
+		return this.progress;
+	},
+	isReady : function () {
+		return (this.number == this.processed);
+	},
+	createImage : function (src, key) {
+		this.number++;
+		return atom.dom
+			.create('img', { src : src })
+			.bind({
+				load : this.onProcessed.bind(this, 'loaded'),
+				error: this.onProcessed.bind(this, 'errors'),
+				abort: this.onProcessed.bind(this, 'aborts')
+			})
+			.first;
+	},
+	createImages : function (images) {
+		var imgs = {};
+		for (var i in images) imgs[i] = this.createImage(images[i], i);
+		return imgs;
+	},
+	ready : function (fn) {
+		this.addEvent('ready', fn);
+		return this;
+	},
+	toString: Function.lambda('[object LibCanvas.Utils.ImagePreloader]')
+});
+
+/*
+---
+
+name: "Utils.ProgressBar"
+
+description: "Easy way to draw progress bar"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- Point
+	- Shapes.Rectangle
+	- Shapes.Polygon
+	- Shapes.Polygon
+	- Behaviors.Animatable
+
+provides: Utils.ProgressBar
+
+...
+*/
+
+var ProgressBar = LibCanvas.Utils.ProgressBar = Class({
+	Implements: [ Animatable ],
+	initialize : function () {
+		this.coord = new Point(0,0);
+		this.progress = 0;
+	},
+	preRender : function () {
+		if (this.libcanvas && this.style) {
+			var htmlElem = this.libcanvas.ctx.canvas;
+			this.coord.set(
+				(htmlElem.width -this.style['width'] )/2,
+				(htmlElem.height-this.style['height'])/2
+			);
+			this.line = this.renderLine();
+		}
+		return this;
+	},
+	setLibcanvas : function (libcanvas) {
+		this.libcanvas = libcanvas;
+		return this.preRender();
+	},
+	getBuffer : function () {
+		if (!this.buffer) this.buffer = Buffer(this.style.width, this.style.height, true).ctx;
+		return this.buffer;
+	},
+	drawBorder : function () {
+		var s = this.style;
+		
+		var pbRect = new Rectangle({
+			from : this.coord,
+			size : Object.collect(s, ['width', 'height'])
+		}).snapToPixel();
+
+		this.libcanvas.ctx
+			.fillAll(s['bgColor'])
+			.fill   (pbRect, s['barBgColor'])
+			.stroke (pbRect, s['borderColor']);
+		return this;
+	},
+	drawLine : function () {
+		if (this.progress > 0) {
+			var line = this.line;
+			var prog   = this.progress;
+			var width  = ((line.width  - 2) * prog).round();
+			if (width > 1) {
+				var height = line.height - 2;
+				var c = this.coord;
+
+				this.libcanvas.ctx.drawImage({
+					image : line,
+					crop  : [    0,    0 , width-1, height-1],
+					draw  : [c.x+1, c.y+1, width-1, height-1]
+				});
+			}
+		}
+		return this;
+	},
+	renderLine : function () {
+		var b = this.getBuffer(), s = this.style;
+
+		// Закрашиваем фон
+		b.save().fillAll(s['barColor']);
+
+		// Если нужны полоски - рисуем
+		if (s['strips']) {
+			b.set('fillStyle', s['stripColor']);
+			// Смещение верхней части полоски относительно нижней
+			var shift = 1 * s['stripShift'] || 0, stripW = 1*s['stripWidth'];
+			var w = b.canvas.width, h = b.canvas.height;
+			// Рисуем их по очереди , пока на холсте есть место
+			for(var mv = 1; mv < w; mv += s['stripStep']) {
+				b.fill(new Polygon([
+					[mv + shift         , 0 ],
+					[mv + shift + stripW, 0 ],
+					[mv         + stripW, h ],
+					[mv                 , h ]
+				]));
+			}
+		}
+
+		// Добавляем поверх линию, если необходимо
+		if (s['blend']) {
+			b.set({
+				globalAlpha: s['blendOpacity'] < 1 ? s['blendOpacity'] : 0.3,
+				fillStyle  : s['blendColor']
+			})
+			.fillRect({
+				from : [ 0             , s['blendVAlign'] ],
+				size : [ b.canvas.width, s['blendHeight'] ]
+			});
+		}
+		return b.restore().canvas;
+	},
+	setProgress : function (progress) {
+		this.update().animate({
+			props: {progress: progress},
+			fn: 'circ-in',
+			onProccess: this.update.context(this),
+			time: 200
+		});
+		return this;
+	},
+	setStyle : function (newStyle) {
+		this.update().style = newStyle;
+		return this.preRender();
+	},
+	update: function () {
+		if (this.libcanvas) this.libcanvas.update();
+		return this;
+	},
+	draw : function () {
+		this.libcanvas.ctx.save();
+		this.drawBorder().drawLine();
+		this.libcanvas.ctx.restore();
+		return this;
+	},
+	toString: Function.lambda('[object LibCanvas.Utils.ProgressBar]')
 });
 
 /*
@@ -6758,4 +6769,4 @@ var Translator = LibCanvas.Utils.Translator = Class({
 
 });
 
-}).call((0, eval)("this"), atom, Math);
+}).call(typeof window == 'undefined' ? exports : window, atom, Math);

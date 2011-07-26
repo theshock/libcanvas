@@ -14,8 +14,6 @@ authors:
 
 requires:
 	- LibCanvas
-	- Utils.ImagePreloader
-	- Utils.ProgressBar
 
 provides: Inner.DownloadingProgress
 
@@ -44,6 +42,9 @@ var DownloadingProgress = LibCanvas.Inner.DownloadingProgress = Class({
 		if (this.parentLayer) return;
 		
 		if (this.options.progressBarStyle && !this.progressBar) {
+			if (typeof ProgressBar == 'undefined') {
+				throw new Error('LibCanvas.Utils.ProgressBar is not loaded');
+			}
 			this.progressBar = new ProgressBar()
 				.setStyle(this.options.progressBarStyle);
 		}
@@ -66,12 +67,18 @@ var DownloadingProgress = LibCanvas.Inner.DownloadingProgress = Class({
 			}
 			
 			if (this.options.preloadAudio) {
+				if (typeof AudioContainer == 'undefined') {
+					throw new Error('LibCanvas.Utils.AudioContainer is not loaded');
+				}
 				this._audio = new AudioContainer(this.options.preloadAudio);
 			} else {
 				this._audio = null;
 			}
 
 			if (this.options.preloadImages) {
+				if (typeof AudioContainer == 'ImagePreloader') {
+					throw new Error('LibCanvas.Utils.ImagePreloader is not loaded');
+				}
 				this.imagePreloader = new ImagePreloader(this.options.preloadImages)
 					.addEvent('ready', function (preloader) {
 						this.images = preloader.images;

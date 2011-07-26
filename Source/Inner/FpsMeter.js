@@ -14,7 +14,6 @@ authors:
 
 requires:
 	- LibCanvas
-	- Utils.FpsMeter
 
 provides: Inner.FpsMeter
 
@@ -22,6 +21,9 @@ provides: Inner.FpsMeter
 */
 LibCanvas.Inner.FpsMeter = Class({
 	fpsMeter : function (frames) {
+		if (typeof FpsMeter == 'undefined') {
+			throw new Error('LibCanvas.Utils.FpsMeter is not loaded');
+		}
 		var fpsMeter = new FpsMeter(frames || (this.fps ? this.fps / 2 : 10));
 		return this.addEvent('frameRenderStarted', function () {
 			fpsMeter.frame();

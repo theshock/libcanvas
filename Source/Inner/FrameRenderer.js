@@ -15,7 +15,6 @@ authors:
 requires:
 	- LibCanvas
 	- Point
-	- Utils.Trace
 
 provides: Inner.FrameRenderer
 
