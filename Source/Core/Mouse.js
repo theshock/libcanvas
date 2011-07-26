@@ -5,7 +5,9 @@ name: "Mouse"
 
 description: "A mouse control abstraction class"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -21,8 +23,8 @@ provides: Mouse
 */
 
 
-LibCanvas.Mouse = atom.Class({
-	Implements: [ atom.Class.Events ],
+var Mouse = LibCanvas.Mouse = Class({
+	Implements: [ Class.Events ],
 	
 	Static: {
 		buttons: {
@@ -54,12 +56,12 @@ LibCanvas.Mouse = atom.Class({
 	
 	initialize : function (libcanvas) {
 		this.inCanvas = false;
-		this.point = new LibCanvas.Point(null, null);
+		this.point = new Point(null, null);
 
 		this.libcanvas = libcanvas;
 		this.elem      = libcanvas.wrapper;
 
-		this.events = new LibCanvas.Inner.MouseEvents(this);
+		this.events = new MouseEvents(this);
 
 		this.setEvents();
 	},
@@ -119,10 +121,10 @@ LibCanvas.Mouse = atom.Class({
 				y: 'pageY' in from ? from.pageY : from.clientY + document.scrollTop
 			};
 			if ('offsetX' in from) {
-				e.offset = new LibCanvas.Point(from.offsetX, from.offsetY);
+				e.offset = new Point(from.offsetX, from.offsetY);
 			} else {
 				var offset = this.createOffset(from.target);
-				e.offset = new LibCanvas.Point({
+				e.offset = new Point({
 					x: e.page.x - offset.left,
 					y: e.page.y - offset.top
 				});
@@ -226,7 +228,7 @@ LibCanvas.Mouse = atom.Class({
 		}
 	},
 	debug : function (on) {
-		this.debugTrace = on === false ? null : new LibCanvas.Utils.Trace();
+		this.debugTrace = on === false ? null : new Trace();
 		this.debugUpdate();
 		return this;
 	},

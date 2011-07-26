@@ -5,7 +5,9 @@ name: "Utils.Color"
 
 description: "Provides Color class"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -18,11 +20,7 @@ provides: Utils.Color
 ...
 */
 
-new function () {
-
-var math = Math;
-
-var Color = LibCanvas.Utils.Color = atom.Class({
+var Color = LibCanvas.Utils.Color = Class({
 	Static: {
 		invoke: function (color) {
 			if (color == null) return null;
@@ -78,9 +76,7 @@ var Color = LibCanvas.Utils.Color = atom.Class({
 			var type = atom.typeOf(value);
 			if (type == 'arguments') {
 				rgb = Array.from(rgb);
-			} else if (type != 'string') {
-				throw new TypeError('Unknown value type: ' + type);
-			} else {
+			} else if (type == 'string') {
 				value = value.toLowerCase();
 
 				value = Color.colorNames[value] || value;
@@ -96,6 +92,10 @@ var Color = LibCanvas.Utils.Color = atom.Class({
 						throw new TypeError('Wrong value format: ' + atom.toArray(arguments));
 					}
 				}
+			} else if (type == 'object' && 'r' in value && 'g' in value && 'b' in value) {
+				rgb = [value.r, value.g, value.b, value.a];
+			} else {
+				throw new TypeError('Unknown value type: ' + type);
 			}
 		}
 		this.r = rgb[0];
@@ -135,18 +135,16 @@ var Color = LibCanvas.Utils.Color = atom.Class({
 	},
 	shift: function (array) {
 		var clone = this.clone();
-		clone.r += math.round(array[0]);
-		clone.g += math.round(array[1]);
-		clone.b += math.round(array[2]);
-		if (3 in array) clone.a += math.round(array[3]);
+		clone.r += Math.round(array[0]);
+		clone.g += Math.round(array[1]);
+		clone.b += Math.round(array[2]);
+		if (3 in array) clone.a += Math.round(array[3]);
 		return clone;
 	},
 	dump: function () {
-		return '[Color(' + this + ')]';
+		return '[Color(' + this.toArray().invoke('round', 2) + ')]';
 	},
 	clone: function () {
 		return new Color(this.toArray());
 	}
 });
-
-}();

@@ -5,7 +5,9 @@ name: "Shape"
 
 description: "Abstract class LibCanvas.Shape defines interface for drawable canvas objects"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -20,11 +22,11 @@ provides: Shape
 ...
 */
 
-LibCanvas.Shape = atom.Class({
-	Extends : LibCanvas.Geometry,
-	set        : atom.Class.abstractMethod,
-	hasPoint   : atom.Class.abstractMethod,
-	processPath: atom.Class.abstractMethod,
+var Shape = LibCanvas.Shape = Class({
+	Extends    : Geometry,
+	set        : Class.abstractMethod,
+	hasPoint   : Class.abstractMethod,
+	processPath: Class.abstractMethod,
 	draw : function (ctx, type) {
 		this.processPath(ctx)[type]();
 		return this;
@@ -46,13 +48,13 @@ LibCanvas.Shape = atom.Class({
 		return this.move({ x : 0, y : y - this.y });
 	},
 	get bottomLeft () {
-		return new LibCanvas.Point(this.from.x, this.to.y);
+		return new Point(this.from.x, this.to.y);
 	},
 	get topRight () {
-		return new LibCanvas.Point(this.to.x, this.from.y);
+		return new Point(this.to.x, this.from.y);
 	},
 	get center () {
-		return new LibCanvas.Point(
+		return new Point(
 			(this.from.x + this.to.x) / 2,
 			(this.from.y + this.to.y) / 2
 		);
@@ -62,6 +64,7 @@ LibCanvas.Shape = atom.Class({
 	},
 	move : function (distance, reverse) {
 		distance = this.invertDirection(distance, reverse);
+		this.fireEvent('beforeMove', distance);
 		this.from.move(distance);
 		this. to .move(distance);
 		return this.parent(distance);

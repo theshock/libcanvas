@@ -5,7 +5,9 @@ name: "Canvas2D"
 
 description: "LibCanvas.Canvas2D wraps around native <canvas>."
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -22,14 +24,13 @@ provides: Canvas2D
 ...
 */
 
-LibCanvas.Canvas2D = atom.Class({
+var Canvas2D = LibCanvas.Canvas2D = Class({
 	Extends: LibCanvas,
 	Implements: [
-		LibCanvas.Inner.FrameRenderer,
-		LibCanvas.Inner.FpsMeter,
-		LibCanvas.Inner.DownloadingProgress,
-		atom.Class.Events,
-		atom.Class.Options
+		FrameRenderer,
+		Inner.FpsMeter,
+		DownloadingProgress,
+		Class.Events, Class.Options
 	],
 
 	Generators: {
@@ -63,7 +64,7 @@ LibCanvas.Canvas2D = atom.Class({
 				.appendTo(this.wrapper);
 		},
 		invoker: function () {
-			return new LibCanvas.Invoker({
+			return new Invoker({
 				context: this,
 				defaultPriority: 10,
 				fpsLimit: this.options.fps
@@ -106,7 +107,7 @@ LibCanvas.Canvas2D = atom.Class({
 
 		this.origElem = elem;
 		this.origCtx  = elem.getContext('2d-libcanvas');
-		this.origElem.atom = aElem.css('position', 'absolute');
+		this.origElem.atom = aElem;
 
 		this.createProjectBuffer().addClearer();
 
@@ -119,7 +120,6 @@ LibCanvas.Canvas2D = atom.Class({
 		} else {
 			this._layers = {};
 			aElem
-				.attr('data-layer-name', this.name)
 				.replaceWith(wrapper.parent)
 				.appendTo(wrapper);
 
@@ -127,6 +127,7 @@ LibCanvas.Canvas2D = atom.Class({
 				this.size(elem.width, elem.height, true);
 			}
 		}
+
 		this._layers[this.name] = this;
 		cover.css('zIndex', this.maxZIndex + 100);
 
@@ -137,7 +138,9 @@ LibCanvas.Canvas2D = atom.Class({
 		this.addEvent('ready', function () {
 			this.update.delay(0)
 		});
-		
+		aElem
+			.attr('data-layer-name', this.name)
+			.css('position', 'absolute');
 		this.zIndex = Infinity;
 	},
 	
@@ -182,7 +185,7 @@ LibCanvas.Canvas2D = atom.Class({
 		return this;
 	},
 
-	createProjectBuffer: atom.Class.protectedMethod(function () {
+	createProjectBuffer: Class.protectedMethod(function () {
 		if (this.options.backBuffer == 'off') {
 			this.elem = this.origElem;
 			this.ctx  = this.origCtx;
@@ -193,11 +196,11 @@ LibCanvas.Canvas2D = atom.Class({
 		return this;
 	}),
 
-	addClearer: atom.Class.protectedMethod(function () {
+	addClearer: Class.protectedMethod(function () {
 		var clear = this.options.clear;
 		if (clear) {
 			this.addProcessor('pre',
-				new LibCanvas.Processors.Clearer(
+				new Processors.Clearer(
 					typeof clear === 'string' ? clear : null
 				)
 			);
@@ -216,7 +219,7 @@ LibCanvas.Canvas2D = atom.Class({
 	},
 	listenMouse : function (elem) {
 		this._mouse = LibCanvas.isLibCanvas(elem) ? elem.mouse
-			: new LibCanvas.Mouse(this, /* preventDefault */elem);
+			: new Mouse(this, /* preventDefault */elem);
 		return this;
 	},
 	getKey : function (key) {
@@ -224,17 +227,17 @@ LibCanvas.Canvas2D = atom.Class({
 	},
 	listenKeyboard : function (elem) {
 		this._keyboard = LibCanvas.isLibCanvas(elem) ? elem.keyboard
-			: new LibCanvas.Keyboard(/* preventDefault */elem);
+			: new Keyboard(/* preventDefault */elem);
 		return this;
 	},
 	createBuffer : function (width, height) {
-		return LibCanvas.Buffer.apply(LibCanvas,
+		return Buffer.apply(LibCanvas,
 			arguments.length ? arguments :
 				Array.collect(this.origElem, ['width', 'height'])
 		);
 	},
 	createShaper : function (options) {
-		var shaper = new LibCanvas.Ui.Shaper(this, options);
+		var shaper = new Shaper(this, options);
 		this.addElement(shaper);
 		return shaper;
 	},
@@ -259,6 +262,10 @@ LibCanvas.Canvas2D = atom.Class({
 	},
 	rmElement : function (elem) {
 		this.elems.erase(elem);
+		return this;
+	},
+	rmAllElements: function () {
+		this.elems.empty();
 		return this;
 	},
 
@@ -320,8 +327,12 @@ LibCanvas.Canvas2D = atom.Class({
 		if (name in this._layers) {
 			throw new Error('Layer «' + name + '» already exists');
 		}
+		if (typeof z == 'object') {
+			options = z;
+			z = null;
+		}
 		options = atom.extend({ name: name }, options || {});
-		var layer = this._layers[name] = new LibCanvas.Layer(this, this.options, options);
+		var layer = this._layers[name] = new Layer(this, this.options, options);
 		layer._layers = this._layers;
 		layer.zIndex  = z;
 		layer.origElem.atom.attr({ 'data-layer-name': name });

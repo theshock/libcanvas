@@ -5,7 +5,9 @@ name: "Context2D"
 
 description: "LibCanvas.Context2D adds new canvas context '2d-libcanvas'"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -22,13 +24,7 @@ provides: Context2D
 ...
 */
 
-(function (LibCanvas) {
-
-var Point  = LibCanvas.Point,
-    Shapes = LibCanvas.namespace('Shapes'),
-    Circle = Shapes.Circle,
-    Rectangle = Shapes.Rectangle;
-
+var Context2D = LibCanvas.Context2D = function () {
 
 var office = {
 	all : function (type, style) {
@@ -47,7 +43,7 @@ var office = {
 		return args.length ? Rectangle(args) : this.rectangle;
 	},
 	fillStroke : function (type, args) {
-		if (args.length >= 1 && args[0] instanceof LibCanvas.Shape) {
+		if (args.length >= 1 && args[0] instanceof Shape) {
 			if (args[1]) this.save().set(type + 'Style', args[1]);
 			args[0].draw(this, type);
 			if (args[1]) this.restore();
@@ -84,8 +80,8 @@ var accessors = {};
 	})
 });
 	
-LibCanvas.Context2D = atom.Class({
-	Implements: [atom.Class(accessors)],
+var Context2D = Class({
+	Implements: [Class(accessors)],
 
 	initialize : function (canvas) {
 		if (canvas instanceof CanvasRenderingContext2D) {
@@ -100,7 +96,19 @@ LibCanvas.Context2D = atom.Class({
 	get height() { return this.canvas.height; },
 	set width (width)  { this.canvas.width  = width; },
 	set height(height) { this.canvas.height = height;},
-
+				 
+	get shadow () {
+		return [this.shadowOffsetX, this.shadowOffsetY, this.shadowBlur, this.shadowColor].join( ' ' );
+	},
+	
+	set shadow (value) {
+		value = value.split( ' ' );
+		this.shadowOffsetX = value[0];
+		this.shadowOffsetY = value[1];
+		this.shadowBlur    = value[2];
+		this.shadowColor   = value[3];
+	},
+	
 	_rectangle: null,
 	get rectangle () {
 		var rect = this._rectangle;
@@ -133,7 +141,7 @@ LibCanvas.Context2D = atom.Class({
 		var args = [canvas, 0, 0];
 		if (resize) args.push(width, height);
 
-		var clone = LibCanvas.Buffer(width, height, true);
+		var clone = Buffer(width, height, true);
 		clone.ctx.original('drawImage', args);
 		return clone;
 	},
@@ -345,7 +353,7 @@ LibCanvas.Context2D = atom.Class({
 	text : function (cfg) {
 		if (!this.ctx2d.fillText) return this;
 		
-		cfg = atom.extend({
+		cfg = atom.append({
 			text   : '',
 			color  : null, /* @color */
 			wrap   : 'normal', /* no|normal */
@@ -354,11 +362,13 @@ LibCanvas.Context2D = atom.Class({
 			size   : 16,
 			weigth : 'normal', /* bold|normal */
 			style  : 'normal', /* italic|normal */
-			family : 'sans-serif', /* @fontFamily */
+			family : 'arial,sans-serif', /* @fontFamily */
 			lineHeight : null,
 			overflow   : 'visible', /* hidden|visible */
-			padding : [0,0]
+			padding : [0,0],
+			shadow : null
 		}, cfg);
+		
 		this.save();
 		if (atom.typeOf(cfg.padding) == 'number') {
 			cfg.padding = [cfg.padding, cfg.padding];
@@ -373,7 +383,8 @@ LibCanvas.Context2D = atom.Class({
 				family : cfg.family
 			})
 		);
-		if (cfg.color) this.set('fillStyle', cfg.color);
+		if (cfg.shadow) this.shadow = cfg.shadow;
+		if (cfg.color) this.set({ fillStyle: cfg.color });
 		if (cfg.overflow == 'hidden') this.clip(to);
 		
 		var xGet = function (lineWidth) {
@@ -383,16 +394,22 @@ LibCanvas.Context2D = atom.Class({
 			           to.from.x + (to.width - lineWidth)/2;
 		};
 		var x, lines = String(cfg.text).split('\n');
-		var measure = function (text) {
-			return this.measureText(text).width;
-		}.context(this);
+		
+		var measure = function (text) { return this.measureText(text).width; }.bind(this);
 		if (cfg.wrap == 'no') {
 			lines.forEach(function (line, i) {
-				this.fillText(line, xGet(cfg.align == 'left' ? 0 : this.measureText(line).width), to.from.y + (i+1)*lh);
-			}.context(this));
+				if (!line) return;
+				
+				this.fillText(line, xGet(cfg.align == 'left' ? 0 : measure(line)), to.from.y + (i+1)*lh);
+			}.bind(this));
 		} else {
 			var lNum = 0;
 			lines.forEach(function (line) {
+				if (!line) {
+					lNum++;
+					return;
+				}
+				
 				var words = line.match(/.+?(\s|$)/g);
 				var L  = '';
 				var Lw = 0;
@@ -401,7 +418,7 @@ LibCanvas.Context2D = atom.Class({
 					if (!last) {
 						var text = words[i];
 						// @todo too slow. 2-4ms for 50words
-						var wordWidth = this.measureText(text).width;
+						var wordWidth = measure(text);
 						if (!Lw || Lw + wordWidth < to.width) {
 							Lw += wordWidth;
 							L  += text;
@@ -424,7 +441,7 @@ LibCanvas.Context2D = atom.Class({
 					L  = '';
 					Lw = 0;
 				}
-			}.context(this));
+			}.bind(this));
 			
 		}
 		return this.restore();
@@ -512,12 +529,13 @@ LibCanvas.Context2D = atom.Class({
 		}
 		return this.restore();
 	},
+
 	projectiveImage : function (arg) {
 		// test
-		new LibCanvas.Inner.ProjectiveTexture(arg.image)
+		new ProjectiveTexture(arg.image)
 			.setContext(this.ctx2d)
 			.setQuality(arg.patchSize, arg.limit)
-			.render(new Shapes.Polygon(Array.collect(arg, [0, 1, 3, 2])));
+			.render( arg.to );
 		return this;
 	},
 
@@ -585,6 +603,32 @@ LibCanvas.Context2D = atom.Class({
 		}
 		return result;
 	},
+	getPixel: function (point) {
+		point = Point( arguments );
+		var data = this.getImageData(new Rectangle({ from: point, size: [1,1] })).data;
+
+		return {
+			r: data[0],
+			g: data[1],
+			b: data[2],
+			a: data[3] / 255
+		};
+	},
+	createGradient: function (from, to, colors) {
+		var gradient;
+		if ( from instanceof Rectangle ) {
+			colors   = to;
+			gradient = this.createLinearGradient( from );
+		} else if (from instanceof Circle) {
+			gradient = this.createRadialGradient( from, to );
+		} else if (from instanceof Point) {
+			gradient = this.createLinearGradient( from, to, colors );
+		} else {
+			throw new Error('Unknown arguments');
+		}
+		if (typeof colors == 'object') gradient.addColorStop( colors );
+		return gradient;
+	},
 	createLinearGradient : function (from, to) {
 		var a = arguments;
 		if (a.length != 4) {
@@ -598,7 +642,7 @@ LibCanvas.Context2D = atom.Class({
 			}
 			a = [from.x, from.y, to.x, to.y];
 		}
-		return this.original('createLinearGradient', a, true);
+		return fixGradient( this.original('createLinearGradient', a, true) );
 	},
 	createRadialGradient: function () {
 		var points, c1, c2, a = arguments;
@@ -617,7 +661,7 @@ LibCanvas.Context2D = atom.Class({
 			throw new TypeError('Wrong args number in the Context.createRadialGradient');
 		}
 
-		return this.original('createRadialGradient', points, true);
+		return fixGradient( this.original('createRadialGradient', points, true) );
 	},
 
 	createPattern : function () {
@@ -629,27 +673,36 @@ LibCanvas.Context2D = atom.Class({
 	toString: Function.lambda('[object LibCanvas.Context2D]')
 	// Such moz* methods wasn't duplicated:
 	// mozTextStyle, mozDrawText, mozMeasureText, mozPathText, mozTextAlongPath
-
-	// is this just properties , that can be used by set ?
-	// shadowOffsetX shadowOffsetY shadowBlur shadowColor
 });
 
-CanvasGradient.prototype.addColorStop = function () {
-	var addColorStop = CanvasGradient.prototype.addColorStop;
+var addColorStop = function () {
+	var orig = document
+		.createElement('canvas')
+		.getContext('2d')
+		.createLinearGradient(0,0,1,1)
+		.addColorStop;
+		
 	return function (colors) {
 		if (typeof colors == 'object') {
 			for (var position in colors) {
-				addColorStop.call( this, parseFloat(position), colors[position] );
+				orig.call( this, parseFloat(position), colors[position] );
 			}
 		} else {
-			addColorStop.apply( this, arguments );
+			orig.apply( this, arguments );
 		}
 		return this;
-	}
+	};
 }();
 
-LibCanvas.Context2D.office = office;
 
-HTMLCanvasElement.addContext('2d-libcanvas', LibCanvas.Context2D);
+var fixGradient = function (grad) {
+	grad.addColorStop = addColorStop;
+	return grad;
+};
 
-})(LibCanvas);
+Context2D.office = office;
+
+HTMLCanvasElement.addContext('2d-libcanvas', Context2D);
+
+return Context2D;
+}();

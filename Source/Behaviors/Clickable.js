@@ -5,7 +5,9 @@ name: "Behaviors.Clickable"
 
 description: "Provides interface for clickable canvas objects"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -19,7 +21,7 @@ provides: Behaviors.Clickable
 ...
 */
 
-new function () {
+var Clickable = LibCanvas.Behaviors.Clickable = function () {
 
 var setValFn = function (object, name, val) {
 	return function () {
@@ -29,8 +31,8 @@ var setValFn = function (object, name, val) {
 };
 
 // Should extends drawable, implements mouseListener
-LibCanvas.Behaviors.Clickable = atom.Class({
-	Implements: [LibCanvas.Behaviors.MouseListener],
+return Class({
+	Implements: [ MouseListener ],
 
 	clickable : function () { 
 		this.listenMouse();
@@ -46,4 +48,4 @@ LibCanvas.Behaviors.Clickable = atom.Class({
 	}
 });
 
-};
+}();

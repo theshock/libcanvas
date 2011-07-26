@@ -5,7 +5,9 @@ name: "Shapes.Path"
 
 description: "Provides Path as canvas object"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -19,17 +21,12 @@ provides: Shapes.Path
 
 ...
 */
-
-(function (LibCanvas) {
-
-var Point = LibCanvas.Point, Shapes = LibCanvas.Shapes;
-
-var Path = LibCanvas.Shapes.Path = atom.Class({
-	Extends: LibCanvas.Shape,
+var Path = LibCanvas.Shapes.Path = Class({
+	Extends: Shape,
 
 	Generators : {
 		buffer: function () {
-			return LibCanvas.Buffer(1, 1, true);
+			return Buffer(1, 1, true);
 		}
 	},
 
@@ -87,7 +84,7 @@ var Path = LibCanvas.Shapes.Path = atom.Class({
 	toString: Function.lambda('[object LibCanvas.Shapes.Path]')
 });
 
-LibCanvas.Shapes.Path.Builder = atom.Class({
+Path.Builder = LibCanvas.Shapes.Path.Builder = Class({
 	initialize: function (str) {
 		this.update = this.update.bind( this );
 		this.parts  = [];
@@ -177,13 +174,13 @@ LibCanvas.Shapes.Path.Builder = atom.Class({
 			a.circle = circle;
 			a.angle  = angle;
 			a.acw    = acw;
-		} else if (circle instanceof Shapes.Circle) {
+		} else if (circle instanceof Circle) {
 			a = { circle: circle, angle: [0, (360).degree()] };
 		} else {
 			a = a[0];
 		}
 
-		a.circle = Shapes.Circle(a.circle);
+		a.circle = Circle(a.circle);
 
 		if (Array.isArray(a.angle)) {
 			a.angle = {
@@ -238,5 +235,3 @@ LibCanvas.Shapes.Path.Builder = atom.Class({
 
 	toString: Function.lambda('[object LibCanvas.Shapes.Path]')
 });
-
-})(LibCanvas);

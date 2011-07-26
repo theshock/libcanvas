@@ -5,7 +5,9 @@ name: "Utils.FpsMeter"
 
 description: "Provides FPS indicator"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -19,9 +21,9 @@ provides: Utils.FpsMeter
 ...
 */
 
-LibCanvas.Utils.FpsMeter = atom.Class({
+var FpsMeter = LibCanvas.Utils.FpsMeter = Class({
 	initialize : function (framesMax) {
-		this.trace = new LibCanvas.Utils.Trace();
+		this.trace = new Trace();
 		this.genTime   = [];
 		this.prevTime  = null;
 		this.framesMax = framesMax;

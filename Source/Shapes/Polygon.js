@@ -5,7 +5,9 @@ name: "Shapes.Polygon"
 
 description: "Provides user-defined concave polygon as canvas object"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -19,8 +21,8 @@ provides: Shapes.Polygon
 
 ...
 */
-new function (){
 
+var Polygon = LibCanvas.Shapes.Polygon = function (){
 
 var linesIntersect = function (a,b,c,d) {
 	var x,y;
@@ -41,15 +43,13 @@ var linesIntersect = function (a,b,c,d) {
 		&& (y.between(c.y, d.y, 'LR') || y.between(d.y, c.y, 'LR'));
 };
 
-var Point = LibCanvas.Point;
-
-LibCanvas.Shapes.Polygon = atom.Class({
-	Extends: LibCanvas.Shape,
+return Class({
+	Extends: Shape,
 	initialize: function () {
 		this.points = [];
 		this.parent.apply(this, arguments);
 	},
-	set : function () {
+	set : function (poly) {
 		this.points.empty().append(
 			Array.pickFrom(arguments)
 				.map(function (elem) {
@@ -131,4 +131,4 @@ LibCanvas.Shapes.Polygon = atom.Class({
 	toString: Function.lambda('[object LibCanvas.Shapes.Polygon]')
 });
 
-};
+}();

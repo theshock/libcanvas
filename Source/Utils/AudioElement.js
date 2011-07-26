@@ -5,7 +5,9 @@ name: "Utils.AudioElement"
 
 description: "Provides audio container"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -20,8 +22,8 @@ provides: Utils.AudioElement
 ...
 */
 
-LibCanvas.Utils.AudioElement = atom.Class({
-	Implements: [LibCanvas.Behaviors.Animatable],
+var AudioElement = LibCanvas.Utils.AudioElement = Class({
+	Implements: [Animatable],
 	stub   : true,
 	initialize : function (container, file) {
 		this.events = [];

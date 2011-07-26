@@ -5,7 +5,9 @@ name: "Processors.Color"
 
 description: "Abstract class for works with color"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
@@ -18,15 +20,11 @@ provides: Processors.Color
 ...
 */
 
-new function () {
-
-var math = Math;
-
-LibCanvas.Processors.Color = atom.Class({
+LibCanvas.Processors.Color = Class({
 	rgbToHsb: function(red, green, blue){
 		var hue = 0,
-			max = math.max(red, green, blue),
-			delta = max - math.min(red, green, blue),
+			max = Math.max(red, green, blue),
+			delta = max - Math.min(red, green, blue),
 			brightness = max / 255,
 			saturation = (max != 0) ? delta / max : 0;
 		if (saturation) {
@@ -40,18 +38,18 @@ LibCanvas.Processors.Color = atom.Class({
 			
 			if (hue < 0) hue++;
 		}
-		return [math.round(hue * 360), math.round(saturation * 100), math.round(brightness * 100)];
+		return [Math.round(hue * 360), Math.round(saturation * 100), Math.round(brightness * 100)];
 	},
 
 	hsbToRgb: function(hue, sat, bri){
-		bri = math.round(bri / 100 * 255);
+		bri = Math.round(bri / 100 * 255);
 		if (!sat) return [bri, bri, bri];
 		hue = hue % 360;
 		
 		var f = hue % 60,
-			p = math.round((bri * (100  - sat)) / 10000 * 255),
-			q = math.round((bri * (6000 - sat * f)) / 600000 * 255),
-			t = math.round((bri * (6000 - sat * (60 - f))) / 600000 * 255);
+			p = Math.round((bri * (100  - sat)) / 10000 * 255),
+			q = Math.round((bri * (6000 - sat * f)) / 600000 * 255),
+			t = Math.round((bri * (6000 - sat * (60 - f))) / 600000 * 255);
 		switch (parseInt(hue / 60)){
 			case 0: return [bri, t, p];
 			case 1: return [q, bri, p];
@@ -64,5 +62,3 @@ LibCanvas.Processors.Color = atom.Class({
 	},
 	toString: Function.lambda('[object LibCanvas.Processors.Color]')
 });
-
-}();

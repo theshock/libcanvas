@@ -5,7 +5,9 @@ name: "Utils.TimeLogger"
 
 description: "TimeLogger"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -19,19 +21,16 @@ provides: Utils.TimeLogger
 
 ...
 */
-new function () {
 
-var Utils = LibCanvas.Utils;
-
-LibCanvas.Utils.TimeLogger = atom.Class({
+var TimeLogger = LibCanvas.Utils.TimeLogger = Class({
 	last : 10,
 	sw   : null,
 	trace: null,
 	initialize : function (last) {
 		this.time = [];
 		if (last) this.last = last;
-		this.sw    = new Utils.StopWatch();
-		this.trace = new Utils.Trace();
+		this.sw    = new StopWatch();
+		this.trace = new Trace();
 	},
 	from : function () {
 		this.sw.start();
@@ -45,5 +44,3 @@ LibCanvas.Utils.TimeLogger = atom.Class({
 	},
 	toString: Function.lambda('[object LibCanvas.Utils.TimeLogger]')
 });
-
-}();

@@ -5,7 +5,9 @@ name: "Inner.FrameRenderer"
 
 description: "Private class for inner usage in LibCanvas.Canvas2D"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -20,7 +22,7 @@ provides: Inner.FrameRenderer
 ...
 */
 
-LibCanvas.Inner.FrameRenderer = atom.Class({
+var FrameRenderer = LibCanvas.Inner.FrameRenderer = Class({
 	checkAutoDraw : function () {
 		if (!this._freezed && this.updateFrame) {
 			this.updateFrame = false;

@@ -5,7 +5,9 @@ name: "Utils.ProgressBar"
 
 description: "Easy way to draw progress bar"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -23,15 +25,8 @@ provides: Utils.ProgressBar
 ...
 */
 
-(function (LibCanvas) {
-
-var Buffer    = LibCanvas.Buffer,
-	Rectangle = LibCanvas.Shapes.Rectangle,
-	Polygon   = LibCanvas.Shapes.Polygon,
-	Point     = LibCanvas.Point;
-
-LibCanvas.Utils.ProgressBar = atom.Class({
-	Implements: [LibCanvas.Behaviors.Animatable],
+var ProgressBar = LibCanvas.Utils.ProgressBar = Class({
+	Implements: [ Animatable ],
 	initialize : function () {
 		this.coord = new Point(0,0);
 		this.progress = 0;
@@ -148,5 +143,3 @@ LibCanvas.Utils.ProgressBar = atom.Class({
 	},
 	toString: Function.lambda('[object LibCanvas.Utils.ProgressBar]')
 });
-
-})(LibCanvas);

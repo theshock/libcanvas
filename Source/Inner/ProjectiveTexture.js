@@ -5,7 +5,9 @@ name: "Inner.ProjectiveTexture"
 
 description: "Provides testing projective textures rendering (more info: http://acko.net/files/projective/index.html)"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -15,12 +17,15 @@ requires:
 
 provides: Inner.ProjectiveTexture
 
+source: "http://acko.net/blog/projective-texturing-with-canvas"
+
 ...
 */
 
-new function () {
+var ProjectiveTexture = LibCanvas.Inner.ProjectiveTexture = function () {
 
-LibCanvas.Inner.ProjectiveTexture = atom.Class({
+
+var ProjectiveTexture = Class({
 	initialize : function (image) {
 		if (typeof image == 'string') {
 			this.image = new Image;
@@ -40,7 +45,16 @@ LibCanvas.Inner.ProjectiveTexture = atom.Class({
 		this.ctx = ctx;
 		return this;
 	},
-	render : function (points) {
+	render : function (polygon) {
+
+		var points = polygon.points;
+		points = [
+			[points[0].x, points[0].y],
+			[points[1].x, points[1].y],
+			[points[3].x, points[3].y],
+			[points[2].x, points[2].y]
+		];
+		
 		var tr = getProjectiveTransform(points);
 
 		// Begin subdivision process.
@@ -50,9 +64,8 @@ LibCanvas.Inner.ProjectiveTexture = atom.Class({
 		var pbr = tr.transformProjectiveVector([1, 1, 1]);
 
 		this.transform = tr;
-
 		divide.call(this, 0, 0, 1, 1, ptl, ptr, pbl, pbr, this.limit);
-		
+
 		return this;
 	}
 });
@@ -369,4 +382,5 @@ Matrix.prototype = {
 	}
 };
 
-};
+return ProjectiveTexture;
+}();

@@ -5,7 +5,9 @@ name: "Utils.AudioContainer"
 
 description: "Provides audio preloader"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -18,14 +20,14 @@ provides: Utils.AudioContainer
 ...
 */
 
-LibCanvas.Utils.AudioContainer = atom.Class({
+var AudioContainer = LibCanvas.Utils.AudioContainer = Class({
 	support : false,
 	initialize: function (files) {
 		this.allAudios = [];
 		this.checkSupport();
 		var audio = {};
 		for (var i in files) {
-			audio[i] = new LibCanvas.Utils.AudioElement(this, files[i]);
+			audio[i] = new AudioElement(this, files[i]);
 		}
 		this.audio = audio;
 	},

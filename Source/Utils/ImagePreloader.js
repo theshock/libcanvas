@@ -5,7 +5,9 @@ name: "Utils.ImagePreloader"
 
 description: "Provides images preloader"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -19,8 +21,8 @@ provides: Utils.ImagePreloader
 ...
 */
 
-LibCanvas.Utils.ImagePreloader = atom.Class({
-	Implements: [atom.Class.Events],
+var ImagePreloader = LibCanvas.Utils.ImagePreloader = Class({
+	Implements: [Class.Events],
 	processed : 0,
 	number: 0,
 	initialize: function (images) {

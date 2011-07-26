@@ -5,7 +5,9 @@ name: "Behaviors.Drawable"
 
 description: "Abstract class for drawable canvas objects"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -18,7 +20,7 @@ provides: Behaviors.Drawable
 ...
 */
 
-new function () {
+var Drawable = LibCanvas.Behaviors.Drawable = function () {
 	
 var start = function () {
 	this.libcanvas.addElement(this);
@@ -29,8 +31,8 @@ var stop = function () {
 	return 'removeEvent';
 };
 
-LibCanvas.Behaviors.Drawable = atom.Class({
-	Implements: [atom.Class.Events],
+return Class({
+	Implements: [Class.Events],
 	libcanvasIsReady: false,
 	setLibcanvas : function (libcanvas) {
 		if (this.libcanvas) {
@@ -81,8 +83,8 @@ LibCanvas.Behaviors.Drawable = atom.Class({
 		  .removeEvent('libcanvasSet', start)
 		     .addEvent('libcanvasSet', stop);
 	},
-	update : atom.Class.abstractMethod,
-	draw   : atom.Class.abstractMethod
+	update : Class.abstractMethod,
+	draw   : Class.abstractMethod
 });
 
-};
+}();

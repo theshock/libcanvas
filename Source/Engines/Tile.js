@@ -5,7 +5,9 @@ name: "Engines.Tile"
 
 description: "Helper for building tile maps (e.g. for Tetris or ur's favorite Dune II - http://en.wikipedia.org/wiki/Tile_engine)"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -22,11 +24,9 @@ provides: Engines.Tile
 ...
 */
 
-LibCanvas.Engines.Tile = atom.Class({
-	Implements: [
-		LibCanvas.Behaviors.Drawable,
-		atom.Class.Events
-	],
+LibCanvas.Engines.Tile = Class({
+	Implements: [ Drawable, Class.Events ],
+
 	first : true,
 
 	cellWidth  : 0,
@@ -117,7 +117,7 @@ LibCanvas.Engines.Tile = atom.Class({
 	getRect : function (cell) {
 		if (!this.rects['0.0']) this.each(function (cell) {
 			var index = cell.x + '.' + cell.y;
-			this.rects[index] = new LibCanvas.Shapes.Rectangle({
+			this.rects[index] = new Rectangle({
 				from : [
 					(this.cellWidth  + this.margin) * cell.x,
 					(this.cellHeight + this.margin) * cell.y
@@ -128,7 +128,7 @@ LibCanvas.Engines.Tile = atom.Class({
 		return this.rects[cell.x + '.' + cell.y];
 	},
 	getCell : function (point) {
-		point = LibCanvas.Point(arguments);
+		point = Point(arguments);
 		var x = parseInt(point.x / (this.cellWidth  + this.margin)),
 			y = parseInt(point.y / (this.cellHeight + this.margin)),
 			row = this.matrix[y];

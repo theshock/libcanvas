@@ -5,7 +5,9 @@ name: "Processors.Grayscale"
 
 description: "Grayscale canvas"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
@@ -18,7 +20,7 @@ provides: Processors.Grayscale
 ...
 */
 
-LibCanvas.Processors.Grayscale = atom.Class({
+LibCanvas.Processors.Grayscale = Class({
 	style : null,
 	initialize : function (type) {
 		// sepia, luminance, average, red, green, blue, default

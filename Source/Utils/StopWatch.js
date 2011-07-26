@@ -5,7 +5,9 @@ name: "Utils.StopWatch"
 
 description: "StopWatch"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -18,7 +20,7 @@ provides: Utils.StopWatch
 ...
 */
 
-LibCanvas.Utils.StopWatch = atom.Class({
+var StopWatch = LibCanvas.Utils.StopWatch = Class({
 	startTime : 0,
 	initialize : function (autoStart) {
 		autoStart && this.start();

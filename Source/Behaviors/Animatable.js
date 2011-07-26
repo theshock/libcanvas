@@ -5,7 +5,9 @@ name: "Behaviors.Animatable"
 
 description: "Basic abstract class for animatable objects."
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -21,15 +23,14 @@ provides: Behaviors.Animatable
 ...
 */
 
-(function (LibCanvas) {
+var Animatable = LibCanvas.Behaviors.Animatable = function () {
 
-var TF    = LibCanvas.Inner.TimingFunctions,
-	Color = LibCanvas.Utils.Color;
+var TF = TimingFunctions;
 
-LibCanvas.Behaviors.Animatable = atom.Class({
-	Implements: [LibCanvas.Invoker.AutoChoose],
+return Class({
+	Implements: [ Invoker.AutoChoose ],
 
-	initialize: atom.Class.hiddenMethod(function (element) {
+	initialize: Class.hiddenMethod(function (element) {
 		this['animate.element'] = element;
 		this['animate.func']    = atom.typeOf(element) == 'function';
 	}),
@@ -142,4 +143,4 @@ LibCanvas.Behaviors.Animatable = atom.Class({
 	}
 });
 
-})(LibCanvas);
+}();

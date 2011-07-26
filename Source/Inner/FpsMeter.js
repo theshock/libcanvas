@@ -5,7 +5,9 @@ name: "Inner.FpsMeter"
 
 description: "Constantly calculates frames per seconds rate"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -18,9 +20,9 @@ provides: Inner.FpsMeter
 
 ...
 */
-LibCanvas.Inner.FpsMeter = atom.Class({
+LibCanvas.Inner.FpsMeter = Class({
 	fpsMeter : function (frames) {
-		var fpsMeter = new LibCanvas.Utils.FpsMeter(frames || (this.fps ? this.fps / 2 : 10));
+		var fpsMeter = new FpsMeter(frames || (this.fps ? this.fps / 2 : 10));
 		return this.addEvent('frameRenderStarted', function () {
 			fpsMeter.frame();
 		});

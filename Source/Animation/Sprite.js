@@ -5,7 +5,9 @@ name: "Animation.Sprite"
 
 description: "Provides basic animation via sprites"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -18,8 +20,8 @@ provides: Animation.Sprite
 ...
 */
 
-LibCanvas.Animation.Sprite = atom.Class({
-	Implements: [atom.Class.Events],
+LibCanvas.Animation.Sprite = Class({
+	Implements: [Class.Events],
 	sprites : null,
 
 	initialize: function () {

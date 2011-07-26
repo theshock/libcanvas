@@ -5,7 +5,9 @@ name: "Behaviors.Droppable"
 
 description: "Abstract class for droppable canvas objects"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -20,7 +22,7 @@ provides: Behaviors.Droppable
 ...
 */
 
-LibCanvas.Behaviors.Droppable = atom.Class({
+var Droppable = LibCanvas.Behaviors.Droppable = Class({
 	drops : null,
 	drop : function (obj) {
 		if (this.drops === null) {

@@ -5,7 +5,9 @@ name: "Utils.Image"
 
 description: "Provides some Image extensions"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -18,15 +20,6 @@ provides: Utils.Image
 
 ...
 */
-
-(function (LibCanvas) {
-
-var Point     = LibCanvas.Point,
-	Buffer    = LibCanvas.Buffer,
-	Rectangle = LibCanvas.Shapes.Rectangle,
-	ImgProto  = HTMLImageElement.prototype,
-	math      = Math;
-
 // <image> tag
 atom.implement(HTMLImageElement, {
 	// наверное, лучше использовать createPattern
@@ -114,10 +107,8 @@ atom.implement(HTMLImageElement, {
 });
 	// mixin from image
 atom.implement(HTMLCanvasElement, {
-	createSprite : ImgProto.createSprite,
-	sprite   : ImgProto.sprite,
+	createSprite : HTMLImageElement.prototype.createSprite,
+	sprite   : HTMLImageElement.prototype.sprite,
 	isLoaded : function () { return true; },
 	toCanvas : function () { return this; }
 });
-	
-})(LibCanvas);

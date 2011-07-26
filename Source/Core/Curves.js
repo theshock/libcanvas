@@ -182,4 +182,5 @@ LibCanvas.Context2D.implement({
 		return this;
 	}
 });
+
 };

@@ -5,7 +5,9 @@ name: "Shapes.Line"
 
 description: "Provides line as canvas object"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -20,17 +22,14 @@ provides: Shapes.Line
 ...
 */
 
-new function () {
+var Line = LibCanvas.Shapes.Line = function () {
 
-var Point = LibCanvas.Point,
-	math  = Math,
-	between = function (x, a, b) {
-		return x === a || x === b || (a < x && x < b) || (b < x && x < a);
-	};
+var between = function (x, a, b) {
+	return x === a || x === b || (a < x && x < b) || (b < x && x < a);
+};
 
-
-LibCanvas.Shapes.Line = atom.Class({
-	Extends: LibCanvas.Shape,
+return Class({
+	Extends: Shape,
 	set : function (from, to) {
 		var a = Array.pickFrom(arguments);
 
@@ -52,8 +51,8 @@ LibCanvas.Shapes.Line = atom.Class({
 			px = point.x,
 			py = point.y;
 
-		if (!( point.x.between(math.min(fx, tx), math.max(fx, tx))
-		    && point.y.between(math.min(fy, ty), math.max(fy, ty))
+		if (!( point.x.between(Math.min(fx, tx), Math.max(fx, tx))
+		    && point.y.between(Math.min(fy, ty), Math.max(fy, ty))
 		)) return false;
 
 		// if triangle square is zero - points are on one line
@@ -93,12 +92,12 @@ LibCanvas.Shapes.Line = atom.Class({
 		if (p instanceof Point) {
 			
 			if (!asInfiniteLine) {
-				degree = math.atan2(p.x - t.x, p.y - t.y).getDegree();
+				degree = Math.atan2(p.x - t.x, p.y - t.y).getDegree();
 				if ( degree.between(-90, 90) ) {
 					return t.distanceTo( p );
 				}
 
-				degree = math.atan2(f.x - p.x, f.y - p.y).getDegree();
+				degree = Math.atan2(f.x - p.x, f.y - p.y).getDegree();
 				if ( degree.between(-90, 90) ) {
 					return f.distanceTo( p );
 				}
@@ -112,7 +111,7 @@ LibCanvas.Shapes.Line = atom.Class({
 
 			x = f.x - t.x;
 			y = f.y - t.y;
-			return 2 * s / math.sqrt(x*x+y*y);
+			return 2 * s / Math.sqrt(x*x+y*y);
 		}
 		return null;
 	},
@@ -134,4 +133,4 @@ LibCanvas.Shapes.Line = atom.Class({
 	toString: Function.lambda('[object LibCanvas.Shapes.Line]')
 });
 
-};
+}();

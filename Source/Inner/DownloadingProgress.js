@@ -5,7 +5,9 @@ name: "Inner.DownloadingProgress"
 
 description: "Counting assets downloading progress"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -19,7 +21,7 @@ provides: Inner.DownloadingProgress
 
 ...
 */
-LibCanvas.Inner.DownloadingProgress = atom.Class({
+var DownloadingProgress = LibCanvas.Inner.DownloadingProgress = Class({
 	getImage : function (name) {
 		if (this.parentLayer) return this.parentLayer.getImage(name);
 		
@@ -42,7 +44,7 @@ LibCanvas.Inner.DownloadingProgress = atom.Class({
 		if (this.parentLayer) return;
 		
 		if (this.options.progressBarStyle && !this.progressBar) {
-			this.progressBar = new LibCanvas.Utils.ProgressBar()
+			this.progressBar = new ProgressBar()
 				.setStyle(this.options.progressBarStyle);
 		}
 		if (this.progressBar) {
@@ -64,13 +66,13 @@ LibCanvas.Inner.DownloadingProgress = atom.Class({
 			}
 			
 			if (this.options.preloadAudio) {
-				this._audio = new LibCanvas.Utils.AudioContainer(this.options.preloadAudio);
+				this._audio = new AudioContainer(this.options.preloadAudio);
 			} else {
 				this._audio = null;
 			}
 
 			if (this.options.preloadImages) {
-				this.imagePreloader = new LibCanvas.Utils.ImagePreloader(this.options.preloadImages)
+				this.imagePreloader = new ImagePreloader(this.options.preloadImages)
 					.addEvent('ready', function (preloader) {
 						this.images = preloader.images;
 						atom.log(preloader.getInfo());

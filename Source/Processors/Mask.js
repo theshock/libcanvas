@@ -5,7 +5,9 @@ name: "Processors.Mask"
 
 description: "Use canvas as mask for color (black will be transparent, white will be color)"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
@@ -18,7 +20,7 @@ provides: Processors.Mask
 ...
 */
 
-LibCanvas.Processors.Mask = atom.Class({
+LibCanvas.Processors.Mask = Class({
 	color : null,
 	initialize : function (color) { // [r,g,b]
 		this.color = color || [0,0,0];

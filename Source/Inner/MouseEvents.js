@@ -5,7 +5,9 @@ name: "Inner.MouseEvents"
 
 description: "Class which contains several basic mouse events "
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -19,7 +21,7 @@ provides: Inner.MouseEvents
 ...
 */
 
-LibCanvas.Inner.MouseEvents = atom.Class({
+var MouseEvents = LibCanvas.Inner.MouseEvents = Class({
 	initialize : function (mouse) {
 		this.subscribers   = [];
 		this.lastMouseMove = [];

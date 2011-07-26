@@ -5,7 +5,9 @@ name: "Geometry"
 
 description: "Base for such things as Point and Shape"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -18,8 +20,8 @@ provides: Geometry
 ...
 */
 
-LibCanvas.Geometry = atom.Class({
-	Implements: [atom.Class.Events],
+var Geometry = LibCanvas.Geometry = Class({
+	Implements: [Class.Events],
 	Static: {
 		invoke: function (obj) {
 			return (typeof obj == 'object' && obj[0] instanceof this) ? obj[0]

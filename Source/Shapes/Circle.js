@@ -5,7 +5,9 @@ name: "Shapes.Circle"
 
 description: "Provides circle as canvas object"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -20,12 +22,8 @@ provides: Shapes.Circle
 ...
 */
 
-new function () {
-
-var Point = LibCanvas.Point;
-	
-LibCanvas.Shapes.Circle = atom.Class({
-	Extends: LibCanvas.Shape,
+var Circle = LibCanvas.Shapes.Circle = Class({
+	Extends: Shape,
 	set : function () {
 		var a = Array.pickFrom(arguments);
 
@@ -105,5 +103,3 @@ LibCanvas.Shapes.Circle = atom.Class({
 	},
 	toString: Function.lambda('[object LibCanvas.Shapes.Circle]')
 });
-
-}();

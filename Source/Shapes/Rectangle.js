@@ -5,7 +5,9 @@ name: "Shapes.Rectangle"
 
 description: "Provides rectangle as canvas object"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -20,14 +22,12 @@ provides: Shapes.Rectangle
 ...
 */
 
-new function () {
+var Rectangle = LibCanvas.Shapes.Rectangle = new function () {
 
-var Point  = LibCanvas.Point,
-	math   = Math,
-	random = Number.random,
+var random = Number.random;
 
-Rectangle = LibCanvas.Shapes.Rectangle = atom.Class({
-	Extends: LibCanvas.Shape,
+return Class({
+	Extends: Shape,
 	set : function () {
 		var a = Array.pickFrom(arguments);
 
@@ -109,14 +109,32 @@ Rectangle = LibCanvas.Shapes.Rectangle = atom.Class({
 		point   = Point(arguments);
 		padding = padding || 0;
 		return point.x != null && point.y != null
-			&& point.x.between(math.min(this.from.x, this.to.x) + padding, math.max(this.from.x, this.to.x) - padding, 1)
-			&& point.y.between(math.min(this.from.y, this.to.y) + padding, math.max(this.from.y, this.to.y) - padding, 1);
+			&& point.x.between(Math.min(this.from.x, this.to.x) + padding, Math.max(this.from.x, this.to.x) - padding, 1)
+			&& point.y.between(Math.min(this.from.y, this.to.y) + padding, Math.max(this.from.y, this.to.y) - padding, 1);
+	},
+	align: function (rect, sides) {
+		var moveTo = this.from.clone();
+		if (sides.indexOf('left') != -1) {
+			moveTo.x = rect.from.x;
+		} else if (sides.indexOf('center') != -1) {
+			moveTo.x = rect.from.x + (rect.width - this.width) / 2;
+		} else if (sides.indexOf('right') != -1) {
+			moveTo.x = rect.to.x - this.width;
+		}
+
+		if (sides.indexOf('top') != -1) {
+			moveTo.y = rect.from.y;
+		} else if (sides.indexOf('middle') != -1) {
+			moveTo.y = rect.from.y + (rect.height - this.height) / 2;
+		} else if (sides.indexOf('bottom') != -1) {
+			moveTo.y = rect.to.y - this.height;
+		}
+
+		return this.moveTo( moveTo );
 	},
 	moveTo: function (rect) {
-		if (rect instanceof LibCanvas.Point) {
-			var diff = this.from.diff(rect);
-			this.from.move(diff);
-			this.  to.move(diff);
+		if (rect instanceof Point) {
+			this.move( this.from.diff(rect) );
 		} else {
 			rect = Rectangle(arguments);
 			this.from.moveTo(rect.from);
@@ -127,8 +145,8 @@ Rectangle = LibCanvas.Shapes.Rectangle = atom.Class({
 	draw : function (ctx, type) {
 		// fixed Opera bug - cant drawing rectangle with width or height below zero
 		ctx.original(type + 'Rect', [
-			math.min(this.from.x, this.to.x),
-			math.min(this.from.y, this.to.y),
+			Math.min(this.from.x, this.to.x),
+			Math.min(this.from.y, this.to.y),
 			this.width .abs(),
 			this.height.abs()
 		]);
@@ -175,11 +193,11 @@ Rectangle = LibCanvas.Shapes.Rectangle = atom.Class({
 		return this.parent('Rectangle');
 	},
 	toPolygon: function () {
-		return new LibCanvas.Shapes.Polygon(
+		return new Polygon(
 			this.from.clone(), this.topRight, this.to.clone(), this.bottomLeft
 		);
 	},
 	toString: Function.lambda('[object LibCanvas.Shapes.Rectangle]')
 });
 
-};
+}();

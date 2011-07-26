@@ -5,7 +5,9 @@ name: "Layer"
 
 description: "Layer"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -19,7 +21,7 @@ provides: Layer
 ...
 */
 
-new function () {
+var Layer = LibCanvas.Layer = function () {
 	
 var callParent = function (method) {
 	return function () {
@@ -28,8 +30,8 @@ var callParent = function (method) {
 	};
 };
 
-LibCanvas.Layer = atom.Class({
-	Extends: LibCanvas.Canvas2D,
+return Class({
+	Extends: Canvas2D,
 
 	Generators: {
 		mouse: function () {
@@ -63,4 +65,4 @@ LibCanvas.Layer = atom.Class({
 	toString: Function.lambda('[object LibCanvas.Layer]')
 });
 
-};
+}();

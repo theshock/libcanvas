@@ -5,7 +5,9 @@ name: "Utils.Trace"
 
 description: "Useful tool which provides windows with user-defined debug information"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -18,9 +20,7 @@ provides: Utils.Trace
 ...
 */
 
-new function () {
-
-var Trace = LibCanvas.Utils.Trace = atom.Class({
+var Trace = LibCanvas.Utils.Trace = Class({
 	Static: {
 		dumpRec : function (obj, level, plain) {
 			level  = parseInt(level) || 0;
@@ -31,7 +31,7 @@ var Trace = LibCanvas.Utils.Trace = atom.Class({
 
 			if (level > 5) return '*TOO_DEEP*';
 
-			if (typeof obj == 'object' && typeof(obj.dump) == 'function') return obj.dump();
+			if (obj && typeof obj == 'object' && typeof(obj.dump) == 'function') return obj.dump();
 
 			var subDump = function (elem, index) {
 					return tabs + '\t' + index + ': ' + this.dumpRec(elem, level+1, plain) + '\n';
@@ -169,14 +169,14 @@ var Trace = LibCanvas.Utils.Trace = atom.Class({
 	toString: Function.lambda('[object LibCanvas.Utils.Trace]')
 });
 
-window.trace = function (msg) {
-	var L = arguments.length;
-	if (L > 0) {
-		if (L > 1) msg = atom.toArray(arguments);
-		return new Trace(msg);
-	} else {
-		return new Trace();
-	}
-};
-
-}();
+try {
+	window.trace = function (msg) {
+		var L = arguments.length;
+		if (L > 0) {
+			if (L > 1) msg = atom.toArray(arguments);
+			return new Trace(msg);
+		} else {
+			return new Trace();
+		}
+	};
+} catch (ignored) {}

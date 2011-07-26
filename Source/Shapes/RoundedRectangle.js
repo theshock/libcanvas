@@ -5,7 +5,9 @@ name: "Shapes.RoundedRectangle"
 
 description: "Provides rounded rectangle as canvas object"
 
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
 authors:
 	- "Shock <shocksilien@gmail.com>"
@@ -19,8 +21,8 @@ provides: Shapes.RoundedRectangle
 ...
 */
 
-LibCanvas.Shapes.RoundedRectangle = atom.Class({
-	Extends: LibCanvas.Shapes.Rectangle,
+var RoundedRectangle = LibCanvas.Shapes.RoundedRectangle = Class({
+	Extends: Rectangle,
 
 	radius: 0,
 
@@ -28,7 +30,7 @@ LibCanvas.Shapes.RoundedRectangle = atom.Class({
 		this.radius = value;
 		return this;
 	},
-	draw : LibCanvas.Shape.prototype.draw,
+	draw : Shape.prototype.draw,
 	processPath : function (ctx, noWrap) {
 		var from = this.from, to = this.to, radius = this.radius;
 		if (!noWrap) ctx.beginPath();
