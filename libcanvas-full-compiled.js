@@ -3165,7 +3165,7 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 
 		this.origElem = elem;
 		this.origCtx  = elem.getContext('2d-libcanvas');
-		this.origElem.atom = aElem.css('position', 'absolute');
+		this.origElem.atom = aElem;
 
 		this.createProjectBuffer().addClearer();
 
@@ -3178,7 +3178,6 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 		} else {
 			this._layers = {};
 			aElem
-				.attr('data-layer-name', this.name)
 				.replaceWith(wrapper.parent)
 				.appendTo(wrapper);
 
@@ -3186,6 +3185,7 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 				this.size(elem.width, elem.height, true);
 			}
 		}
+
 		this._layers[this.name] = this;
 		cover.css('zIndex', this.maxZIndex + 100);
 
@@ -3196,7 +3196,9 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 		this.addEvent('ready', function () {
 			this.update.delay(0)
 		});
-		
+		aElem
+			.attr('data-layer-name', this.name)
+			.css('position', 'absolute');
 		this.zIndex = Infinity;
 	},
 	
