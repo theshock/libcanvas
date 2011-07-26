@@ -112,11 +112,29 @@ return Class({
 			&& point.x.between(Math.min(this.from.x, this.to.x) + padding, Math.max(this.from.x, this.to.x) - padding, 1)
 			&& point.y.between(Math.min(this.from.y, this.to.y) + padding, Math.max(this.from.y, this.to.y) - padding, 1);
 	},
+	align: function (rect, sides) {
+		var moveTo = this.from.clone();
+		if (sides.indexOf('left') != -1) {
+			moveTo.x = rect.from.x;
+		} else if (sides.indexOf('center') != -1) {
+			moveTo.x = rect.from.x + (rect.width - this.width) / 2;
+		} else if (sides.indexOf('right') != -1) {
+			moveTo.x = rect.to.x - this.width;
+		}
+
+		if (sides.indexOf('top') != -1) {
+			moveTo.y = rect.from.y;
+		} else if (sides.indexOf('middle') != -1) {
+			moveTo.y = rect.from.y + (rect.height - this.height) / 2;
+		} else if (sides.indexOf('bottom') != -1) {
+			moveTo.y = rect.to.y - this.height;
+		}
+
+		return this.moveTo( moveTo );
+	},
 	moveTo: function (rect) {
 		if (rect instanceof Point) {
-			var diff = this.from.diff(rect);
-			this.from.move(diff);
-			this.  to.move(diff);
+			this.move( this.from.diff(rect) );
 		} else {
 			rect = Rectangle(arguments);
 			this.from.moveTo(rect.from);
