@@ -31,8 +31,11 @@ var ImagePreloader = LibCanvas.Utils.ImagePreloader = Class({
 			aborts : 0,
 			loaded : 0
 		};
-		this.images = {};
-		this.createImages(images);
+
+		if (Array.isArray(images)) images = Object.map(images[1], function (src) {
+			return images[0] + src;
+		});
+		this.images = this.createImages(images);
 	},
 	onProcessed : function (type) {
 		this.count[type]++;
@@ -57,7 +60,7 @@ var ImagePreloader = LibCanvas.Utils.ImagePreloader = Class({
 	},
 	createImage : function (src, key) {
 		this.number++;
-		return this.images[key] = atom.dom
+		return atom.dom
 			.create('img', { src : src })
 			.bind({
 				load  : this.createEvent('loaded'),
