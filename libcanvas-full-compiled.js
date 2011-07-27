@@ -1688,7 +1688,7 @@ var stop = function () {
 };
 
 return Class({
-	Implements: [Class.Events],
+	Implements: Class.Events,
 	libcanvasIsReady: false,
 	setLibcanvas : function (libcanvas) {
 		if (this.libcanvas) {
@@ -1707,26 +1707,31 @@ return Class({
 	isReady : function () {
 		return this.libcanvasIsReady;
 	},
-	getCoords : function () {
-		return this.shape.getCoords();
-	},
+	// @deprecated
 	getShape : function () {
 		return this.shape;
 	},
+	// @deprecated
 	setShape : function (shape) {
 		this.shape = shape;
 		return this;
 	},
+	// @deprecated
 	getZIndex : function () {
 		return this.zIndex || 0;
 	},
+	// @deprecated
 	setZIndex : function (zIndex) {
 		this.zIndex = zIndex;
 		return this;
 	},
 	toLayer: function (name) {
-		this.libcanvas.layer(name)
-			.addElement(this);
+		if (this.libcanvas) {
+			this.libcanvas
+				.rmElement(this)
+				.layer(name)
+				.addElement(this);
+		}
 		return this;
 	},
 	startDrawing: function () {
