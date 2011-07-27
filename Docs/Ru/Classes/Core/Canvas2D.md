@@ -19,7 +19,6 @@ LibCanvas.Canvas2D
 * * `true` (по-умолчанию) - очищать
 * * (*string*) - залить указанным стилем
 
-* `backBuffer` `off|on` - использовать ли бек-буфер (по-умолчанию - не используется)
 * `invoke` `true|false` - вызывать ли метод `update` у всех переданных элементов (по умолчанию - false, далее будет true, потому желательно указывать)
 
 * `fps` - максимальный fps, к которому необходимо стремиться. LibCanvas не будет превышать это значение, но если браузер будет не справляться, то библиотека будет динамически подстраиваться под компьютер, чтобы не было зависаний и пропусков кадров.
@@ -33,7 +32,6 @@ LibCanvas.Canvas2D
 	var libcanvas = new LibCanvas('#my-canvas', {
 		fps: 24,
 		clear: '#333',
-		backBuffer: 'off',
 		invoke: true,
 		preloadImages: {
 			'first' : '/images/first.png',
@@ -87,6 +85,30 @@ LibCanvas.Canvas2D
 
 `frameRenderFinished` - вызывается каждый кадр после окончания просчётов и рендера
 
+## Метод show
+
+	LibCanvas.Canvas2D show();
+
+Отображает текущий слой, если он скрыт
+
+#### Пример:
+
+	libcanvas.show()
+
+#### Возвращает `this`
+
+## Метод hide
+
+	LibCanvas.Canvas2D hide();
+
+Скрывает текущий слой, если он не скрыт
+
+#### Пример:
+
+	libcanvas.hide()
+
+#### Возвращает `this`
+
 ## Метод size
 
 	LibCanvas.Canvas2D size(object size, bool wrapper = false);
@@ -106,6 +128,8 @@ LibCanvas.Canvas2D
 		height: 250
 	});
 
+	libcanvas.size(400, 250);
+
 	// Меняем размер элемента:
 	libcanvas.size({
 		width : 400,
@@ -114,12 +138,26 @@ LibCanvas.Canvas2D
 
 #### Возвращает `this`
 
+## Метод shift
+
+	LibCanvas.Canvas2D shift(Number top, Number left);
+
+Устанавливает сдвиг слоя относительно верхнего-левого угла контейнера LibCanvas. Предыдущий сдвиг в расчёт не берется
+
+
+#### Пример:
+
+	// Смещаем слой на 400 пикселей вправо и на 250 вниз
+	libcanvas.shift(400, 250);
+
+#### Возвращает `this`
+
 ## Метод update
 
 Указывает на то, что картинка изменена и необходимо перерендерить изображение.
 Внимание! Кадр не будет рендерится до вызова update. Это сделано в целях оптимизации - чтобы холст не перерисовывался, если ничего не изменилось.
 Метод безопасен для передачи в качестве указателя (контекст не теряется), смотрите пример
-Подробнее про способ использования метода смотрите в разделе `Ideology`
+С другой стороны, непосредственно вызов метода не вызывает перерисовки холста, он только указывает на то, что его надо перерисовать во время следующего этапа рендеринга
 
 #### Пример:
 
@@ -127,13 +165,19 @@ LibCanvas.Canvas2D
 		'click' : libcanvas.update
 	});
 
+#### Возвращает `this`
+
 ## Метод listenMouse
 
 Указывает на то, что надо слушать события мыши. Создаёт свойство `mouse`.
 
+#### Возвращает `this`
+
 ## Метод listenKeyboard
 
 Указывает на то, что надо слушать события мыши. Создаёт свойство `keyboard`.
+
+#### Возвращает `this`
 
 ## Метод getKey
 
@@ -190,6 +234,15 @@ LibCanvas.Canvas2D
 
 	libcanvas.addElement(new MyText('Hello World'));
 
+## Метод rmAllElements
+
+Удаляет все элементы, добавленные через `addElement`
+
+#### Пример:
+	libcanvas.rmAllElements();
+
+#### Возвращает `this`
+
 ## Метод addFunc
 
 	LibCanvas.Canvas2D addFunc(int priority = 10, function fn)
@@ -233,6 +286,24 @@ LibCanvas.Canvas2D
 		this.ctx.fillAll('red');
 
 		// this == libcanvas
+	});
+
+#### Возвращает `this`
+
+## Метод rmFunc
+
+	LibCanvas.Canvas2D rmFunc(function fn)
+
+Отписывает функцию, добавленную через addFunc или addRender
+
+#### Пример:
+
+	var render = function (time) { this.ctx.fillAll('red'); }
+
+	libcanvas.addRender( render );
+
+	atom.dom( '.stop-filling-red' ).bind( 'click', function () {
+		libcanvas.rmFunc( render );
 	});
 
 #### Возвращает `this`
