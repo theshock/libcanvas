@@ -64,6 +64,9 @@ Rectangle
 ### center (get)
 Создает новую точку с координатами, которые соотвутствуют центру прямоугольника
 
+### size (set/get)
+Получить/установить высоту и ширину прямоугольника в формате {width, height}
+
 ## Метод hasPoint
 
 	bool hasPoint(LibCanvas.Point point, int padding);
@@ -81,6 +84,15 @@ Rectangle
 	rect.hasPoint( [6, 6] ); // true
 	rect.hasPoint( [2, 2] ); // false
 	rect.hasPoint( [3, 3], 2 ); // false
+
+## Метод align
+
+	LibCanvas.Shapes.Rectangle align(LibCanvas.Shapes.Rectangle rect, string sides);
+
+Выравнивает прямоугольник относительно другого прямоугольника. sides может содержать top/middle/bottom или left/center/right
+
+	// центрируем прямоугольник относительно холста
+	rectangle.align( context.rectangle, 'center middle' ), 'red'
 
 ## Метод move
 
@@ -135,20 +147,6 @@ Rectangle
 		.getContext('2d-libcanvas')
 		.fill  (rect, 'red')
 		.stroke(rect, 'black');
-
-## Метод getCenter
-
-deprecated, используйте свойство `center`
-
-	LibCanvas.Point getCenter();
-
-Создает и возвращает точку, находящуюся ровно в центре прямоугольника:
-
-	var rect = new LibCanvas.Shapes.Rectangle({
-		from : [10, 10],
-		to   : [20, 20]
-	});
-	rect.getCenter(); // Point(15, 15)
 
 
 ## Метод moveTo
