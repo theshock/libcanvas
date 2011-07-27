@@ -11,23 +11,41 @@ Context2D
 
 ## Свойства
 
-### width (get)
-Возвращает ширину холста
+### canvas (get)
+Ссылка на родительский dom-елемент
 
-### height (get)
-Возвращает высоту холста
+### width (get/set)
+Возвращает/изменяет ширину холста
 
+### height (get/set)
+Возвращает/изменяет высоту холста
 
-## Метод getFullRectangle
-
-	LibCanvas.Shapes.Rectangle getFullRectangle()
-
-Возвращает объект Rectangle, который равен по размерам холсту
+### rectangle (get)
+Возвращает ссылку на прямоугольник, соответствующий размерам холста
+Крайне не рекомендуется работать напрямую с этим объектом. Если необходимо - используйте клон.
 
 #### Пример
+	if (context.rectangle.hasPoint(somePoint)) doSmth();
 
-	var rect = context.getFullRectangle();
-	if (rect.hasPoint(somePoint)) doSmth();
+	// Изменяем прямоугольник
+	var clone = context.rectangle.clone();
+
+	clone.height /= 2;
+	clone.width  /= 2;
+
+	context.fillAll( clone, 'red' );
+
+### shadow (get/set)
+Позволяет получить/установить свойства shadowOffsetX, shadowOffsetY, shadowBlur и shadowColor лаконичным способом
+
+#### Пример
+	context.shadow = '1 2 3 black';
+
+	// Аналог:
+	context.shadowOffsetX = 1;
+	context.shadowOffsetY = 2;
+	context.shadowBlur    = 3;
+	context.shadowColor   = 'black;
 
 
 ## Метод getClone
@@ -96,6 +114,54 @@ Context2D
 #### Пример
 
 	context.clearAll();
+
+## Метод fill
+
+	[this] fill()
+	[this] fill(string fillStyle)
+	[this] fill(Shape shape)
+	[this] fill(Shape shape, string fillStyle)
+
+Заливает фигуру или текущий путь цветом fillStyle или цветом по-умолчанию, если аргумент не передан
+
+#### Пример
+
+	context.fill(new Circle(50, 50, 20), 'red');
+
+## Метод stroke
+
+	[this] stroke()
+	[this] stroke(string fillStyle)
+	[this] stroke(Shape shape)
+	[this] stroke(Shape shape, string fillStyle)
+
+Обводит фигуру или текущий путь цветом strokeStyle или цветом по-умолчанию, если аргумент не передан
+
+#### Пример
+
+	context.stroke(new Circle(50, 50, 20), 'red');
+
+## Метод clear
+
+	[this] clear(Shape shape)
+
+Очищает фигуру, переданную первым аргументом. (сглаживание - выключено!)
+
+## Метод fillRect
+	[this] fillRect(LibCanvas.Shapes.Rectangle rectangle)
+	[this] fillRect(int fromX, int fromY, int width, int height)
+
+## Метод strokeRect
+	[this] strokeRect(LibCanvas.Shapes.Rectangle rectangle)
+	[this] strokeRect(int fromX, int fromY, int width, int height)
+
+## Метод clearRect
+	[this] clearRect(LibCanvas.Shapes.Rectangle rectangle)
+	[this] clearRect(int fromX, int fromY, int width, int height)
+
+#### Пример
+
+	context.clear(new Circle(50, 50, 20));
 
 ## Методы save/restore
 
@@ -235,18 +301,6 @@ Context2D
 	[this] translate (LibCanvas.Point point, boolean reverse)
 	[this] translate (int x, int y)
 
-## Метод fillRect
-	[this] fillRect(LibCanvas.Shapes.Rectangle rectangle)
-	[this] fillRect(int fromX, int fromY, int width, int height)
-
-## Метод strokeRect
-	[this] strokeRect(LibCanvas.Shapes.Rectangle rectangle)
-	[this] strokeRect(int fromX, int fromY, int width, int height)
-
-## Метод clearRect
-	[this] clearRect(LibCanvas.Shapes.Rectangle rectangle)
-	[this] clearRect(int fromX, int fromY, int width, int height)
-
 ## Метод text
 	[this] text(object params)
 
@@ -317,6 +371,47 @@ Context2D
 
 	[this] projectiveImage(object params)
 
+## Метод getPixel
+	[this] getPixel(LibCanvas.Point point)
+
+Возвращает значение цвета пикселя в точке point в формате {r: [0, 255], g: [0, 255], b: [0, 255], a: [0, 1]}
+Аргумент можно передать конструктору Color.
+
+#### Пример
+
+	libcanvas.mouse.addEvent( 'click', function (e) {
+		var pixel = libcanvas.ctx.getPixel(e.offset);
+		trace( new Color( pixel ) );
+	});
+
+	libcanvas.mouse.addEvent( 'click', function (e) {
+		var pixel = libcanvas.ctx.getPixel(e.offset);
+
+		pixel.a > 0.1 ?
+			alert('Пиксель видим')  :
+			alert('Пиксель невидим');
+	});
+
+## Метод createGradient
+	[RadialGradient] createGradient(Circle from, Circle to, Object colors)
+	[LinearGradient] createGradient(Point  from, Point  to, Object colors)
+	[LinearGradient] createGradient(Rectangle rect, Object colors)
+
+Создаёт и возвращает радиальный или линеарный градиент с стоп-цветами, указанными в colors
+
+	context.createGradient( context.rectangle, {
+		'0.0': 'red',
+		'0.5': 'blue',
+		'1.0': 'green'
+	});
+
+	context.createGradient(
+		new Circle(50, 50, 10),
+		new Circle(50, 50, 20), {
+			'0.0': 'red',
+			'0.5': 'blue',
+			'1.0': 'green'
+		});
 
 # Следующие методы повторяют методы из оригинального контекста:
  * scale
