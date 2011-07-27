@@ -5064,7 +5064,6 @@ var Ellipse = LibCanvas.Shapes.Ellipse = Class({
 			return this.cache;
 		}
 
-		var Point = Point;
 		if (this.cache === null) {
 			this.cache = [];
 			for (var i = 12; i--;) this.cache.push(new Point());
