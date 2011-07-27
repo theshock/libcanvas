@@ -75,7 +75,6 @@ return Class({
 	},
 	set height (height) {
 		this.to.moveTo({ x : this.to.x, y : this.from.y + height });
-		return this;
 	},
 	get size () {
 		return {
@@ -84,8 +83,9 @@ return Class({
 		};
 	},
 	set size (size) {
-		this.width  = size.width;
-		this.height = size.height;
+		if (size.width != this.width || size.height != this.height) {
+			this.to.moveTo([ this.from.x + size.width, this.from.y + size.height ]);
+		}
 	},
 	// @deprecated 
 	getWidth : function () {

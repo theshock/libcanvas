@@ -27,7 +27,7 @@ new function () {
 	The following text contains bad code and due to it's code it should not be readed by ANYONE!
 */
 
-var Color = LibCanvas.Utils.Color, 
+var Color = LibCanvas.Utils.Color,
 	TimingFunctions = LibCanvas.Inner.TimingFunctions,
 	Point = LibCanvas.Point;
 
@@ -49,7 +49,7 @@ EC.getPoints = function (prevPos, pos, width, inverted) {
 		
 	return [new Point(pos.x + dx, pos.y + dy*inverted),
 	        new Point(pos.x - dx, pos.y - dy*inverted)];
-}
+};
 
 EC.getGradientFunction = function (attr) {	
 	switch (typeof attr.gradient) {
@@ -76,7 +76,7 @@ EC.getGradientFunction = function (attr) {
 			return function (t) {
 				var factor = TimingFunctions.count(gradient.fn, t);
 				return gradient.from.shift( diff.clone().mul(factor) ).toString();
-			}
+			};
 			break;
 	}
 };
@@ -145,7 +145,7 @@ LibCanvas.Context2D.implement({
 		
 		var add = function (a, b) {
 			return a + b;
-		}
+		};
         
 		prevContorolPoint = curveFunction(points, -step);
 		

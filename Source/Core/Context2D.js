@@ -81,7 +81,7 @@ var accessors = {};
 });
 	
 var Context2D = Class({
-	Implements: [Class(accessors)],
+	Implements: Class(accessors),
 
 	initialize : function (canvas) {
 		if (canvas instanceof CanvasRenderingContext2D) {
@@ -115,8 +115,7 @@ var Context2D = Class({
 		if (!rect) {
 			this._rectangle = rect = new Rectangle(0, 0, this.width, this.height)
 		} else {
-			if (rect.width  != this.width ) rect.width  = this.width;
-			if (rect.height != this.height) rect.height = this.height;
+			rect.size = this;
 		}
 		return rect;
 	},
@@ -183,6 +182,15 @@ var Context2D = Class({
 	stroke : function (shape) {
 		return office.fillStroke.call(this, 'stroke', arguments);
 	},
+	clear: function (shape) {
+		return shape instanceof Shape && shape.self != Rectangle ?
+			this
+				.save()
+				.clip( shape )
+				.clearAll()
+				.restore() :
+			this.clearRect( Rectangle(arguments) );
+	},
 
 	// Path
 	beginPath : function (moveTo) {
@@ -245,7 +253,7 @@ var Context2D = Class({
 			p  = Array.from( arguments ).map(Point);
 			to = p.shift()
 		} else {
-			p  = Array.from(curve.points || []).map(Point);
+			p  = Array.from( curve.points ).map(Point);
 			to = Point(curve.to);
 		}
 
@@ -293,7 +301,7 @@ var Context2D = Class({
 		return this.original('isPointInPath', [point.x, point.y], true);
 	},
 	clip : function (shape) {
-		if (shape && atom.typeOf(shape.processPath) == 'function') {
+		if (shape && typeof shape.processPath == 'function') {
 			shape.processPath(this);
 		}
 		return this.original('clip');

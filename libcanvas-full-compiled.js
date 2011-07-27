@@ -2744,7 +2744,6 @@ return Class({
 	},
 	set height (height) {
 		this.to.moveTo({ x : this.to.x, y : this.from.y + height });
-		return this;
 	},
 	get size () {
 		return {
@@ -2753,8 +2752,9 @@ return Class({
 		};
 	},
 	set size (size) {
-		this.width  = size.width;
-		this.height = size.height;
+		if (size.width != this.width || size.height != this.height) {
+			this.to.moveTo([ this.from.x + size.width, this.from.y + size.height ]);
+		}
 	},
 	// @deprecated 
 	getWidth : function () {
@@ -3116,7 +3116,7 @@ var accessors = {};
 });
 	
 var Context2D = Class({
-	Implements: [Class(accessors)],
+	Implements: Class(accessors),
 
 	initialize : function (canvas) {
 		if (canvas instanceof CanvasRenderingContext2D) {
@@ -3150,8 +3150,7 @@ var Context2D = Class({
 		if (!rect) {
 			this._rectangle = rect = new Rectangle(0, 0, this.width, this.height)
 		} else {
-			if (rect.width  != this.width ) rect.width  = this.width;
-			if (rect.height != this.height) rect.height = this.height;
+			rect.size = this;
 		}
 		return rect;
 	},
@@ -3218,6 +3217,15 @@ var Context2D = Class({
 	stroke : function (shape) {
 		return office.fillStroke.call(this, 'stroke', arguments);
 	},
+	clear: function (shape) {
+		return shape instanceof Shape && shape.self != Rectangle ?
+			this
+				.save()
+				.clip( shape )
+				.clearAll()
+				.restore() :
+			this.clearRect( Rectangle(arguments) );
+	},
 
 	// Path
 	beginPath : function (moveTo) {
@@ -3280,7 +3288,7 @@ var Context2D = Class({
 			p  = Array.from( arguments ).map(Point);
 			to = p.shift()
 		} else {
-			p  = Array.from(curve.points || []).map(Point);
+			p  = Array.from( curve.points ).map(Point);
 			to = Point(curve.to);
 		}
 
@@ -3328,7 +3336,7 @@ var Context2D = Class({
 		return this.original('isPointInPath', [point.x, point.y], true);
 	},
 	clip : function (shape) {
-		if (shape && atom.typeOf(shape.processPath) == 'function') {
+		if (shape && typeof shape.processPath == 'function') {
 			shape.processPath(this);
 		}
 		return this.original('clip');
@@ -3747,11 +3755,9 @@ return Context2D;
 
 name: "EC"
 
-description: ""
+description: "Curves with dynamic width and color"
 
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
 
 authors:
 	- "Artem Smirnov <art543484@ya.ru>"
@@ -3773,64 +3779,73 @@ new function () {
 	The following text contains bad code and due to it's code it should not be readed by ANYONE!
 */
 
+var Color = LibCanvas.Utils.Color,
+	TimingFunctions = LibCanvas.Inner.TimingFunctions,
+	Point = LibCanvas.Point;
+
 var EC = {};
-EC.color = function (color) {
-	color   = new Color(color || [0,0,0,1]);
-	color.a = (color.a || 1) * 255;
-	return color;
+EC.getColor = function (color) {
+	return new Color(color || [0,0,0,1]);
 };
 
-EC.getPoints = function (prevPos, pos, width, c) {
-	var w = pos.x-prevPos.x,
-	    h = pos.y-prevPos.y,
+EC.getPoints = function (prevPos, pos, width, inverted) {
+	var w    = pos.x-prevPos.x,
+	    h    = pos.y-prevPos.y,
 	    dist = Math.hypotenuse(w, h);
 		
-	var sin = h/dist,
-	    cos = w/dist;
+	var sin = h / dist,
+	    cos = w / dist;
 		
 	var dx = sin * width,
 	    dy = cos * width;
 		
-	return [new Point(pos.x + dx, pos.y + dy*c),
-	        new Point(pos.x - dx, pos.y - dy*c), Math.asin(sin)];
-}
-
-EC.gradient = function (obj) {
-	if (!obj.gradient) {
-		return Function.lambda( EC.color(obj.color).toArray() );
-	} else if(typeof obj.gradient == 'function') {
-		return obj.gradient;
-	} else {
-		var gradient = { fn: obj.gradient.fn || 'linear' };
-		
-		if (typeof gradient.fn != 'string') {
-			throw new Error('Unexpected type of gradient function');
-		}
-		
-		gradient.from = EC.color(obj.gradient.from);
-		gradient.to   = EC.color(obj.gradient.to  );
-		
-		var diff = gradient.from.diff( gradient.to );
-		
-		return function(t) {
-			var factor = TimingFunctions.count(gradient.fn, t);
-			return gradient.from.shift( diff.clone().mul(factor) ).toString();
-		}
-	}
+	return [new Point(pos.x + dx, pos.y + dy*inverted),
+	        new Point(pos.x - dx, pos.y - dy*inverted)];
 };
-EC.width = function (obj) {
-	obj.width = obj.width || 1;
-	switch (typeof obj.width) {
-		case 'number'  : return Function.lambda(obj.width);
-		case 'function': return obj.width;
-		case 'object'  : return EC.width.range( obj.width );
-		default: throw new Error('Unexpected type of width');
+
+EC.getGradientFunction = function (attr) {	
+	switch (typeof attr.gradient) {
+		case 'undefined' : 
+			return Function.lambda( EC.getColor(attr.color) );
+			break;
+		
+		case 'function' :
+			return attr.gradient;
+			break;
+		
+		default :
+			var gradient = { fn: attr.gradient.fn || 'linear' };
+			
+			if (typeof gradient.fn != 'string') {
+				throw new Error('LibCanvas.Context2D.drawCurve -- unexpected type of gradient function');
+			}
+			
+			gradient.from = EC.getColor(attr.gradient.from);
+			gradient.to   = EC.getColor(attr.gradient.to  );
+			
+			var diff = gradient.from.diff( gradient.to );
+			
+			return function (t) {
+				var factor = TimingFunctions.count(gradient.fn, t);
+				return gradient.from.shift( diff.clone().mul(factor) ).toString();
+			};
+			break;
 	}
 };
 
-EC.width.range = function (width) {
+EC.getWidthFunction = function (attr) {
+	attr.width = attr.width || 1;
+	switch (typeof attr.width) {
+		case 'number'  : return Function.lambda(attr.width);
+		case 'function': return attr.width;
+		case 'object'  : return EC.getWidthFunction.range( attr.width );
+		default: throw new Error('LibCanvas.Context2D.drawCurve -- unexpected type of width');
+	}
+};
+
+EC.getWidthFunction.range = function (width) {
 	if(!width.from || !width.to){
-		throw new Error('width.from or width.to undefined');
+		throw new Error('LibCanvas.Context2D.drawCurve -- width.from or width.to undefined');
 	}
 	var diff = width.to - width.from;
 	return function(t){
@@ -3838,7 +3853,7 @@ EC.width.range = function (width) {
 	}
 };
 
-EC.curves = [
+EC.curvesFunctions = [
 	function (p, t) { // linear
 		return {
 			x:p[0].x + (p[1].x - p[0].x) * t,
@@ -3863,73 +3878,63 @@ EC.curves = [
 
 LibCanvas.Context2D.implement({
 	drawCurve:function (obj) {
-		var gradient = EC.gradient(obj);   //Getting gradient function
-		var widthFn  = EC.width(obj);      //Getting width function
-		
-		var fn = EC.curves[ obj.points.length ]; //Define function
-		
-		if (!fn) throw new Error('LibCanvas.Context2D.drawCurve -- unexpected number of points');
-
+	console.time('curve')
 		var points = [Point(obj.from)].append( obj.points.map(Point), [Point(obj.to)] );
+		
+		var gradientFunction = EC.getGradientFunction(obj),             //Getting gradient function
+			widthFunction    = EC.getWidthFunction(obj),                //Getting width function
+			curveFunction    = EC.curvesFunctions[ obj.points.length ]; //Getting curve function
+		
+		if (!curveFunction) throw new Error('LibCanvas.Context2D.drawCurve -- unexpected number of points');
 		
 		var step = obj.step || 0.02;
 		
-		var c = obj.inverted?1:-1;
+		var invertedMultipler = obj.inverted ? 1 : -1;
 		
-		var pos    , p,
-			prevPos, prevP,
-			specPos, line1k, line2k, lin1b, line2b,
-			width  , color;
-			
-        		
-		prevPos = fn(points, -step);
+		var controlPoint, prevContorolPoint,
+			drawPoints  , prevDrawPoints   ,
+			width , color, prevColor, style;
+		
+		var add = function (a, b) {
+			return a + b;
+		};
+        
+		prevContorolPoint = curveFunction(points, -step);
+		
 		for (var t=-step ; t<1.02 ; t += step) {
-			pos = fn(points, t);
-			color = gradient(t);
-			width = widthFn(t) / 2;
+			controlPoint = curveFunction(points, t);
+			color = gradientFunction(t);
+			width = widthFunction(t) / 2;
 
-			p = EC.getPoints(prevPos, pos, width, c);
-						
-			if (t >= step) {
-				this.save();
-				if (Math.abs(p[2] - prevP[2]) > 0.3 && !obj.inverted) {
-					this
-						.beginPath( prevP[0] )
-							.arc ( prevP[0].clone().scale(0.5, p[0]).x , prevP[0].clone().scale(0.5, p[0]).y , width, 0, Math.PI*2, false )
-							.lineTo( p[1] )
-							.arc ( prevP[1].clone().scale(0.5, p[1]).x , prevP[1].clone().scale(0.5, p[1]).y , width, 0, Math.PI*2, false )
-							.clip()
-
-						.set('globalCompositeOperation', 'destination-over')
-						.set('lineWidth',width*2)
-						.beginPath(obj.from)
-							.curveTo(obj)
-							.stroke(color)
-
-						.beginPath(prevP[0])
-							.lineTo(prevP[1])
-							.lineTo(p[0])
-							.lineTo(p[1])
-							.stroke(color);
+			drawPoints = EC.getPoints(prevContorolPoint, controlPoint, width, invertedMultipler);
+			
+			if (t >= step) {			
+				if ( EC.getColor(prevColor).diff(color).reduce(add) > 150 ) {
+					style = this.createLinearGradient(prevContorolPoint, controlPoint);
+					style.addColorStop(0, prevColor);
+					style.addColorStop(1,     color);
 				} else {
-					this.lineWidth = 1;
-					this
-						.beginPath(prevP[0])
-						.lineTo(prevP[1])
-						.lineTo(p[1])
-						.lineTo(p[0])
-						.fill(color)
-						.stroke(color);
+					style = color;
 				}
-				this.restore();
+				
+					this
+						.set("lineWidth",1)
+						.beginPath(prevDrawPoints[0])
+						.lineTo   (prevDrawPoints[1])
+						.lineTo   (drawPoints[1])
+						.lineTo   (drawPoints[0])
+						.fill  (style)
+						.stroke(style);
 			}
-			prevP   = p;
-			prevPos = pos;
+			prevDrawPoints    = drawPoints;
+			prevContorolPoint = controlPoint;
+			prevColor         = color;
 		}
-
+	console.timeEnd('curve');
 		return this;
 	}
 });
+
 };
 
 /*
