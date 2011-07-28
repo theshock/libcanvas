@@ -2273,6 +2273,8 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 	},
 
 	initialize : function (elem, options) {
+		Class.bindAll( this, 'update' );
+
 		this.funcs = {
 			plain : [],
 			render: []
@@ -2311,8 +2313,6 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 
 		this._layers[this.name] = this;
 		cover.css('zIndex', this.maxZIndex + 100);
-
-		this.update = this.update.bind(this);
 
 		if (this.options.autoStart) this.isReady();
 
@@ -5701,6 +5701,7 @@ authors:
 requires:
 	- LibCanvas
 	- Behaviors.Drawable
+	- Behaviors.Animatable
 	- Behaviors.Clickable
 	- Behaviors.Draggable
 	- Behaviors.Droppable
