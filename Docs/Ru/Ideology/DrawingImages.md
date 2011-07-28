@@ -50,10 +50,11 @@
 	var ImageDrawer = atom.Class({
 		Extends: DrawableSprite,
 
-		Implements: [ Draggable ],
+		Implements: Draggable,
 
-		initialize: function (sprite, shape) {
-			this.sprite = sprite;
+		initialize: function (libcanvas, spriteName, shape) {
+			libcanvas.addElement( this );
+			this.sprite = libcanvas.getImage( spriteName );
 			this.shape  = shape;
 		}
 	});
@@ -66,10 +67,6 @@
 	})
 	.start()
 	.addEvent('ready', function () {
-		var drawer1 = new ImageDrawer( this.getImage('foo'), new Rectangle(   0, 0, 100, 100 ) );
-		var drawer2 = new ImageDrawer( this.getImage('bar'), new Rectangle( 200, 0, 100, 100 ) );
-		this.addElement( drawer1 );
-		this.addElement( drawer2 );
-		drawer1.draggable();
-		drawer2.draggable();
+		new ImageDrawer( libcanvas, 'foo', new Rectangle(   0, 0, 100, 100 ) ).draggable();
+		new ImageDrawer( libcanvas, 'bar', new Rectangle( 200, 0, 100, 100 ) ).draggable();
 	});
