@@ -76,7 +76,7 @@ var DownloadingProgress = LibCanvas.Inner.DownloadingProgress = Class({
 			}
 
 			if (this.options.preloadImages) {
-				if (typeof AudioContainer == 'ImagePreloader') {
+				if (typeof ImagePreloader == 'undefined') {
 					throw new Error('LibCanvas.Utils.ImagePreloader is not loaded');
 				}
 				this.imagePreloader = new ImagePreloader(this.options.preloadImages)
