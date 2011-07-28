@@ -15,6 +15,7 @@ authors:
 requires:
 	- LibCanvas
 	- Behaviors.Drawable
+	- Behaviors.Animatable
 	- Behaviors.Clickable
 	- Behaviors.Draggable
 	- Behaviors.Droppable
