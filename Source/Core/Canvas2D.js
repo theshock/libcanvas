@@ -30,7 +30,8 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 		FrameRenderer,
 		Inner.FpsMeter,
 		DownloadingProgress,
-		Class.Events, Class.Options
+		Class.Events,
+		Class.Options
 	],
 
 	Generators: {

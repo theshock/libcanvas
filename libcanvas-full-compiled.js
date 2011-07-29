@@ -133,7 +133,7 @@ provides: Animation.Sprite
 */
 
 LibCanvas.Animation.Sprite = Class({
-	Implements: [Class.Events],
+	Implements: Class.Events,
 	sprites : null,
 
 	initialize: function () {
@@ -690,7 +690,7 @@ var Animatable = LibCanvas.Behaviors.Animatable = function () {
 var TF = TimingFunctions;
 
 return Class({
-	Implements: [ Invoker.AutoChoose ],
+	Implements: Invoker.AutoChoose,
 
 	initialize: Class.hiddenMethod(function (element) {
 		this['animate.element'] = element;
@@ -830,7 +830,7 @@ provides: Geometry
 */
 
 var Geometry = LibCanvas.Geometry = Class({
-	Implements: [Class.Events],
+	Implements: Class.Events,
 	Static: {
 		invoke: function (obj) {
 			return (typeof obj == 'object' && obj[0] instanceof this) ? obj[0]
@@ -1257,7 +1257,7 @@ provides: Mouse
 
 
 var Mouse = LibCanvas.Mouse = Class({
-	Implements: [ Class.Events ],
+	Implements: Class.Events,
 	
 	Static: {
 		buttons: {
@@ -1555,7 +1555,7 @@ var setValFn = function (object, name, val) {
 
 // Should extends drawable, implements mouseListener
 return Class({
-	Implements: [ MouseListener ],
+	Extends: MouseListener,
 
 	clickable : function () { 
 		this.listenMouse();
@@ -1807,6 +1807,8 @@ provides: Behaviors.Droppable
 */
 
 var Droppable = LibCanvas.Behaviors.Droppable = Class({
+	Extends: Draggable,
+
 	drops : null,
 	drop : function (obj) {
 		if (this.drops === null) {
@@ -2211,7 +2213,8 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 		FrameRenderer,
 		Inner.FpsMeter,
 		DownloadingProgress,
-		Class.Events, Class.Options
+		Class.Events,
+		Class.Options
 	],
 
 	Generators: {
@@ -3967,7 +3970,7 @@ provides: Keyboard
 var Keyboard = LibCanvas.Keyboard = function () {
 
 var Keyboard = Class({
-	Implements: [Class.Events],
+	Implements: Class.Events,
 	Static: {
 		keyCodes : {
 			// Alphabet
@@ -5893,7 +5896,7 @@ provides: Utils.AudioElement
 */
 
 var AudioElement = LibCanvas.Utils.AudioElement = Class({
-	Implements: [Animatable],
+	Implements: Animatable,
 	stub   : true,
 	initialize : function (container, file) {
 		this.events = [];
@@ -6407,7 +6410,7 @@ provides: Utils.ImagePreloader
 */
 
 var ImagePreloader = LibCanvas.Utils.ImagePreloader = Class({
-	Implements: [Class.Events],
+	Implements: Class.Events,
 	processed : 0,
 	number: 0,
 	initialize: function (images) {
@@ -6497,7 +6500,7 @@ provides: Utils.ProgressBar
 */
 
 var ProgressBar = LibCanvas.Utils.ProgressBar = Class({
-	Implements: [ Animatable ],
+	Implements: Animatable,
 	initialize : function () {
 		this.coord = new Point(0,0);
 		this.progress = 0;

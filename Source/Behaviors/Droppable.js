@@ -23,6 +23,8 @@ provides: Behaviors.Droppable
 */
 
 var Droppable = LibCanvas.Behaviors.Droppable = Class({
+	Extends: Draggable,
+
 	drops : null,
 	drop : function (obj) {
 		if (this.drops === null) {

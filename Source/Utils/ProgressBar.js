@@ -26,7 +26,7 @@ provides: Utils.ProgressBar
 */
 
 var ProgressBar = LibCanvas.Utils.ProgressBar = Class({
-	Implements: [ Animatable ],
+	Implements: Animatable,
 	initialize : function () {
 		this.coord = new Point(0,0);
 		this.progress = 0;

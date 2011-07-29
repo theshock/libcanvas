@@ -23,7 +23,7 @@ provides: Keyboard
 var Keyboard = LibCanvas.Keyboard = function () {
 
 var Keyboard = Class({
-	Implements: [Class.Events],
+	Implements: Class.Events,
 	Static: {
 		keyCodes : {
 			// Alphabet

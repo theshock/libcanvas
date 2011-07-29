@@ -21,7 +21,7 @@ provides: Animation.Sprite
 */
 
 LibCanvas.Animation.Sprite = Class({
-	Implements: [Class.Events],
+	Implements: Class.Events,
 	sprites : null,
 
 	initialize: function () {

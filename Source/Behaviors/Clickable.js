@@ -32,7 +32,7 @@ var setValFn = function (object, name, val) {
 
 // Should extends drawable, implements mouseListener
 return Class({
-	Implements: [ MouseListener ],
+	Extends: MouseListener,
 
 	clickable : function () { 
 		this.listenMouse();

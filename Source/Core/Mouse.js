@@ -24,7 +24,7 @@ provides: Mouse
 
 
 var Mouse = LibCanvas.Mouse = Class({
-	Implements: [ Class.Events ],
+	Implements: Class.Events,
 	
 	Static: {
 		buttons: {

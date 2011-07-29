@@ -23,7 +23,7 @@ provides: Utils.AudioElement
 */
 
 var AudioElement = LibCanvas.Utils.AudioElement = Class({
-	Implements: [Animatable],
+	Implements: Animatable,
 	stub   : true,
 	initialize : function (container, file) {
 		this.events = [];

@@ -22,7 +22,7 @@ provides: Utils.ImagePreloader
 */
 
 var ImagePreloader = LibCanvas.Utils.ImagePreloader = Class({
-	Implements: [Class.Events],
+	Implements: Class.Events,
 	processed : 0,
 	number: 0,
 	initialize: function (images) {

@@ -21,7 +21,7 @@ provides: Geometry
 */
 
 var Geometry = LibCanvas.Geometry = Class({
-	Implements: [Class.Events],
+	Implements: Class.Events,
 	Static: {
 		invoke: function (obj) {
 			return (typeof obj == 'object' && obj[0] instanceof this) ? obj[0]

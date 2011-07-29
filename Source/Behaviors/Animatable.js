@@ -28,7 +28,7 @@ var Animatable = LibCanvas.Behaviors.Animatable = function () {
 var TF = TimingFunctions;
 
 return Class({
-	Implements: [ Invoker.AutoChoose ],
+	Implements: Invoker.AutoChoose,
 
 	initialize: Class.hiddenMethod(function (element) {
 		this['animate.element'] = element;
