@@ -65,8 +65,13 @@
 			bar: 'images/bar.png'
 		}
 	})
+	.listenMouse()
 	.start()
 	.addEvent('ready', function () {
-		new ImageDrawer( libcanvas, 'foo', new Rectangle(   0, 0, 100, 100 ) ).draggable();
-		new ImageDrawer( libcanvas, 'bar', new Rectangle( 200, 0, 100, 100 ) ).draggable();
+		new ImageDrawer( this, 'foo', new Rectangle(   0, 0, 100, 100 ) ).draggable();
+		new ImageDrawer( this, 'bar', new Rectangle( 200, 0, 100, 100 ) ).draggable();
 	});
+
+## Пример
+
+[Отрисовка и изменение простой картинки](libcanvas.github.com/ui/plain-image.html)
