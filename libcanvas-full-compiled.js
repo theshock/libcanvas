@@ -879,9 +879,6 @@ provides: Utils.Math
 // Number
 (function () {
 
-
-	var degreesCache = {};
-
 	atom.implement(Number, {
 		/**
 		 * Cast degrees to radians
@@ -934,10 +931,11 @@ provides: Utils.Math
 
 	});
 
-	for (var degree in [0, 45, 90, 135, 180, 225, 270, 315, 360].toKeys()) {
-		degreesCache[degree] = (degree * 1).degree();
-	}
-	var d360 = degreesCache[360];
+	var degreesCache = [0, 45, 90, 135, 180, 225, 270, 315, 360]
+		.associate(function (num) {
+			return num.degree();
+		}),
+		d360 = degreesCache[360];
 
 })();
 
@@ -5485,9 +5483,9 @@ Path.Builder = LibCanvas.Shapes.Path.Builder = Class({
 				case 'moveTo' : return 'M' + p(a);
 				case 'lineTo' : return 'L' + p(a);
 				case 'curveTo': return 'C' + part.args.map(p).join('');
-				case 'arc': return 'A'
-					+ p( a.circle.center ) + sep + a.circle.radius.round(2) + sep
-					+ a.angle.start.round(2) + sep + a.angle.end.round(2) + sep + (a.acw ? 1 : 0);
+				case 'arc'    : return 'A' +
+					p( a.circle.center ) + sep + a.circle.radius.round(2) + sep +
+					a.angle.start.round(2) + sep + a.angle.end.round(2) + sep + (a.acw ? 1 : 0);
 			}
 		}).join(sep);
 	},

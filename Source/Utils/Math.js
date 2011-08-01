@@ -20,9 +20,6 @@ provides: Utils.Math
 // Number
 (function () {
 
-
-	var degreesCache = {};
-
 	atom.implement(Number, {
 		/**
 		 * Cast degrees to radians
@@ -75,10 +72,11 @@ provides: Utils.Math
 
 	});
 
-	for (var degree in [0, 45, 90, 135, 180, 225, 270, 315, 360].toKeys()) {
-		degreesCache[degree] = (degree * 1).degree();
-	}
-	var d360 = degreesCache[360];
+	var degreesCache = [0, 45, 90, 135, 180, 225, 270, 315, 360]
+		.associate(function (num) {
+			return num.degree();
+		}),
+		d360 = degreesCache[360];
 
 })();
 

@@ -223,9 +223,9 @@ Path.Builder = LibCanvas.Shapes.Path.Builder = Class({
 				case 'moveTo' : return 'M' + p(a);
 				case 'lineTo' : return 'L' + p(a);
 				case 'curveTo': return 'C' + part.args.map(p).join('');
-				case 'arc': return 'A'
-					+ p( a.circle.center ) + sep + a.circle.radius.round(2) + sep
-					+ a.angle.start.round(2) + sep + a.angle.end.round(2) + sep + (a.acw ? 1 : 0);
+				case 'arc'    : return 'A' +
+					p( a.circle.center ) + sep + a.circle.radius.round(2) + sep +
+					a.angle.start.round(2) + sep + a.angle.end.round(2) + sep + (a.acw ? 1 : 0);
 			}
 		}).join(sep);
 	},
