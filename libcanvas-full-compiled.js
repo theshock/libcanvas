@@ -5312,6 +5312,17 @@ var Path = LibCanvas.Shapes.Path = Class({
 		}.bind(this));
 		return this;
 	},
+	get points () {
+		var points = [];
+		this.each(function (method, args) {
+			if (method == 'arc') {
+				points.include(args[0].circle);
+			} else for (var i = 0, l = args.length; i < l; i++) {
+				points.include(args[i]);
+			}
+		}.bind(this));
+		return points;
+	},
 	hasPoint : function (point) {
 		var ctx = this.buffer.ctx;
 		if (this.builder.changed) {
@@ -5324,23 +5335,10 @@ var Path = LibCanvas.Shapes.Path = Class({
 		this.processPath(ctx)[type]();
 		return this;
 	},
-	move : function (distance) {
+	move : function (distance, reverse) {
 		this.builder.changed = true;
 
-		var moved = [], move = function (a) {
-			if (!moved.contains(a)) {
-				a.move(distance);
-				moved.push(a);
-			}
-		};
-		this.each(function (method, args) {
-			if (method == 'arc') {
-				move(args[0].circle);
-			} else {
-				args.map(move);
-			}
-		});
-		return this;
+		return this.points.invoke( 'move', distance. reverse );
 	},
 	toString: Function.lambda('[object LibCanvas.Shapes.Path]')
 });
