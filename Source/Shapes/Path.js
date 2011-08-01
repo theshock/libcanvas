@@ -46,8 +46,8 @@ var Path = LibCanvas.Shapes.Path = Class({
 	},
 	each: function (fn) {
 		this.builder.parts.forEach(function (part) {
-			fn( part.method, part.args );
-		});
+			fn.call( this, part.method, part.args );
+		}.bind(this));
 		return this;
 	},
 	hasPoint : function (point) {
@@ -71,12 +71,11 @@ var Path = LibCanvas.Shapes.Path = Class({
 				moved.push(a);
 			}
 		};
-		this.builder.parts.forEach(function (part) {
-			var a = part.args;
-			if (part.method == 'arc') {
-				move(a[0].circle);
+		this.each(function (method, args) {
+			if (method == 'arc') {
+				move(args[0].circle);
 			} else {
-				a.map(move);
+				args.map(move);
 			}
 		});
 		return this;
