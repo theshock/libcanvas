@@ -4316,14 +4316,11 @@ var Tile = LibCanvas.Engines.Tile = Class({
 		if (!fn && fn !== 0 && 'default' in this.tiles) fn = this.tiles['default'];
 		this.ctx.clearRect(rect);
 		if (atom.dom.isElement(fn)) {
-			this.ctx.drawImage({
-				image : fn,
-				draw  : rect
-			});
+			this.ctx.drawImage( fn, rect );
 		} else if (typeof fn == 'function') {
-			fn(this.ctx, rect, cell);
+			fn.call( this, this.ctx, rect, cell );
 		} else if (fn != null) {
-			this.ctx.fill(rect, fn);
+			this.ctx.fill( rect, fn );
 		}
 		return this;
 	},
