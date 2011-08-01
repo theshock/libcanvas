@@ -129,6 +129,8 @@ LibCanvas.Engines.Tile = Class({
 	},
 	getCell : function (point) {
 		point = Point(arguments);
+		if (point.x < 0 || point.y < 0) return null;
+		
 		var x = parseInt(point.x / (this.cellWidth  + this.margin)),
 			y = parseInt(point.y / (this.cellHeight + this.margin)),
 			row = this.matrix[y];
