@@ -103,8 +103,8 @@ return Class({
 		this.points.invoke('rotate', angle, pivot);
 		return this;
 	},
-	scale : function (x, y) {
-		this.points.invoke('scale', x, y);
+	scale : function (power, pivot) {
+		this.points.invoke('scale', power, pivot);
 		return this;
 	},
 	intersect : function (poly) {
