@@ -24,7 +24,7 @@ provides: Engines.Tile
 ...
 */
 
-LibCanvas.Engines.Tile = Class({
+var Tile = LibCanvas.Engines.Tile = Class({
 	Implements: [ Drawable, Class.Events ],
 
 	first : true,
@@ -60,16 +60,31 @@ LibCanvas.Engines.Tile = Class({
 			width  = width.width;
 		}
 
-		var matrix = new Array(height);
-		for (var y = height; y--;) matrix[y] = Array.fill(width, fill);
-		this.setMatrix(matrix);
+		this.setMatrix( Array.fillMatrix( width, height, fill ) );
+		return this;
+	},
+	createPoints: function () {
+		this.points = new Array(this.height);
+		var y, x, p, ps = this.points, h = this.height, w = this.width;
+
+		for (y = 0, h; y < h; y++) {
+			ps[y] = new Array(w);
+			for (x = 0, w; x < w; x++) {
+				p = ps[y][x] = new Tile.Point(x, y);
+				p.engine = this;
+			}
+		}
+
 		return this;
 	},
 	setMatrix : function (matrix) {
+		var w = this.width, h = this.height;
 		this.first = true;
 		this.checkMatrix(matrix);
+
 		this.matrix    = matrix;
 		this.oldMatrix = matrix.clone();
+		if (w != this.width || h != this.height) this.createPoints();
 		return this;
 	},
 	addTile : function (index, fn) {
@@ -101,7 +116,7 @@ LibCanvas.Engines.Tile = Class({
 	update : function () {
 		var changed = false, old = this.oldMatrix;
 		this.each(function (cell) {
-			if (this.first || old[cell.y][cell.x] != cell.t) {
+			if (this.first || old[cell.y][cell.x] != cell.value) {
 				changed = true;
 				this.drawCell(cell);
 				old[cell.y][cell.x] = cell.t;
@@ -133,15 +148,11 @@ LibCanvas.Engines.Tile = Class({
 		
 		var x = parseInt(point.x / (this.cellWidth  + this.margin)),
 			y = parseInt(point.y / (this.cellHeight + this.margin)),
-			row = this.matrix[y];
-		return (row && x in row) ? {
-			t : row[x],
-			x : x,
-			y : y
-		} : null;
+			row = this.points[y];
+		return row ? row[x] : null;
 	},
 	drawCell : function (cell /*{t,x,y}*/) {
-		var rect = this.getRect(cell), fn = this.tiles[cell.t];
+		var rect = this.getRect(cell), fn = this.tiles[cell.value];
 		if (!fn && fn !== 0 && 'default' in this.tiles) fn = this.tiles['default'];
 		this.ctx.clearRect(rect);
 		if (atom.dom.isElement(fn)) {
@@ -157,24 +168,70 @@ LibCanvas.Engines.Tile = Class({
 		return this;
 	},
 	each : function (fn) {
-		var m = this.matrix, height = this.height, width = this.width, x, y;
+		var p = this.points, height = this.height, width = this.width, x, y;
 		for (y = 0; y < height; y++) for (x = 0; x < width; x++) {
-			fn.call(this, {
-				t : m[y][x],
-				x : x,
-				y : y
-			});
+			fn.call(this, p[y][x]);
 		}
 		return this;
 	},
 	get width () {
-		return (this.matrix[0] && this.matrix[0].length) || 0;
+		return (this.matrix && this.matrix[0] && this.matrix[0].length) || 0;
 	},
 	get height () {
-		return this.matrix.length || 0;
+		return this.matrix && this.matrix.length || 0;
 	},
 	draw: function () {
 		this.update();
 	},
 	toString: Function.lambda('[object LibCanvas.Engines.Tile]')
+});
+
+Tile.Point = Class({
+	Extends: Point,
+
+	engine: null,
+
+	get value () {
+		return this.engine.matrix[this.y][this.x];
+	},
+
+	set value (value) {
+		this.engine.matrix[this.y][this.x] = value;
+	},
+
+	get exists() {
+		var row = this.engine.matrix[this.y];
+		return row != null && row[this.x] != null;
+	},
+
+	// @deprecated
+	get t () {
+		return this.value;
+	},
+
+	getNeighbour : function (dir) {
+		var shift = this.self.shifts[dir];
+		if (shift) {
+			var row = this.engine.points[this.y + shift.y];
+			if (row) return row[this.x + shift.x] || null;
+		}
+		return null;
+	},
+
+	getNeighbours: function (corners, asObject) {
+		var nb = this.parent.apply( this, arguments );
+
+		if (Array.isArray) {
+			return nb.clean();
+		} else {
+			for (var i in nb) if (nb[i] == null) delete nb[i];
+		}
+		return nb;
+	},
+
+	clone: function () {
+		var clone = this.parent();
+		clone.engine = this.engine;
+		return clone;
+	}
 });

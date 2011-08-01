@@ -41,6 +41,9 @@ var shifts = {
 
 return Class({
 	Extends: Geometry,
+
+	Static: { shifts: shifts },
+
 	set : function (x, y) {
 		var args = arguments;
 		if (atom.typeOf(x) == 'arguments') {
