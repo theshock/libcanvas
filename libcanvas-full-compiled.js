@@ -5347,6 +5347,20 @@ var Path = LibCanvas.Shapes.Path = Class({
 		this.points.invoke( 'scale', power, pivot );
 		return this;
 	},
+	rotate: function (angle, pivot) {
+		this.builder.changed = true;
+
+		this.points.invoke( 'rotate', angle, pivot );
+
+		this.each(function (method, args) {
+			if (method == 'arc') {
+				var a = args[0].angle;
+				a.start = (a.start + angle).normalizeAngle();
+				a.end   = (a.end   + angle).normalizeAngle();
+			}
+		}.bind(this));
+		return this;
+	},
 	toString: Function.lambda('[object LibCanvas.Shapes.Path]')
 });
 
