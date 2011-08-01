@@ -5338,12 +5338,14 @@ var Path = LibCanvas.Shapes.Path = Class({
 	move : function (distance, reverse) {
 		this.builder.changed = true;
 
-		return this.points.invoke( 'move', distance. reverse );
+		this.points.invoke( 'move', distance. reverse );
+		return this;
 	},
 	scale: function (power, pivot) {
 		this.builder.changed = true;
 
-		return this.points.invoke( 'scale', power, pivot );
+		this.points.invoke( 'scale', power, pivot );
+		return this;
 	},
 	toString: Function.lambda('[object LibCanvas.Shapes.Path]')
 });
