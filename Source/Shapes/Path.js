@@ -50,15 +50,15 @@ var Path = LibCanvas.Shapes.Path = Class({
 		}.bind(this));
 		return this;
 	},
-	get points () {
+	get allPoints () {
 		var points = [];
 		this.each(function (method, args) {
 			if (method == 'arc') {
-				points.include(args[0].circle);
+				points.include(args[0].circle.center);
 			} else for (var i = 0, l = args.length; i < l; i++) {
 				points.include(args[i]);
 			}
-		}.bind(this));
+		});
 		return points;
 	},
 	hasPoint : function (point) {
@@ -76,19 +76,19 @@ var Path = LibCanvas.Shapes.Path = Class({
 	move : function (distance, reverse) {
 		this.builder.changed = true;
 
-		this.points.invoke( 'move', distance. reverse );
+		this.allPoints.invoke( 'move', distance, reverse );
 		return this;
 	},
 	scale: function (power, pivot) {
 		this.builder.changed = true;
 
-		this.points.invoke( 'scale', power, pivot );
+		this.allPoints.invoke( 'scale', power, pivot );
 		return this;
 	},
 	rotate: function (angle, pivot) {
 		this.builder.changed = true;
 
-		this.points.invoke( 'rotate', angle, pivot );
+		this.allPoints.invoke( 'rotate', angle, pivot );
 
 		this.each(function (method, args) {
 			if (method == 'arc') {
