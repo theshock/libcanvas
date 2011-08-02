@@ -2621,7 +2621,12 @@ provides: Shape
 ...
 */
 
-var shapeTestBuffer = Buffer(1, 1, true);
+var shapeTestBuffer = function () {
+	if (!shapeTestBuffer.buffer) {
+		return shapeTestBuffer.buffer = Buffer(1, 1, true);
+	}
+	return shapeTestBuffer.buffer;
+};
 
 var Shape = LibCanvas.Shape = Class({
 	Extends    : Geometry,
@@ -5134,7 +5139,7 @@ var Ellipse = LibCanvas.Shapes.Ellipse = Class({
 		return this;
 	},
 	hasPoint : function () {
-		var ctx = this.processPath( shapeTestBuffer.ctx );
+		var ctx = this.processPath( shapeTestBuffer().ctx );
 		return ctx.isPointInPath(Point(arguments));
 	},
 	cache : null,
@@ -5392,7 +5397,7 @@ var Path = LibCanvas.Shapes.Path = Class({
 		return new Point().mean(this.allPoints);
 	},
 	hasPoint : function (point) {
-		var ctx = shapeTestBuffer.ctx;
+		var ctx = shapeTestBuffer().ctx;
 		if (this.builder.changed) {
 			this.builder.changed = false;
 			this.processPath(ctx);

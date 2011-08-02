@@ -59,7 +59,7 @@ var Path = LibCanvas.Shapes.Path = Class({
 		return new Point().mean(this.allPoints);
 	},
 	hasPoint : function (point) {
-		var ctx = shapeTestBuffer.ctx;
+		var ctx = shapeTestBuffer().ctx;
 		if (this.builder.changed) {
 			this.builder.changed = false;
 			this.processPath(ctx);

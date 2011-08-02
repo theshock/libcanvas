@@ -47,7 +47,7 @@ var Ellipse = LibCanvas.Shapes.Ellipse = Class({
 		return this;
 	},
 	hasPoint : function () {
-		var ctx = this.processPath( shapeTestBuffer.ctx );
+		var ctx = this.processPath( shapeTestBuffer().ctx );
 		return ctx.isPointInPath(Point(arguments));
 	},
 	cache : null,

@@ -22,7 +22,12 @@ provides: Shape
 ...
 */
 
-var shapeTestBuffer = Buffer(1, 1, true);
+var shapeTestBuffer = function () {
+	if (!shapeTestBuffer.buffer) {
+		return shapeTestBuffer.buffer = Buffer(1, 1, true);
+	}
+	return shapeTestBuffer.buffer;
+};
 
 var Shape = LibCanvas.Shape = Class({
 	Extends    : Geometry,
