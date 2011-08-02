@@ -155,8 +155,8 @@ return Class({
 		};
 	},
 	snapToPixel: function () {
-		this.x += 1 - (this.x - this.x.floor()) - 0.5;
-		this.y += 1 - (this.y - this.y.floor()) - 0.5;
+		this.x += 0.5 - (this.x - this.x.floor());
+		this.y += 0.5 - (this.y - this.y.floor());
 		return this;
 	},
 	clone : function () {
