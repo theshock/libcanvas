@@ -5,7 +5,8 @@ LibCanvas.Shapes.RoundedRectangle
 
 ## Свойства
 
-`radius` - радиус закругления уголков
+### radius (set/get)
+радиус закругления уголков
 
 ## Метод setRadius
 
