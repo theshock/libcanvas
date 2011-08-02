@@ -22,11 +22,7 @@ provides: Shapes.Rectangle
 ...
 */
 
-var Rectangle = LibCanvas.Shapes.Rectangle = new function () {
-
-var random = Number.random;
-
-return Class({
+var Rectangle = LibCanvas.Shapes.Rectangle = Class({
 	Extends: Shape,
 	set : function () {
 		var a = Array.pickFrom(arguments);
@@ -173,8 +169,8 @@ return Class({
 	getRandomPoint : function (margin) {
 		margin = margin || 0;
 		return new Point(
-			random(margin, this.width  - margin),
-			random(margin, this.height - margin)
+			Number.random(margin, this.width  - margin),
+			Number.random(margin, this.height - margin)
 		);
 	},
 	translate : function (point, fromRect) {
@@ -199,5 +195,3 @@ return Class({
 	},
 	toString: Function.lambda('[object LibCanvas.Shapes.Rectangle]')
 });
-
-}();
