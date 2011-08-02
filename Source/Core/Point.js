@@ -154,6 +154,14 @@ return Class({
 			y: this.y
 		};
 	},
+	mean: function (points) {
+		var l = points.length, i = l, x = 0, y = 0;
+		while (i--) {
+			x += points[i].x;
+			y += points[i].y;
+		}
+		return this.set(x/l, y/l);
+	},
 	snapToPixel: function () {
 		this.x += 0.5 - (this.x - this.x.floor());
 		this.y += 0.5 - (this.y - this.y.floor());
