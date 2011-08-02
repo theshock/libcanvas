@@ -5754,6 +5754,11 @@ var RoundedRectangle = LibCanvas.Shapes.RoundedRectangle = Class({
 		if (!noWrap) ctx.closePath();
 		return ctx;
 	},
+
+	equals: function (shape, accuracy) {
+		return this.parent( shape, accuracy ) && shape.radius == this.radius;
+	},
+
 	dump: function () {
 		var p = function (p) { return '[' + p.x + ', ' + p.y + ']'; };
 		return '[shape RoundedRectangle(from'+p(this.from)+', to'+p(this.to)+', radius='+this.radius+')]';
