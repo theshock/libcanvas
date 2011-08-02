@@ -1,5 +1,6 @@
-Circle
-======
+LibCanvas.Shapes.Circle
+=======================
+
 `LibCanvas.Shapes.Circle` - класс, который описывает простую геометрическую фигуру "круг"
 
 #### Global

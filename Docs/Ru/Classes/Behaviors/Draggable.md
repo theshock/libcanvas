@@ -1,5 +1,5 @@
-Draggable
-=========
+LibCanvas.Behaviors.Draggable
+=============================
 
 `LibCanvas.Behaviors.Draggable` добавляет возможность перетскивать объект при помощи мыши.
 

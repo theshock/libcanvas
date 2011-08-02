@@ -1,5 +1,5 @@
-Line
-====
+LibCanvas.Shapes.Line
+=====================
 
 #### Global
 

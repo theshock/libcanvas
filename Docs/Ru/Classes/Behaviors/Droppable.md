@@ -1,5 +1,5 @@
-Droppable
-=========
+LibCanvas.Behaviors.Droppable
+=============================
 
 `LibCanvas.Behaviors.Droppable` расширяет `LibCanvas.Behaviors.Draggable`, добавляя возможность взаимодействия
 между перетаскиваемым объектом и принимающими объектами, на которые он «сбрасывается» — что позволяет полноценно

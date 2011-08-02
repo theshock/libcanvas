@@ -1,5 +1,5 @@
-Drawable
-========
+LibCanvas.Behaviors.Drawable
+============================
 
 `LibCanvas.Behaviors.Drawable` отвечает за отрисовку объекта в LibCanvas. Если вы хотите добавлять элементы в список при помощи `libcanvas.addElement()`, то класс должен быть унаследован от `Drawable`
 

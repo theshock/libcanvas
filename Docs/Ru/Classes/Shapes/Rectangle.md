@@ -1,5 +1,5 @@
-Rectangle
-=========
+LibCanvas.Shapes.Rectangle
+==========================
 
 `LibCanvas.Shapes.Rectangle` - базовая фигура в LibCanvas, которая используется в том числе в отрисовке холста (например в `ctx.drawImage`)
 
