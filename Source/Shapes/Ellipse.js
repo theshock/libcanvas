@@ -95,6 +95,9 @@ var Ellipse = LibCanvas.Shapes.Ellipse = Class({
 		if (!noWrap) ctx.closePath();
 		return ctx;
 	},
+	equals : function (shape, accuracy) {
+		return this.parent( shape, accuracy ) && shape.angle == this.angle;
+	},
 	draw : function (ctx, type) {
 		this.processPath(ctx)[type]();
 		return this;

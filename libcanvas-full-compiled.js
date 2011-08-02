@@ -2671,7 +2671,9 @@ var Shape = LibCanvas.Shape = Class({
 		return this.parent(distance);
 	},
 	equals : function (shape, accuracy) {
-		return shape.from.equals(this.from, accuracy) && shape.to.equals(this.to, accuracy);
+		return shape instanceof this.self &&
+			shape.from.equals(this.from, accuracy) &&
+			shape.to  .equals(this.to  , accuracy);
 	},
 	clone : function () {
 		return new this.self(this.from.clone(), this.to.clone());
@@ -5176,6 +5178,9 @@ var Ellipse = LibCanvas.Shapes.Ellipse = Class({
 		   .bezierCurveTo(c[9], c[10],c[11]);
 		if (!noWrap) ctx.closePath();
 		return ctx;
+	},
+	equals : function (shape, accuracy) {
+		return this.parent( shape, accuracy ) && shape.angle == this.angle;
 	},
 	draw : function (ctx, type) {
 		this.processPath(ctx)[type]();
