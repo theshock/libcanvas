@@ -93,6 +93,11 @@ var Circle = LibCanvas.Shapes.Circle = Class({
 	getPoints : function () {
 		return { center : this.center };
 	},
+	equals : function (shape, accuracy) {
+		return shape instanceof this.shape &&
+			shape.radius == this.radius    &&
+			shape.center.equals(this.center, accuracy);
+	},
 	dump: function () {
 		return '[shape Circle(center['+this.center.x+', '+this.center.y+'], '+this.radius+')]';
 	},
