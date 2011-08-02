@@ -1106,9 +1106,17 @@ return Class({
 			y: this.y
 		};
 	},
+	mean: function (points) {
+		var l = points.length, i = l, x = 0, y = 0;
+		while (i--) {
+			x += points[i].x;
+			y += points[i].y;
+		}
+		return this.set(x/l, y/l);
+	},
 	snapToPixel: function () {
-		this.x += 1 - (this.x - this.x.floor()) - 0.5;
-		this.y += 1 - (this.y - this.y.floor()) - 0.5;
+		this.x += 0.5 - (this.x - this.x.floor());
+		this.y += 0.5 - (this.y - this.y.floor());
 		return this;
 	},
 	clone : function () {
@@ -2613,6 +2621,8 @@ provides: Shape
 
 ...
 */
+
+var shapeTestBuffer = Buffer(1, 1, true);
 
 var Shape = LibCanvas.Shape = Class({
 	Extends    : Geometry,
@@ -4378,7 +4388,7 @@ Tile.Point = Class({
 	getNeighbours: function (corners, asObject) {
 		var nb = this.parent.apply( this, arguments );
 
-		if (Array.isArray(nb)) {
+		if (Array.isArray( nb )) {
 			return nb.clean();
 		} else {
 			for (var i in nb) if (nb[i] == null) delete nb[i];
@@ -5111,18 +5121,22 @@ var Ellipse = LibCanvas.Shapes.Ellipse = Class({
 		this.from.addEvent('move', update);
 		this. to .addEvent('move', update);
 	},
-	rotateAngle : 0,
+	_angle : 0,
+	get angle () {
+		return this._angle;
+	},
+	set angle (a) {
+		if (this._angle != a) {
+			this._angle = a.normalizeAngle();
+			this.updateCache = true;
+		}
+	},
 	rotate : function (degree) {
-		this.rotateAngle = (this.rotateAngle + degree)
-			.normalizeAngle();
-		this.updateCache = true;
+		this.angle += degree;
 		return this;
 	},
-	getBufferCtx : function () {
-		return this.bufferCtx || (this.bufferCtx = Buffer(1, 1, true).ctx);
-	},
 	hasPoint : function () {
-		var ctx = this.processPath(this.getBufferCtx()); 
+		var ctx = this.processPath( shapeTestBuffer.ctx );
 		return ctx.isPointInPath(Point(arguments));
 	},
 	cache : null,
@@ -5137,7 +5151,7 @@ var Ellipse = LibCanvas.Shapes.Ellipse = Class({
 			for (var i = 12; i--;) this.cache.push(new Point());
 		}
 		var c = this.cache,
-			angle = this.rotateAngle,
+			angle = this._angle,
 			kappa = .5522848,
 			x  = this.from.x,
 			y  = this.from.y,
@@ -5344,12 +5358,6 @@ provides: Shapes.Path
 var Path = LibCanvas.Shapes.Path = Class({
 	Extends: Shape,
 
-	Generators : {
-		buffer: function () {
-			return Buffer(1, 1, true);
-		}
-	},
-
 	getCoords: null,
 	set : function (builder) {
 		this.builder = builder;
@@ -5381,8 +5389,11 @@ var Path = LibCanvas.Shapes.Path = Class({
 		});
 		return points;
 	},
+	get center () {
+		return new Point().mean(this.allPoints);
+	},
 	hasPoint : function (point) {
-		var ctx = this.buffer.ctx;
+		var ctx = shapeTestBuffer.ctx;
 		if (this.builder.changed) {
 			this.builder.changed = false;
 			this.processPath(ctx);
@@ -5592,37 +5603,18 @@ requires:
 	- LibCanvas
 	- Point
 	- Shape
+	- Shapes.Line
 
 provides: Shapes.Polygon
 
 ...
 */
 
-var Polygon = LibCanvas.Shapes.Polygon = function (){
-
-var linesIntersect = function (a,b,c,d) {
-	var x,y;
-	if (d.x == c.x) { // DC == vertical line
-		if (b.x == a.x) {
-			return a.x == d.x && (a.y.between(c.y, d.y) || b.x.between(c.y, d.y));
-		}
-		x = d.x;
-		y = b.y + (x-b.x)*(a.y-b.y)/(a.x-b.x);
-	} else {
-		x = ((a.x*b.y - b.x*a.y)*(d.x-c.x)-(c.x*d.y - d.x*c.y)*(b.x-a.x))/((a.y-b.y)*(d.x-c.x)-(c.y-d.y)*(b.x-a.x));
-		y = ((c.y-d.y)*x-(c.x*d.y-d.x*c.y))/(d.x-c.x);
-		x *= -1;
-	}
-	return (x.between(a.x, b.x, 'LR') || x.between(b.x, a.x, 'LR'))
-		&& (y.between(a.y, b.y, 'LR') || y.between(b.y, a.y, 'LR'))
-		&& (x.between(c.x, d.x, 'LR') || x.between(d.x, c.x, 'LR'))
-		&& (y.between(c.y, d.y, 'LR') || y.between(d.y, c.y, 'LR'));
-};
-
-return Class({
+var Polygon = LibCanvas.Shapes.Polygon = Class({
 	Extends: Shape,
 	initialize: function () {
 		this.points = [];
+		this._lines = [];
 		this.parent.apply(this, arguments);
 	},
 	set : function (poly) {
@@ -5633,10 +5625,21 @@ return Class({
 				})
 				.clean()
 		);
+		this._lines.empty();
 		return this;
 	},
 	get length () {
 		return this.points.length;
+	},
+	get lines () {
+		var lines = this._lines, p = this.points, l = p.length, i = 0;
+		if (lines.length != l) for (;i < l; i++) {
+			lines.push( new Line( p[i], i+1 == l ? p[0] : p[i+1] ) );
+		}
+		return this._lines;
+	},
+	get center () {
+		return new Point().mean(this.points);
 	},
 	get: function (index) {
 		return this.points[index];
@@ -5684,13 +5687,9 @@ return Class({
 		return this;
 	},
 	intersect : function (poly) {
-		var pp = poly.points, tp = this.points, ppL = pp.length, tpL = tp.length;
-		for (var i = 0; i < ppL; i++) for (var k = 0; k < tpL; k++) {
-			var a = tp[k],
-				b = tp[k+1 == tpL ? 0 : k+1],
-				c = pp[i],
-				d = pp[i+1 == ppL ? 0 : i+1];
-			if (linesIntersect(a,b,c,d)) return true;
+		var tL = this.lines, pL = poly.lines, i = tL.length, k = pL.length;
+		while (i-- > 0) for (k = pL.length; k-- > 0;) {
+			if (tL[i].intersect(pL[k])) return true;
 		}
 		return false;
 	},
@@ -5706,8 +5705,6 @@ return Class({
 	},
 	toString: Function.lambda('[object LibCanvas.Shapes.Polygon]')
 });
-
-}();
 
 /*
 ---
