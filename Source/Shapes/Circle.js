@@ -50,6 +50,9 @@ var Circle = LibCanvas.Shapes.Circle = Class({
 		if (this.center == null) throw new TypeError('center is null');
 		if (this.radius == null) throw new TypeError('radius is null');
 	},
+	// we need accessors to redefine parent "get center"
+	get center ( ) { return this._center; },
+	set center (c) { this._center = c; },
 	getCoords : function () {
 		return this.center;
 	},
