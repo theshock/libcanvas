@@ -5189,8 +5189,8 @@ var Ellipse = LibCanvas.Shapes.Ellipse = Class({
 		this.processPath(ctx)[type]();
 		return this;
 	},
-	dump: function () {
-		return this.parent('Ellipse');
+	dump: function (name) {
+		return this.parent(name || 'Ellipse');
 	},
 	toString: Function.lambda('[object LibCanvas.Shapes.Ellipse]')
 });
