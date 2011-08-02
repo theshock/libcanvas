@@ -218,7 +218,7 @@ Tile.Point = Class({
 	getNeighbours: function (corners, asObject) {
 		var nb = this.parent.apply( this, arguments );
 
-		if (Array.isArray) {
+		if (Array.isArray(nb)) {
 			return nb.clean();
 		} else {
 			for (var i in nb) if (nb[i] == null) delete nb[i];
