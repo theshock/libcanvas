@@ -16,37 +16,18 @@ requires:
 	- LibCanvas
 	- Point
 	- Shape
+	- Shapes.Line
 
 provides: Shapes.Polygon
 
 ...
 */
 
-var Polygon = LibCanvas.Shapes.Polygon = function (){
-
-var linesIntersect = function (a,b,c,d) {
-	var x,y;
-	if (d.x == c.x) { // DC == vertical line
-		if (b.x == a.x) {
-			return a.x == d.x && (a.y.between(c.y, d.y) || b.x.between(c.y, d.y));
-		}
-		x = d.x;
-		y = b.y + (x-b.x)*(a.y-b.y)/(a.x-b.x);
-	} else {
-		x = ((a.x*b.y - b.x*a.y)*(d.x-c.x)-(c.x*d.y - d.x*c.y)*(b.x-a.x))/((a.y-b.y)*(d.x-c.x)-(c.y-d.y)*(b.x-a.x));
-		y = ((c.y-d.y)*x-(c.x*d.y-d.x*c.y))/(d.x-c.x);
-		x *= -1;
-	}
-	return (x.between(a.x, b.x, 'LR') || x.between(b.x, a.x, 'LR'))
-		&& (y.between(a.y, b.y, 'LR') || y.between(b.y, a.y, 'LR'))
-		&& (x.between(c.x, d.x, 'LR') || x.between(d.x, c.x, 'LR'))
-		&& (y.between(c.y, d.y, 'LR') || y.between(d.y, c.y, 'LR'));
-};
-
-return Class({
+var Polygon = LibCanvas.Shapes.Polygon = Class({
 	Extends: Shape,
 	initialize: function () {
 		this.points = [];
+		this._lines = [];
 		this.parent.apply(this, arguments);
 	},
 	set : function (poly) {
@@ -57,10 +38,21 @@ return Class({
 				})
 				.clean()
 		);
+		this._lines.empty();
 		return this;
 	},
 	get length () {
 		return this.points.length;
+	},
+	get lines () {
+		var lines = this._lines, p = this.points, l = p.length, i = 0;
+		if (lines.length != l) for (;i < l; i++) {
+			lines.push( new Line( p[i], i+1 == l ? p[0] : p[i+1] ) );
+		}
+		return this._lines;
+	},
+	get center () {
+		return new Point().mean(this.points);
 	},
 	get: function (index) {
 		return this.points[index];
@@ -108,13 +100,9 @@ return Class({
 		return this;
 	},
 	intersect : function (poly) {
-		var pp = poly.points, tp = this.points, ppL = pp.length, tpL = tp.length;
-		for (var i = 0; i < ppL; i++) for (var k = 0; k < tpL; k++) {
-			var a = tp[k],
-				b = tp[k+1 == tpL ? 0 : k+1],
-				c = pp[i],
-				d = pp[i+1 == ppL ? 0 : i+1];
-			if (linesIntersect(a,b,c,d)) return true;
+		var tL = this.lines, pL = poly.lines, i = tL.length, k = pL.length;
+		while (i-- > 0) for (k = pL.length; k-- > 0;) {
+			if (tL[i].intersect(pL[k])) return true;
 		}
 		return false;
 	},
@@ -130,5 +118,3 @@ return Class({
 	},
 	toString: Function.lambda('[object LibCanvas.Shapes.Polygon]')
 });
-
-}();
