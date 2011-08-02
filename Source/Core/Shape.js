@@ -72,7 +72,9 @@ var Shape = LibCanvas.Shape = Class({
 		return this.parent(distance);
 	},
 	equals : function (shape, accuracy) {
-		return shape.from.equals(this.from, accuracy) && shape.to.equals(this.to, accuracy);
+		return shape instanceof this.self &&
+			shape.from.equals(this.from, accuracy) &&
+			shape.to  .equals(this.to  , accuracy);
 	},
 	clone : function () {
 		return new this.self(this.from.clone(), this.to.clone());
