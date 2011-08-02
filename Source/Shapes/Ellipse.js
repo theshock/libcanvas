@@ -32,18 +32,22 @@ var Ellipse = LibCanvas.Shapes.Ellipse = Class({
 		this.from.addEvent('move', update);
 		this. to .addEvent('move', update);
 	},
-	rotateAngle : 0,
+	_angle : 0,
+	get angle () {
+		return this._angle;
+	},
+	set angle (a) {
+		if (this._angle != a) {
+			this._angle = a.normalizeAngle();
+			this.updateCache = true;
+		}
+	},
 	rotate : function (degree) {
-		this.rotateAngle = (this.rotateAngle + degree)
-			.normalizeAngle();
-		this.updateCache = true;
+		this.angle += degree;
 		return this;
 	},
-	getBufferCtx : function () {
-		return this.bufferCtx || (this.bufferCtx = Buffer(1, 1, true).ctx);
-	},
 	hasPoint : function () {
-		var ctx = this.processPath(this.getBufferCtx()); 
+		var ctx = this.processPath( shapeTestBuffer.ctx );
 		return ctx.isPointInPath(Point(arguments));
 	},
 	cache : null,
@@ -58,7 +62,7 @@ var Ellipse = LibCanvas.Shapes.Ellipse = Class({
 			for (var i = 12; i--;) this.cache.push(new Point());
 		}
 		var c = this.cache,
-			angle = this.rotateAngle,
+			angle = this._angle,
 			kappa = .5522848,
 			x  = this.from.x,
 			y  = this.from.y,
