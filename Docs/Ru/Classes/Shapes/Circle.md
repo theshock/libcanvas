@@ -26,6 +26,14 @@ Circle
 Если необходимо, такого поведения можно избежать, передавая клон точки
 	var circle = new LibCanvas.Shapes.Circle( center.clone(), radius );
 
+## Свойства
+
+### radius
+Радиус круга
+
+### center
+Ссылка на точку - центр круга
+
 ## Метод hasPoint
 
 	bool hasPoint(LibCanvas.Point point);
@@ -42,7 +50,7 @@ Circle
 
 ## Метод move
 
-	LibCanvas.Shapes.Center move(LibCanvas.Point distance, bool reverse);
+	LibCanvas.Shapes.Circle move(LibCanvas.Point distance, bool reverse);
 
 Вызывает метод move у центра
 
@@ -64,3 +72,70 @@ Circle
 	// line.to   == Point(10, 11)
 
 #### Возвращает `this`
+
+## Метод scale
+
+	LibCanvas.Shapes.Circle scale(Number factor, LibCanvas.Point pivot);
+
+Изменяет размер круга в `factor` раз относительно `pivot` или центра, если `pivot` не передан.
+
+	var circle = new Circle( 100, 100, 12 );
+	circle.scale( 2 );
+	console.log( circle.radius ); // 24;
+
+#### Возвращает `this`
+
+## Метод intersect
+
+	LibCanvas.Shapes.Circle intersect(LibCanvas.Shapes.Circle circle);
+
+Проверяет два круга на предмет пересечения:
+
+	var foo = new Circle( 10, 10, 30 ),
+	    bar = new Circle( 20, 20, 30 ),
+	    qux = new Circle( 90, 90, 30 );
+
+	console.log( foo.intersect(bar) ); // true
+	console.log( foo.intersect(qux) ); // false
+
+## Метод processPath
+
+	LibCanvas.Context2D processPath(LibCanvas.Context2D ctx, bool noWrap = false)
+
+Прокладывает соответствующий путь с помощью `arc`
+
+
+	new Circle(50, 40, 30).processPath(ctx);
+	// равнозначно c:
+	ctx
+		.beginPath()
+		.arc(50, 40, 30, 0, (360).degree(), false )
+		.closePath()
+
+	// А также:
+	new Circle(50, 40, 30).processPath(ctx, true);
+	// равнозначно c:
+	ctx.arc(50, 40, 30, 0, (360).degree(), false );
+
+## Метод equals
+
+	bool equals(LibCanvas.Shapes.Circle rect, int accuracy)
+
+Сравнивает центры кругов методом LibCanvas.Point.equals, а также радиусы
+
+	var foo = new LibCanvas.Shapes.Circle(15, 20, 10);
+	var bar = new LibCanvas.Shapes.Circle(15, 20, 10);
+
+	trace(bar == foo);      // false
+	trace(bar.equals(foo)); // true
+
+## Метод clone
+	LibCanvas.Shapes.Circle clone()
+
+Возвращает круг с такими же радиусом и координатами центра
+
+	var circ  = new Circle(30, 20, 10);
+	var clone = circ.clone();
+
+	trace(circ == clone);      // false
+	trace(circ.equals(clone)); // true
