@@ -19,8 +19,7 @@ authors:
 
 'use strict';
 
-var undefined,
-	Class = atom.Class;
+var undefined, Class = atom.Class;
 /*
 ---
 
