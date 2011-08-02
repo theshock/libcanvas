@@ -24,12 +24,6 @@ provides: Shapes.Path
 var Path = LibCanvas.Shapes.Path = Class({
 	Extends: Shape,
 
-	Generators : {
-		buffer: function () {
-			return Buffer(1, 1, true);
-		}
-	},
-
 	getCoords: null,
 	set : function (builder) {
 		this.builder = builder;
@@ -61,8 +55,11 @@ var Path = LibCanvas.Shapes.Path = Class({
 		});
 		return points;
 	},
+	get center () {
+		return new Point().mean(this.allPoints);
+	},
 	hasPoint : function (point) {
-		var ctx = this.buffer.ctx;
+		var ctx = shapeTestBuffer.ctx;
 		if (this.builder.changed) {
 			this.builder.changed = false;
 			this.processPath(ctx);
