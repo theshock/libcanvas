@@ -22,6 +22,8 @@ provides: Shape
 ...
 */
 
+var shapeTestBuffer = Buffer(1, 1, true);
+
 var Shape = LibCanvas.Shape = Class({
 	Extends    : Geometry,
 	set        : Class.abstractMethod,
