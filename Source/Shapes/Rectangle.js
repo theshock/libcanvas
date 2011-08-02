@@ -185,8 +185,8 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class({
 		this.to.snapToPixel();
 		return this;
 	},
-	dump: function () {
-		return this.parent('Rectangle');
+	dump: function (name) {
+		return this.parent(name || 'Rectangle');
 	},
 	toPolygon: function () {
 		return new Polygon(
