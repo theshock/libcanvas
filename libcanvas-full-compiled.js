@@ -5277,32 +5277,30 @@ return Class({
 		            (point ? new Point(x, y) : true) : FALSE;
 	},
 	distanceTo: function (p, asInfiniteLine) {
-		var f = this.from, t = this.t, degree, s, x, y;
-		if (p instanceof Point) {
+		p = Point(p);
+		var f = this.from, t = this.to, degree, s, x, y;
 			
-			if (!asInfiniteLine) {
-				degree = Math.atan2(p.x - t.x, p.y - t.y).getDegree();
-				if ( degree.between(-90, 90) ) {
-					return t.distanceTo( p );
-				}
-
-				degree = Math.atan2(f.x - p.x, f.y - p.y).getDegree();
-				if ( degree.between(-90, 90) ) {
-					return f.distanceTo( p );
-				}
+		if (!asInfiniteLine) {
+			degree = Math.atan2(p.x - t.x, p.y - t.y).getDegree();
+			if ( degree.between(-90, 90) ) {
+				return t.distanceTo( p );
 			}
 
-			s = (
-				f.x * (t.y - p.y) +
-				t.x * (p.y - f.y) +
-				p.x * (f.y - t.y)
-			).abs() / 2;
-
-			x = f.x - t.x;
-			y = f.y - t.y;
-			return 2 * s / Math.sqrt(x*x+y*y);
+			degree = Math.atan2(f.x - p.x, f.y - p.y).getDegree();
+			if ( degree.between(-90, 90) ) {
+				return f.distanceTo( p );
+			}
 		}
-		return null;
+
+		s = (
+			f.x * (t.y - p.y) +
+			t.x * (p.y - f.y) +
+			p.x * (f.y - t.y)
+		).abs() / 2;
+
+		x = f.x - t.x;
+		y = f.y - t.y;
+		return 2 * s / Math.sqrt(x*x+y*y);
 	},
 	get length () {
 		return this.to.distanceTo(this.from);
