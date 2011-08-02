@@ -2943,8 +2943,9 @@ var Circle = LibCanvas.Shapes.Circle = Class({
 	hasPoint : function (point) {
 		return this.center.distanceTo(point) <= this.radius;
 	},
-	scale : function (factor) {
-		this.center.scale(factor);
+	scale : function (factor, pivot) {
+		if (pivot) this.center.scale(factor, pivot);
+		this.radius *= factor;
 		return this;
 	},
 	getCenter: function () {
