@@ -96,7 +96,7 @@ LibCanvas.Animation.Sprite
 
 ## Метод stop
 
-	[LibCanvas.Animation.Sprite] .stop( Boolean force );
+	[LibCanvas.Animation.Sprite] stop( Boolean force );
 
 Останавливает выполнение анимации, если `force=false` или всех анимаций, если `force=true`. Позволяет остановить зацикленную анимацию или запустить необходимую анимацию мгновенно.
 
