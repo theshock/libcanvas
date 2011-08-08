@@ -105,6 +105,19 @@ LibCanvas.Shapes.Line
 
 #### Возвращает `this`
 
+## Метод perpendicular
+
+	LibCanvas.Point perpendicular(LibCanvas.Point point)
+
+Возвращает перпендикуляр точки `point` на текущую прямую
+
+#### Пример
+	var line  = new LibCanvas.Line( [0,3], [4,0] );
+	var point = new LibCanvas.Point( 0, 0 );
+
+	line.perpendicular( point ); // Point(1.44, 1.92)
+
+
 ## Метод intersect
 
 	bool intersect(LibCanvas.Shapes.Line line)
