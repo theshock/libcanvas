@@ -96,6 +96,11 @@ var Path = LibCanvas.Shapes.Path = Class({
 		}.bind(this));
 		return this;
 	},
+	clone: function () {
+		var builder = new Path.Builder;
+		builder.parts.append( this.builder.parts.clone() );
+		return builder.build();
+	},
 	toString: Function.lambda('[object LibCanvas.Shapes.Path]')
 });
 
