@@ -413,6 +413,10 @@ LibCanvas.Context2D
 			'1.0': 'green'
 		});
 
+## Метод createRectangleGradient
+
+	//// todo
+
 # Следующие методы повторяют методы из оригинального контекста:
  * scale
  * transform

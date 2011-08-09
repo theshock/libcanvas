@@ -3696,6 +3696,13 @@ var Context2D = Class({
 		if (typeof colors == 'object') gradient.addColorStop( colors );
 		return gradient;
 	},
+	createRectangleGradient: function (rectangle, colors) {
+		rectangle = Rectangle( rectangle );
+
+		var from = rectangle.from, line = new Line( rectangle.bottomLeft, rectangle.topRight );
+
+		return this.createGradient( from, line.perpendicular(from).scale(2, from), colors );
+	},
 	createLinearGradient : function (from, to) {
 		var a = arguments;
 		if (a.length != 4) {
