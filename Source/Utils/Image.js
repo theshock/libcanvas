@@ -102,7 +102,7 @@ atom.implement(HTMLImageElement, {
 	},
 	isLoaded : function () {
 		if (!this.complete)  return false;
-		return this.naturalWidth == null || this.naturalWidth;
+		return (this.naturalWidth == null) || !!this.naturalWidth;
 	}
 });
 	// mixin from image
