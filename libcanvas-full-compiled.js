@@ -3571,6 +3571,8 @@ var Context2D = Class({
 					y : from.y + a.image.height/2
 				};
 				this.rotate(a.angle, center);
+			} else if (a.optimize) {
+				from = { x: from.x.round(), y: from.y.round() }
 			}
 			this.original('drawImage', [
 				a.image, from.x, from.y
@@ -3587,9 +3589,24 @@ var Context2D = Class({
 					draw.from.x, draw.from.y, draw.width, draw.height
 				]);
 			} else {
-				this.original('drawImage', [
-					a.image, draw.from.x, draw.from.y, draw.width, draw.height
-				]);
+				if (a.optimize) {
+					var size = draw.size, dSize = {
+						x: (size.width  - a.image.width ).abs(),
+						y: (size.height - a.image.height).abs()
+					};
+					from = { x: draw.from.x.round(), y: draw.from.y.round() };
+					if (dSize.x <= 1.1 && dSize.y <= 1.1 ) {
+						this.original('drawImage', [ a.image, from.x, from.y ]);
+					} else {
+						this.original('drawImage', [
+							a.image, from.x, from.y, size.width.round(), size.height.round()
+						]);
+					}
+				} else {
+					this.original('drawImage', [
+						a.image, draw.from.x, draw.from.y, draw.width, draw.height
+					]);
+				}
 			}
 		} else {
 			throw new TypeError('Wrong Args in Context.drawImage');
