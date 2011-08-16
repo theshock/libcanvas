@@ -2335,9 +2335,6 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 
 		if (this.options.autoStart) this.isReady();
 		
-		this.addEvent('ready', function () {
-			this.update.delay(0);
-		});
 		aElem
 			.attr('data-layer-name', this.name)
 			.css('position', 'absolute');
