@@ -40,11 +40,17 @@ return Class({
 			this.libcanvas = libcanvas;
 		} else {
 			this.libcanvas = libcanvas;
-			this.addEvent('libcanvasReady', function () {
+			var isReady = this.libcanvas.isReady();
+			if (isReady) {
 				this.libcanvasIsReady = true;
-			});
+			} else {
+				this.addEvent('libcanvasReady', function () {
+					this.libcanvasIsReady = true;
+				});
+				this.libcanvas.addEvent('ready', this.readyEvent.bind(this, 'libcanvasReady'));
+			}
 			this.readyEvent('libcanvasSet');
-			this.libcanvas.addEvent('ready', this.readyEvent.bind(this, 'libcanvasReady'));
+			if (isReady) this.readyEvent('libcanvasReady');
 		}
 		return this;
 	},

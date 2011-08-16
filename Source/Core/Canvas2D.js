@@ -135,9 +135,9 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 		cover.css('zIndex', this.maxZIndex + 100);
 
 		if (this.options.autoStart) this.isReady();
-
+		
 		this.addEvent('ready', function () {
-			this.update.delay(0)
+			this.update.delay(0);
 		});
 		aElem
 			.attr('data-layer-name', this.name)
@@ -209,7 +209,7 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 		return this;
 	}),
 
-	updateFrame : true,
+	updateFrame : false,
 	update : function () {
 		this.updateFrame = true;
 		return this;
