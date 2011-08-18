@@ -24,23 +24,36 @@ provides: Canvas2D
 ...
 */
 
-var Canvas2D = LibCanvas.Canvas2D = Class({
+var Canvas2D = LibCanvas.Canvas2D = Class(
+/**
+ * @lends Canvas2D.prototype
+ * @augments LibCanvas
+ * @augments FrameRenderer
+ * @augments InnerFpsMeter
+ * @augments DownloadingProgress
+ * @augments Class.Events
+ * @augments Class.Options
+ */
+{
 	Extends: LibCanvas,
 	Implements: [
 		FrameRenderer,
-		Inner.FpsMeter,
+		InnerFpsMeter,
 		DownloadingProgress,
 		Class.Events,
 		Class.Options
 	],
 
 	Generators: {
+		/** @private */
 		mouse: function () {
 			throw new Error('Mouse is not listened by libcanvas');
 		},
+		/** @private */
 		keyboard: function () {
 			throw new Error('Keyboard is not listened by libcanvas');
 		},
+		/** @private */
 		wrapper: function () {
 			var wrapper = atom.dom.create('div').css({
 				width   : '100%',
@@ -52,6 +65,7 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 			return wrapper.appendTo(wrapper.parent);
 		},
 		// Needs for right mouse behaviour
+		/** @private */
 		cover: function () {
 			if (this.parentLayer) return this.parentLayer.cover;
 			return atom.dom
@@ -64,6 +78,7 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 				.addClass('libcanvas-layers-cover')
 				.appendTo(this.wrapper);
 		},
+		/** @private */
 		invoker: function () {
 			return new Invoker({
 				context: this,
@@ -73,15 +88,15 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 		}
 	},
 
-	// @deprecated
-	set fps (value) {
-		this.options.fps = value;
-	},
-	get fps () {
-		return this.options.fps;
-	},
+	/** @deprecated */
+	set fps (f) { this.options.fps = f; },
+	/** @deprecated */
+	get fps ( ) { return this.options.fps; },
+
+	/** @private */
 	interval: null,
-	name: null,
+	/** @private */
+	name    : null,
 
 	options: {
 		name: 'main',
@@ -92,6 +107,12 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 		fps: 30
 	},
 
+	/**
+	 * @constructs
+	 * @param {atom.dom} elem
+	 * @param {object} options
+	 * @returns {Canvas2D}
+	 */
 	initialize : function (elem, options) {
 		Class.bindAll( this, 'update' );
 
@@ -141,17 +162,25 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 			.css('position', 'absolute');
 		this.zIndex = Infinity;
 	},
-	
+
+	/** @returns {Canvas2D} */
 	show: function () {
 		this.origElem.atom.css('display', 'block');
 		return this;
 	},
-	
+
+	/** @returns {Canvas2D} */
 	hide: function () {
 		this.origElem.atom.css('display', 'none');
 		return this;
 	},
 
+	/**
+	 * @param {number} size
+	 * @param {number} height
+	 * @param {number} wrapper
+	 * @returns {Canvas2D}
+	 */
 	size: function (size, height, wrapper) {
 		if (typeof size == 'object') {
 			wrapper = height;
@@ -171,7 +200,11 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 		}
 		return this;
 	},
-	
+
+	/**
+	 * @param {object} shift
+	 * @returns {Canvas2D}
+	 */
 	shift: function (shift, left) {
 		if (left != null) {
 			shift = { top: shift, left: left };
@@ -183,7 +216,8 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 		return this;
 	},
 
-	createProjectBuffer: Class.protectedMethod(function () {
+	/** @private */
+	createProjectBuffer: function () {
 		if (this.options.backBuffer == 'off') {
 			this.elem = this.origElem;
 			this.ctx  = this.origCtx;
@@ -192,9 +226,10 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 			this.ctx  = this.elem.getContext('2d-libcanvas');
 		}
 		return this;
-	}),
+	},
 
-	addClearer: Class.protectedMethod(function () {
+	/** @private */
+	addClearer: function () {
 		var clear = this.options.clear;
 		if (clear) {
 			this.addProcessor('pre',
@@ -204,36 +239,51 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 			);
 		}
 		return this;
-	}),
+	},
 
+	/** @private */
 	updateFrame : false,
+	/** @returns {Canvas2D} */
 	update : function () {
 		this.updateFrame = true;
 		return this;
 	},
+	/** @private */
 	_freezed: false,
+	/** @returns {Canvas2D} */
 	freeze: function (unfreeze) {
 		this._freezed = !unfreeze;
+		return this;
 	},
+
+	/** @returns {Canvas2D} */
 	listenMouse : function (elem) {
 		this._mouse = LibCanvas.isLibCanvas(elem) ? elem.mouse
 			: new Mouse(this, /* preventDefault */elem);
 		return this;
 	},
+
+	/**
+	 * @param {string} key
+	 * @returns {boolean}
+	 */
 	getKey : function (key) {
 		return this.keyboard.keyState(key);
 	},
+	/** @returns {Canvas2D} */
 	listenKeyboard : function (elem) {
 		this._keyboard = LibCanvas.isLibCanvas(elem) ? elem.keyboard
 			: new Keyboard(/* preventDefault */elem);
 		return this;
 	},
+	/** @returns {HTMLCanvasElement} */
 	createBuffer : function (width, height) {
 		return Buffer.apply(LibCanvas,
 			arguments.length ? arguments :
 				Array.collect(this.origElem, ['width', 'height'])
 		);
 	},
+	/** @returns {Shaper} */
 	createShaper : function (options) {
 		var shaper = new Shaper(this, options);
 		this.addElement(shaper);
@@ -241,16 +291,19 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 	},
 
 	// post-/pre- procesing
+	/** @returns {Canvas2D} */
 	addProcessor : function (type, processor) {
 		this.processors[type].push(processor);
 		return this;
 	},
+	/** @returns {Canvas2D} */
 	rmProcessor : function (type, processor) {
 		this.processors[type].erase(processor);
 		return this;
 	},
 
 	// Element : add, rm
+	/** @returns {Canvas2D} */
 	addElement : function (elem) {
 		this.elems.include(elem);
 		if (elem.libcanvas != this) {
@@ -258,10 +311,12 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 		}
 		return this;
 	},
+	/** @returns {Canvas2D} */
 	rmElement : function (elem) {
 		this.elems.erase(elem);
 		return this;
 	},
+	/** @returns {Canvas2D} */
 	rmAllElements: function () {
 		this.elems.empty();
 		return this;
@@ -269,6 +324,7 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 
 	// Each frame funcs
 
+	/** @returns {Canvas2D} */
 	addFunc: function (priority, fn, isRender) {
 		if (fn == null) {
 			fn = priority;
@@ -280,9 +336,11 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 		}
 		return this;
 	},
+	/** @returns {Canvas2D} */
 	addRender: function (priority, fn) {
 		return this.addFunc(priority, fn, true);
 	},
+	/** @returns {Canvas2D} */
 	rmFunc : function (fn) {
 		var f = this.funcs;
 		f.plain.erase(fn);
@@ -291,6 +349,7 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 	},
 
 	// Start, pause, stop
+	/** @returns {Canvas2D} */
 	start : function (fn) {
 		fn && this.addRender(10, fn);
 		if (this.invoker.timeoutId == 0) {
@@ -302,12 +361,15 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 		this.invoker.invoke();
 		return this;
 	},
+	/** @returns {Canvas2D} */
 	stop: function () {
 		this.invoker.stop();
 		return this;
 	},
 
+	/** @property {Canvas2D} */
 	parentLayer: null,
+	/** @returns {Canvas2D} */
 	layer: function (name) {
 		if (!name) {
 			// gettin master layer
@@ -320,7 +382,8 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 			throw new Error('No layer «' + name + '»');
 		}
 	},
-	
+
+	/** @returns {Canvas2D} */
 	createLayer: function (name, z, options) {
 		if (name in this._layers) {
 			throw new Error('Layer «' + name + '» already exists');
@@ -336,7 +399,8 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 		layer.origElem.atom.attr({ 'data-layer-name': name });
 		return layer;
 	},
-	
+
+	/** @returns {Canvas2D} */
 	get topLayer () {
 		var max = 0, layers = this._layers, nameMax = null, layer = null;
 		for (var name in layers) {
@@ -347,12 +411,14 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 		}
 		return layer;
 	},
-	
+
+	/** @returns {number} */
 	get maxZIndex () {
 		var top = this.topLayer;
 		return top ? top.zIndex : 1;
 	},
-	
+
+	/** @private */
 	_zIndex: null,
 	
 	set zIndex (value) {
@@ -385,10 +451,14 @@ var Canvas2D = LibCanvas.Canvas2D = Class({
 		return this._zIndex;
 	},
 
-	// not clonable
+	/**
+	 * not clonable
+	 * @returns {Canvas2D}
+	 */
 	get clone () {
 		return this;
 	},
+	/** @returns {string} */
 	dump: function () {
 		var el = this.elem, 
 			pr = [
