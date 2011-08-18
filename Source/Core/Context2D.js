@@ -80,7 +80,9 @@ var accessors = {};
 	})
 });
 	
-var Context2D = Class({
+var Context2D = Class(
+/** @lends Context2D.prototype */
+{
 	Implements: Class(accessors),
 
 	initialize : function (canvas) {
@@ -110,6 +112,7 @@ var Context2D = Class({
 	},
 	
 	_rectangle: null,
+	/** @returns {Rectangle} */
 	get rectangle () {
 		var rect = this._rectangle;
 		if (!rect) {
@@ -119,9 +122,11 @@ var Context2D = Class({
 		}
 		return rect;
 	},
+	/** @deprecated */
 	getFullRectangle : function () {
 		return this.rectangle;
 	},
+	/** @returns {Context2D} */
 	original : function (method, args, returnResult) {
 		try {
 			var result = this.ctx2d[method].apply(this.ctx2d, args || []);
@@ -132,6 +137,7 @@ var Context2D = Class({
 		}
 		return this;
 	},
+	/** @returns {HTMLCanvasElement} */
 	getClone : function (width, height) {
 		var resize = !!(width || height), canvas = this.canvas;
 		width  = width  || canvas.width;
@@ -146,42 +152,52 @@ var Context2D = Class({
 	},
 
 	// Values
+	/** @returns {Context2D} */
 	set : function (name, value) {
 		if (typeof name == 'object') {
 			for (var i in name) this[i] = name[i];
 		} else this[name] = value;
 		return this;
 	},
+	/** @returns {string} */
 	get : function (name) {
 		return this[name];
 	},
 
 	// All
+	/** @returns {Context2D} */
 	fillAll : function (style) {
 		return office.all.call(this, 'fill', style);
 	},
+	/** @returns {Context2D} */
 	strokeAll : function (style) {
 		return office.all.call(this, 'stroke', style);
 	},
+	/** @returns {Context2D} */
 	clearAll : function (style) {
 		return office.all.call(this, 'clear', style);
 	},
 
 	// Save/Restore
+	/** @returns {Context2D} */
 	save : function () {
 		return this.original('save');
 	},
+	/** @returns {Context2D} */
 	restore : function () {
 		return this.original('restore');
 	},
 
 	// Fill/Stroke
+	/** @returns {Context2D} */
 	fill : function (shape) {
 		return office.fillStroke.call(this, 'fill', arguments);
 	},
+	/** @returns {Context2D} */
 	stroke : function (shape) {
 		return office.fillStroke.call(this, 'stroke', arguments);
 	},
+	/** @returns {Context2D} */
 	clear: function (shape) {
 		return shape instanceof Shape && shape.self != Rectangle ?
 			this
@@ -193,22 +209,27 @@ var Context2D = Class({
 	},
 
 	// Path
+	/** @returns {Context2D} */
 	beginPath : function (moveTo) {
 		var ret = this.original('beginPath');
 		arguments.length && this.moveTo.apply(this, arguments);
 		return ret;
 	},
+	/** @returns {Context2D} */
 	closePath : function () {
 		arguments.length && this.lineTo.apply(this, arguments);
 		return this.original('closePath');
 	},
+	/** @returns {Context2D} */
 	moveTo : function (point) {
 		return office.originalPoint.call(this, 'moveTo', arguments);
 	},
+	/** @returns {Context2D} */
 	lineTo : function (point) {
 		return office.originalPoint.call(this, 'lineTo', arguments);
 	},
 
+	/** @returns {Context2D} */
 	arc : function (x, y, r, startAngle, endAngle, anticlockwise) {
 		var a = Array.pickFrom(arguments), circle, angle, acw;
 		if (a.length > 1) {
@@ -236,10 +257,12 @@ var Context2D = Class({
 		]);
 	},
 
+	/** @returns {Context2D} */
 	arcTo : function () {
 		// @todo Beauty arguments
 		return this.original('arcTo', arguments);
 	},
+	/** @returns {Context2D} */
 	curveTo: function (curve) {
 		var p, l, to;
 
@@ -272,6 +295,7 @@ var Context2D = Class({
 		}
 		return this;
 	},
+	/** @returns {Context2D} */
 	quadraticCurveTo : function () {
 		var a = arguments;
 		if (a.length == 4) {
@@ -284,6 +308,7 @@ var Context2D = Class({
 			});
 		}
 	},
+	/** @returns {Context2D} */
 	bezierCurveTo : function () {
 		var a = arguments;
 		if (a.length == 6) {
@@ -296,10 +321,12 @@ var Context2D = Class({
 			});
 		}
 	},
+	/** @returns {boolean} */
 	isPointInPath : function (x, y) {
 		var point = Point(arguments);
 		return this.original('isPointInPath', [point.x, point.y], true);
 	},
+	/** @returns {Context2D} */
 	clip : function (shape) {
 		if (shape && typeof shape.processPath == 'function') {
 			shape.processPath(this);
@@ -308,6 +335,7 @@ var Context2D = Class({
 	},
 
 	// transformation
+	/** @returns {Context2D} */
 	rotate : function (angle, pivot) {
 		if (angle) {
 			if (pivot) this.translate(pivot);
@@ -316,6 +344,7 @@ var Context2D = Class({
 		}
 		return this;
 	},
+	/** @returns {Context2D} */
 	translate : function (point, reverse) {
 		point = Point(
 			(arguments.length === 1 || typeof reverse === 'boolean')
@@ -325,39 +354,49 @@ var Context2D = Class({
 		this.original('translate', [point.x * multi, point.y * multi]);
 		return this;
 	},
+	/** @returns {Context2D} */
 	scale : function () {
 		return office.originalPoint.call(this, 'scale', arguments);
 	},
+	/** @returns {Context2D} */
 	transform : function () {
 		// @todo Beauty arguments
 		return this.original('transform', arguments);
 	},
+	/** @returns {Context2D} */
 	setTransform : function () {
 		// @todo Beauty arguments
 		return this.original('setTransform', arguments);
 	},
 
 	// Rectangle
+	/** @returns {Context2D} */
 	fillRect : function (rectangle) {
 		return office.rect.call(this, 'fillRect', arguments);
 	},
+	/** @returns {Context2D} */
 	strokeRect : function (rectangle) {
 		return office.rect.call(this, 'strokeRect', arguments);
 	},
+	/** @returns {Context2D} */
 	clearRect : function (rectangle) {
 		return office.rect.call(this, 'clearRect', arguments);
 	},
 
 	// text
+	/** @returns {Context2D} */
 	fillText : function (text, x, y, maxWidth) {
 		return this.original('fillText', arguments);
 	},
+	/** @returns {Context2D} */
 	strokeText : function (text, x, y, maxWidth) {
 		return this.original('strokeText', arguments);
 	},
+	/** @returns {object} */
 	measureText : function (textToMeasure) {
 		return this.original('measureText', arguments, true);
 	},
+	/** @returns {Context2D} */
 	text : function (cfg) {
 		if (!this.ctx2d.fillText) return this;
 		
@@ -456,38 +495,7 @@ var Context2D = Class({
 	},
 
 	// image
-	createImageData : function () {
-		var w, h;
-
-		var args = Array.pickFrom(arguments);
-		switch (args.length) {
-			case 0:{
-				w = this.canvas.width;
-				h = this.canvas.height;
-			} break;
-
-			case 1: {
-				var obj = args[0];
-				if (atom.typeOf(obj) == 'object' && ('width' in obj) && ('height' in obj)) {
-					w = obj.width;
-					h = obj.height;
-				}
-				else {
-					throw new TypeError('Wrong argument in the Context.createImageData');
-				}
-			} break;
-
-			case 2: {
-				w = args[0];
-				h = args[1];
-			} break;
-
-			default: throw new TypeError('Wrong args number in the Context.createImageData');
-		}
-
-		return this.original('createImageData', [w, h], true);
-	},
-
+	/** @returns {Context2D} */
 	drawImage : function (a) {
 		if (arguments.length > 2) return this.original('drawImage', arguments);
 		if (arguments.length == 2) {
@@ -555,6 +563,7 @@ var Context2D = Class({
 		return this.restore();
 	},
 
+	/** @returns {Context2D} */
 	projectiveImage : function (arg) {
 		// test
 		new ProjectiveTexture(arg.image)
@@ -564,6 +573,41 @@ var Context2D = Class({
 		return this;
 	},
 
+	// image data
+	/** @returns {CanvasPixelArray} */
+	createImageData : function () {
+		var w, h;
+
+		var args = Array.pickFrom(arguments);
+		switch (args.length) {
+			case 0:{
+				w = this.canvas.width;
+				h = this.canvas.height;
+			} break;
+
+			case 1: {
+				var obj = args[0];
+				if (atom.typeOf(obj) == 'object' && ('width' in obj) && ('height' in obj)) {
+					w = obj.width;
+					h = obj.height;
+				}
+				else {
+					throw new TypeError('Wrong argument in the Context.createImageData');
+				}
+			} break;
+
+			case 2: {
+				w = args[0];
+				h = args[1];
+			} break;
+
+			default: throw new TypeError('Wrong args number in the Context.createImageData');
+		}
+
+		return this.original('createImageData', [w, h], true);
+	},
+
+	/** @returns {Context2D} */
 	putImageData : function () {
 		var a = arguments, put = {}, args, rect;
 
@@ -603,7 +647,7 @@ var Context2D = Class({
 
 		return this.original('putImageData', args);
 	},
-
+	/** @returns {CanvasPixelArray} */
 	getImageData : function (rectangle) {
 		var rect = office.makeRect.call(this, arguments);
 
@@ -639,6 +683,9 @@ var Context2D = Class({
 			a: data[3] / 255
 		};
 	},
+
+
+	/** @returns {CanvasGradient} */
 	createGradient: function (from, to, colors) {
 		var gradient;
 		if ( from instanceof Rectangle ) {
@@ -654,6 +701,7 @@ var Context2D = Class({
 		if (typeof colors == 'object') gradient.addColorStop( colors );
 		return gradient;
 	},
+	/** @returns {CanvasGradient} */
 	createRectangleGradient: function (rectangle, colors) {
 		rectangle = Rectangle( rectangle );
 
@@ -661,6 +709,7 @@ var Context2D = Class({
 
 		return this.createGradient( from, line.perpendicular(from).scale(2, from), colors );
 	},
+	/** @returns {CanvasGradient} */
 	createLinearGradient : function (from, to) {
 		var a = arguments;
 		if (a.length != 4) {
@@ -676,6 +725,7 @@ var Context2D = Class({
 		}
 		return fixGradient( this.original('createLinearGradient', a, true) );
 	},
+	/** @returns {CanvasGradient} */
 	createRadialGradient: function () {
 		var points, c1, c2, a = arguments;
 		if (a.length == 1 || a.length == 2) {
@@ -696,12 +746,15 @@ var Context2D = Class({
 		return fixGradient( this.original('createRadialGradient', points, true) );
 	},
 
+	/** @returns {CanvasPattern} */
 	createPattern : function () {
 		return this.original('createPattern', arguments, true);
 	},
+	/** @returns {CanvasGradient} */
 	drawWindow : function () {
 		return this.original('drawWindow', arguments);
 	},
+	/** @returns {string} */
 	toString: Function.lambda('[object LibCanvas.Context2D]')
 	// Such moz* methods wasn't duplicated:
 	// mozTextStyle, mozDrawText, mozMeasureText, mozPathText, mozTextAlongPath
