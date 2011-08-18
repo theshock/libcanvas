@@ -39,11 +39,22 @@ var shifts = {
 	br     : {x: 1, y: 1}
 };
 
-return Class({
+return Class(
+/**
+ * @lends LibCanvas.Point.prototype
+ * @augments LibCanvas.Geometry
+ */
+{
 	Extends: Geometry,
 
 	Static: { shifts: shifts },
 
+	/**
+	 * @constructs
+	 * @param {Number} x
+	 * @param {Number} y
+	 * @returns {LibCanvas.Point}
+	 */
 	set : function (x, y) {
 		var args = arguments;
 		if (atom.typeOf(x) == 'arguments') {
@@ -67,6 +78,7 @@ return Class({
 		this.y = y == null ? null : Number(y);
 		return this;
 	},
+	/** @returns {LibCanvas.Point} */
 	move: function (distance, reverse) {
 		distance = this.invertDirection(Point(distance), reverse);
 		this.x += distance.x;
@@ -74,20 +86,25 @@ return Class({
 
 		return this.parent(distance, false);
 	},
+	/** @returns {LibCanvas.Point} */
 	moveTo : function (newCoord) {
 		return this.move(this.diff(Point(arguments)));
 	},
+	/** @returns {Number} */
 	angleTo : function (point) {
 		var diff = Point(arguments).diff(this);
 		return Math.atan2(diff.y, diff.x).normalizeAngle();
 	},
+	/** @returns {Number} */
 	distanceTo : function (point) {
 		var diff = Point(arguments).diff(this);
 		return Math.hypotenuse(diff.x, diff.y);
 	},
+	/** @returns {LibCanvas.Point} */
 	diff : function (point) {
 		return new Point(arguments).move(this, true);
 	},
+	/** @returns {LibCanvas.Point} */
 	rotate : function (angle, pivot) {
 		pivot = Point(pivot || {x: 0, y: 0});
 		if (this.equals(pivot)) return this;
@@ -102,6 +119,7 @@ return Class({
 			y : newAngle.cos() * radius + pivot.y
 		});
 	},
+	/** @returns {LibCanvas.Point} */
 	scale : function (power, pivot) {
 		pivot = Point(pivot || {x: 0, y: 0});
 		var diff = this.diff(pivot), isObject = typeof power == 'object';
@@ -110,23 +128,28 @@ return Class({
 			y : pivot.y - diff.y  * (isObject ? power.y : power)
 		});
 	},
+	/** @returns {LibCanvas.Point} */
 	alterPos : function (arg, fn) {
 		return this.moveTo({
 			x: fn(this.x, typeof arg == 'object' ? arg.x : arg),
 			y: fn(this.y, typeof arg == 'object' ? arg.y : arg)
 		});
 	},
+	/** @returns {LibCanvas.Point} */
 	mul : function (arg) {
 		return this.alterPos(arg, function(a, b) {
 			return a * b;
 		});
 	},
+	/** @returns {LibCanvas.Point} */
 	getNeighbour : function (dir) {
 		return this.clone().move(shifts[dir]);
 	},
+	/** @returns {LibCanvas.Point[]} */
 	get neighbours () {
 		return this.getNeighbours( true );
 	},
+	/** @returns {LibCanvas.Point[]} */
 	getNeighbours: function (corners, asObject) {
 		var shifts = ['t', 'l', 'r', 'b'], result, i, dir;
 
@@ -143,17 +166,20 @@ return Class({
 			return shifts.map(this.getNeighbour.bind(this));
 		}
 	},
+	/** @returns {boolean} */
 	equals : function (to, accuracy) {
 		to = Point(to);
 		return accuracy == null ? (to.x == this.x && to.y == this.y) :
 			(this.x.equals(to.x, accuracy) && this.y.equals(to.y, accuracy));
 	},
+	/** @returns {object} */
 	toObject: function () {
 		return {
 			x: this.x,
 			y: this.y
 		};
 	},
+	/** @returns {LibCanvas.Point} */
 	mean: function (points) {
 		var l = points.length, i = l, x = 0, y = 0;
 		while (i--) {
@@ -162,14 +188,17 @@ return Class({
 		}
 		return this.set(x/l, y/l);
 	},
+	/** @returns {LibCanvas.Point} */
 	snapToPixel: function () {
 		this.x += 0.5 - (this.x - this.x.floor());
 		this.y += 0.5 - (this.y - this.y.floor());
 		return this;
 	},
+	/** @returns {LibCanvas.Point} */
 	clone : function () {
 		return new this.self(this);
 	},
+	/** @returns {string} */
 	dump: function () {
 		return '[Point(' + this.x + ', ' + this.y + ')]';
 	},
