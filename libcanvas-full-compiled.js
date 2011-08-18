@@ -1574,11 +1574,19 @@ events:
 
 // Should extends LibCanvas.Behaviors.Drawable
 var MouseListener = LibCanvas.Behaviors.MouseListener = Class({
+	'listenMouse.start': function () {
+		this.libcanvas.mouse.subscribe(this);
+	},
+	'listenMouse.stop': function () {
+		this.libcanvas.mouse.subscribe(this);
+	},
+
 	listenMouse : function (stopListen) {
-		return this.addEvent('libcanvasSet', function () {
-			var command = stopListen ? "unsubscribe" : "subscribe";
-			this.libcanvas.mouse[command](this);
-		}.bind(this));
+		var method = this[ 'listenMouse.' + (stopListen ? 'stop' : 'start') ];
+
+		this.libcanvas ? method.call( this ) :
+			this.addEvent('libcanvasSet', method );
+		return this;
 	}
 });
 
@@ -1706,7 +1714,11 @@ return Class({
 
 	draggable : function (stopDrag) {
 		if (! ('draggable.isDraggable' in this) ) {
-			this.addEvent('libcanvasSet', initDraggable);
+			if (this.libcanvas) {
+				initDraggable.call( this );
+			} else {
+				this.addEvent('libcanvasSet', initDraggable);
+			}
 		}
 		this['draggable.isDraggable'] = !stopDrag;
 		return this;
@@ -2847,6 +2859,7 @@ provides: Shapes.Rectangle
 ...
 */
 
+/** @name Rectangle */
 var Rectangle = LibCanvas.Shapes.Rectangle = Class(
 /**
  * @lends LibCanvas.Shapes.Rectangle.prototype

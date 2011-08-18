@@ -22,6 +22,7 @@ provides: Shapes.Rectangle
 ...
 */
 
+/** @name Rectangle */
 var Rectangle = LibCanvas.Shapes.Rectangle = Class(
 /**
  * @lends LibCanvas.Shapes.Rectangle.prototype

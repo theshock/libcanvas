@@ -70,7 +70,11 @@ return Class({
 
 	draggable : function (stopDrag) {
 		if (! ('draggable.isDraggable' in this) ) {
-			this.addEvent('libcanvasSet', initDraggable);
+			if (this.libcanvas) {
+				initDraggable.call( this );
+			} else {
+				this.addEvent('libcanvasSet', initDraggable);
+			}
 		}
 		this['draggable.isDraggable'] = !stopDrag;
 		return this;
