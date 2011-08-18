@@ -79,10 +79,80 @@ var accessors = {};
 		}
 	})
 });
+
+var constants =
+/** @lends Context2D */
+{
+	COMPOSITE: {
+		SOURCE_OVER: 'source-over',
+		SOURCE_IN  : 'source-in',
+		SOURCE_OUT : 'source-out',
+		SOURCE_ATOP: 'source-atop',
+
+		DESTINATION_OVER: 'destination-over',
+		DESTINATION_IN  : 'destination-in',
+		DESTINATION_OUT : 'destination-out',
+		DESTINATION_ATOP: 'destination-atop',
+
+		LIGHTER: 'lighter',
+		DARKER : 'darker',
+		COPY   : 'copy',
+		XOR    : 'xor'
+	},
+
+	LINE_CAP: {
+		BUTT  : 'butt',
+		ROUND : 'round',
+		SQUARE: 'square'
+	},
+
+	LINE_JOIN: {
+		ROUND: 'round',
+		BEVEL: 'bevel',
+		MITER: 'miter'
+	},
+
+	TEXT_ALIGN: {
+		LEFT  : 'left',
+		RIGHT : 'right',
+		CENTER: 'center',
+		START : 'start',
+		END   : 'end'
+	},
+
+	TEXT_BASELINE: {
+		TOP        : 'top',
+		HANGING    : 'hanging',
+		MIDDLE     : 'middle',
+		ALPHABETIC : 'alphabetic',
+		IDEOGRAPHIC: 'ideographic',
+		BOTTOM     : 'bottom'
+	}
+
+};
 	
 var Context2D = Class(
-/** @lends Context2D.prototype */
+/**
+ * @lends Context2D.prototype
+ * @property {string} fillStyle
+ * @property {string} font
+ * @property {number} globalAlpha
+ * @property {string} globalCompositeOperation
+ * @property {string} lineCap
+ * @property {string} lineJoin
+ * @property {number} lineWidth
+ * @property {number} miterLimit
+ * @property {number} shadowOffsetX
+ * @property {number} shadowOffsetY
+ * @property {number} shadowBlur
+ * @property {string} shadowColor
+ * @property {string} strokeStyle
+ * @property {string} textAlign
+ * @property {string} textBaseline
+ */
 {
+	Static: constants,
+
 	Implements: Class(accessors),
 
 	initialize : function (canvas) {
