@@ -20,19 +20,27 @@ provides: Utils.Canvas
 ...
 */
 
-atom.extend(HTMLCanvasElement, {
+atom.extend(HTMLCanvasElement,
+/** @lends HTMLCanvasElement */
+{
+	/** @private */
 	_newContexts: {},
+	/** @returns {HTMLCanvasElement} */
 	addContext: function (name, ctx) {
 		this._newContexts[name] = ctx;
 		return this;
 	},
+	/** @returns {Context2D} */
 	getContext: function (name) {
 		return this._newContexts[name] || null;
 	}
 });
 
-atom.implement(HTMLCanvasElement, {
+atom.implement(HTMLCanvasElement,
+/** @lends HTMLCanvasElement.prototype */
+{
 	getOriginalContext: HTMLCanvasElement.prototype.getContext,
+	/** @returns {Context2D} */
 	getContext: function (type) {
 		if (!this.contextsList) {
 			this.contextsList = {};
