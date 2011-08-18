@@ -20,7 +20,13 @@ provides: Invoker
 ...
 */
 
-var Invoker = LibCanvas.Invoker = Class({
+var Invoker = LibCanvas.Invoker = Class(
+/**
+ * @lends LibCanvas.Invoker.prototype
+ * @augments Class.Options
+ * @augments Class.Events
+ */
+{
 	Static: {
 		AutoChoose: Class({
 			get invoker () {

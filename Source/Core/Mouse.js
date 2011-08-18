@@ -23,7 +23,12 @@ provides: Mouse
 */
 
 
-var Mouse = LibCanvas.Mouse = Class({
+var Mouse = LibCanvas.Mouse = Class(
+/**
+ * @lends LibCanvas.Mouse.prototype
+ * @augments Class.Events
+ */
+{
 	Implements: Class.Events,
 	
 	Static: {

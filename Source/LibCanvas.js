@@ -17,7 +17,9 @@ provides: LibCanvas
 ...
 */
 
-var LibCanvas = this.LibCanvas = Class({
+var LibCanvas = this.LibCanvas = Class(
+/** @lends LibCanvas.prototype */
+{
 	Static: {
 		Buffer: function (width, height, withCtx) {
 			var a = Array.pickFrom(arguments), zero = (width == null || width === true);
@@ -62,7 +64,7 @@ var LibCanvas = this.LibCanvas = Class({
 					to[k] = LibCanvas[i][k];
 				}
 			}
-			for (i in {Point: 1, Animation: 1, Processors: 1}) {
+			for (i in {Point: 1, Animation: 1, Processors: 1, Context2D: 1}) {
 				to[i] = LibCanvas[i];
 			}
 			return to;
@@ -75,6 +77,10 @@ var LibCanvas = this.LibCanvas = Class({
 			return this._invoker;
 		}
 	},
+	/**
+	 * @constructs
+	 * @returns {LibCanvas.Canvas2D}
+	 */
 	initialize: function() {
 		return Canvas2D.factory(arguments);
 	}

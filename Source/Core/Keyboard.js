@@ -22,7 +22,12 @@ provides: Keyboard
 
 var Keyboard = LibCanvas.Keyboard = function () {
 
-var Keyboard = Class({
+var Keyboard = Class(
+/**
+ * @lends LibCanvas.Keyboard.prototype
+ * @augments Class.Events
+ */
+{
 	Implements: Class.Events,
 	Static: {
 		keyCodes : {

@@ -30,7 +30,12 @@ var callParent = function (method) {
 	};
 };
 
-return Class({
+return Class(
+/**
+ * @lends LibCanvas.Layer.prototype
+ * @augments Canvas2D
+ */
+{
 	Extends: Canvas2D,
 
 	Generators: {

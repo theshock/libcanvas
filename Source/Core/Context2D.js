@@ -81,7 +81,7 @@ var accessors = {};
 });
 
 var constants =
-/** @lends Context2D */
+/** @lends LibCanvas.Context2D */
 {
 	COMPOSITE: {
 		SOURCE_OVER: 'source-over',
@@ -130,10 +130,10 @@ var constants =
 	}
 
 };
-	
+
 var Context2D = Class(
 /**
- * @lends Context2D.prototype
+ * @lends LibCanvas.Context2D.prototype
  * @property {string} fillStyle
  * @property {string} font
  * @property {number} globalAlpha

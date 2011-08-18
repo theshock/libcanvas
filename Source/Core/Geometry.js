@@ -20,7 +20,12 @@ provides: Geometry
 ...
 */
 
-var Geometry = LibCanvas.Geometry = Class({
+var Geometry = LibCanvas.Geometry = Class(
+/**
+ * @lends LibCanvas.Geometry.prototype
+ * @augments Class.Events
+ */
+{
 	Implements: Class.Events,
 	Static: {
 		invoke: function (obj) {

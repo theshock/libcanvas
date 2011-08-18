@@ -15,11 +15,11 @@ authors:
 ...
 */
 
-(function (atom, Math) { // LibCanvas
+(function (atom, Math, HTMLCanvasElement) { // LibCanvas
 
 'use strict';
 
 var undefined, Class = atom.Class;
 /*** [Code] ***/
 
-}).call(typeof window == 'undefined' ? exports : window, atom, Math);
+}).call(typeof window == 'undefined' ? exports : window, atom, Math, HTMLCanvasElement);
