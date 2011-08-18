@@ -25,7 +25,7 @@ var Keyboard = LibCanvas.Keyboard = function () {
 var Keyboard = Class(
 /**
  * @lends LibCanvas.Keyboard.prototype
- * @augments Class.Events
+ * @augments Class.Events.prototype
  */
 {
 	Implements: Class.Events,

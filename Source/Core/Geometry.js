@@ -23,7 +23,7 @@ provides: Geometry
 var Geometry = LibCanvas.Geometry = Class(
 /**
  * @lends LibCanvas.Geometry.prototype
- * @augments Class.Events
+ * @augments Class.Events.prototype
  */
 {
 	Implements: Class.Events,

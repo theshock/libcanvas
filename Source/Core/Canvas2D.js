@@ -27,12 +27,12 @@ provides: Canvas2D
 var Canvas2D = LibCanvas.Canvas2D = Class(
 /**
  * @lends LibCanvas.Canvas2D.prototype
- * @augments LibCanvas
- * @augments FrameRenderer
- * @augments InnerFpsMeter
- * @augments DownloadingProgress
- * @augments Class.Events
- * @augments Class.Options
+ * @augments LibCanvas.prototype
+ * @augments FrameRenderer.prototype
+ * @augments InnerFpsMeter.prototype
+ * @augments DownloadingProgress.prototype
+ * @augments Class.Events.prototype
+ * @augments Class.Options.prototype
  */
 {
 	Extends: LibCanvas,

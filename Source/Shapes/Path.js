@@ -21,7 +21,9 @@ provides: Shapes.Path
 
 ...
 */
-var Path = LibCanvas.Shapes.Path = Class({
+var Path = LibCanvas.Shapes.Path = Class(
+/** @lends {LibCanvas.Shapes.Path.prototype} */
+{
 	Extends: Shape,
 
 	getCoords: null,

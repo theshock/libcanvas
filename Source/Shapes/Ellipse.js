@@ -22,7 +22,9 @@ provides: Shapes.Ellipse
 ...
 */
 
-var Ellipse = LibCanvas.Shapes.Ellipse = Class({
+var Ellipse = LibCanvas.Shapes.Ellipse = Class(
+/** @lends {LibCanvas.Shapes.Ellipse.prototype} */
+{
 	Extends: Rectangle,
 	set : function () {
 		this.parent.apply(this, arguments);

@@ -29,7 +29,12 @@ var shapeTestBuffer = function () {
 	return shapeTestBuffer.buffer;
 };
 
-var Shape = LibCanvas.Shape = Class({
+var Shape = LibCanvas.Shape = Class(
+/**
+ * @lends LibCanvas.Shape.prototype
+ * @augments LibCanvas.Geometry.prototype
+ */
+{
 	Extends    : Geometry,
 	set        : Class.abstractMethod,
 	hasPoint   : Class.abstractMethod,

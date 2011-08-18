@@ -21,7 +21,12 @@ provides: Shapes.RoundedRectangle
 ...
 */
 
-var RoundedRectangle = LibCanvas.Shapes.RoundedRectangle = Class({
+var RoundedRectangle = LibCanvas.Shapes.RoundedRectangle = Class(
+/**
+ * @lends {LibCanvas.Shapes.RoundedRectangle.prototype}
+ * @augments {LibCanvas.Shapes.Rectangle.prototype}
+ */
+{
 	Extends: Rectangle,
 
 	radius: 0,

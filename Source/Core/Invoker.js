@@ -23,8 +23,8 @@ provides: Invoker
 var Invoker = LibCanvas.Invoker = Class(
 /**
  * @lends LibCanvas.Invoker.prototype
- * @augments Class.Options
- * @augments Class.Events
+ * @augments Class.Options.prototype
+ * @augments Class.Events.prototype
  */
 {
 	Static: {

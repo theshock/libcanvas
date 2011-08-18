@@ -26,7 +26,7 @@ provides: Mouse
 var Mouse = LibCanvas.Mouse = Class(
 /**
  * @lends LibCanvas.Mouse.prototype
- * @augments Class.Events
+ * @augments Class.Events.prototype
  */
 {
 	Implements: Class.Events,

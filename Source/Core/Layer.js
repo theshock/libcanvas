@@ -33,7 +33,7 @@ var callParent = function (method) {
 return Class(
 /**
  * @lends LibCanvas.Layer.prototype
- * @augments Canvas2D
+ * @augments LibCanvas.Canvas2D.prototype
  */
 {
 	Extends: Canvas2D,

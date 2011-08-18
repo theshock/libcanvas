@@ -22,7 +22,9 @@ provides: Shapes.Circle
 ...
 */
 
-var Circle = LibCanvas.Shapes.Circle = Class({
+var Circle = LibCanvas.Shapes.Circle = Class(
+/** @lends {LibCanvas.Shapes.Circle.prototype} */
+{
 	Extends: Shape,
 	set : function () {
 		var a = Array.pickFrom(arguments);

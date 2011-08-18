@@ -304,8 +304,8 @@ provides: Invoker
 var Invoker = LibCanvas.Invoker = Class(
 /**
  * @lends LibCanvas.Invoker.prototype
- * @augments Class.Options
- * @augments Class.Events
+ * @augments Class.Options.prototype
+ * @augments Class.Events.prototype
  */
 {
 	Static: {
@@ -843,7 +843,7 @@ provides: Geometry
 var Geometry = LibCanvas.Geometry = Class(
 /**
  * @lends LibCanvas.Geometry.prototype
- * @augments Class.Events
+ * @augments Class.Events.prototype
  */
 {
 	Implements: Class.Events,
@@ -1010,7 +1010,7 @@ var shifts = {
 return Class(
 /**
  * @lends LibCanvas.Point.prototype
- * @augments LibCanvas.Geometry
+ * @augments LibCanvas.Geometry.prototype
  */
 {
 	Extends: Geometry,
@@ -1315,7 +1315,7 @@ provides: Mouse
 var Mouse = LibCanvas.Mouse = Class(
 /**
  * @lends LibCanvas.Mouse.prototype
- * @augments Class.Events
+ * @augments Class.Events.prototype
  */
 {
 	Implements: Class.Events,
@@ -2277,12 +2277,12 @@ provides: Canvas2D
 var Canvas2D = LibCanvas.Canvas2D = Class(
 /**
  * @lends LibCanvas.Canvas2D.prototype
- * @augments LibCanvas
- * @augments FrameRenderer
- * @augments InnerFpsMeter
- * @augments DownloadingProgress
- * @augments Class.Events
- * @augments Class.Options
+ * @augments LibCanvas.prototype
+ * @augments FrameRenderer.prototype
+ * @augments InnerFpsMeter.prototype
+ * @augments DownloadingProgress.prototype
+ * @augments Class.Events.prototype
+ * @augments Class.Options.prototype
  */
 {
 	Extends: LibCanvas,
@@ -2752,7 +2752,12 @@ var shapeTestBuffer = function () {
 	return shapeTestBuffer.buffer;
 };
 
-var Shape = LibCanvas.Shape = Class({
+var Shape = LibCanvas.Shape = Class(
+/**
+ * @lends LibCanvas.Shape.prototype
+ * @augments LibCanvas.Geometry.prototype
+ */
+{
 	Extends    : Geometry,
 	set        : Class.abstractMethod,
 	hasPoint   : Class.abstractMethod,
@@ -2842,8 +2847,21 @@ provides: Shapes.Rectangle
 ...
 */
 
-var Rectangle = LibCanvas.Shapes.Rectangle = Class({
+var Rectangle = LibCanvas.Shapes.Rectangle = Class(
+/**
+ * @lends LibCanvas.Shapes.Rectangle.prototype
+ * @augments LibCanvas.Shape.prototype
+ */
+{
 	Extends: Shape,
+	/**
+	 * @constructs
+	 * @param {number} fromX
+	 * @param {number} fromY
+	 * @param {number} width
+	 * @param {number} height
+	 * @returns {LibCanvas.Shapes.Rectangle}
+	 */
 	set : function () {
 		var a = Array.pickFrom(arguments);
 
@@ -2921,6 +2939,7 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class({
 		this.height = height;
 		return this;
 	},
+	/** @returns {boolean} */
 	hasPoint : function (point, padding) {
 		point   = Point(arguments);
 		padding = padding || 0;
@@ -2928,6 +2947,7 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class({
 			&& point.x.between(Math.min(this.from.x, this.to.x) + padding, Math.max(this.from.x, this.to.x) - padding, 1)
 			&& point.y.between(Math.min(this.from.y, this.to.y) + padding, Math.max(this.from.y, this.to.y) - padding, 1);
 	},
+	/** @returns {LibCanvas.Shapes.Rectangle} */
 	align: function (rect, sides) {
 		var moveTo = this.from.clone();
 		if (sides.indexOf('left') != -1) {
@@ -2948,6 +2968,7 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class({
 
 		return this.moveTo( moveTo );
 	},
+	/** @returns {LibCanvas.Shapes.Rectangle} */
 	moveTo: function (rect) {
 		if (rect instanceof Point) {
 			this.move( this.from.diff(rect) );
@@ -2958,6 +2979,7 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class({
 		}
 		return this;
 	},
+	/** @returns {LibCanvas.Shapes.Rectangle} */
 	draw : function (ctx, type) {
 		// fixed Opera bug - cant drawing rectangle with width or height below zero
 		ctx.original(type + 'Rect', [
@@ -2968,6 +2990,7 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class({
 		]);
 		return this;
 	},
+	/** @returns {LibCanvas.Context2D} */
 	processPath : function (ctx, noWrap) {
 		if (!noWrap) ctx.beginPath();
 		ctx
@@ -2979,6 +3002,7 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class({
 		if (!noWrap) ctx.closePath();
 		return ctx;
 	},
+	/** @returns {boolean} */
 	intersect : function (obj) {
 		if (obj instanceof this.self) {
 			return this.from.x < obj.to.x && this.to.x > obj.from.x
@@ -2986,6 +3010,7 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class({
 		}
 		return false;
 	},
+	/** @returns {LibCanvas.Point} */
 	getRandomPoint : function (margin) {
 		margin = margin || 0;
 		return new Point(
@@ -2993,6 +3018,7 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class({
 			Number.random(margin, this.height - margin)
 		);
 	},
+	/** @returns {LibCanvas.Shapes.Rectangle} */
 	translate : function (point, fromRect) {
 		var diff = fromRect.from.diff(point);
 		return new Point({
@@ -3000,19 +3026,23 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class({
 			y : (diff.y / fromRect.height) * this.height
 		});
 	},
+	/** @returns {LibCanvas.Shapes.Rectangle} */
 	snapToPixel: function () {
 		this.from.snapToPixel();
 		this.to.snapToPixel();
 		return this;
 	},
+	/** @returns {string} */
 	dump: function (name) {
 		return this.parent(name || 'Rectangle');
 	},
+	/** @returns {LibCanvas.Shapes.Polygon} */
 	toPolygon: function () {
 		return new Polygon(
 			this.from.clone(), this.topRight, this.to.clone(), this.bottomLeft
 		);
 	},
+	/** @returns {string} */
 	toString: Function.lambda('[object LibCanvas.Shapes.Rectangle]')
 });
 
@@ -3040,7 +3070,9 @@ provides: Shapes.Circle
 ...
 */
 
-var Circle = LibCanvas.Shapes.Circle = Class({
+var Circle = LibCanvas.Shapes.Circle = Class(
+/** @lends {LibCanvas.Shapes.Circle.prototype} */
+{
 	Extends: Shape,
 	set : function () {
 		var a = Array.pickFrom(arguments);
@@ -4267,7 +4299,7 @@ var Keyboard = LibCanvas.Keyboard = function () {
 var Keyboard = Class(
 /**
  * @lends LibCanvas.Keyboard.prototype
- * @augments Class.Events
+ * @augments Class.Events.prototype
  */
 {
 	Implements: Class.Events,
@@ -4421,7 +4453,7 @@ var callParent = function (method) {
 return Class(
 /**
  * @lends LibCanvas.Layer.prototype
- * @augments Canvas2D
+ * @augments LibCanvas.Canvas2D.prototype
  */
 {
 	Extends: Canvas2D,
@@ -5403,7 +5435,9 @@ provides: Shapes.Ellipse
 ...
 */
 
-var Ellipse = LibCanvas.Shapes.Ellipse = Class({
+var Ellipse = LibCanvas.Shapes.Ellipse = Class(
+/** @lends {LibCanvas.Shapes.Ellipse.prototype} */
+{
 	Extends: Rectangle,
 	set : function () {
 		this.parent.apply(this, arguments);
@@ -5519,7 +5553,9 @@ var between = function (x, a, b) {
 	return x === a || x === b || (a < x && x < b) || (b < x && x < a);
 };
 
-return Class({
+return Class(
+/** @lends {LibCanvas.Shapes.Line.prototype} */
+{
 	Extends: Shape,
 	set : function (from, to) {
 		var a = Array.pickFrom(arguments);
@@ -5664,7 +5700,9 @@ provides: Shapes.Path
 
 ...
 */
-var Path = LibCanvas.Shapes.Path = Class({
+var Path = LibCanvas.Shapes.Path = Class(
+/** @lends {LibCanvas.Shapes.Path.prototype} */
+{
 	Extends: Shape,
 
 	getCoords: null,
@@ -5924,7 +5962,9 @@ provides: Shapes.Polygon
 ...
 */
 
-var Polygon = LibCanvas.Shapes.Polygon = Class({
+var Polygon = LibCanvas.Shapes.Polygon = Class(
+/** @lends {LibCanvas.Shapes.Polygon.prototype} */
+{
 	Extends: Shape,
 	initialize: function () {
 		this.points = [];
@@ -6043,7 +6083,12 @@ provides: Shapes.RoundedRectangle
 ...
 */
 
-var RoundedRectangle = LibCanvas.Shapes.RoundedRectangle = Class({
+var RoundedRectangle = LibCanvas.Shapes.RoundedRectangle = Class(
+/**
+ * @lends {LibCanvas.Shapes.RoundedRectangle.prototype}
+ * @augments {LibCanvas.Shapes.Rectangle.prototype}
+ */
+{
 	Extends: Rectangle,
 
 	radius: 0,

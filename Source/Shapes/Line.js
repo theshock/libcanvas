@@ -28,7 +28,9 @@ var between = function (x, a, b) {
 	return x === a || x === b || (a < x && x < b) || (b < x && x < a);
 };
 
-return Class({
+return Class(
+/** @lends {LibCanvas.Shapes.Line.prototype} */
+{
 	Extends: Shape,
 	set : function (from, to) {
 		var a = Array.pickFrom(arguments);

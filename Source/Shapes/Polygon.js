@@ -23,7 +23,9 @@ provides: Shapes.Polygon
 ...
 */
 
-var Polygon = LibCanvas.Shapes.Polygon = Class({
+var Polygon = LibCanvas.Shapes.Polygon = Class(
+/** @lends {LibCanvas.Shapes.Polygon.prototype} */
+{
 	Extends: Shape,
 	initialize: function () {
 		this.points = [];

@@ -42,7 +42,7 @@ var shifts = {
 return Class(
 /**
  * @lends LibCanvas.Point.prototype
- * @augments LibCanvas.Geometry
+ * @augments LibCanvas.Geometry.prototype
  */
 {
 	Extends: Geometry,
