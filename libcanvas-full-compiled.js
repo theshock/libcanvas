@@ -2987,6 +2987,19 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class(
 		return this.moveTo( moveTo );
 	},
 	/** @returns {LibCanvas.Shapes.Rectangle} */
+	grow: function (size) {
+		if (typeof size == 'number') {
+			size = new Point(size, size);
+		} else {
+			size = Point(size);
+		}
+
+		this.from.move([size.x/2, size.y/2]);
+		this.width  += size.x;
+		this.height += size.y;
+		return this;
+	},
+	/** @returns {LibCanvas.Shapes.Rectangle} */
 	moveTo: function (rect) {
 		if (rect instanceof Point) {
 			this.move( this.from.diff(rect) );
