@@ -2638,16 +2638,21 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 			return this.parentLayer == null ? this : this.parentLayer.layer();
 		}
 		
-		if (name in this._layers) {
+		if (this.layerExists(name)) {
 			return this._layers[name];
 		} else {
 			throw new Error('No layer «' + name + '»');
 		}
 	},
 
+	/** @returns {boolean} */
+	layerExists: function (name) {
+		return name in this._layers;
+	},
+
 	/** @returns {LibCanvas.Canvas2D} */
 	createLayer: function (name, z, options) {
-		if (name in this._layers) {
+		if (this.layerExists(name)) {
 			throw new Error('Layer «' + name + '» already exists');
 		}
 		if (typeof z == 'object') {
