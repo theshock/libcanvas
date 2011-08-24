@@ -849,7 +849,9 @@ var Geometry = LibCanvas.Geometry = Class(
 	Implements: Class.Events,
 	Static: {
 		invoke: function (obj) {
-			return (obj != null && typeof obj == 'object' && obj[0] instanceof this) ?
+			if (obj == null) throw new TypeError( 'element is not geometry' );
+
+			return (typeof obj == 'object' && obj[0] instanceof this) ?
 				obj[0] : (obj instanceof this ? obj : new this(obj));
 		},
 		from : function (obj) {
