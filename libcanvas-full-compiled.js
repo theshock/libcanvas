@@ -2991,14 +2991,13 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class(
 		if (typeof size == 'number') {
 			size = new Point(size/2, size/2);
 		} else {
-			size = Point(size);
+			size = new Point(size);
 			size.x /= 2;
 			size.y /= 2;
 		}
 
 		this.from.move(size, true);
-		this.width  += size.x;
-		this.height += size.y;
+		this. to .move(size);
 		return this;
 	},
 	/** @returns {LibCanvas.Shapes.Rectangle} */
