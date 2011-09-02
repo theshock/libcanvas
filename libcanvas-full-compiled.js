@@ -660,7 +660,9 @@ var Color = LibCanvas.Utils.Color = Class({
 		clone.r += Math.round(array[0]);
 		clone.g += Math.round(array[1]);
 		clone.b += Math.round(array[2]);
-		if (3 in array) clone.a += Math.round(array[3]);
+		if (array[3] != null) {
+			clone.a += array[3];
+		}
 		return clone;
 	},
 	dump: function () {
@@ -1580,7 +1582,7 @@ var MouseListener = LibCanvas.Behaviors.MouseListener = Class({
 		this.libcanvas.mouse.subscribe(this);
 	},
 	'listenMouse.stop': function () {
-		this.libcanvas.mouse.subscribe(this);
+		this.libcanvas.mouse.unsubscribe(this);
 	},
 
 	listenMouse : function (stopListen) {
