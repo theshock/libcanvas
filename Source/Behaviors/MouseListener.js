@@ -40,7 +40,7 @@ var MouseListener = LibCanvas.Behaviors.MouseListener = Class({
 		this.libcanvas.mouse.subscribe(this);
 	},
 	'listenMouse.stop': function () {
-		this.libcanvas.mouse.subscribe(this);
+		this.libcanvas.mouse.unsubscribe(this);
 	},
 
 	listenMouse : function (stopListen) {
