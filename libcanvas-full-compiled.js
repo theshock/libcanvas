@@ -2355,7 +2355,10 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 				.css({
 					position: 'absolute',
 					width : '100%',
-					height: '100%'
+					height: '100%',
+					// 1px transparent gif for IE9
+					backgroundImage : 'url(data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEAAAEALAAAAAABAAEAAAICTAEAOw==)',
+					backgroundRepeat: 'repeat'
 				})
 				.addClass('libcanvas-layers-cover')
 				.appendTo(this.wrapper);
