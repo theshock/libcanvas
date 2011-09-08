@@ -1216,6 +1216,7 @@ var MouseEvents = LibCanvas.Inner.MouseEvents = Class({
 
 		this.mouse = mouse;
 		this.point = mouse.point;
+		this.prev  = mouse.point.clone();
 	},
 	subscribe : function (elem) {
 		this.subscribers.include(elem);
@@ -1226,7 +1227,7 @@ var MouseEvents = LibCanvas.Inner.MouseEvents = Class({
 		return this;
 	},
 	overElem : function (elem) {
-		return this.mouse.inCanvas && elem.getShape().hasPoint(this.point);
+		return this.mouse.inCanvas && elem.shape.hasPoint( this.point );
 	},
 	getOverSubscribers : function () {
 		var elements = {
@@ -1261,7 +1262,11 @@ var MouseEvents = LibCanvas.Inner.MouseEvents = Class({
 		elem.fireEvent(eventName, [e, eventName]);
 	},
 	event : function (type, e) {
-		var mouse = this, subscribers = this.getOverSubscribers();
+		var mouse = this,
+			isMove = ['mousemove', 'mouseout'].contains(type),
+			subscribers = this.getOverSubscribers();
+		e.previousOffset = this.prev.clone();
+		e.deltaOffset    = this.prev.diff( this.point );
 
 		if (type == 'mousedown') mouse.lastMouseDown.empty();
 		
@@ -1272,7 +1277,7 @@ var MouseEvents = LibCanvas.Inner.MouseEvents = Class({
 				mouse.lastMouseMove.push(elem);
 			} else if (type == 'mousedown') {
 				mouse.lastMouseDown.push(elem);
-			// If mousepe on this elem and last mousedown was on this elem - click
+			// If mouseup on this elem and last mousedown was on this elem - click
 			} else if (type == 'mouseup' && mouse.lastMouseDown.contains(elem)) {
 				mouse.fireEvent(elem, 'click', e);
 			}
@@ -1280,18 +1285,19 @@ var MouseEvents = LibCanvas.Inner.MouseEvents = Class({
 		});
 
 		subscribers.out.forEach(function (elem) {
-			// if (this.isOut) mouse.fireEvent(elem, 'away:mouseover', e);
 			var mouseout = false;
-			if (['mousemove', 'mouseout'].contains(type)) {
-				if (mouse.lastMouseMove.contains(elem)) {
-					mouse.fireEvent(elem, 'mouseout', e);
-					if (type == 'mouseout') mouse.fireEvent(elem, 'away:mouseout', e);
-					mouse.lastMouseMove.erase(elem);
-					mouseout = true;
-				}
+			if (isMove && mouse.lastMouseMove.contains(elem)) {
+				mouse.fireEvent(elem, 'mouseout', e);
+				if (type == 'mouseout') mouse.fireEvent(elem, 'away:mouseout', e);
+				mouse.lastMouseMove.erase(elem);
+				mouseout = true;
 			}
 			if (!mouseout) mouse.fireEvent(elem, 'away:' + type, e);
 		});
+
+		if ( isMove ) {
+			this.prev.set( this.point );
+		}
 
 		return this;
 	}
