@@ -77,7 +77,7 @@ var Mouse = LibCanvas.Mouse = Class(
 	isOver: function (elem) {
 		var translate = elem.mouseTranslate;
 		if (translate) this.point.move( translate, true );
-		var result = this.mouse.inCanvas && elem.shape.hasPoint( this.point );
+		var result = this.inCanvas && elem.shape.hasPoint( this.point );
 		if (translate) this.point.move( translate );
 		return result;
 	},
