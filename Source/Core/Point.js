@@ -195,6 +195,12 @@ return Class(
 		return this;
 	},
 	/** @returns {LibCanvas.Point} */
+	reverse: function () {
+		this.x *= -1;
+		this.y *= -1;
+		return this;
+	},
+	/** @returns {LibCanvas.Point} */
 	clone : function () {
 		return new this.self(this);
 	},
