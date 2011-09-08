@@ -62,6 +62,10 @@ var Mouse = LibCanvas.Mouse = Class(
 	initialize : function (libcanvas) {
 		this.inCanvas = false;
 		this.point = new Point(null, null);
+		/** @private */
+		this.prev  = new Point(null, null);
+		/** @private */
+		this.diff  = new Point(null, null);
 
 		this.libcanvas = libcanvas;
 		this.elem      = libcanvas.wrapper;
@@ -73,13 +77,11 @@ var Mouse = LibCanvas.Mouse = Class(
 	button: function (key) {
 		return this.self.buttons[key || 'left'];
 	},
-	setCoords : function (point) {
-		if (point == null) {
-			this.inCanvas = false;
-		} else {
-			this.point.moveTo(point);
-			this.inCanvas = true;
-		}
+	setCoords : function (point, inCanvas) {
+		this.prev.set( this.point );
+		this.diff = this.prev.diff( point );
+		this.inCanvas = inCanvas;
+		this.point.move( this.diff );
 		this.debugUpdate();
 		return this;
 	},
@@ -140,6 +142,9 @@ var Mouse = LibCanvas.Mouse = Class(
 		return e;
 	},
 	setEvents : function () {
+
+		// e.previousOffset = prev.clone();
+		// e.deltaOffset    = prev.diff( this.point );
 		var mouse = this,
 		waitEvent = function (event, isOffice) {
 			if (event.match(/^mouse/)) {
@@ -147,6 +152,7 @@ var Mouse = LibCanvas.Mouse = Class(
 			}
 
 			return function (e) {
+				prepare( e );
 				var wait      = mouse.isEventAdded(event),
 					waitShort = ( shortE && mouse.isEventAdded(shortE) );
 				if (isOffice || wait || waitShort) mouse.getOffset(e);
@@ -160,6 +166,10 @@ var Mouse = LibCanvas.Mouse = Class(
 			};
 		},
 		waitWheel = waitEvent('wheel', false),
+		prepare = function (e) {
+			e.previousOffset = mouse.prev;
+			e.deltaOffset = mouse.diff;
+		},
 		wheel = function (e) {
 			e.delta =
 				// IE, Opera, Chrome - multiplicity is 120
@@ -174,7 +184,8 @@ var Mouse = LibCanvas.Mouse = Class(
 		up   = waitEvent('mouseup'  , true),
 		move = function ( e ) {
 			var offset = mouse.getOffset(e);
-			mouse.setCoords(offset);
+			mouse.setCoords(offset, true);
+			prepare( e );
 			mouse.events.event('mousemove', e);
 			mouse.fireEvent('move', [e]);
 			mouse.isOut = false;
@@ -182,8 +193,9 @@ var Mouse = LibCanvas.Mouse = Class(
 			return false;
 		},
 		out = function (e) {
-			mouse.getOffset(e);
-			mouse.setCoords(null);
+			var offset = mouse.getOffset(e);
+			mouse.setCoords(offset, false);
+			prepare( e );
 			mouse.events.event('mouseout', e);
 			mouse.fireEvent('mouseout', [e]);
 			mouse.fireEvent('out', [e]);

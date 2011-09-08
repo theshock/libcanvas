@@ -1265,8 +1265,6 @@ var MouseEvents = LibCanvas.Inner.MouseEvents = Class({
 		var mouse = this,
 			isMove = ['mousemove', 'mouseout'].contains(type),
 			subscribers = this.getOverSubscribers();
-		e.previousOffset = this.prev.clone();
-		e.deltaOffset    = this.prev.diff( this.point );
 
 		if (type == 'mousedown') mouse.lastMouseDown.empty();
 		
@@ -1294,10 +1292,6 @@ var MouseEvents = LibCanvas.Inner.MouseEvents = Class({
 			}
 			if (!mouseout) mouse.fireEvent(elem, 'away:' + type, e);
 		});
-
-		if ( isMove ) {
-			this.prev.set( this.point );
-		}
 
 		return this;
 	}
@@ -1367,6 +1361,10 @@ var Mouse = LibCanvas.Mouse = Class(
 	initialize : function (libcanvas) {
 		this.inCanvas = false;
 		this.point = new Point(null, null);
+		/** @private */
+		this.prev  = new Point(null, null);
+		/** @private */
+		this.diff  = new Point(null, null);
 
 		this.libcanvas = libcanvas;
 		this.elem      = libcanvas.wrapper;
@@ -1378,13 +1376,11 @@ var Mouse = LibCanvas.Mouse = Class(
 	button: function (key) {
 		return this.self.buttons[key || 'left'];
 	},
-	setCoords : function (point) {
-		if (point == null) {
-			this.inCanvas = false;
-		} else {
-			this.point.moveTo(point);
-			this.inCanvas = true;
-		}
+	setCoords : function (point, inCanvas) {
+		this.prev.set( this.point );
+		this.diff = this.prev.diff( point );
+		this.inCanvas = inCanvas;
+		this.point.move( this.diff );
 		this.debugUpdate();
 		return this;
 	},
@@ -1445,6 +1441,9 @@ var Mouse = LibCanvas.Mouse = Class(
 		return e;
 	},
 	setEvents : function () {
+
+		// e.previousOffset = prev.clone();
+		// e.deltaOffset    = prev.diff( this.point );
 		var mouse = this,
 		waitEvent = function (event, isOffice) {
 			if (event.match(/^mouse/)) {
@@ -1452,6 +1451,7 @@ var Mouse = LibCanvas.Mouse = Class(
 			}
 
 			return function (e) {
+				prepare( e );
 				var wait      = mouse.isEventAdded(event),
 					waitShort = ( shortE && mouse.isEventAdded(shortE) );
 				if (isOffice || wait || waitShort) mouse.getOffset(e);
@@ -1465,6 +1465,10 @@ var Mouse = LibCanvas.Mouse = Class(
 			};
 		},
 		waitWheel = waitEvent('wheel', false),
+		prepare = function (e) {
+			e.previousOffset = mouse.prev;
+			e.deltaOffset = mouse.diff;
+		},
 		wheel = function (e) {
 			e.delta =
 				// IE, Opera, Chrome - multiplicity is 120
@@ -1479,7 +1483,8 @@ var Mouse = LibCanvas.Mouse = Class(
 		up   = waitEvent('mouseup'  , true),
 		move = function ( e ) {
 			var offset = mouse.getOffset(e);
-			mouse.setCoords(offset);
+			mouse.setCoords(offset, true);
+			prepare( e );
 			mouse.events.event('mousemove', e);
 			mouse.fireEvent('move', [e]);
 			mouse.isOut = false;
@@ -1487,8 +1492,9 @@ var Mouse = LibCanvas.Mouse = Class(
 			return false;
 		},
 		out = function (e) {
-			mouse.getOffset(e);
-			mouse.setCoords(null);
+			var offset = mouse.getOffset(e);
+			mouse.setCoords(offset, false);
+			prepare( e );
 			mouse.events.event('mouseout', e);
 			mouse.fireEvent('mouseout', [e]);
 			mouse.fireEvent('out', [e]);
@@ -2385,6 +2391,7 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 	initialize : function (elem, options) {
 		Class.bindAll( this, 'update' );
 
+		this._shift = new Point( 0, 0 );
 		this.funcs = {
 			plain : [],
 			render: []
@@ -2430,6 +2437,8 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 			.attr('data-layer-name', this.name)
 			.css('position', 'absolute');
 		this.zIndex = Infinity;
+
+		return this;
 	},
 
 	/** @returns {LibCanvas.Canvas2D} */
@@ -2471,6 +2480,7 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 	},
 
 	/**
+	 * @deprecated - use `setShift` or `addShift` instead
 	 * @param {object} shift
 	 * @returns {LibCanvas.Canvas2D}
 	 */
@@ -2483,6 +2493,41 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 			'margin-left': shift.left
 		});
 		return this;
+	},
+
+	/**
+	 * @private
+	 * @property {LibCanvas.Point}
+	 */
+	_shift: null,
+
+	/**
+	 * @param {LibCanvas.Point} shift
+	 * @returns {LibCanvas.Canvas2D}
+	 */
+	addShift: function ( shift ) {
+		shift = Point( shift );
+		shift = this._shift.move( shift );
+		this.origElem.atom.css({
+			'margin-left': shift.x,
+			'margin-top' : shift.y
+		});
+		return this;
+	},
+
+	/**
+	 * @param {LibCanvas.Point} shift
+	 * @returns {LibCanvas.Canvas2D}
+	 */
+	setShift: function (shift) {
+		return this.addShift( this._shift.diff(shift) );
+	},
+
+	/**
+	 * @returns {LibCanvas.Point}
+	 */
+	getShift: function () {
+		return this._shift;
 	},
 
 	/** @private */

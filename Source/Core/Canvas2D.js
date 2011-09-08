@@ -116,6 +116,7 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 	initialize : function (elem, options) {
 		Class.bindAll( this, 'update' );
 
+		this._shift = new Point( 0, 0 );
 		this.funcs = {
 			plain : [],
 			render: []
@@ -161,6 +162,8 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 			.attr('data-layer-name', this.name)
 			.css('position', 'absolute');
 		this.zIndex = Infinity;
+
+		return this;
 	},
 
 	/** @returns {LibCanvas.Canvas2D} */
@@ -202,6 +205,7 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 	},
 
 	/**
+	 * @deprecated - use `setShift` or `addShift` instead
 	 * @param {object} shift
 	 * @returns {LibCanvas.Canvas2D}
 	 */
@@ -214,6 +218,41 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 			'margin-left': shift.left
 		});
 		return this;
+	},
+
+	/**
+	 * @private
+	 * @property {LibCanvas.Point}
+	 */
+	_shift: null,
+
+	/**
+	 * @param {LibCanvas.Point} shift
+	 * @returns {LibCanvas.Canvas2D}
+	 */
+	addShift: function ( shift ) {
+		shift = Point( shift );
+		shift = this._shift.move( shift );
+		this.origElem.atom.css({
+			'margin-left': shift.x,
+			'margin-top' : shift.y
+		});
+		return this;
+	},
+
+	/**
+	 * @param {LibCanvas.Point} shift
+	 * @returns {LibCanvas.Canvas2D}
+	 */
+	setShift: function (shift) {
+		return this.addShift( this._shift.diff(shift) );
+	},
+
+	/**
+	 * @returns {LibCanvas.Point}
+	 */
+	getShift: function () {
+		return this._shift;
 	},
 
 	/** @private */

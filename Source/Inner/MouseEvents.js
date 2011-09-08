@@ -78,8 +78,6 @@ var MouseEvents = LibCanvas.Inner.MouseEvents = Class({
 		var mouse = this,
 			isMove = ['mousemove', 'mouseout'].contains(type),
 			subscribers = this.getOverSubscribers();
-		e.previousOffset = this.prev.clone();
-		e.deltaOffset    = this.prev.diff( this.point );
 
 		if (type == 'mousedown') mouse.lastMouseDown.empty();
 		
@@ -107,10 +105,6 @@ var MouseEvents = LibCanvas.Inner.MouseEvents = Class({
 			}
 			if (!mouseout) mouse.fireEvent(elem, 'away:' + type, e);
 		});
-
-		if ( isMove ) {
-			this.prev.set( this.point );
-		}
 
 		return this;
 	}
