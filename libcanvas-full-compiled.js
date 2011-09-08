@@ -2533,7 +2533,7 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 	 * @returns {LibCanvas.Canvas2D}
 	 */
 	setShift: function (shift, withElements) {
-		return this.addShift( this._shift.diff(shift) );
+		return this.addShift( this._shift.diff(shift), withElements );
 	},
 
 	/**
