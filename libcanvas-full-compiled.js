@@ -1452,14 +1452,15 @@ var Mouse = LibCanvas.Mouse = Class(
 			}
 
 			return function (e) {
-				var wait = mouse.isEventAdded(event);
-				if (isOffice || wait) mouse.getOffset(e);
-				if (isOffice) mouse.events.event(event, e);
-				if (wait) {
-					mouse.fireEvent(event, [e]);
-					if (shortE) mouse.fireEvent(shortE, [e]);
-				}
-				if (isOffice) e.preventDefault();
+				var wait      = mouse.isEventAdded(event),
+					waitShort = ( shortE && mouse.isEventAdded(shortE) );
+				if (isOffice || wait || waitShort) mouse.getOffset(e);
+
+				if (isOffice ) mouse.events.event(event, e);
+				if (wait     ) mouse.fireEvent(event, [e]);
+				if (waitShort) mouse.fireEvent(shortE, [e]);
+				if (isOffice ) e.preventDefault();
+
 				return !isOffice;
 			};
 		},
@@ -1476,7 +1477,7 @@ var Mouse = LibCanvas.Mouse = Class(
 		},
 		down = waitEvent('mousedown', true),
 		up   = waitEvent('mouseup'  , true),
-		move = function ( e) {
+		move = function ( e ) {
 			var offset = mouse.getOffset(e);
 			mouse.setCoords(offset);
 			mouse.events.event('mousemove', e);
