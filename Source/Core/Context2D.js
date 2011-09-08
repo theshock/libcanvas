@@ -456,10 +456,24 @@ var Context2D = Class(
 	// text
 	/** @returns {Context2D} */
 	fillText : function (text, x, y, maxWidth) {
+		var type = typeof x;
+		if (type != 'number' && type != 'string') {
+			maxWidth = y;
+			x = Point( x );
+			y = x.y;
+			x = x.x;
+		}
 		return this.original('fillText', arguments);
 	},
 	/** @returns {Context2D} */
 	strokeText : function (text, x, y, maxWidth) {
+		var type = typeof x;
+		if (type != 'number' && type != 'string') {
+			maxWidth = y;
+			x = Point( x );
+			y = x.y;
+			x = x.x;
+		}
 		return this.original('strokeText', arguments);
 	},
 	/** @returns {object} */
