@@ -1227,7 +1227,11 @@ var MouseEvents = LibCanvas.Inner.MouseEvents = Class({
 		return this;
 	},
 	overElem : function (elem) {
-		return this.mouse.inCanvas && elem.shape.hasPoint( this.point );
+		var translate = elem.mouseTranslate;
+		if (translate) this.point.move( translate, true );
+		var result = this.mouse.inCanvas && elem.shape.hasPoint( this.point );
+		if (translate) this.point.move( translate );
+		return result;
 	},
 	getOverSubscribers : function () {
 		var elements = {
@@ -2505,13 +2509,22 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 	 * @param {LibCanvas.Point} shift
 	 * @returns {LibCanvas.Canvas2D}
 	 */
-	addShift: function ( shift ) {
+	addShift: function ( shift, withElements ) {
 		shift = Point( shift );
-		shift = this._shift.move( shift );
+		var newShift = this._shift.move( shift );
 		this.origElem.atom.css({
-			'margin-left': shift.x,
-			'margin-top' : shift.y
+			'margin-left': newShift.x,
+			'margin-top' : newShift.y
 		});
+		if (withElements) {
+			this.elems.forEach(function (elem) {
+				if (elem.mouseTranslate) {
+					elem.mouseTranslate.move( shift );
+				} else {
+					elem.mouseTranslate = shift.clone();
+				}
+			});
+		}
 		return this;
 	},
 
@@ -2519,7 +2532,7 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 	 * @param {LibCanvas.Point} shift
 	 * @returns {LibCanvas.Canvas2D}
 	 */
-	setShift: function (shift) {
+	setShift: function (shift, withElements) {
 		return this.addShift( this._shift.diff(shift) );
 	},
 
