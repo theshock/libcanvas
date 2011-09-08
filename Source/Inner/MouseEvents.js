@@ -40,11 +40,7 @@ var MouseEvents = LibCanvas.Inner.MouseEvents = Class({
 		return this;
 	},
 	overElem : function (elem) {
-		var translate = elem.mouseTranslate;
-		if (translate) this.point.move( translate, true );
-		var result = this.mouse.inCanvas && elem.shape.hasPoint( this.point );
-		if (translate) this.point.move( translate );
-		return result;
+		return this.mouse.isOver( elem );
 	},
 	getOverSubscribers : function () {
 		var elements = {
