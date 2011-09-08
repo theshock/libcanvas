@@ -1684,46 +1684,36 @@ provides: Behaviors.Draggable
 
 var Draggable = LibCanvas.Behaviors.Draggable = function () {
 
-var isDraggable = function (elem, started) {
-	return elem['draggable.isDraggable'] && (!started || elem['draggable.mouse']);
-};
-
-var moveListener = function () {
-	if (!isDraggable(this, true)) return;
-
-	var mouse = this.libcanvas.mouse.point;
-	var move  = this['draggable.mouse'].diff(mouse);
-	this.shape.move(move);
-	this.fireEvent('moveDrag', [move]);
-	this['draggable.mouse'].set(mouse)
-};
 
 var initDraggable = function () {
-	var dragFn = moveListener.bind(this);
+	var draggable = this,
+		mouse = draggable.libcanvas.mouse,
+		dragFn = function ( e ) {
+			draggable.shape.move( e.deltaOffset );
+			draggable.fireEvent('moveDrag', [e.deltaOffset]);
+		},
+		stopDrag  = ['up', 'out'],
+		onStopDrag = function () {
+			draggable.fireEvent('stopDrag');
+			mouse
+				.removeEvent( 'move', dragFn)
+				.removeEvent(stopDrag, onStopDrag);
+		};
 
-	this.listenMouse();
+	draggable.listenMouse();
 
-	var startDrag = ['mousedown'];
-	var dragging  = ['mousemove', 'away:mousemove'];
-	var stopDrag  = ['mouseup', 'away:mouseup', 'away:mouseout'];
+	draggable.addEvent( 'mousedown' , function () {
+		if (!draggable['draggable.isDraggable']) return;
 
-	return this
-		.addEvent(startDrag, function () {
-			if (!isDraggable(this, false)) return;
+		draggable.fireEvent('startDrag');
 
-			this['draggable.mouse'] = this.libcanvas.mouse.point.clone();
-			this
-				.fireEvent('startDrag')
-				.addEvent(dragging, dragFn);
-		})
-		.addEvent(stopDrag, function () {
-			if (!isDraggable(this, true)) return;
+		mouse
+			.addEvent( 'move', dragFn )
+			.addEvent( stopDrag, onStopDrag );
+	});
 
-			this
-				.fireEvent('stopDrag')
-				.removeEvent(dragging, dragFn);
-			delete this['draggable.mouse'];
-		});
+
+	return this;
 };
 
 return Class({
