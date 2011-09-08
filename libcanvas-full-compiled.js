@@ -17,7 +17,8 @@ authors:
 
 (function (atom, Math, HTMLCanvasElement) { // LibCanvas
 
-'use strict';
+// bug in Safari 5.1 ( 'use strict' + 'set prop' )
+// 'use strict';
 
 var undefined, Class = atom.Class;
 /*
