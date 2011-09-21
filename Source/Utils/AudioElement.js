@@ -32,6 +32,7 @@ var AudioElement = LibCanvas.Utils.AudioElement = Class({
 			this.container = container;
 			this.support = container.support;
 			this.audio = document.createElement("audio");
+			this.audio.preload = true;
 			this.src(file);
 			container.allAudios.push(this.audio);
 		}
@@ -79,17 +80,15 @@ var AudioElement = LibCanvas.Utils.AudioElement = Class({
 	stop : function (elem) {
 		if (this.stub) return this;
 		elem = elem || this.getCurrent();
-		if (elem.networkState > 2) {
-			// firefox 3.5 starting audio bug
+		try {
 			elem.currentTime = 0.025;
-		}
-		elem.pause();
+			elem.pause();
+		} catch (ignored) { }
 		return this;
 	},
 	restart: function (elem) {
 		elem = elem || this.getCurrent();
-		// #todo: fix error if audio system not enabled
-		elem.currentTime = 0.025;
+		this.stop( elem );
 		if (elem.ended || elem.paused) {
 			elem.play();
 		}
@@ -99,6 +98,15 @@ var AudioElement = LibCanvas.Utils.AudioElement = Class({
 		if (this.stub) return this;
 		this.events.push([event, fn]);
 		this.audio.addEventListener(event, fn.bind(this), false);
+		return this;
+	},
+	set: function (params) {
+		var elem = this.getCurrent();
+
+		if (elem && params) for (var i in params) if (params.hasOwnProperty(i)) {
+			elem[i] = params[i];
+		}
+
 		return this;
 	},
 
@@ -144,19 +152,40 @@ var AudioElement = LibCanvas.Utils.AudioElement = Class({
 		return this;
 	},
 
-	// testing. bug if run twice
-	fadeOut : function (elem, time) {
+	fade: function (time, volume, out) {
 		if (this.stub) return this;
-		this.animate.call(elem || this.getCurrent(), {
-			props  : { volume : 0.05 },
-			frames : 20,
-			delay  : (time || 1000) / 20,
+
+		var elem = this.getCurrent();
+
+		if (!out) this.play();
+
+		new Animatable(elem).animate({
+			props: { volume : volume },
+			fn: out ? 'expo-out' : 'sine-out',
+			time : time || 500,
 			onFinish   : function () {
-				this.stop();
-				this.audio.volume = 0.99;
+				if (out) this.stop();
 			}.bind(this)
 		});
 		return this;
 	},
+
+	fadeOut : function (time, volume) {
+		return this.fade( time, volume || 0.0, true);
+	},
+
+	fadeIn : function (time, volume) {
+		return this.fade( time, volume || 1.0, false);
+	},
+
+	fadeToggle: function (time, volumeUp, volumeDown) {
+		if (volumeUp.equals( this.getCurrent().volume, 3 )) {
+			this.fadeOut( time, volumeDown );
+		} else {
+			this.fadeIn( time, volumeUp );
+		}
+		return this;
+	},
+
 	toString: Function.lambda('[object LibCanvas.Utils.AudioElement]')
 });

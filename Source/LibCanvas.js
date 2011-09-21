@@ -86,7 +86,7 @@ var LibCanvas = this.LibCanvas = Class(
 	}
 });
 
-LibCanvas.namespace( 'Animation', 'Behaviors', 'Engines', 'Inner', 'Processors', 'Shapes', 'Ui', 'Utils' );
+LibCanvas.namespace( 'Animation', 'Behaviors', 'Engines', 'Inner', 'Processors', 'Scene', 'Shapes', 'Ui', 'Utils' );
 
 var
 	Inner      = LibCanvas.Inner,
