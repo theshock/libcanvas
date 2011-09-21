@@ -102,7 +102,10 @@ var Trace = LibCanvas.Utils.Trace = Class({
 					'position' : 'fixed',
 					'top'      : '3px',
 					'right'    : '6px',
-					'maxWidth' : '70%'
+					'maxWidth' : '70%',
+					'maxHeight': '100%',
+					'overflowY': 'auto',
+					'background': 'rgba(0,192,0,0.2)'
 				})
 				.appendTo('body');
 	},
