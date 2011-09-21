@@ -2046,9 +2046,9 @@ var Moveable = LibCanvas.Behaviors.Moveable = Class({
 /*
 ---
 
-name: "Canvas2D"
+name: "Inner.FrameRenderer"
 
-description: "LibCanvas.Scene"
+description: "Private class for inner usage in LibCanvas.Canvas2D"
 
 license:
 	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
@@ -2059,126 +2059,755 @@ authors:
 
 requires:
 	- LibCanvas
-	- Behaviors.Drawable
+	- Point
 
-provides: Scene.Standard
+provides: Inner.FrameRenderer
 
 ...
 */
 
-LibCanvas.Scene.Standard = Class(
+var FrameRenderer = LibCanvas.Inner.FrameRenderer = Class({
+	checkAutoDraw : function () {
+		if (!this._freezed && this.updateFrame) {
+			this.updateFrame = false;
+			return true;
+		}
+		return false;
+	},
+	showBuffer : function () {
+		if (this.elem != this.origElem) {
+			this.origCtx.clearAll();
+			this.origCtx.drawImage(this.elem);
+		}
+		return this;
+	},
+	invokeAll : function (method, time) {
+		var elems = this.elems.sortBy('getZIndex');
+		for (var i = elems.length; i--;) {
+			if (elems[i].isReady()) {
+				elems[i][method](time);
+			}
+		}
+		return this;
+	},
+	updateAll : function (time) {
+		if (!this.options.invoke) return this;
+		return this.invokeAll('update', time);
+	},
+	drawAll : function (time) {
+		return this.invokeAll('draw', time);
+	},
+	processing : function (type) {
+		this.processors[type].forEach(function (processor) {
+			if ('process' in processor) {
+				processor.process(this);
+			} else if ('processCanvas' in processor) {
+				processor.processCanvas(this.elem);
+			} else if ('processPixels' in processor) {
+				this.ctx.putImageData(
+					processor.processCanvas(
+						this.ctx.getImageData()
+					)
+				);
+			}
+		}.bind(this));
+	},
+	innerInvoke : function (type, time) {
+		var f = this.funcs[type].sortBy('priority');
+		for (var i = f.length; i--;) f[i].call(this, time);
+		return this;
+	},
+	renderLayer: function (layer, time) {
+		layer.innerInvoke('plain', time).updateAll(time);
+
+		if (layer.checkAutoDraw()) {
+			layer.processing('pre');
+			if (layer.isReady()) {
+				layer.innerInvoke('render', time);
+				layer.drawAll(time);
+			} else {
+				layer.renderProgress();
+			}
+			layer.processing('post');
+			layer.showBuffer();
+			return true;
+		}
+		return false;
+	},
+	renderFrame : function (time) {
+		for (var n in this._layers) {
+			this.renderLayer(this._layers[n], time);
+		}
+		return true;
+	}
+});
+
+/*
+---
+
+name: "Inner.FpsMeter"
+
+description: "Constantly calculates frames per seconds rate"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+
+provides: Inner.FpsMeter
+
+...
+*/
+var InnerFpsMeter = LibCanvas.Inner.FpsMeter = Class({
+	fpsMeter : function (frames) {
+		if (typeof FpsMeter == 'undefined') {
+			throw new Error('LibCanvas.Utils.FpsMeter is not loaded');
+		}
+		var fpsMeter = new FpsMeter(frames || (this.fps ? this.fps / 2 : 10));
+		return this.addEvent('frameRenderStarted', function () {
+			fpsMeter.frame();
+		});
+	}
+});
+
+/*
+---
+
+name: "Inner.DownloadingProgress"
+
+description: "Counting assets downloading progress"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+
+provides: Inner.DownloadingProgress
+
+...
+*/
+var DownloadingProgress = LibCanvas.Inner.DownloadingProgress = Class({
+	getImage : function (name) {
+		if (this.parentLayer) return this.parentLayer.getImage(name);
+		
+		if (this.images && this.images[name]) {
+			return this.images[name];
+		} else {
+			throw new Error('No image «' + name + '»');
+		}
+	},
+	getAudio: function (name) {
+		if (this.parentLayer) return this.parentLayer.getAudio(name);
+		
+		if (this._audio) {
+			var audio = this._audio.get(name);
+			if (audio) return audio;
+		}
+		throw new Error('No audio «' + name + '»');
+	},
+	renderProgress : function () {
+		if (this.parentLayer) return;
+		
+		if (this.options.progressBarStyle && !this.progressBar) {
+			if (typeof ProgressBar == 'undefined') {
+				throw new Error('LibCanvas.Utils.ProgressBar is not loaded');
+			}
+			this.progressBar = new ProgressBar()
+				.setStyle(this.options.progressBarStyle);
+		}
+		if (this.progressBar) {
+			this.progressBar
+				.setLibcanvas(this)
+				.setProgress(this.imagePreloader.getProgress())
+				.draw();
+		}
+	},
+	createPreloader : function () {
+		if (!this.imagePreloader) {
+			
+			if (this.parentLayer) {
+				this.parentLayer.addEvent('ready', function () {
+					this.readyEvent('ready');
+				}.bind(this));
+				this.imagePreloader = true;
+				return;
+			}
+			
+			if (this.options.preloadAudio) {
+				if (typeof AudioContainer == 'undefined') {
+					throw new Error('LibCanvas.Utils.AudioContainer is not loaded');
+				}
+				this._audio = new AudioContainer(this.options.preloadAudio);
+			} else {
+				this._audio = null;
+			}
+
+			if (this.options.preloadImages) {
+				if (typeof ImagePreloader == 'undefined') {
+					throw new Error('LibCanvas.Utils.ImagePreloader is not loaded');
+				}
+				this.imagePreloader = new ImagePreloader(this.options.preloadImages)
+					.addEvent('ready', function (preloader) {
+						this.images = preloader.images;
+						atom.log(preloader.getInfo());
+						this.readyEvent('ready');
+						this.update();
+					}.bind(this));
+			} else {
+				this.images = {};
+				this.imagePreloader = true;
+				this.readyEvent('ready');
+			}
+		}
+
+	},
+	isReady : function () {
+		this.createPreloader();
+		if (this.parentLayer) return this.parentLayer.isReady();
+
+		var pI = this.options.preloadImages;
+		return !pI || !Object.values(pI).length
+			|| (this.imagePreloader && this.imagePreloader.isReady());
+	}
+});
+
+/*
+---
+
+name: "Canvas2D"
+
+description: "LibCanvas.Canvas2D wraps around native <canvas>."
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- Context2d
+	- Inner.FrameRenderer
+	- Inner.FpsMeter
+	- Inner.DownloadingProgress
+
+provides: Canvas2D
+
+...
+*/
+
+var Canvas2D = LibCanvas.Canvas2D = Class(
 /**
- * @lends LibCanvas.Scene.Standard#
- * @augments Drawable
+ * @lends LibCanvas.Canvas2D.prototype
+ * @augments LibCanvas.prototype
+ * @augments FrameRenderer.prototype
+ * @augments InnerFpsMeter.prototype
+ * @augments DownloadingProgress.prototype
+ * @augments Class.Events.prototype
+ * @augments Class.Options.prototype
  */
 {
-	Extends: Drawable,
+	Extends: LibCanvas,
+	Implements: [
+		FrameRenderer,
+		InnerFpsMeter,
+		DownloadingProgress,
+		Class.Events,
+		Class.Options
+	],
+
+	Generators: {
+		/** @private */
+		mouse: function () {
+			throw new Error('Mouse is not listened by libcanvas');
+		},
+		/** @private */
+		keyboard: function () {
+			throw new Error('Keyboard is not listened by libcanvas');
+		},
+		/** @private */
+		wrapper: function () {
+			var wrapper = atom.dom.create('div').css({
+				width   : '100%',
+				height  : '100%',
+				overflow: 'hidden',
+				position: 'absolute'
+			});
+			wrapper.parent = atom.dom.create('div').addClass('libcanvas-layers-container');
+			return wrapper.appendTo(wrapper.parent);
+		},
+		// Needs for right mouse behaviour
+		/** @private */
+		cover: function () {
+			if (this.parentLayer) return this.parentLayer.cover;
+			return atom.dom
+				.create('div')
+				.css({
+					position: 'absolute',
+					width : '100%',
+					height: '100%',
+					// 1px transparent gif for IE9
+					backgroundImage : 'url(data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEAAAEALAAAAAABAAEAAAICTAEAOw==)',
+					backgroundRepeat: 'repeat'
+				})
+				.addClass('libcanvas-layers-cover')
+				.appendTo(this.wrapper);
+		},
+		/** @private */
+		invoker: function () {
+			return new Invoker({
+				context: this,
+				defaultPriority: 10,
+				fpsLimit: this.options.fps
+			});
+		}
+	},
+
+	/** @deprecated */
+	set fps (f) { this.options.fps = f; },
+	/** @deprecated */
+	get fps ( ) { return this.options.fps; },
+
+	/** @private */
+	interval: null,
+	/** @private */
+	name    : null,
+
+	options: {
+		name: 'main',
+		autoStart: true,
+		clear: true,
+		invoke: false, // invoke objects each frame
+		backBuffer: 'off',
+		fps: 30
+	},
 
 	/**
-	 * @param {LibCanvas.Canvas2D} libcanvas
-	 * @returns {LibCanvas.Scene.Standard}
+	 * @constructs
+	 * @param {atom.dom} elem
+	 * @param {object} options
+	 * @returns {LibCanvas.Canvas2D}
 	 */
-	initialize: function (libcanvas) {
-		libcanvas.addElement( this );
-		this.elements       = [];
-		this.redrawElements = [];
+	initialize : function (elem, options) {
+		Class.bindAll( this, 'update' );
+
+		this._shift = new Point( 0, 0 );
+		this.funcs = {
+			plain : [],
+			render: []
+		};
+		this.elems = [];
+		this.processors = { pre: [], post: [] };
+
+
+		var aElem = atom.dom(elem);
+		elem = aElem.first;
+
+		this.setOptions(options);
+
+		this.origElem = elem;
+		this.origCtx  = elem.getContext('2d-libcanvas');
+		this.origElem.atom = aElem;
+
+		this.createProjectBuffer().addClearer();
+
+		var wrapper = this.wrapper, cover = this.cover;
+
+		this.name = this.options.name;
+		if (this.parentLayer) {
+			this._layers = this.parentLayer._layers;
+			aElem.appendTo(wrapper);
+		} else {
+			this._layers = {};
+			aElem
+				.replaceWith(wrapper.parent)
+				.appendTo(wrapper);
+
+			if (elem.width && elem.height) {
+				this.size(elem.width, elem.height, true);
+			}
+		}
+
+		this._layers[this.name] = this;
+		cover.css('zIndex', this.maxZIndex + 100);
+
+		if (this.options.autoStart) this.isReady();
+		
+		aElem
+			.attr('data-layer-name', this.name)
+			.css('position', 'absolute');
+		this.zIndex = Infinity;
+
 		return this;
 	},
 
-	/** @private */
-	elements: null,
+	/** @returns {LibCanvas.Canvas2D} */
+	show: function () {
+		this.origElem.atom.css('display', 'block');
+		return this;
+	},
 
-	/** @private */
-	redrawElements: null,
-
-	/**
-	 * @param {atom.Class} Class
-	 * @returns {function}
-	 */
-	createFactory: function (Class) {
-		return function () {
-			return Class.factory( [this].append( arguments ) );
-		}.bind( this );
+	/** @returns {LibCanvas.Canvas2D} */
+	hide: function () {
+		this.origElem.atom.css('display', 'none');
+		return this;
 	},
 
 	/**
-	 * @param {Drawable} element
-	 * @returns {LibCanvas.Scene.Standard}
+	 * @param {number} size
+	 * @param {number} height
+	 * @param {number} wrapper
+	 * @returns {LibCanvas.Canvas2D}
 	 */
-	addElement: function (element) {
-		this.elements.include( element );
+	size: function (size, height, wrapper) {
+		if (typeof size == 'object') {
+			wrapper = height;
+		} else {
+			size = { width: size, height: height };
+		}
+		for (var i in size) {
+			if (this.origElem != this.elem) {
+				this.origElem[i] = size[i];
+			}
+			this.elem[i] = size[i];
+			
+			if (wrapper) {
+				this.wrapper       .css(i, size[i]);
+				this.wrapper.parent.css(i, size[i]);
+			}
+		}
+		return this;
+	},
+
+	/**
+	 * @deprecated - use `setShift` or `addShift` instead
+	 * @param {object} shift
+	 * @returns {LibCanvas.Canvas2D}
+	 */
+	shift: function (shift, left) {
+		if (left != null) {
+			shift = { top: shift, left: left };
+		}
+		this.origElem.atom.css({
+			'margin-top' : shift.top,
+			'margin-left': shift.left
+		});
 		return this;
 	},
 
 	/**
 	 * @private
-	 * @param {Drawable} element
-	 * @returns {LibCanvas.Scene.Standard}
+	 * @property {LibCanvas.Point}
 	 */
-	redrawElement: function (element) {
-		if (this.elements.contains( element )) {
-			this.redrawElements.include( element );
+	_shift: null,
+
+	/**
+	 * @param {LibCanvas.Point} shift
+	 * @returns {LibCanvas.Canvas2D}
+	 */
+	addShift: function ( shift, withElements ) {
+		shift = Point( shift );
+		var newShift = this._shift.move( shift );
+		this.origElem.atom.css({
+			'margin-left': newShift.x,
+			'margin-top' : newShift.y
+		});
+		if (withElements) {
+			this.elems.forEach(function (elem) {
+				if (elem.mouseTranslate) {
+					elem.mouseTranslate.move( shift );
+				} else {
+					elem.mouseTranslate = shift.clone();
+				}
+			});
 		}
 		return this;
 	},
 
 	/**
-	 * @param {Drawable} element
-	 * @returns {LibCanvas.Scene.Standard}
+	 * @param {LibCanvas.Point} shift
+	 * @returns {LibCanvas.Canvas2D}
 	 */
-	rmElement: function (element) {
-		this.elements.erase( element );
+	setShift: function (shift, withElements) {
+		return this.addShift( this._shift.diff(shift), withElements );
+	},
+
+	/**
+	 * @returns {LibCanvas.Point}
+	 */
+	getShift: function () {
+		return this._shift;
+	},
+
+	/** @private */
+	createProjectBuffer: function () {
+		if (this.options.backBuffer == 'off') {
+			this.elem = this.origElem;
+			this.ctx  = this.origCtx;
+		} else {
+			this.elem = this.createBuffer();
+			this.ctx  = this.elem.getContext('2d-libcanvas');
+		}
 		return this;
 	},
 
 	/** @private */
-	update: function (time) {
-		this.elements.sortBy( 'zIndex' ).invoke( 'onUpdate' );
-
-		return this.fireEvent( 'update', [ time ]);
+	addClearer: function () {
+		var clear = this.options.clear;
+		if (clear) {
+			this.addProcessor('pre',
+				new Processors.Clearer(
+					typeof clear === 'string' ? clear : null
+				)
+			);
+		}
+		return this;
 	},
 
 	/** @private */
-	findIntersections: function (shape) {
-		var i, e, elems = [];
-		for (i = this.elements.length; i--;) {
-			e = this.elements[i];
-			if (e.currentBoundingShape.intersect( shape )) {
-				elems.push( e );
+	updateFrame : false,
+	/** @returns {LibCanvas.Canvas2D} */
+	update : function () {
+		this.updateFrame = true;
+		return this;
+	},
+	/** @private */
+	_freezed: false,
+	/** @returns {LibCanvas.Canvas2D} */
+	freeze: function (unfreeze) {
+		this._freezed = !unfreeze;
+		return this;
+	},
+
+	/** @returns {LibCanvas.Canvas2D} */
+	listenMouse : function (elem) {
+		this._mouse = LibCanvas.isLibCanvas(elem) ? elem.mouse
+			: new Mouse(this, /* preventDefault */elem);
+		return this;
+	},
+
+	/**
+	 * @param {string} key
+	 * @returns {boolean}
+	 */
+	getKey : function (key) {
+		return this.keyboard.keyState(key);
+	},
+	/** @returns {LibCanvas.Canvas2D} */
+	listenKeyboard : function (elem) {
+		this._keyboard = LibCanvas.isLibCanvas(elem) ? elem.keyboard
+			: new Keyboard(/* preventDefault */elem);
+		return this;
+	},
+	/** @returns {HTMLCanvasElement} */
+	createBuffer : function (width, height) {
+		return Buffer.apply(LibCanvas,
+			arguments.length ? arguments :
+				Array.collect(this.origElem, ['width', 'height'])
+		);
+	},
+	/** @returns {Shaper} */
+	createShaper : function (options) {
+		var shaper = new Shaper(this, options);
+		this.addElement(shaper);
+		return shaper;
+	},
+
+	// post-/pre- procesing
+	/** @returns {Canvas2D} */
+	addProcessor : function (type, processor) {
+		this.processors[type].push(processor);
+		return this;
+	},
+	/** @returns {LibCanvas.Canvas2D} */
+	rmProcessor : function (type, processor) {
+		this.processors[type].erase(processor);
+		return this;
+	},
+
+	// Element : add, rm
+	/** @returns {LibCanvas.Canvas2D} */
+	addElement : function (elem) {
+		this.elems.include(elem);
+		if (elem.libcanvas != this) {
+			elem.setLibcanvas(this);
+		}
+		return this;
+	},
+	/** @returns {LibCanvas.Canvas2D} */
+	rmElement : function (elem) {
+		this.elems.erase(elem);
+		return this;
+	},
+	/** @returns {LibCanvas.Canvas2D} */
+	rmAllElements: function () {
+		this.elems.empty();
+		return this;
+	},
+
+	// Each frame funcs
+
+	/** @returns {LibCanvas.Canvas2D} */
+	addFunc: function (priority, fn, isRender) {
+		if (fn == null) {
+			fn = priority;
+			priority = fn.priority || 10;
+		}
+		var f = this.funcs;
+		if (!f.plain.contains(fn) && !f.render.contains(fn)) {
+			f[isRender ? 'render' : 'plain'].push(fn);
+		}
+		return this;
+	},
+	/** @returns {LibCanvas.Canvas2D} */
+	addRender: function (priority, fn) {
+		return this.addFunc(priority, fn, true);
+	},
+	/** @returns {Canvas2D} */
+	rmFunc : function (fn) {
+		var f = this.funcs;
+		f.plain.erase(fn);
+		f.render.erase(fn);
+		return this;
+	},
+
+	// Start, pause, stop
+	/** @returns {LibCanvas.Canvas2D} */
+	start : function (fn) {
+		fn && this.addRender(10, fn);
+		if (this.invoker.timeoutId == 0) {
+			this.invoker
+				.addFunction(0, this.renderFrame)
+				.addEvent('beforeInvoke', this.fireEvent.bind(this, 'frameRenderStarted' ))
+				.addEvent( 'afterInvoke', this.fireEvent.bind(this, 'frameRenderFinished'));
+		}
+		this.invoker.invoke();
+		return this;
+	},
+	/** @returns {LibCanvas.Canvas2D} */
+	stop: function () {
+		this.invoker.stop();
+		return this;
+	},
+
+	/** @property {LibCanvas.Canvas2D} */
+	parentLayer: null,
+	/** @returns {LibCanvas.Canvas2D} */
+	layer: function (name) {
+		if (!name) {
+			// gettin master layer
+			return this.parentLayer == null ? this : this.parentLayer.layer();
+		}
+		
+		if (this.layerExists(name)) {
+			return this._layers[name];
+		} else {
+			throw new Error('No layer «' + name + '»');
+		}
+	},
+
+	/** @returns {boolean} */
+	layerExists: function (name) {
+		return name in this._layers;
+	},
+
+	/** @returns {LibCanvas.Canvas2D} */
+	createLayer: function (name, z, options) {
+		if (this.layerExists(name)) {
+			throw new Error('Layer «' + name + '» already exists');
+		}
+		if (typeof z == 'object') {
+			options = z;
+			z = null;
+		}
+		options = atom.extend({ name: name }, options || {});
+		var layer = this._layers[name] = new Layer(this, this.options, options);
+		layer._layers = this._layers;
+		layer.zIndex  = z;
+		layer.origElem.atom.attr({ 'data-layer-name': name });
+		return layer;
+	},
+
+	/** @returns {LibCanvas.Canvas2D} */
+	get topLayer () {
+		var max = 0, layers = this._layers, nameMax = null, layer = null;
+		for (var name in layers) {
+			if (layers[name].zIndex > max) {
+				layer = layers[name];
+				max   = layer.zIndex;
 			}
 		}
-		return elems;
+		return layer;
 	},
 
+	/** @returns {number} */
+	get maxZIndex () {
+		var top = this.topLayer;
+		return top ? top.zIndex : 1;
+	},
 
 	/** @private */
-	draw: function () {
-		var i, l, elem, clear = [],
-			redraw = this.redrawElements,
-			add    = this.redrawElement.bind( this );
+	_zIndex: null,
+	
+	set zIndex (value) {
+		var set = function (layer, z) {
+			layer._zIndex = z;
+			layer.origElem.atom.css('zIndex', z);
+			layer.showBuffer();
+		};
 
-		for (i = 0; i < redraw.length; i++) {
-			elem = redraw[i];
-			clear.push( elem.previousBoundingShape );
-
-			this.findIntersections(elem.previousBoundingShape)
-				.forEach( add );
-			this.findIntersections(elem.currentBoundingShape )
-				.forEach(function (e) {
-					// we need to redraw it, only if it is over our element
-					if (e.zIndex > elem.zIndex) add( e );
-				});
+		if (Object.values(this._layers).length == 1) {
+			set(this, 1);
+			return;
 		}
 
-		redraw.sortBy( 'zIndex' );
-
-		for (i = 0, l = redraw.length; i < l; i++) {
-			redraw[ i ].renderTo( this.libcanvas.ctx );
+		var current = this._zIndex;
+		
+		if (value == null) value = Infinity;
+		value = value.limit(1, this.maxZIndex + (current ? 0 : 1));
+		current = current || Infinity;
+		
+		for (var i in this._layers) if (this._layers[i] != this) {
+			var l = this._layers[i], z = l._zIndex;
+			if (current > z && value <= z) set(l, z+1);
+			if (current < z && value >= z) set(l, z-1);
 		}
-		redraw.empty();
+		set(this, value);
+	},
+	
+	get zIndex () {
+		return this._zIndex;
+	},
 
-		return this.fireEvent( 'render', [ this.libcanvas.ctx ]);
-	}
+	/**
+	 * not clonable
+	 * @returns {LibCanvas.Canvas2D}
+	 */
+	get clone () {
+		return this;
+	},
+	/** @returns {string} */
+	dump: function () {
+		var el = this.elem, 
+			pr = [
+				'"' + this.name + '"',
+				'z=' + this.zIndex,
+				'e=' + this.elems.length
+			].join(',');
+		return '[LibCanvas(' + pr + ')]';
+	},
+	toString: Function.lambda('[object LibCanvas.Canvas2D]')
 });
 
 /*
@@ -4220,244 +4849,6 @@ Tile.Point = Class({
 /*
 ---
 
-name: "Inner.DownloadingProgress"
-
-description: "Counting assets downloading progress"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-
-provides: Inner.DownloadingProgress
-
-...
-*/
-var DownloadingProgress = LibCanvas.Inner.DownloadingProgress = Class({
-	getImage : function (name) {
-		if (this.parentLayer) return this.parentLayer.getImage(name);
-		
-		if (this.images && this.images[name]) {
-			return this.images[name];
-		} else {
-			throw new Error('No image «' + name + '»');
-		}
-	},
-	getAudio: function (name) {
-		if (this.parentLayer) return this.parentLayer.getAudio(name);
-		
-		if (this._audio) {
-			var audio = this._audio.get(name);
-			if (audio) return audio;
-		}
-		throw new Error('No audio «' + name + '»');
-	},
-	renderProgress : function () {
-		if (this.parentLayer) return;
-		
-		if (this.options.progressBarStyle && !this.progressBar) {
-			if (typeof ProgressBar == 'undefined') {
-				throw new Error('LibCanvas.Utils.ProgressBar is not loaded');
-			}
-			this.progressBar = new ProgressBar()
-				.setStyle(this.options.progressBarStyle);
-		}
-		if (this.progressBar) {
-			this.progressBar
-				.setLibcanvas(this)
-				.setProgress(this.imagePreloader.getProgress())
-				.draw();
-		}
-	},
-	createPreloader : function () {
-		if (!this.imagePreloader) {
-			
-			if (this.parentLayer) {
-				this.parentLayer.addEvent('ready', function () {
-					this.readyEvent('ready');
-				}.bind(this));
-				this.imagePreloader = true;
-				return;
-			}
-			
-			if (this.options.preloadAudio) {
-				if (typeof AudioContainer == 'undefined') {
-					throw new Error('LibCanvas.Utils.AudioContainer is not loaded');
-				}
-				this._audio = new AudioContainer(this.options.preloadAudio);
-			} else {
-				this._audio = null;
-			}
-
-			if (this.options.preloadImages) {
-				if (typeof ImagePreloader == 'undefined') {
-					throw new Error('LibCanvas.Utils.ImagePreloader is not loaded');
-				}
-				this.imagePreloader = new ImagePreloader(this.options.preloadImages)
-					.addEvent('ready', function (preloader) {
-						this.images = preloader.images;
-						atom.log(preloader.getInfo());
-						this.readyEvent('ready');
-						this.update();
-					}.bind(this));
-			} else {
-				this.images = {};
-				this.imagePreloader = true;
-				this.readyEvent('ready');
-			}
-		}
-
-	},
-	isReady : function () {
-		this.createPreloader();
-		if (this.parentLayer) return this.parentLayer.isReady();
-
-		var pI = this.options.preloadImages;
-		return !pI || !Object.values(pI).length
-			|| (this.imagePreloader && this.imagePreloader.isReady());
-	}
-});
-
-/*
----
-
-name: "Inner.FpsMeter"
-
-description: "Constantly calculates frames per seconds rate"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-
-provides: Inner.FpsMeter
-
-...
-*/
-var InnerFpsMeter = LibCanvas.Inner.FpsMeter = Class({
-	fpsMeter : function (frames) {
-		if (typeof FpsMeter == 'undefined') {
-			throw new Error('LibCanvas.Utils.FpsMeter is not loaded');
-		}
-		var fpsMeter = new FpsMeter(frames || (this.fps ? this.fps / 2 : 10));
-		return this.addEvent('frameRenderStarted', function () {
-			fpsMeter.frame();
-		});
-	}
-});
-
-/*
----
-
-name: "Inner.FrameRenderer"
-
-description: "Private class for inner usage in LibCanvas.Canvas2D"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Point
-
-provides: Inner.FrameRenderer
-
-...
-*/
-
-var FrameRenderer = LibCanvas.Inner.FrameRenderer = Class({
-	checkAutoDraw : function () {
-		if (!this._freezed && this.updateFrame) {
-			this.updateFrame = false;
-			return true;
-		}
-		return false;
-	},
-	showBuffer : function () {
-		if (this.elem != this.origElem) {
-			this.origCtx.clearAll();
-			this.origCtx.drawImage(this.elem);
-		}
-		return this;
-	},
-	invokeAll : function (method, time) {
-		var elems = this.elems.sortBy('getZIndex');
-		for (var i = elems.length; i--;) {
-			if (elems[i].isReady()) {
-				elems[i][method](time);
-			}
-		}
-		return this;
-	},
-	updateAll : function (time) {
-		if (!this.options.invoke) return this;
-		return this.invokeAll('update', time);
-	},
-	drawAll : function (time) {
-		return this.invokeAll('draw', time);
-	},
-	processing : function (type) {
-		this.processors[type].forEach(function (processor) {
-			if ('process' in processor) {
-				processor.process(this);
-			} else if ('processCanvas' in processor) {
-				processor.processCanvas(this.elem);
-			} else if ('processPixels' in processor) {
-				this.ctx.putImageData(
-					processor.processCanvas(
-						this.ctx.getImageData()
-					)
-				);
-			}
-		}.bind(this));
-	},
-	innerInvoke : function (type, time) {
-		var f = this.funcs[type].sortBy('priority');
-		for (var i = f.length; i--;) f[i].call(this, time);
-		return this;
-	},
-	renderLayer: function (layer, time) {
-		layer.innerInvoke('plain', time).updateAll(time);
-
-		if (layer.checkAutoDraw()) {
-			layer.processing('pre');
-			if (layer.isReady()) {
-				layer.innerInvoke('render', time);
-				layer.drawAll(time);
-			} else {
-				layer.renderProgress();
-			}
-			layer.processing('post');
-			layer.showBuffer();
-			return true;
-		}
-		return false;
-	},
-	renderFrame : function (time) {
-		for (var n in this._layers) {
-			this.renderLayer(this._layers[n], time);
-		}
-		return true;
-	}
-});
-
-/*
----
-
 name: "Inner.ProjectiveTexture"
 
 description: "Provides testing projective textures rendering (more info: http://acko.net/files/projective/index.html)"
@@ -5136,6 +5527,216 @@ LibCanvas.Processors.Mask = Class({
 		return data;
 	},
 	toString: Function.lambda('[object LibCanvas.Processors.Mask]')
+});
+
+/*
+---
+
+name: "Scene.Element"
+
+description: "LibCanvas.Scene"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- Scene
+	- Behaviors.Drawable
+
+provides: Scene.Element
+
+...
+*/
+
+LibCanvas.Scene.Element = Class(
+/**
+ * @lends LibCanvas.Scene.Element#
+ * @augments Drawable
+ */
+{
+	Extends: Drawable,
+
+	Implements: Class.Options,
+
+	initialize: function (scene, options) {
+		scene.libcanvas.addElement( this ).stopDrawing();
+		this.scene = scene;
+		this.setOptions( options );
+
+		if (this.options.shape) {
+			this.shape = this.options.shape;
+			this.updateBoundingShapes();
+		}
+	},
+
+	previousBoundingShape: null,
+	currentBoundingShape : null,
+
+	/** @private */
+	updateBoundingShapes: function () {
+		if ( !this.previousBoundingShape ) {
+			if (!this.shape) throw new TypeError( 'shape is required' );
+
+			this.previousBoundingShape = this.shape.clone();
+			this.currentBoundingShape  = this.shape.clone();
+		} else {
+			this.previousBoundingShape.set( this.currentBoundingShape );
+			this.currentBoundingShape .set( this.shape );
+		}
+		return this;
+	},
+
+	onUpdate: function ( time ) {
+		return this;
+	},
+
+	renderTo: function ( ctx ) {
+		return this.updateBoundingShapes();
+	}
+});
+
+/*
+---
+
+name: "Scene.Standard"
+
+description: "LibCanvas.Scene"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- LibCanvas.Canvas2D
+	- Behaviors.Drawable
+
+provides: Scene.Standard
+
+...
+*/
+
+LibCanvas.Scene.Standard = Class(
+/**
+ * @lends LibCanvas.Scene.Standard#
+ * @augments Drawable
+ */
+{
+	Extends: Drawable,
+
+	/**
+	 * @param {LibCanvas.Canvas2D} libcanvas
+	 * @returns {LibCanvas.Scene.Standard}
+	 */
+	initialize: function (libcanvas) {
+		libcanvas.addElement( this );
+		this.elements       = [];
+		this.redrawElements = [];
+		return this;
+	},
+
+	/** @private */
+	elements: null,
+
+	/** @private */
+	redrawElements: null,
+
+	/**
+	 * @param {atom.Class} Class
+	 * @returns {function}
+	 */
+	createFactory: function (Class) {
+		return function () {
+			return Class.factory( [this].append( arguments ) );
+		}.bind( this );
+	},
+
+	/**
+	 * @param {Drawable} element
+	 * @returns {LibCanvas.Scene.Standard}
+	 */
+	addElement: function (element) {
+		this.elements.include( element );
+		return this;
+	},
+
+	/**
+	 * @private
+	 * @param {Drawable} element
+	 * @returns {LibCanvas.Scene.Standard}
+	 */
+	redrawElement: function (element) {
+		if (this.elements.contains( element )) {
+			this.redrawElements.include( element );
+		}
+		return this;
+	},
+
+	/**
+	 * @param {Drawable} element
+	 * @returns {LibCanvas.Scene.Standard}
+	 */
+	rmElement: function (element) {
+		this.elements.erase( element );
+		return this;
+	},
+
+	/** @private */
+	update: function (time) {
+		this.elements.sortBy( 'zIndex' ).invoke( 'onUpdate' );
+
+		return this.fireEvent( 'update', [ time ]);
+	},
+
+	/** @private */
+	findIntersections: function (shape) {
+		var i, e, elems = [];
+		for (i = this.elements.length; i--;) {
+			e = this.elements[i];
+			if (e.currentBoundingShape.intersect( shape )) {
+				elems.push( e );
+			}
+		}
+		return elems;
+	},
+
+
+	/** @private */
+	draw: function () {
+		var i, l, elem, clear = [],
+			redraw = this.redrawElements,
+			add    = this.redrawElement.bind( this );
+
+		for (i = 0; i < redraw.length; i++) {
+			elem = redraw[i];
+			clear.push( elem.previousBoundingShape );
+
+			this.findIntersections(elem.previousBoundingShape)
+				.forEach( add );
+			this.findIntersections(elem.currentBoundingShape )
+				.forEach(function (e) {
+					// we need to redraw it, only if it is over our element
+					if (e.zIndex > elem.zIndex) add( e );
+				});
+		}
+
+		redraw.sortBy( 'zIndex' );
+
+		for (i = 0, l = redraw.length; i < l; i++) {
+			redraw[ i ].renderTo( this.libcanvas.ctx );
+		}
+		redraw.empty();
+
+		return this.fireEvent( 'render', [ this.libcanvas.ctx ]);
+	}
 });
 
 /*
