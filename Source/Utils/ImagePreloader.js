@@ -85,14 +85,24 @@ var ImagePreloader = LibCanvas.Utils.ImagePreloader = Class({
 			.first;
 	},
 	splitUrl: function (str) {
-		var url = str, coords = str.match(/ \[[\d\.:]+\]$/);
-		if (coords) {
-			coords = coords[0];
-			url    = str.substr(0, str.lastIndexOf(coords));
+		var url = str, size, cell, match, coords = null;
+
+				// searching for pattern 'url [x:y:w:y]'
+		if (match = str.match(/ \[(\d+)\:(\d+)\:(\d+)\:(\d+)\]$/)) {
+			coords = match.slice( 1 );
+				// searching for pattern 'url [w:y]{x:y}'
+		} else if (match = str.match(/ \[(\d+)\:(\d+)\]\{(\d+)\:(\d+)\}$/)) {
+			coords = match.slice( 1 );
+			size = coords.slice( 1, 3 );
+			cell = coords.slice( 3, 5 );
+			coords = [ cell[0] * size[0], cell[1] * size[1], size[0], size[1] ];
 		}
-		return { url: url,
-			coords: coords ? Array.from( coords.match(/[\d\.]+/g) ) : null
-		};
+		if (match) {
+			url = str.substr(0, str.lastIndexOf(match[0]));
+			coords = coords.map( Number );
+		}
+		
+		return { url: url, coords: coords };
 	},
 	createDomImages: function (images) {
 		var i, result = {}, url;
