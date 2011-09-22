@@ -7279,9 +7279,9 @@ var ImagePreloader = LibCanvas.Utils.ImagePreloader = Class({
 			coords = match.slice( 1 );
 				// searching for pattern 'url [w:y]{x:y}'
 		} else if (match = str.match(/ \[(\d+)\:(\d+)\]\{(\d+)\:(\d+)\}$/)) {
-			coords = match.slice( 1 );
-			size = coords.slice( 1, 3 );
-			cell = coords.slice( 3, 5 );
+			coords = match.slice( 1 ).map( Number );
+			size = coords.slice( 0, 2 );
+			cell = coords.slice( 2, 4 );
 			coords = [ cell[0] * size[0], cell[1] * size[1], size[0], size[1] ];
 		}
 		if (match) {
