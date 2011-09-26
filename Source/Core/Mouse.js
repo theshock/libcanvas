@@ -186,6 +186,7 @@ var Mouse = LibCanvas.Mouse = Class(
 			e.up   = e.delta > 0;
 			e.down = e.delta < 0;
 			waitWheel(e);
+			mouse.events.event('wheel', e);
 		},
 		down = waitEvent('mousedown', true),
 		up   = waitEvent('mouseup'  , true),

@@ -20,6 +20,7 @@ provides: Behaviors.MouseListener
 
 events:
 	- click
+	- wheel
 	- mouseover
 	- mousemove
 	- mouseout
