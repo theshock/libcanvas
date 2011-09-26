@@ -83,9 +83,7 @@ var MouseEvents = LibCanvas.Inner.MouseEvents = Class({
 		
 		subscribers.over.forEach(function (elem) {
 			// Mouse move firstly on this element
-			if (type == 'wheel') {
-				mouse.fireEvent(elem, 'wheel', e);
-			} else if (type == 'mousemove' && !mouse.lastMouseMove.contains(elem)) {
+			if (type == 'mousemove' && !mouse.lastMouseMove.contains(elem)) {
 				mouse.fireEvent(elem, 'mouseover', e);
 				mouse.lastMouseMove.push(elem);
 			} else if (type == 'mousedown') {

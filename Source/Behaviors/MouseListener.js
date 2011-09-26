@@ -26,6 +26,7 @@ events:
 	- mouseout
 	- mouseup
 	- mousedown
+	- away:wheel
 	- away:mouseover
 	- away:mousemove
 	- away:mouseout
