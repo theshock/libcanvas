@@ -463,7 +463,9 @@ var Context2D = Class(
 			y = x.y;
 			x = x.x;
 		}
-		return this.original('fillText', arguments);
+		var args = [text, x, y];
+		if (maxWidth) args.push( maxWidth );
+		return this.original('fillText', args);
 	},
 	/** @returns {Context2D} */
 	strokeText : function (text, x, y, maxWidth) {
@@ -474,7 +476,9 @@ var Context2D = Class(
 			y = x.y;
 			x = x.x;
 		}
-		return this.original('strokeText', arguments);
+		var args = [text, x, y];
+		if (maxWidth) args.push( maxWidth );
+		return this.original('strokeText', args);
 	},
 	/** @returns {object} */
 	measureText : function (textToMeasure) {
@@ -524,9 +528,9 @@ var Context2D = Class(
 			       al == 'right' ? to.to.x - lineWidth - pad :
 			           to.from.x + (to.width - lineWidth)/2;
 		};
-		var x, lines = String(cfg.text).split('\n');
+		var lines = String(cfg.text).split('\n');
 		
-		var measure = function (text) { return this.measureText(text).width; }.bind(this);
+		var measure = function (text) { return Number(this.measureText(text).width); }.bind(this);
 		if (cfg.wrap == 'no') {
 			lines.forEach(function (line, i) {
 				if (!line) return;

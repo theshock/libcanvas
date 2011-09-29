@@ -3100,12 +3100,7 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class(
 	/** @returns {LibCanvas.Context2D} */
 	processPath : function (ctx, noWrap) {
 		if (!noWrap) ctx.beginPath();
-		ctx
-			.moveTo(this.from.x, this.from.y)
-			.lineTo(this.to.x, this.from.y)
-			.lineTo(this.to.x, this.to.y)
-			.lineTo(this.from.x, this.to.y)
-			.lineTo(this.from.x, this.from.y);
+		ctx.ctx2d.rect( this.from.x, this.from.y, this.width, this.height );
 		if (!noWrap) ctx.closePath();
 		return ctx;
 	},
@@ -3793,7 +3788,9 @@ var Context2D = Class(
 			y = x.y;
 			x = x.x;
 		}
-		return this.original('fillText', arguments);
+		var args = [text, x, y];
+		if (maxWidth) args.push( maxWidth );
+		return this.original('fillText', args);
 	},
 	/** @returns {Context2D} */
 	strokeText : function (text, x, y, maxWidth) {
@@ -3804,7 +3801,9 @@ var Context2D = Class(
 			y = x.y;
 			x = x.x;
 		}
-		return this.original('strokeText', arguments);
+		var args = [text, x, y];
+		if (maxWidth) args.push( maxWidth );
+		return this.original('strokeText', args);
 	},
 	/** @returns {object} */
 	measureText : function (textToMeasure) {
@@ -3854,9 +3853,9 @@ var Context2D = Class(
 			       al == 'right' ? to.to.x - lineWidth - pad :
 			           to.from.x + (to.width - lineWidth)/2;
 		};
-		var x, lines = String(cfg.text).split('\n');
+		var lines = String(cfg.text).split('\n');
 		
-		var measure = function (text) { return this.measureText(text).width; }.bind(this);
+		var measure = function (text) { return Number(this.measureText(text).width); }.bind(this);
 		if (cfg.wrap == 'no') {
 			lines.forEach(function (line, i) {
 				if (!line) return;

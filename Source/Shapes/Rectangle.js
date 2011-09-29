@@ -183,12 +183,7 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class(
 	/** @returns {LibCanvas.Context2D} */
 	processPath : function (ctx, noWrap) {
 		if (!noWrap) ctx.beginPath();
-		ctx
-			.moveTo(this.from.x, this.from.y)
-			.lineTo(this.to.x, this.from.y)
-			.lineTo(this.to.x, this.to.y)
-			.lineTo(this.from.x, this.to.y)
-			.lineTo(this.from.x, this.from.y);
+		ctx.ctx2d.rect( this.from.x, this.from.y, this.width, this.height );
 		if (!noWrap) ctx.closePath();
 		return ctx;
 	},
