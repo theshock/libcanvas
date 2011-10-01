@@ -2864,6 +2864,20 @@ var Shape = LibCanvas.Shape = Class(
 	getCoords : function () {
 		return this.from;
 	},
+	/** @returns {LibCanvas.Shape} */
+	grow: function (size) {
+		if (typeof size == 'number') {
+			size = new Point(size/2, size/2);
+		} else {
+			size = new Point(size);
+			size.x /= 2;
+			size.y /= 2;
+		}
+
+		this.from.move(size, true);
+		this. to .move(size);
+		return this;
+	},
 	get x () {
 		return this.getCoords().x;
 	},
@@ -3067,20 +3081,6 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class(
 		return this.moveTo( moveTo );
 	},
 	/** @returns {LibCanvas.Shapes.Rectangle} */
-	grow: function (size) {
-		if (typeof size == 'number') {
-			size = new Point(size/2, size/2);
-		} else {
-			size = new Point(size);
-			size.x /= 2;
-			size.y /= 2;
-		}
-
-		this.from.move(size, true);
-		this. to .move(size);
-		return this;
-	},
-	/** @returns {LibCanvas.Shapes.Rectangle} */
 	moveTo: function (rect) {
 		if (rect instanceof Point) {
 			this.move( this.from.diff(rect) );
@@ -3210,6 +3210,10 @@ var Circle = LibCanvas.Shapes.Circle = Class(
 	// we need accessors to redefine parent "get center"
 	get center ( ) { return this._center; },
 	set center (c) { this._center = c; },
+	grow: function (size) {
+		this.radius += size/2;
+		return this;
+	},
 	getCoords : function () {
 		return this.center;
 	},
@@ -6105,6 +6109,9 @@ var Path = LibCanvas.Shapes.Path = Class(
 		this.allPoints.invoke( 'scale', power, pivot );
 		return this;
 	},
+	grow: function () {
+		return this;
+	},
 	rotate: function (angle, pivot) {
 		this.builder.changed = true;
 
@@ -6386,6 +6393,9 @@ var Polygon = LibCanvas.Shapes.Polygon = Class(
 		distance = this.invertDirection(distance, reverse);
 		this.points.invoke('move', distance);
 		this.fireEvent('move', [distance]);
+		return this;
+	},
+	grow: function () {
 		return this;
 	},
 	createBoundingRectangle: function () {
