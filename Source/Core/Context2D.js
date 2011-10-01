@@ -524,9 +524,11 @@ var Context2D = Class(
 		
 		var xGet = function (lineWidth) {
 			var al = cfg.align, pad = cfg.padding[1];
-			return al == 'left'  ? to.from.x + pad :
-			       al == 'right' ? to.to.x - lineWidth - pad :
-			           to.from.x + (to.width - lineWidth)/2;
+			return Math.round(
+				al == 'left'  ? to.from.x + pad :
+				al == 'right' ? to.to.x - lineWidth - pad :
+					to.from.x + (to.width - lineWidth)/2
+			);
 		};
 		var lines = String(cfg.text).split('\n');
 		
