@@ -61,7 +61,9 @@ return Class(
 		return ((fx-px)*(ty-py)-(tx-px)*(fy-py)).round(6) == 0;
 	},
 	intersect: function (line, point) {
-		line = this.self.from(line);
+		if (line.self != this.self) {
+			return this.getBoundingRectangle().intersect( line );
+		}
 		var a = this.from, b = this.to, c = line.from, d = line.to, x, y, FALSE = point ? null : false;
 		if (d.x == c.x) { // DC == vertical line
 			if (b.x == a.x) {

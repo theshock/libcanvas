@@ -40,6 +40,9 @@ var Path = LibCanvas.Shapes.Path = Class(
 		if (!noWrap) ctx.closePath();
 		return ctx;
 	},
+	intersect: function (obj) {
+		return this.getBoundingRectangle( obj );
+	},
 	each: function (fn) {
 		this.builder.parts.forEach(function (part) {
 			fn.call( this, part.method, part.args );
@@ -101,8 +104,8 @@ var Path = LibCanvas.Shapes.Path = Class(
 		}.bind(this));
 		return this;
 	},
-	// #todo: fix rectangle
-	createBoundingRectangle: function () {
+	// #todo: fix arc, cache
+	getBoundingRectangle: function () {
 		var p = this.allPoints, from, to;
 		if (p.length == 0) throw new Error('Is empty');
 

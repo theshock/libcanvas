@@ -96,7 +96,7 @@ var Polygon = LibCanvas.Shapes.Polygon = Class(
 	grow: function () {
 		return this;
 	},
-	createBoundingRectangle: function () {
+	getBoundingRectangle: function () {
 		var p = this.points, from, to;
 		if (p.length == 0) throw new Error('Polygon is empty');
 
@@ -117,7 +117,11 @@ var Polygon = LibCanvas.Shapes.Polygon = Class(
 		this.points.invoke('scale', power, pivot);
 		return this;
 	},
+	// #todo: cache
 	intersect : function (poly) {
+		if (poly.self != this.self) {
+			return this.getBoundingRectangle().intersect( poly );
+		}
 		var tL = this.lines, pL = poly.lines, i = tL.length, k = pL.length;
 		while (i-- > 0) for (k = pL.length; k-- > 0;) {
 			if (tL[i].intersect(pL[k])) return true;

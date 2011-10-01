@@ -175,11 +175,16 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class(
 	},
 	/** @returns {boolean} */
 	intersect : function (obj) {
-		if (obj instanceof this.self) {
-			return this.from.x < obj.to.x && this.to.x > obj.from.x
-			    && this.from.y < obj.to.y && this.to.y > obj.from.y;
+		if (obj.self != this.self) {
+			if (obj.getBoundingRectangle) {
+				obj = obj.getBoundingRectangle();
+			} else return false;
 		}
-		return false;
+		return this.from.x < obj.to.x && this.to.x > obj.from.x
+			&& this.from.y < obj.to.y && this.to.y > obj.from.y;
+	},
+	getBoundingRectangle: function () {
+		return this;
 	},
 	/** @returns {LibCanvas.Point} */
 	getRandomPoint : function (margin) {

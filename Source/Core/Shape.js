@@ -85,8 +85,8 @@ var Shape = LibCanvas.Shape = Class(
 			(this.from.y + this.to.y) / 2
 		);
 	},
-	createBoundingRectangle: function () {
-		return new Rectangle( this.from.clone(), this.to.clone() );
+	getBoundingRectangle: function () {
+		return new Rectangle( this.from, this.to );
 	},
 	getCenter : function () {
 		return this.center;

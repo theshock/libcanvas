@@ -121,7 +121,7 @@ LibCanvas.Scene.Standard = Class(
 
 			this.findIntersections(elem.previousBoundingShape)
 				.forEach( add );
-			this.findIntersections(elem.currentBoundingShape )
+			this.findIntersections(elem.currentBoundingShape)
 				.forEach(function (e) {
 					// we need to redraw it, only if it is over our element
 					if (e.zIndex > elem.zIndex) add( e );

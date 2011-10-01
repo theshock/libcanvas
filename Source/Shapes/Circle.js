@@ -76,8 +76,9 @@ var Circle = LibCanvas.Shapes.Circle = Class(
 	intersect : function (obj) {
 		if (obj instanceof this.self) {
 			return this.center.distanceTo(obj.center) < this.radius + obj.radius;
+		} else {
+			return this.getBoundingRectangle().intersect( obj );
 		}
-		return false;
 	},
 	move : function (distance, reverse) {
 		distance = this.invertDirection(distance, reverse);
@@ -96,7 +97,7 @@ var Circle = LibCanvas.Shapes.Circle = Class(
 		if (!noWrap) ctx.closePath();
 		return ctx;
 	},
-	createBoundingRectangle: function () {
+	getBoundingRectangle: function () {
 		var shift = new Point( this.radius, this.radius );
 		return new Rectangle({
 			from: this.center.clone().move( shift, true ),
