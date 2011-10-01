@@ -93,6 +93,9 @@ var Polygon = LibCanvas.Shapes.Polygon = Class(
 		this.fireEvent('move', [distance]);
 		return this;
 	},
+	grow: function () {
+		return this;
+	},
 	createBoundingRectangle: function () {
 		var p = this.points, from, to;
 		if (p.length == 0) throw new Error('Polygon is empty');

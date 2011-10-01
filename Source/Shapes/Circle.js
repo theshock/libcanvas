@@ -55,6 +55,10 @@ var Circle = LibCanvas.Shapes.Circle = Class(
 	// we need accessors to redefine parent "get center"
 	get center ( ) { return this._center; },
 	set center (c) { this._center = c; },
+	grow: function (size) {
+		this.radius += size/2;
+		return this;
+	},
 	getCoords : function () {
 		return this.center;
 	},

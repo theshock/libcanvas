@@ -47,6 +47,20 @@ var Shape = LibCanvas.Shape = Class(
 	getCoords : function () {
 		return this.from;
 	},
+	/** @returns {LibCanvas.Shape} */
+	grow: function (size) {
+		if (typeof size == 'number') {
+			size = new Point(size/2, size/2);
+		} else {
+			size = new Point(size);
+			size.x /= 2;
+			size.y /= 2;
+		}
+
+		this.from.move(size, true);
+		this. to .move(size);
+		return this;
+	},
 	get x () {
 		return this.getCoords().x;
 	},

@@ -84,6 +84,9 @@ var Path = LibCanvas.Shapes.Path = Class(
 		this.allPoints.invoke( 'scale', power, pivot );
 		return this;
 	},
+	grow: function () {
+		return this;
+	},
 	rotate: function (angle, pivot) {
 		this.builder.changed = true;
 

@@ -145,20 +145,6 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class(
 		return this.moveTo( moveTo );
 	},
 	/** @returns {LibCanvas.Shapes.Rectangle} */
-	grow: function (size) {
-		if (typeof size == 'number') {
-			size = new Point(size/2, size/2);
-		} else {
-			size = new Point(size);
-			size.x /= 2;
-			size.y /= 2;
-		}
-
-		this.from.move(size, true);
-		this. to .move(size);
-		return this;
-	},
-	/** @returns {LibCanvas.Shapes.Rectangle} */
 	moveTo: function (rect) {
 		if (rect instanceof Point) {
 			this.move( this.from.diff(rect) );
