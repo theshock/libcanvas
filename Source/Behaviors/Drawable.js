@@ -85,14 +85,20 @@ return Class({
 		return this;
 	},
 	startDrawing: function () {
-		return this
-		  .removeEvent('libcanvasSet', stop)
-		     .addEvent('libcanvasSet', start);
+		this.removeEvent('libcanvasSet', stop);
+
+		this.libcanvas ?
+			start.call( this ) :
+			this.addEvent('libcanvasSet', start);
+		return this;
 	},
 	stopDrawing: function () {
-		return this
-		  .removeEvent('libcanvasSet', start)
-		     .addEvent('libcanvasSet', stop);
+		this.removeEvent('libcanvasSet', start);
+
+		this.libcanvas ?
+			stop.call( this ) :
+			this.addEvent('libcanvasSet', stop);
+		return this;
 	},
 	update : Class.abstractMethod,
 	draw   : Class.abstractMethod

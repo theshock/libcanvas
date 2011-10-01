@@ -310,7 +310,7 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 	/** @returns {LibCanvas.Canvas2D} */
 	listenMouse : function (elem) {
 		this._mouse = LibCanvas.isLibCanvas(elem) ? elem.mouse
-			: new Mouse(this, /* preventDefault */elem);
+			: new Mouse(this.wrapper);
 		return this;
 	},
 

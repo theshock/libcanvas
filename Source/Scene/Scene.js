@@ -35,6 +35,8 @@ LibCanvas.Scene.Standard = Class(
 	 * @returns {LibCanvas.Scene.Standard}
 	 */
 	initialize: function (libcanvas) {
+		Class.bindAll( this, 'redrawElement' );
+
 		libcanvas.addElement( this );
 		this.elements       = [];
 		this.redrawElements = [];
@@ -111,7 +113,7 @@ LibCanvas.Scene.Standard = Class(
 	draw: function () {
 		var i, l, elem, clear = [],
 			redraw = this.redrawElements,
-			add    = this.redrawElement.bind( this );
+			add    = this.redrawElement;
 
 		for (i = 0; i < redraw.length; i++) {
 			elem = redraw[i];

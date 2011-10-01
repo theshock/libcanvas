@@ -34,12 +34,13 @@ LibCanvas.Scene.Element = Class(
 
 	initialize: function (scene, options) {
 		scene.libcanvas.addElement( this ).stopDrawing();
+		
 		this.scene = scene;
 		this.setOptions( options );
 
 		if (this.options.shape) {
 			this.shape = this.options.shape;
-			this.updateBoundingShapes();
+			this.updateBoundingShapes( this.shape );
 		}
 	},
 
@@ -47,15 +48,15 @@ LibCanvas.Scene.Element = Class(
 	currentBoundingShape : null,
 
 	/** @private */
-	updateBoundingShapes: function () {
+	updateBoundingShapes: function ( shape ) {
 		if ( !this.previousBoundingShape ) {
-			if (!this.shape) throw new TypeError( 'shape is required' );
+			if (!shape) throw new TypeError( 'shape is required' );
 
-			this.previousBoundingShape = this.shape.clone();
-			this.currentBoundingShape  = this.shape.clone();
+			this.previousBoundingShape = shape.clone();
+			this.currentBoundingShape  = shape.clone();
 		} else {
 			this.previousBoundingShape.set( this.currentBoundingShape );
-			this.currentBoundingShape .set( this.shape );
+			this.currentBoundingShape .set( shape );
 		}
 		return this;
 	},
@@ -65,6 +66,6 @@ LibCanvas.Scene.Element = Class(
 	},
 
 	renderTo: function ( ctx ) {
-		return this.updateBoundingShapes();
+		return this.updateBoundingShapes( this.shape );
 	}
 });

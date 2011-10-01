@@ -59,7 +59,7 @@ var Mouse = LibCanvas.Mouse = Class(
 		}
 	},
 	
-	initialize : function (libcanvas) {
+	initialize : function (elem) {
 		this.inCanvas = false;
 		this.point = new Point(null, null);
 		/** @private */
@@ -67,8 +67,7 @@ var Mouse = LibCanvas.Mouse = Class(
 		/** @private */
 		this.diff  = new Point(null, null);
 
-		this.libcanvas = libcanvas;
-		this.elem      = libcanvas.wrapper;
+		this.elem = elem;
 
 		this.events = new MouseEvents(this);
 
