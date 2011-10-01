@@ -90,6 +90,7 @@ LibCanvas.Scene.Standard = Class(
 	 * @returns {LibCanvas.Scene.Standard}
 	 */
 	rmElement: function (element) {
+		this.redrawElement ( element );
 		this.elements.erase( element );
 		return this;
 	},
@@ -139,10 +140,12 @@ LibCanvas.Scene.Standard = Class(
 			ctx.clear( clear[i] );
 		}
 
-		redraw.sortBy( 'zIndex' );
+		redraw.sortBy( 'zIndex', true );
 
 		for (i = 0, l = redraw.length; i < l; i++) {
-			redraw[ i ].renderTo( ctx );
+			if (this.elements.contains( redraw[ i ] )) {
+				redraw[ i ].renderTo( ctx );
+			}
 		}
 		redraw.empty();
 

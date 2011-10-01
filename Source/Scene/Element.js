@@ -43,11 +43,20 @@ LibCanvas.Scene.Element = Class(
 			this.shape = this.options.shape;
 			this.previousBoundingShape = this.shape;
 		}
+		if (this.options.zIndex != null) {
+			this.zIndex = Number( this.options.zIndex );
+		}
 	},
 
 	previousBoundingShape: null,
+
 	get currentBoundingShape () {
 		return this.shape;
+	},
+
+	destroy: function () {
+		this.scene.rmElement( this );
+		return this;
 	},
 
 	redraw: function () {
@@ -60,6 +69,6 @@ LibCanvas.Scene.Element = Class(
 	},
 
 	renderTo: function () {
-		this.previousBoundingShape = this.shape.clone().grow(1);
+		this.previousBoundingShape = this.shape.clone().grow( 2 );
 	}
 });

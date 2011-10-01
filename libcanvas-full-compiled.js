@@ -5611,11 +5611,20 @@ LibCanvas.Scene.Element = Class(
 			this.shape = this.options.shape;
 			this.previousBoundingShape = this.shape;
 		}
+		if (this.options.zIndex != null) {
+			this.zIndex = Number( this.options.zIndex );
+		}
 	},
 
 	previousBoundingShape: null,
+
 	get currentBoundingShape () {
 		return this.shape;
+	},
+
+	destroy: function () {
+		this.scene.rmElement( this );
+		return this;
 	},
 
 	redraw: function () {
@@ -5628,7 +5637,7 @@ LibCanvas.Scene.Element = Class(
 	},
 
 	renderTo: function () {
-		this.previousBoundingShape = this.shape.clone().grow(1);
+		this.previousBoundingShape = this.shape.clone().grow( 2 );
 	}
 });
 
@@ -5724,6 +5733,7 @@ LibCanvas.Scene.Standard = Class(
 	 * @returns {LibCanvas.Scene.Standard}
 	 */
 	rmElement: function (element) {
+		this.redrawElement ( element );
 		this.elements.erase( element );
 		return this;
 	},
@@ -5773,10 +5783,12 @@ LibCanvas.Scene.Standard = Class(
 			ctx.clear( clear[i] );
 		}
 
-		redraw.sortBy( 'zIndex' );
+		redraw.sortBy( 'zIndex', true );
 
 		for (i = 0, l = redraw.length; i < l; i++) {
-			redraw[ i ].renderTo( ctx );
+			if (this.elements.contains( redraw[ i ] )) {
+				redraw[ i ].renderTo( ctx );
+			}
 		}
 		redraw.empty();
 
