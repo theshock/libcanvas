@@ -92,6 +92,13 @@ var Circle = LibCanvas.Shapes.Circle = Class(
 		if (!noWrap) ctx.closePath();
 		return ctx;
 	},
+	createBoundingRectangle: function () {
+		var shift = new Point( this.radius, this.radius );
+		return new Rectangle({
+			from: this.center.clone().move( shift, true ),
+			to  : this.center.clone().move( shift )
+		});
+	},
 	clone : function () {
 		return new this.self(this.center.clone(), this.radius);
 	},

@@ -93,6 +93,19 @@ var Polygon = LibCanvas.Shapes.Polygon = Class(
 		this.fireEvent('move', [distance]);
 		return this;
 	},
+	createBoundingRectangle: function () {
+		var p = this.points, from, to;
+		if (p.length == 0) throw new Error('Polygon is empty');
+
+		from = p[0].clone(), to = p[0].clone();
+		for (var l = p.length; l--;) {
+			from.x = Math.min( from.x, p[l].x );
+			from.y = Math.min( from.y, p[l].y );
+			  to.x = Math.max(   to.x, p[l].x );
+			  to.y = Math.max(   to.y, p[l].y );
+		}
+		return new Rectangle( from, to );
+	},
 	rotate : function (angle, pivot) {
 		this.points.invoke('rotate', angle, pivot);
 		return this;

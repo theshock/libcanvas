@@ -272,8 +272,8 @@ var Context2D = Class(
 		return shape instanceof Shape && shape.self != Rectangle ?
 			this
 				.save()
-				.clip( shape )
-				.clearAll()
+				.set({ globalCompositeOperation: Context2D.COMPOSITE.DESTINATION_OUT })
+				.fill( shape )
 				.restore() :
 			this.clearRect( Rectangle(arguments) );
 	},

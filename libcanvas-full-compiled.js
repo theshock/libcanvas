@@ -732,6 +732,8 @@ return Class({
 			time  : 500
 		}, args);
 
+		if (window.opera) args.time = (args.time / 2).round();
+
 		if (typeof args.props == 'function') {
 			elem = args.props;
 			isFn = true;
@@ -2886,6 +2888,9 @@ var Shape = LibCanvas.Shape = Class(
 			(this.from.y + this.to.y) / 2
 		);
 	},
+	createBoundingRectangle: function () {
+		return new Rectangle( this.from.clone(), this.to.clone() );
+	},
 	getCenter : function () {
 		return this.center;
 	},
@@ -3242,6 +3247,13 @@ var Circle = LibCanvas.Shapes.Circle = Class(
 		if (!noWrap) ctx.closePath();
 		return ctx;
 	},
+	createBoundingRectangle: function () {
+		var shift = new Point( this.radius, this.radius );
+		return new Rectangle({
+			from: this.center.clone().move( shift, true ),
+			to  : this.center.clone().move( shift )
+		});
+	},
 	clone : function () {
 		return new this.self(this.center.clone(), this.radius);
 	},
@@ -3597,8 +3609,8 @@ var Context2D = Class(
 		return shape instanceof Shape && shape.self != Rectangle ?
 			this
 				.save()
-				.clip( shape )
-				.clearAll()
+				.set({ globalCompositeOperation: Context2D.COMPOSITE.DESTINATION_OUT })
+				.fill( shape )
 				.restore() :
 			this.clearRect( Rectangle(arguments) );
 	},
@@ -6107,6 +6119,20 @@ var Path = LibCanvas.Shapes.Path = Class(
 		}.bind(this));
 		return this;
 	},
+	// #todo: fix rectangle
+	createBoundingRectangle: function () {
+		var p = this.allPoints, from, to;
+		if (p.length == 0) throw new Error('Is empty');
+
+		from = p[0].clone(), to = p[0].clone();
+		for (var l = p.length; l--;) {
+			from.x = Math.min( from.x, p[l].x );
+			from.y = Math.min( from.y, p[l].y );
+			  to.x = Math.max(   to.x, p[l].x );
+			  to.y = Math.max(   to.y, p[l].y );
+		}
+		return new Rectangle( from, to );
+	},
 	clone: function () {
 		var builder = new Path.Builder;
 		builder.parts.append( this.builder.parts.clone() );
@@ -6361,6 +6387,19 @@ var Polygon = LibCanvas.Shapes.Polygon = Class(
 		this.points.invoke('move', distance);
 		this.fireEvent('move', [distance]);
 		return this;
+	},
+	createBoundingRectangle: function () {
+		var p = this.points, from, to;
+		if (p.length == 0) throw new Error('Polygon is empty');
+
+		from = p[0].clone(), to = p[0].clone();
+		for (var l = p.length; l--;) {
+			from.x = Math.min( from.x, p[l].x );
+			from.y = Math.min( from.y, p[l].y );
+			  to.x = Math.max(   to.x, p[l].x );
+			  to.y = Math.max(   to.y, p[l].y );
+		}
+		return new Rectangle( from, to );
 	},
 	rotate : function (angle, pivot) {
 		this.points.invoke('rotate', angle, pivot);
