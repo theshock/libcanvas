@@ -55,7 +55,9 @@ LibCanvas.Scene.Standard = Class(
 	 */
 	createFactory: function (Class) {
 		return function () {
-			return Class.factory( [this].append( arguments ) );
+			var element = Class.factory( [this].append( arguments ) );
+			this.addElement( element );
+			return element;
 		}.bind( this );
 	},
 
@@ -75,7 +77,10 @@ LibCanvas.Scene.Standard = Class(
 	 */
 	redrawElement: function (element) {
 		if (this.elements.contains( element )) {
-			this.redrawElements.include( element );
+			if (!this.redrawElements.contains( element )) {
+				this.redrawElements.push( element );
+				this.libcanvas.update();
+			}
 		}
 		return this;
 	},
@@ -97,11 +102,11 @@ LibCanvas.Scene.Standard = Class(
 	},
 
 	/** @private */
-	findIntersections: function (shape) {
+	findIntersections: function (shape, elem) {
 		var i, e, elems = [];
 		for (i = this.elements.length; i--;) {
 			e = this.elements[i];
-			if (e.currentBoundingShape.intersect( shape )) {
+			if (e != elem && e.currentBoundingShape.intersect( shape )) {
 				elems.push( e );
 			}
 		}
@@ -112,29 +117,35 @@ LibCanvas.Scene.Standard = Class(
 	/** @private */
 	draw: function () {
 		var i, l, elem, clear = [],
-			redraw = this.redrawElements,
-			add    = this.redrawElement;
+			ctx = this.libcanvas.ctx,
+			redraw = this.redrawElements;
 
 		for (i = 0; i < redraw.length; i++) {
 			elem = redraw[i];
 			clear.push( elem.previousBoundingShape );
 
-			this.findIntersections(elem.previousBoundingShape)
-				.forEach( add );
-			this.findIntersections(elem.currentBoundingShape)
+			this.findIntersections(elem.previousBoundingShape, elem)
+				.forEach(function (e) {
+					redraw.include( e );
+				});
+			this.findIntersections(elem.currentBoundingShape, elem)
 				.forEach(function (e) {
 					// we need to redraw it, only if it is over our element
-					if (e.zIndex > elem.zIndex) add( e );
+					if (e.zIndex > elem.zIndex) redraw.include( e );
 				});
+		}
+
+		for (i = clear.length; i--;) {
+			ctx.clear( clear[i] );
 		}
 
 		redraw.sortBy( 'zIndex' );
 
 		for (i = 0, l = redraw.length; i < l; i++) {
-			redraw[ i ].renderTo( this.libcanvas.ctx );
+			redraw[ i ].renderTo( ctx );
 		}
 		redraw.empty();
 
-		return this.fireEvent( 'render', [ this.libcanvas.ctx ]);
+		return this.fireEvent( 'render', [ ctx ]);
 	}
 });

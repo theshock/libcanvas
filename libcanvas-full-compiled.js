@@ -109,7 +109,15 @@ var LibCanvas = this.LibCanvas = Class(
 	}
 });
 
-LibCanvas.namespace( 'Animation', 'Behaviors', 'Engines', 'Inner', 'Processors', 'Scene', 'Shapes', 'Ui', 'Utils' );
+LibCanvas.Animation  = {};
+LibCanvas.Behaviors  = {};
+LibCanvas.Engines    = {};
+LibCanvas.Inner      = {};
+LibCanvas.Processors = {};
+LibCanvas.Scene      = {};
+LibCanvas.Shapes     = {};
+LibCanvas.Ui         = {};
+LibCanvas.Utils      = {};
 
 var
 	Inner      = LibCanvas.Inner,
@@ -5593,31 +5601,25 @@ LibCanvas.Scene.Element = Class(
 	Implements: Class.Options,
 
 	initialize: function (scene, options) {
-		scene.libcanvas.addElement( this ).stopDrawing();
+		scene.libcanvas.addElement( this );
+		this.stopDrawing();
 		
 		this.scene = scene;
 		this.setOptions( options );
 
 		if (this.options.shape) {
 			this.shape = this.options.shape;
-			this.updateBoundingShapes( this.shape );
+			this.previousBoundingShape = this.shape;
 		}
 	},
 
 	previousBoundingShape: null,
-	currentBoundingShape : null,
+	get currentBoundingShape () {
+		return this.shape;
+	},
 
-	/** @private */
-	updateBoundingShapes: function ( shape ) {
-		if ( !this.previousBoundingShape ) {
-			if (!shape) throw new TypeError( 'shape is required' );
-
-			this.previousBoundingShape = shape.clone();
-			this.currentBoundingShape  = shape.clone();
-		} else {
-			this.previousBoundingShape.set( this.currentBoundingShape );
-			this.currentBoundingShape .set( shape );
-		}
+	redraw: function () {
+		this.scene.redrawElement( this );
 		return this;
 	},
 
@@ -5625,8 +5627,8 @@ LibCanvas.Scene.Element = Class(
 		return this;
 	},
 
-	renderTo: function ( ctx ) {
-		return this.updateBoundingShapes( this.shape );
+	renderTo: function () {
+		this.previousBoundingShape = this.shape.clone().grow(1);
 	}
 });
 
@@ -5687,7 +5689,9 @@ LibCanvas.Scene.Standard = Class(
 	 */
 	createFactory: function (Class) {
 		return function () {
-			return Class.factory( [this].append( arguments ) );
+			var element = Class.factory( [this].append( arguments ) );
+			this.addElement( element );
+			return element;
 		}.bind( this );
 	},
 
@@ -5707,7 +5711,10 @@ LibCanvas.Scene.Standard = Class(
 	 */
 	redrawElement: function (element) {
 		if (this.elements.contains( element )) {
-			this.redrawElements.include( element );
+			if (!this.redrawElements.contains( element )) {
+				this.redrawElements.push( element );
+				this.libcanvas.update();
+			}
 		}
 		return this;
 	},
@@ -5729,11 +5736,11 @@ LibCanvas.Scene.Standard = Class(
 	},
 
 	/** @private */
-	findIntersections: function (shape) {
+	findIntersections: function (shape, elem) {
 		var i, e, elems = [];
 		for (i = this.elements.length; i--;) {
 			e = this.elements[i];
-			if (e.currentBoundingShape.intersect( shape )) {
+			if (e != elem && e.currentBoundingShape.intersect( shape )) {
 				elems.push( e );
 			}
 		}
@@ -5744,30 +5751,36 @@ LibCanvas.Scene.Standard = Class(
 	/** @private */
 	draw: function () {
 		var i, l, elem, clear = [],
-			redraw = this.redrawElements,
-			add    = this.redrawElement;
+			ctx = this.libcanvas.ctx,
+			redraw = this.redrawElements;
 
 		for (i = 0; i < redraw.length; i++) {
 			elem = redraw[i];
 			clear.push( elem.previousBoundingShape );
 
-			this.findIntersections(elem.previousBoundingShape)
-				.forEach( add );
-			this.findIntersections(elem.currentBoundingShape)
+			this.findIntersections(elem.previousBoundingShape, elem)
+				.forEach(function (e) {
+					redraw.include( e );
+				});
+			this.findIntersections(elem.currentBoundingShape, elem)
 				.forEach(function (e) {
 					// we need to redraw it, only if it is over our element
-					if (e.zIndex > elem.zIndex) add( e );
+					if (e.zIndex > elem.zIndex) redraw.include( e );
 				});
+		}
+
+		for (i = clear.length; i--;) {
+			ctx.clear( clear[i] );
 		}
 
 		redraw.sortBy( 'zIndex' );
 
 		for (i = 0, l = redraw.length; i < l; i++) {
-			redraw[ i ].renderTo( this.libcanvas.ctx );
+			redraw[ i ].renderTo( ctx );
 		}
 		redraw.empty();
 
-		return this.fireEvent( 'render', [ this.libcanvas.ctx ]);
+		return this.fireEvent( 'render', [ ctx ]);
 	}
 });
 
