@@ -3907,7 +3907,11 @@ var Context2D = Class(
 					return;
 				}
 				
-				var words = line.match(/.+?(\s|$)/g);
+				var words = (line || ' ').match(/.+?(\s|$)/g);
+				if (!words) {
+					lNum++;
+					return;
+				}
 				var L  = '';
 				var Lw = 0;
 				for (var i = 0; i <= words.length; i++) {
