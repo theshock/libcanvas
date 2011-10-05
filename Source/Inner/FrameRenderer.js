@@ -89,9 +89,14 @@ var FrameRenderer = LibCanvas.Inner.FrameRenderer = Class({
 		}
 		return false;
 	},
+	collect: 0,
 	renderFrame : function (time) {
 		for (var n in this._layers) {
 			this.renderLayer(this._layers[n], time);
+		}
+		if (window.opera && ++this.collect > 100) {
+			window.opera.collect();
+			this.collect = 0;
 		}
 		return true;
 	}
