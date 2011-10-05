@@ -5689,11 +5689,11 @@ Scene.Resources = Class(
 		this.lc    = scene.libcanvas;
 	},
 
-	audio: function (name) {
+	getAudio: function (name) {
 		return this.lc.getAudio( name );
 	},
 
-	image: function (name) {
+	getImage: function (name) {
 		return this.lc.getImage( name );
 	},
 
