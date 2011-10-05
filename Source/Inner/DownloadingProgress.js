@@ -20,6 +20,11 @@ provides: Inner.DownloadingProgress
 ...
 */
 var DownloadingProgress = LibCanvas.Inner.DownloadingProgress = Class({
+	imageExists: function (name) {
+		if (this.parentLayer) return this.parentLayer.imageExists(name);
+
+		return !!(this.images && this.images[name]);
+	},
 	getImage : function (name) {
 		if (this.parentLayer) return this.parentLayer.getImage(name);
 		

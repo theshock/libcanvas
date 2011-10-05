@@ -122,7 +122,8 @@ LibCanvas.Utils      = {};
 var
 	Inner      = LibCanvas.Inner,
 	Processors = LibCanvas.Processors,
-	Buffer     = LibCanvas.Buffer;
+	Buffer     = LibCanvas.Buffer,
+	Scene      = LibCanvas.Scene;
 
 /*
 ---
@@ -2215,6 +2216,11 @@ provides: Inner.DownloadingProgress
 ...
 */
 var DownloadingProgress = LibCanvas.Inner.DownloadingProgress = Class({
+	imageExists: function (name) {
+		if (this.parentLayer) return this.parentLayer.imageExists(name);
+
+		return !!(this.images && this.images[name]);
+	},
 	getImage : function (name) {
 		if (this.parentLayer) return this.parentLayer.getImage(name);
 		
@@ -5596,7 +5602,7 @@ provides: Scene.Element
 ...
 */
 
-LibCanvas.Scene.Element = Class(
+Scene.Element = Class(
 /**
  * @lends LibCanvas.Scene.Element#
  * @augments Drawable
@@ -5606,6 +5612,7 @@ LibCanvas.Scene.Element = Class(
 
 	Implements: Class.Options,
 
+	/** @constructs */
 	initialize: function (scene, options) {
 		scene.libcanvas.addElement( this );
 		this.stopDrawing();
@@ -5650,6 +5657,62 @@ LibCanvas.Scene.Element = Class(
 /*
 ---
 
+name: "Scene.Resources"
+
+description: "LibCanvas.Scene"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- Scene
+
+provides: Scene.Resources
+
+...
+*/
+
+Scene.Resources = Class(
+/**
+ * @lends LibCanvas.Scene.Resources#
+ */
+{
+
+	/** @constructs */
+	initialize: function (scene) {
+		this.scene = scene;
+		this.lc    = scene.libcanvas;
+	},
+
+	audio: function (name) {
+		return this.lc.getAudio( name );
+	},
+
+	image: function (name) {
+		return this.lc.getImage( name );
+	},
+
+	imageExists: function (name) {
+		return this.lc.imageExists( name );
+	},
+
+	get mouse () {
+		return this.lc.mouse;
+	},
+
+	get keyboard () {
+		return this.lc.mouse;
+	}
+});
+
+/*
+---
+
 name: "Scene.Standard"
 
 description: "LibCanvas.Scene"
@@ -5671,7 +5734,7 @@ provides: Scene.Standard
 ...
 */
 
-LibCanvas.Scene.Standard = Class(
+Scene.Standard = Class(
 /**
  * @lends LibCanvas.Scene.Standard#
  * @augments Drawable
@@ -5687,6 +5750,7 @@ LibCanvas.Scene.Standard = Class(
 		Class.bindAll( this, 'redrawElement' );
 
 		libcanvas.addElement( this );
+		this.resources = new Scene.Resources( this );
 		this.elements       = [];
 		this.redrawElements = [];
 		return this;
@@ -5746,9 +5810,9 @@ LibCanvas.Scene.Standard = Class(
 
 	/** @private */
 	update: function (time) {
-		this.elements.sortBy( 'zIndex' ).invoke( 'onUpdate' );
+		this.elements.sortBy( 'zIndex' ).invoke( 'onUpdate', time, this.resources );
 
-		return this.fireEvent( 'update', [ time ]);
+		return this.fireEvent( 'update', [ time, this.resources ]);
 	},
 
 	/** @private */
@@ -5793,12 +5857,12 @@ LibCanvas.Scene.Standard = Class(
 
 		for (i = 0, l = redraw.length; i < l; i++) {
 			if (this.elements.contains( redraw[ i ] )) {
-				redraw[ i ].renderTo( ctx );
+				redraw[ i ].renderTo( ctx, this.resources );
 			}
 		}
 		redraw.empty();
 
-		return this.fireEvent( 'render', [ ctx ]);
+		return this.fireEvent( 'render', [ ctx, this.resources ]);
 	}
 });
 

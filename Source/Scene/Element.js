@@ -22,7 +22,7 @@ provides: Scene.Element
 ...
 */
 
-LibCanvas.Scene.Element = Class(
+Scene.Element = Class(
 /**
  * @lends LibCanvas.Scene.Element#
  * @augments Drawable
@@ -32,6 +32,7 @@ LibCanvas.Scene.Element = Class(
 
 	Implements: Class.Options,
 
+	/** @constructs */
 	initialize: function (scene, options) {
 		scene.libcanvas.addElement( this );
 		this.stopDrawing();

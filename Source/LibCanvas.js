@@ -99,4 +99,5 @@ LibCanvas.Utils      = {};
 var
 	Inner      = LibCanvas.Inner,
 	Processors = LibCanvas.Processors,
-	Buffer     = LibCanvas.Buffer;
+	Buffer     = LibCanvas.Buffer,
+	Scene      = LibCanvas.Scene;

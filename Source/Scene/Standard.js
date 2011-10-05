@@ -22,7 +22,7 @@ provides: Scene.Standard
 ...
 */
 
-LibCanvas.Scene.Standard = Class(
+Scene.Standard = Class(
 /**
  * @lends LibCanvas.Scene.Standard#
  * @augments Drawable
@@ -38,6 +38,7 @@ LibCanvas.Scene.Standard = Class(
 		Class.bindAll( this, 'redrawElement' );
 
 		libcanvas.addElement( this );
+		this.resources = new Scene.Resources( this );
 		this.elements       = [];
 		this.redrawElements = [];
 		return this;
@@ -97,9 +98,9 @@ LibCanvas.Scene.Standard = Class(
 
 	/** @private */
 	update: function (time) {
-		this.elements.sortBy( 'zIndex' ).invoke( 'onUpdate' );
+		this.elements.sortBy( 'zIndex' ).invoke( 'onUpdate', time, this.resources );
 
-		return this.fireEvent( 'update', [ time ]);
+		return this.fireEvent( 'update', [ time, this.resources ]);
 	},
 
 	/** @private */
@@ -144,11 +145,11 @@ LibCanvas.Scene.Standard = Class(
 
 		for (i = 0, l = redraw.length; i < l; i++) {
 			if (this.elements.contains( redraw[ i ] )) {
-				redraw[ i ].renderTo( ctx );
+				redraw[ i ].renderTo( ctx, this.resources );
 			}
 		}
 		redraw.empty();
 
-		return this.fireEvent( 'render', [ ctx ]);
+		return this.fireEvent( 'render', [ ctx, this.resources ]);
 	}
 });
