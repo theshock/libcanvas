@@ -51,5 +51,9 @@ Scene.Resources = Class(
 
 	get keyboard () {
 		return this.lc.mouse;
+	},
+
+	get rectangle () {
+		return this.lc.ctx.rectangle;
 	}
 });
