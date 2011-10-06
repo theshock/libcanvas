@@ -1717,11 +1717,11 @@ var initDraggable = function () {
 		mouse = draggable.libcanvas.mouse,
 		dragFn = function ( e ) {
 			draggable.shape.move( e.deltaOffset );
-			draggable.fireEvent('moveDrag', [e.deltaOffset]);
+			draggable.fireEvent('moveDrag', [e.deltaOffset, e]);
 		},
 		stopDrag  = ['up', 'out'],
-		onStopDrag = function () {
-			draggable.fireEvent('stopDrag');
+		onStopDrag = function (e) {
+			draggable.fireEvent('stopDrag', [ e ]);
 			mouse
 				.removeEvent( 'move', dragFn)
 				.removeEvent(stopDrag, onStopDrag);
@@ -1729,10 +1729,10 @@ var initDraggable = function () {
 
 	draggable.listenMouse();
 
-	draggable.addEvent( 'mousedown' , function () {
+	draggable.addEvent( 'mousedown' , function (e) {
 		if (!draggable['draggable.isDraggable']) return;
 
-		draggable.fireEvent('startDrag');
+		draggable.fireEvent('startDrag', [ e ]);
 
 		mouse
 			.addEvent( 'move', dragFn )
