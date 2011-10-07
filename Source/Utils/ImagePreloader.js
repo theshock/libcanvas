@@ -75,14 +75,16 @@ var ImagePreloader = LibCanvas.Utils.ImagePreloader = Class({
 	},
 	createDomImage : function (src) {
 		this.number++;
-		return atom.dom
-			.create('img', { src : src })
-			.bind({
-				load : this.onProcessed.bind(this, 'loaded'),
-				error: this.onProcessed.bind(this, 'errors'),
-				abort: this.onProcessed.bind(this, 'aborts')
-			})
-			.first;
+		var img = new Image();
+		img.src = src;
+		if (window.opera && img.complete) {
+			this.onProcessed.delay(10, this, ['loaded', img]);
+		} else {
+			img.addEventListener( 'load' , this.onProcessed.bind(this, 'loaded', img), false );
+			img.addEventListener( 'error', this.onProcessed.bind(this, 'errors', img), false );
+			img.addEventListener( 'abort', this.onProcessed.bind(this, 'aborts', img), false );
+		}
+		return img;
 	},
 	splitUrl: function (str) {
 		var url = str, size, cell, match, coords = null;
