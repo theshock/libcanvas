@@ -70,6 +70,20 @@ Scene.Element = Class(
 	},
 
 	renderTo: function () {
-		this.previousBoundingShape = this.shape.clone().grow( 2 );
+		var shape = this.shape;
+		if (shape instanceof Rectangle) {
+			var point = function (method, invoke) {
+				return new Point(
+					Math[method](shape.from.x, shape.to.x),
+					Math[method](shape.from.y, shape.to.y)
+				).invoke( invoke );
+			};
+			this.previousBoundingShape = new Rectangle(
+				point( 'min', 'floor' ),
+				point( 'max', 'ceil'  )
+			);
+		} else {
+			this.previousBoundingShape = shape.clone().grow( 2 );
+		}
 	}
 });

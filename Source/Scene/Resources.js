@@ -45,12 +45,18 @@ Scene.Resources = Class(
 		return this.lc.imageExists( name );
 	},
 
+	/** @private */
+	_mouse: null,
+
 	get mouse () {
-		return this.lc.mouse;
+		if (this._mouse == null) {
+			this._mouse = new Scene.Mouse( this.scene );
+		}
+		return this._mouse;
 	},
 
 	get keyboard () {
-		return this.lc.mouse;
+		return this.lc.keyboard;
 	},
 
 	get rectangle () {
