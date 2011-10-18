@@ -180,6 +180,12 @@ return Class(
 		};
 	},
 	/** @returns {LibCanvas.Point} */
+	invoke: function (method) {
+		this.x = this.x[method]();
+		this.y = this.y[method]();
+		return this;
+	},
+	/** @returns {LibCanvas.Point} */
 	mean: function (points) {
 		var l = points.length, i = l, x = 0, y = 0;
 		while (i--) {
