@@ -29,7 +29,7 @@ var Moveable = LibCanvas.Behaviors.Moveable = Class({
 	moveTo    : function (point, speed, fn) { // speed == pixels per sec
 		this.stopMoving();
 		point = Point(point);
-		var diff = this.getCoords().diff(point), shape = this.getShape();
+		var shape = this.shape, diff = shape.getCoords().diff(point);
 		if (!speed) {
 			shape.move(diff);
 			this.fireEvent('stopMove');
