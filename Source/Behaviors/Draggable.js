@@ -43,7 +43,8 @@ var initDraggable = function () {
 
 	draggable.addEvent( 'mousedown' , function (e) {
 		if (!draggable['draggable.isDraggable']) return;
-
+		if (typeof e.stop == 'function') e.stop();
+		
 		draggable.fireEvent('startDrag', [ e ]);
 
 		mouse

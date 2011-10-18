@@ -24,7 +24,8 @@ provides: Behaviors.Clickable
 var Clickable = LibCanvas.Behaviors.Clickable = function () {
 
 var setValFn = function (object, name, val) {
-	return function () {
+	return function (event) {
+		if (typeof event.stop == 'function') event.stop();
 		object[name] = val;
 		object.fireEvent('statusChanged');
 	};
