@@ -1164,6 +1164,12 @@ return Class(
 		};
 	},
 	/** @returns {LibCanvas.Point} */
+	invoke: function (method) {
+		this.x = this.x[method]();
+		this.y = this.y[method]();
+		return this;
+	},
+	/** @returns {LibCanvas.Point} */
 	mean: function (points) {
 		var l = points.length, i = l, x = 0, y = 0;
 		while (i--) {
@@ -1626,6 +1632,11 @@ var MouseListener = LibCanvas.Behaviors.MouseListener = Class({
 	},
 
 	listenMouse : function (stopListen) {
+		if (this.scene) {
+			this.scene.resources.mouse.subscribe( this );
+			return this;
+		}
+
 		var method = this[ 'listenMouse.' + (stopListen ? 'stop' : 'start') ];
 
 		this.libcanvas ? method.call( this ) :
@@ -1660,7 +1671,8 @@ provides: Behaviors.Clickable
 var Clickable = LibCanvas.Behaviors.Clickable = function () {
 
 var setValFn = function (object, name, val) {
-	return function () {
+	return function (event) {
+		if (typeof event.stop == 'function') event.stop();
 		object[name] = val;
 		object.fireEvent('statusChanged');
 	};
@@ -1731,7 +1743,8 @@ var initDraggable = function () {
 
 	draggable.addEvent( 'mousedown' , function (e) {
 		if (!draggable['draggable.isDraggable']) return;
-
+		if (typeof e.stop == 'function') e.stop();
+		
 		draggable.fireEvent('startDrag', [ e ]);
 
 		mouse
@@ -2036,7 +2049,7 @@ var Moveable = LibCanvas.Behaviors.Moveable = Class({
 	moveTo    : function (point, speed, fn) { // speed == pixels per sec
 		this.stopMoving();
 		point = Point(point);
-		var diff = this.getCoords().diff(point), shape = this.getShape();
+		var shape = this.shape, diff = shape.getCoords().diff(point);
 		if (!speed) {
 			shape.move(diff);
 			this.fireEvent('stopMove');
@@ -5432,9 +5445,9 @@ LibCanvas.Processors.Grayscale = Class({
 			b = d[i+2];
 			switch (type) {
 				case 'sepia':
-					data[i]   = (r * .393) + (g *.769) + (b * .189);
-					data[i+1] = (r * .349) + (g *.686) + (b * .168);
-					data[i+2] = (r * .272) + (g *.534) + (b * .131);
+					d[i]   = (r * .393) + (g *.769) + (b * .189);
+					d[i+1] = (r * .349) + (g *.686) + (b * .168);
+					d[i+2] = (r * .272) + (g *.534) + (b * .131);
 					break;
 				case 'luminance': set(i, 0.2126*r + 0.7152*g + 0.0722*b); break;
 				case 'average'  : set(i, (r + g + b)/3); break;
@@ -5655,8 +5668,242 @@ Scene.Element = Class(
 	},
 
 	renderTo: function () {
-		this.previousBoundingShape = this.shape.clone().grow( 2 );
+		var shape = this.shape;
+		if (shape instanceof Rectangle) {
+			var point = function (method, invoke) {
+				return new Point(
+					Math[method](shape.from.x, shape.to.x),
+					Math[method](shape.from.y, shape.to.y)
+				).invoke( invoke );
+			};
+			this.previousBoundingShape = new Rectangle(
+				point( 'min', 'floor' ),
+				point( 'max', 'ceil'  )
+			);
+		} else {
+			this.previousBoundingShape = shape.clone().grow( 2 );
+		}
 	}
+});
+
+/*
+---
+
+name: "Scene.Mouse.Event"
+
+description: "LibCanvas.Scene.Mouse"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- Scene
+
+provides: Scene.MouseEvent
+
+...
+*/
+
+Scene.MouseEvent = Class(
+/**
+ * @lends LibCanvas.Scene.MouseEvent#
+ */
+{
+	/** @property {LibCanvas.Point} */
+	offset: null,
+	/** @property {LibCanvas.Point} */
+	deltaOffset: null,
+	/** @property {number} */
+	delta: 0,
+
+	/** @constructs */
+	initialize: function (type, original) {
+		this.type     = type;
+		this.original = original;
+		this.extend( 'offset', 'deltaOffset', 'delta' );
+	},
+
+	/** @returns {Scene.MouseEvent} */
+	prevent: function () {
+		this.original.preventDefault();
+		return this;
+	},
+
+	/** @private */
+	extend: function (props) {
+		for (var i = props.length; i--;) {
+			var prop = props[i];
+			if ( this.original[prop] != null ) {
+				this[prop] = this.original[prop];
+			}
+		}
+		return this;
+	},
+
+	/** @private */
+	stopped: false,
+
+	/** @returns {LibCanvas.Scene.MouseEvent} */
+	stop: function () {
+		this.stopped = true;
+		this.original._stopped = true;
+		return this;
+	}
+});
+
+/*
+---
+
+name: "Scene.Mouse"
+
+description: "LibCanvas.Scene.Mouse"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- Scene
+	- Scene.MouseEvent
+
+provides: Scene.Mouse
+
+...
+*/
+
+Scene.Mouse = Class(
+/**
+ * @lends LibCanvas.Scene.Mouse#
+ */
+{
+
+	/** @private */
+	mouse: null,
+
+	/** @constructs */
+	initialize: function (scene) {
+		var mouse = this;
+
+		mouse.lastMouseMove = [];
+		mouse.lastMouseDown = [];
+
+		mouse.scene = scene;
+		mouse.subscribers = [];
+
+		var events = function (force, types) {
+			var method = force ? 'forceEvent' : 'event';
+			types.forEach(function (type) {
+				mouse.mouse.addEvent( type, function (e) { mouse[method]( type, e ) } );
+			});
+		};
+
+		mouse.mouse = scene.libcanvas.mouse;
+		mouse.point = mouse.mouse.point;
+		events(true , [ 'dblclick', 'contextmenu', 'wheel' ]);
+		events(false, [ 'down', 'up', 'move', 'out' ]);
+	},
+
+	/** @private */
+	stopped: false,
+
+	/** @returns {LibCanvas.Scene.Mouse} */
+	stop: function () {
+		this.stopped = true;
+		return this;
+	},
+
+	/** @returns {LibCanvas.Scene.Mouse} */
+	start: function () {
+		this.stopped = false;
+		return this;
+	},
+
+	/** @returns {LibCanvas.Scene.Mouse} */
+	subscribe : function (elem) {
+		this.subscribers.include(elem);
+		return this;
+	},
+
+	/** @returns {LibCanvas.Scene.Mouse} */
+	unsubscribe : function (elem) {
+		this.subscribers.erase(elem);
+		return this;
+	},
+
+	/** @private */
+	event: function (type, e) {
+		if (this.stopped || e._stopped) return;
+
+		var event = new Scene.MouseEvent( type, e );
+
+		if (['dblclick', 'contextmenu', 'wheel'].contains( type )) {
+			return this.forceEvent( type == 'wheel' ? 'mousewheel' : type, e );
+		}
+
+		if (type == 'down') this.lastMouseDown.empty();
+
+		var
+			lastDown = this.lastMouseDown,
+			lastMove = this.lastMouseMove,
+			sub = this.subscribers.sortBy( 'zIndex', true );
+
+		for (var i = sub.length; i--;) {
+			var elem = sub[i];
+
+			if (event.stopped) {
+				if (type == 'move' || type == 'out') {
+					if (lastMove.contains(elem)) elem.fireEvent( 'mouseout', [event] );
+				} else if (type == 'up') {
+					if (lastDown.contains(elem)) elem.fireEvent( 'mouseup', [event] );
+				}
+			} else if (this.mouse.isOver(elem)) {
+				if (type == 'move') {
+					if (lastMove.contains(elem)) {
+						elem.fireEvent( 'mouseover', [event] );
+					} else {
+						lastMove.push( elem );
+					}
+				} else if (type == 'down') {
+					lastDown.push(elem);
+				// If mouseup on this elem and last mousedown was on this elem - click
+				} else if (type == 'mouseup' && lastDown.contains(elem)) {
+					elem.fireEvent( 'click', [event] );
+				}
+				elem.fireEvent( 'mouse' + type, [event] );
+			} else {
+				var mouseOut = false;
+				if ( (type == 'move' || type == 'out') && lastMove.contains(elem)) {
+					elem.fireEvent( 'mouseout', [event] );
+					lastMove.erase(elem);
+					mouseOut = true;
+				}
+				if (!mouseOut) elem.fireEvent( 'away:mouse' + type, [event] );
+			}
+		}
+	},
+
+	/** @private */
+	forceEvent: function (type, e) {
+		var
+			event = new Scene.MouseEvent( type, e ),
+			sub = this.subscribers.sortBy( 'zIndex', true ),
+			i   = sub.length;
+		while (i--) if (this.mouse.isOver(sub[i])) {
+			sub[i].fireEvent( type, event );
+			if (event.stopped) break;
+		}
+		return this;
+	}
+
 });
 
 /*
@@ -5706,12 +5953,18 @@ Scene.Resources = Class(
 		return this.lc.imageExists( name );
 	},
 
+	/** @private */
+	_mouse: null,
+
 	get mouse () {
-		return this.lc.mouse;
+		if (this._mouse == null) {
+			this._mouse = new Scene.Mouse( this.scene );
+		}
+		return this._mouse;
 	},
 
 	get keyboard () {
-		return this.lc.mouse;
+		return this.lc.keyboard;
 	},
 
 	get rectangle () {
