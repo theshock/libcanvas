@@ -1673,8 +1673,10 @@ var Clickable = LibCanvas.Behaviors.Clickable = function () {
 var setValFn = function (object, name, val) {
 	return function (event) {
 		if (typeof event.stop == 'function') event.stop();
-		object[name] = val;
-		object.fireEvent('statusChanged');
+		if (object[name] != val) {
+			object[name] = val;
+			object.fireEvent('statusChanged');
+		}
 	};
 };
 
