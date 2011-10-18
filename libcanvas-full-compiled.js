@@ -6004,12 +6004,18 @@ Scene.Standard = Class(
 {
 	Extends: Drawable,
 
+	Implements: Class.Options,
+
 	/**
 	 * @param {LibCanvas.Canvas2D} libcanvas
 	 * @returns {LibCanvas.Scene.Standard}
 	 */
-	initialize: function (libcanvas) {
+	initialize: function (libcanvas, options) {
 		Class.bindAll( this, 'redrawElement' );
+
+		this.setOptions({
+			intersection: 'auto' // 'auto'|'manual'
+		}, options );
 
 		libcanvas.addElement( this );
 		this.resources = new Scene.Resources( this );
@@ -6100,15 +6106,17 @@ Scene.Standard = Class(
 			elem = redraw[i];
 			clear.push( elem.previousBoundingShape );
 
-			this.findIntersections(elem.previousBoundingShape, elem)
-				.forEach(function (e) {
-					redraw.include( e );
-				});
-			this.findIntersections(elem.currentBoundingShape, elem)
-				.forEach(function (e) {
-					// we need to redraw it, only if it is over our element
-					if (e.zIndex > elem.zIndex) redraw.include( e );
-				});
+			if (this.options.intersection !== 'manual') {
+				this.findIntersections(elem.previousBoundingShape, elem)
+					.forEach(function (e) {
+						redraw.include( e );
+					});
+				this.findIntersections(elem.currentBoundingShape, elem)
+					.forEach(function (e) {
+						// we need to redraw it, only if it is over our element
+						if (e.zIndex > elem.zIndex) redraw.include( e );
+					});
+			}
 		}
 
 		for (i = clear.length; i--;) {
