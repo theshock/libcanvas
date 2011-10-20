@@ -54,6 +54,8 @@ var ImagePreloader = LibCanvas.Utils.ImagePreloader = Class({
 			// opera fullscreen bug workaround
 			img.width  = img.width;
 			img.height = img.height;
+			img.naturalWidth  = img.naturalWidth;
+			img.naturalHeight = img.naturalHeight;
 		}
 		this.count[type]++;
 		this.processed++;
