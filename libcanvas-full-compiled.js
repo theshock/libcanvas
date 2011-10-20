@@ -7677,7 +7677,12 @@ var ImagePreloader = LibCanvas.Utils.ImagePreloader = Class({
 		}
 		return this;
 	},
-	onProcessed : function (type) {
+	onProcessed : function (type, img) {
+		if (type == 'loaded') {
+			// opera fullscreen bug workaround
+			img.width  = img.width;
+			img.height = img.height;
+		}
 		this.count[type]++;
 		this.processed++;
 		if (this.isReady()) this.cutImages().readyEvent('ready', [this]);
