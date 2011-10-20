@@ -61,11 +61,12 @@ Scene.Standard = Class(
 	 * @returns {function}
 	 */
 	createFactory: function (Class) {
+		var scene = this;
 		return function () {
-			var element = Class.factory( [this].append( arguments ) );
-			this.addElement( element );
+			var element = Class.factory( [ scene ].append( arguments ) );
+			scene.addElement( element );
 			return element;
-		}.bind( this );
+		};
 	},
 
 	/**
