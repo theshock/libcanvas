@@ -189,6 +189,7 @@ var Mouse = LibCanvas.Mouse = Class(
 		},
 		down = waitEvent('mousedown', true),
 		up   = waitEvent('mouseup'  , true),
+		over = waitEvent('mouseover', true),
 		move = function ( e ) {
 			var offset = mouse.getOffset(e);
 			mouse.setCoords(offset, true);
@@ -226,6 +227,7 @@ var Mouse = LibCanvas.Mouse = Class(
 			//	up(e);
 			//	out(e);
 			//},
+			mouseover  : over,
 			mousedown  : down,
 			mouseup    : up,
 			mousemove  : move,
