@@ -5640,6 +5640,8 @@ Scene.Element = Class(
 		this.stopDrawing();
 		
 		this.scene = scene;
+		scene.addElement( this );
+		
 		this.setOptions( options );
 
 		if (this.options.shape) {
