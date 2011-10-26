@@ -5869,7 +5869,12 @@ Scene.Mouse = Class(
 				if (type == 'move' || type == 'out') {
 					if (lastMove.contains(elem)) elem.fireEvent( 'mouseout', [event] );
 				} else if (type == 'up') {
-					if (lastDown.contains(elem)) elem.fireEvent( 'mouseup', [event] );
+					if (lastDown.contains(elem)) {
+						elem.fireEvent( 'mouseup', [event] );
+						if (this.mouse.isOver(elem)) {
+							elem.fireEvent( 'click', [event] );
+						}
+					}
 				}
 			} else if (this.mouse.isOver(elem)) {
 				if (type == 'move') {
@@ -5881,7 +5886,7 @@ Scene.Mouse = Class(
 				} else if (type == 'down') {
 					lastDown.push(elem);
 				// If mouseup on this elem and last mousedown was on this elem - click
-				} else if (type == 'mouseup' && lastDown.contains(elem)) {
+				} else if (type == 'up' && lastDown.contains(elem)) {
 					elem.fireEvent( 'click', [event] );
 				}
 				elem.fireEvent( 'mouse' + type, [event] );
