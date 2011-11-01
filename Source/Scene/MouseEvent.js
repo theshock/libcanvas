@@ -37,7 +37,7 @@ Scene.MouseEvent = Class(
 	initialize: function (type, original) {
 		this.type     = type;
 		this.original = original;
-		this.extend( 'offset', 'deltaOffset', 'delta' );
+		this.extend([ 'offset', 'deltaOffset', 'delta' ]);
 	},
 
 	/** @returns {Scene.MouseEvent} */
