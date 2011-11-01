@@ -71,6 +71,11 @@ Scene.Element = Class(
 		return this;
 	},
 
+	clearPrevious: function ( ctx ) {
+		ctx.clear( this.previousBoundingShape );
+		return this;
+	},
+
 	renderTo: function () {
 		var shape = this.shape;
 		if (shape instanceof Rectangle) {

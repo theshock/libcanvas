@@ -5673,6 +5673,11 @@ Scene.Element = Class(
 		return this;
 	},
 
+	clearPrevious: function ( ctx ) {
+		ctx.clear( this.previousBoundingShape );
+		return this;
+	},
+
 	renderTo: function () {
 		var shape = this.shape;
 		if (shape instanceof Rectangle) {
@@ -6116,7 +6121,7 @@ Scene.Standard = Class(
 
 		for (i = 0; i < redraw.length; i++) {
 			elem = redraw[i];
-			clear.push( elem.previousBoundingShape );
+			clear.push( elem );
 
 			if (this.options.intersection !== 'manual') {
 				this.findIntersections(elem.previousBoundingShape, elem)
@@ -6132,7 +6137,7 @@ Scene.Standard = Class(
 		}
 
 		for (i = clear.length; i--;) {
-			ctx.clear( clear[i] );
+			clear[i].clearPrevious( ctx );
 		}
 
 		redraw.sortBy( 'zIndex', true );
