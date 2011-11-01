@@ -5659,8 +5659,10 @@ Scene.Element = Class(
 		
 		this.setOptions( options );
 
-		if (this.options.shape) {
-			this.shape = this.options.shape;
+		var ownShape = this.shape || this.shape == this.self.prototype.shape;
+
+		if (ownShape || this.options.shape) {
+			if (!ownShape) this.shape = this.options.shape;
 			this.previousBoundingShape = this.shape;
 		}
 		if (this.options.zIndex != null) {
