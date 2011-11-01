@@ -42,6 +42,7 @@ var Geometry = LibCanvas.Geometry = Class(
 		if (arguments.length) this.set.apply(this, arguments);
 	},
 	invertDirection: function (distance, reverse) {
+		distance = Point( distance );
 		var multi = reverse ? -1 : 1;
 		return {
 			x : distance.x * multi,
