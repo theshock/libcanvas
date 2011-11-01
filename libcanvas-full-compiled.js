@@ -1635,7 +1635,7 @@ var MouseListener = LibCanvas.Behaviors.MouseListener = Class({
 
 	listenMouse : function (stopListen) {
 		if (this.scene) {
-			this.scene.resources.mouse.subscribe( this );
+			this.scene.resources.mouse[stopListen ? 'unsubscribe' : 'subscribe']( this );
 			return this;
 		}
 
