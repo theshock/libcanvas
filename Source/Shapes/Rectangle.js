@@ -203,6 +203,21 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class(
 		});
 	},
 	/** @returns {LibCanvas.Shapes.Rectangle} */
+	fillToPixel: function () {
+		var from = this.from, to = this.to,
+			point = function (method, invoke) {
+				return new Point(
+					Math[method](from.x, to.x),
+					Math[method](from.y, to.y)
+				).invoke( invoke );
+			};
+
+		return new Rectangle(
+			point( 'min', 'floor' ),
+			point( 'max', 'ceil'  )
+		);
+	},
+	/** @returns {LibCanvas.Shapes.Rectangle} */
 	snapToPixel: function () {
 		this.from.snapToPixel();
 		this.to.snapToPixel();
