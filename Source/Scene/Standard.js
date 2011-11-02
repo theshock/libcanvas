@@ -75,6 +75,7 @@ Scene.Standard = Class(
 	 */
 	addElement: function (element) {
 		this.elements.include( element );
+		this.redrawElement( element );
 		return this;
 	},
 
