@@ -7701,7 +7701,7 @@ var ImagePreloader = LibCanvas.Utils.ImagePreloader = Class({
 		return this;
 	},
 	onProcessed : function (type, img) {
-		if (type == 'loaded') {
+		if (type == 'loaded' && window.opera) {
 			// opera fullscreen bug workaround
 			img.width  = img.width;
 			img.height = img.height;
