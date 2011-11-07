@@ -1738,6 +1738,8 @@ var initDraggable = function () {
 		},
 		stopDrag  = ['up', 'out'],
 		onStopDrag = function (e) {
+			if (e.button !== 0) return;
+
 			draggable.fireEvent('stopDrag', [ e ]);
 			mouse
 				.removeEvent( 'move', dragFn)
@@ -1747,6 +1749,8 @@ var initDraggable = function () {
 	draggable.listenMouse();
 
 	draggable.addEvent( 'mousedown' , function (e) {
+		if (e.button !== 0) return;
+
 		if (!draggable['draggable.isDraggable']) return;
 		if (typeof e.stop == 'function') e.stop();
 		
@@ -5743,7 +5747,7 @@ Scene.MouseEvent = Class(
 	initialize: function (type, original) {
 		this.type     = type;
 		this.original = original;
-		this.extend([ 'offset', 'deltaOffset', 'delta' ]);
+		this.extend([ 'offset', 'deltaOffset', 'delta', 'button' ]);
 	},
 
 	/** @returns {Scene.MouseEvent} */
