@@ -125,6 +125,8 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class(
 	},
 	/** @returns {LibCanvas.Shapes.Rectangle} */
 	align: function (rect, sides) {
+		if (sides == null) sides = 'center middle';
+
 		var moveTo = this.from.clone();
 		if (sides.indexOf('left') != -1) {
 			moveTo.x = rect.from.x;
