@@ -23,9 +23,9 @@ provides: Behaviors.Clickable
 
 var Clickable = LibCanvas.Behaviors.Clickable = function () {
 
-var setValFn = function (object, name, val) {
+var setValFn = function (object, name, val, noEventStop) {
 	return function (event) {
-		if (typeof event.stop == 'function') event.stop();
+		if (!noEventStop && typeof event.stop == 'function') event.stop();
 		if (object[name] != val) {
 			object[name] = val;
 			object.fireEvent('statusChanged');
@@ -39,14 +39,13 @@ return Class({
 
 	clickable : function () { 
 		this.listenMouse();
-
-		var fn = setValFn.bind(null, this);
 		
-		this.addEvent('mouseover', fn('hover', true));
-		this.addEvent('mouseout' , fn('hover', false));
-		this.addEvent('mousedown', fn('active', true));
-		this.addEvent(['mouseup', 'away:mouseout', 'away:mouseup'],
-			fn('active', false));
+		this.addEvent('mouseover', setValFn(this, 'hover' , true ));
+		this.addEvent('mouseout' , setValFn(this, 'hover' , false));
+		this.addEvent('mousedown', setValFn(this, 'active', true ));
+		this.addEvent('mouseup'  , setValFn(this, 'active', false));
+		this.addEvent(['away:mouseout', 'away:mouseup'],
+			setValFn(this, 'active', false, true));
 		return this;
 	}
 });

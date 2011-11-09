@@ -114,9 +114,8 @@ Scene.Mouse = Class(
 				}
 			} else if (this.mouse.isOver(elem)) {
 				if (type == 'move') {
-					if (lastMove.contains(elem)) {
+					if (!lastMove.contains(elem)) {
 						elem.fireEvent( 'mouseover', [event] );
-					} else {
 						lastMove.push( elem );
 					}
 				} else if (type == 'down') {
