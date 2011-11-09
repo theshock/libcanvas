@@ -7688,6 +7688,9 @@ var ImagePreloader = LibCanvas.Utils.ImagePreloader = Class({
 		};
 
 		if (Array.isArray(images)) images = Object.map(images[1], function (src) {
+			if(src.begins('http://') || src.begins('https://') ) {
+				return src;
+			}
 			return images[0] + src;
 		});
 		this.usrImages = images;
