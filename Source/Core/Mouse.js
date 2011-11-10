@@ -216,17 +216,6 @@ var Mouse = LibCanvas.Mouse = Class(
 			click      : waitEvent('click', false),
 			dblclick   : waitEvent('dblclick', false),
 			contextmenu: waitEvent('contextmenu', false),
-			// remove activating in android
-			//touchstart : function (e) {
-			//	move(false, e);
-			//	down(e);
-			//},
-			//touchmove: move.bind(null, false),
-			//touchend : function (e) {
-			//	move(false, e);
-			//	up(e);
-			//	out(e);
-			//},
 			mouseover  : over,
 			mousedown  : down,
 			mouseup    : up,
@@ -255,7 +244,11 @@ var Mouse = LibCanvas.Mouse = Class(
 		}
 	},
 	debug : function (on) {
-		this.debugTrace = on === false ? null : new Trace();
+		if (on && !this.debugTrace) {
+			this.debugTrace = new Trace();
+		} else if (on === false) {
+			this.debugTrace = null;
+		}
 		this.debugUpdate();
 		return this;
 	},

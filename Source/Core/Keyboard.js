@@ -131,7 +131,11 @@ var Keyboard = Class(
 		return this;
 	},
 	debug : function (on) {
-		this._debugTrace = on === false ? null : new Trace();
+		if (on && !this._debugTrace) {
+			this._debugTrace = new Trace();
+		} else if (on === false) {
+			this._debugTrace = null;
+		}
 		this.debugUpdate();
 		return this;
 	},
