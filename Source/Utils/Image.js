@@ -65,8 +65,8 @@ atom.implement(HTMLImageElement, {
 
 			if (x) current.x -= rect.from.x;
 			if (y) current.y -= rect.from.y;
-			
-			buf.ctx.drawImage({
+
+			if (size.width && size.height) buf.ctx.drawImage({
 				image : this,
 				crop  : crop,
 				draw  : new Rectangle({
