@@ -5700,7 +5700,7 @@ Scene.Element = Class(
 
 	renderTo: function () {
 		var shape = this.shape;
-		this.previousBoundingShape = shape.fillToPixel ?
+		this.previousBoundingShape = shape.currentBoundingShape ?
 			shape.fillToPixel() : shape.clone().grow( 2 );
 		return this;
 	}
