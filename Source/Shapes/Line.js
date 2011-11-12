@@ -24,8 +24,8 @@ provides: Shapes.Line
 
 var Line = LibCanvas.Shapes.Line = function () {
 
-var between = function (x, a, b) {
-	return x === a || x === b || (a < x && x < b) || (b < x && x < a);
+var between = function (x, a, b, accuracy) {
+	return x.equals(a, accuracy) || x.equals(b, accuracy) || (a < x && x < b) || (b < x && x < a);
 };
 
 return Class(
@@ -42,7 +42,7 @@ return Class(
 			this.from = Point(a[0] || a.from);
 			this.to   = Point(a[1] || a.to);
 		}
-		
+
 		return this;
 	},
 	hasPoint : function (point) {
@@ -60,14 +60,14 @@ return Class(
 		// if triangle square is zero - points are on one line
 		return ((fx-px)*(ty-py)-(tx-px)*(fy-py)).round(6) == 0;
 	},
-	intersect: function (line, point) {
+	intersect: function (line, point, accuracy) {
 		if (line.self != this.self) {
 			return this.getBoundingRectangle().intersect( line );
 		}
 		var a = this.from, b = this.to, c = line.from, d = line.to, x, y, FALSE = point ? null : false;
-		if (d.x == c.x) { // DC == vertical line
-			if (b.x == a.x) {
-				if (a.x == d.x) {
+		if (d.x.equals(c.x, accuracy)) { // DC == vertical line
+			if (b.x.equals(a.x, accuracy)) {
+				if (a.x.equals(d.x, accuracy)) {
 					if (a.y.between(c.y, d.y)) {
 						return a.clone();
 					} else if (b.y.between(c.y, d.y)) {
@@ -86,10 +86,13 @@ return Class(
 			y = ((c.y-d.y)*x-(c.x*d.y-d.x*c.y))/(d.x-c.x);
 			x *= -1;
 		}
-		
-		return between(x, a.x, b.x) && between (y, a.y, b.y) &&
-		       between(x, c.x, d.x) && between (y, c.y, d.y) ?
-		            (point ? new Point(x, y) : true) : FALSE;
+
+		if (!between(x, a.x, b.x, accuracy)) return FALSE;
+		if (!between(y, a.y, b.y, accuracy)) return FALSE;
+		if (!between(x, c.x, d.x, accuracy)) return FALSE;
+		if (!between(y, c.y, d.y, accuracy)) return FALSE;
+
+		return point ? new Point(x, y) : true;
 	},
 	perpendicular: function (point) {
 		point = Point( point );
