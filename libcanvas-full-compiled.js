@@ -5700,7 +5700,7 @@ Scene.Element = Class(
 
 	renderTo: function () {
 		var shape = this.currentBoundingShape;
-		this.previousBoundingShape = shape.currentBoundingShape ?
+		this.previousBoundingShape = shape.fillToPixel ?
 			shape.fillToPixel() : shape.clone().grow( 2 );
 		return this;
 	}
@@ -6318,7 +6318,7 @@ return Class(
 			this.from = Point(a[0] || a.from);
 			this.to   = Point(a[1] || a.to);
 		}
-		
+
 		return this;
 	},
 	hasPoint : function (point) {
