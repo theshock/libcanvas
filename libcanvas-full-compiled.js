@@ -2299,7 +2299,7 @@ var DownloadingProgress = LibCanvas.Inner.DownloadingProgress = Class({
 				if (typeof ImagePreloader == 'undefined') {
 					throw new Error('LibCanvas.Utils.ImagePreloader is not loaded');
 				}
-				this.imagePreloader = new ImagePreloader(this.options.preloadImages)
+				this.imagePreloader = new ImagePreloader(this.options.preloadImages, this.options.imagesSuffix)
 					.addEvent('ready', function (preloader) {
 						this.images = preloader.images;
 						atom.log(preloader.getInfo());
