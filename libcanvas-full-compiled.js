@@ -7680,7 +7680,7 @@ var ImagePreloader = LibCanvas.Utils.ImagePreloader = Class({
 	Implements: Class.Events,
 	processed : 0,
 	number: 0,
-	initialize: function (images) {
+	initialize: function (images, suffix) {
 		this.count = {
 			errors : 0,
 			aborts : 0,
@@ -7693,6 +7693,7 @@ var ImagePreloader = LibCanvas.Utils.ImagePreloader = Class({
 			}
 			return images[0] + src;
 		});
+		this.suffix    = suffix;
 		this.usrImages = images;
 		this.domImages = this.createDomImages(images);
 		this.images    = {};
@@ -7767,6 +7768,13 @@ var ImagePreloader = LibCanvas.Utils.ImagePreloader = Class({
 		if (match) {
 			url = str.substr(0, str.lastIndexOf(match[0]));
 			coords = coords.map( Number );
+		}
+		if (this.suffix) {
+			if (typeof this.suffix == 'function') {
+				url = this.suffix( url );
+			} else {
+				url += this.suffix;
+			}
 		}
 		
 		return { url: url, coords: coords };
