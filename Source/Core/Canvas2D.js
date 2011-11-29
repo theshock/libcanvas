@@ -233,6 +233,24 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 	 * @param {LibCanvas.Point} shift
 	 * @returns {LibCanvas.Canvas2D}
 	 */
+	translateMouse: function (shift) {
+		shift = Point(shift);
+		var elems = this.elems, e, i = elems.length;
+		while (i--) {
+			e = elems[i];
+			if (e.mouseTranslate) {
+				e.mouseTranslate.move( shift );
+			} else {
+				e.mouseTranslate = shift.clone();
+			}
+		}
+		return this;
+	},
+
+	/**
+	 * @param {LibCanvas.Point} shift
+	 * @returns {LibCanvas.Canvas2D}
+	 */
 	addShift: function ( shift, withElements ) {
 		shift = Point( shift );
 		var newShift = this._shift.move( shift );
@@ -240,15 +258,7 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 			'margin-left': newShift.x,
 			'margin-top' : newShift.y
 		});
-		if (withElements) {
-			this.elems.forEach(function (elem) {
-				if (elem.mouseTranslate) {
-					elem.mouseTranslate.move( shift );
-				} else {
-					elem.mouseTranslate = shift.clone();
-				}
-			});
-		}
+		if (withElements) this.translateMouse( shift );
 		return this;
 	},
 
