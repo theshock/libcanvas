@@ -95,6 +95,7 @@ var Keyboard = Class(
 		return function (e) {
 			var key = this.self.key(e);
 			e.keyName = key;
+			this.fireEvent( event, [e] );
 			if (event != 'press') {
 				if (event == 'down') this.fireEvent(key, [e]);
 				if (event == 'up')   this.fireEvent(key + ':up', [e]);
@@ -108,7 +109,6 @@ var Keyboard = Class(
 			}
 			var prevent = this.prevent(key);
 			if (prevent) e.preventDefault();
-			this.fireEvent( event, [e] );
 			this.debugUpdate();
 			return !prevent;
 		}.bind(this);
