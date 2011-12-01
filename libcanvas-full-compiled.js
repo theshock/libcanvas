@@ -16,7 +16,7 @@ authors:
 ...
 */
 
-(function (atom, Math, HTMLCanvasElement) { // LibCanvas
+(function (atom, Math) { // LibCanvas
 
 // bug in Safari 5.1 ( 'use strict' + 'set prop' )
 // 'use strict';
@@ -4583,13 +4583,13 @@ var Keyboard = Class(
 		return function (e) {
 			var key = this.self.key(e);
 			if (event != 'press') {
+				if (event == 'down') this.fireEvent(key, [e]);
+				if (event == 'up')   this.fireEvent(key + ':up', [e]);
 				if (event == 'down') {
 					this.self.keyStates[key] = true;
 				} else if ( key in this.self.keyStates ) {
 					delete this.self.keyStates[key];
 				}
-				if (event == 'down') this.fireEvent(key, [e]);
-				if (event == 'up')   this.fireEvent(key + ':up', [e]);
 			} else {
 				this.fireEvent(key + ':press', [e]);
 			}
@@ -8115,4 +8115,4 @@ var Translator = LibCanvas.Utils.Translator = Class({
 
 });
 
-}).call(typeof window == 'undefined' ? exports : window, atom, Math, HTMLCanvasElement);
+}).call(typeof window == 'undefined' ? exports : window, atom, Math);
