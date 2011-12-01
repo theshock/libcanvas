@@ -94,6 +94,7 @@ var Keyboard = Class(
 	keyEvent: function (event) {
 		return function (e) {
 			var key = this.self.key(e);
+			e.keyName = key;
 			if (event != 'press') {
 				if (event == 'down') this.fireEvent(key, [e]);
 				if (event == 'up')   this.fireEvent(key + ':up', [e]);
