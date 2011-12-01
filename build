@@ -1,4 +1,5 @@
-#!/usr/bin/env php
+#!/usr/bin/php
+
 <?php
 
 require dirname(__FILE__) . '/builder.php';
@@ -19,4 +20,3 @@ fwrite($stderr, " */\n\n");
 echo $builder->getResult();
 
 fclose($stderr);
-
