@@ -46,7 +46,7 @@ Scene.Element = Class(
 
 		if (ownShape || this.options.shape) {
 			if (!ownShape) this.shape = this.options.shape;
-			this.previousBoundingShape = this.shape;
+			this.previousBoundingShape = this.currentBoundingShape;
 		}
 		if (this.options.zIndex != null) {
 			this.zIndex = Number( this.options.zIndex );
