@@ -100,8 +100,10 @@ Scene.Standard = Class(
 	 * @returns {LibCanvas.Scene.Standard}
 	 */
 	addElementsShift: function (shift) {
-		this.elements.invoke( 'addShift', Point(shift) );
-		return this;
+			shift = Point(shift);
+			var e = this.elements, i = e.length;
+			while (i--) e[i].addShift(shift);
+			return this;
 	},
 
 	/**
