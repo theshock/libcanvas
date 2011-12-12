@@ -1395,7 +1395,7 @@ var Mouse = LibCanvas.Mouse = Class(
 	isOver: function (elem) {
 		var translate = elem.mouseTranslate;
 		if (translate) this.point.move( translate, true );
-		var result = this.inCanvas && elem.shape.hasPoint( this.point );
+		var result = this.inCanvas && elem.hasPoint( this.point );
 		if (translate) this.point.move( translate );
 		return result;
 	},
@@ -1847,6 +1847,9 @@ return Class({
 	// @deprecated
 	getZIndex : function () {
 		return this.zIndex || 0;
+	},
+	hasPoint: function (point) {
+		return this.shape.hasPoint( point );
 	},
 	// @deprecated
 	setZIndex : function (zIndex) {
@@ -5696,6 +5699,10 @@ Scene.Element = Class(
 		return this;
 	},
 
+	hasPoint: function (point) {
+		return this.shape.hasPoint( point );
+	},
+
 	redraw: function () {
 		this.scene.redrawElement( this );
 		return this;
@@ -5883,13 +5890,26 @@ Scene.Mouse = Class(
 
 		if (type == 'down') this.lastMouseDown.empty();
 
-		var
+		var i,
+			elem,
 			lastDown = this.lastMouseDown,
 			lastMove = this.lastMouseMove,
+			lastOut  = [],
 			sub = this.subscribers.sortBy( 'zIndex', true );
 
-		for (var i = sub.length; i--;) {
-			var elem = sub[i];
+		if (type == 'move' || type == 'out') {
+			for (i = lastMove.length; i--;) {
+				elem = lastMove[i];
+				if (!this.mouse.isOver(elem)) {
+					elem.fireEvent( 'mouseout', [event] );
+					lastMove.erase(elem);
+					lastOut.push(elem);
+				}
+			}
+		}
+
+		for (i = sub.length; i--;) {
+			elem = sub[i];
 
 			if (event.stopped) {
 				if (type == 'move' || type == 'out') {
@@ -5915,14 +5935,8 @@ Scene.Mouse = Class(
 					elem.fireEvent( 'click', [event] );
 				}
 				elem.fireEvent( 'mouse' + type, [event] );
-			} else {
-				var mouseOut = false;
-				if ( (type == 'move' || type == 'out') && lastMove.contains(elem)) {
-					elem.fireEvent( 'mouseout', [event] );
-					lastMove.erase(elem);
-					mouseOut = true;
-				}
-				if (!mouseOut) elem.fireEvent( 'away:mouse' + type, [event] );
+			} else if (type != 'move' && !lastOut.contains(elem)) {
+				elem.fireEvent( 'away:mouse' + type, [event] );
 			}
 		}
 	},
