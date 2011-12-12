@@ -24,7 +24,7 @@ var Linkable = LibCanvas.Behaviors.Linkable = Class({
 	links : null,
 	moveLinks : function (move) {
 		(this.links || []).forEach(function (elem) {
-			elem.getShape().move(move);
+			elem.shape.move(move);
 		});
 		return this;
 	},
@@ -32,7 +32,7 @@ var Linkable = LibCanvas.Behaviors.Linkable = Class({
 	link : function (obj) {
 		if (this.links === null) {
 			this.links = [];
-			this.getShape().addEvent('move',
+			this.shape.addEvent('move',
 				this.moveLinks.bind(this)
 			);
 		}
