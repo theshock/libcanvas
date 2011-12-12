@@ -52,6 +52,24 @@ Scene.Standard = Class(
 	},
 
 	/** @private */
+	stopped: false,
+
+	/** @returns {LibCanvas.Scene.Standard} */
+	start: function () {
+		if (this.stopped) {
+			this.libcanvas.update();
+			this.stopped = false;
+		}
+		return this;
+	},
+
+	/** @returns {LibCanvas.Scene.Standard} */
+	stop: function () {
+		this.stopped = true;
+		return this;
+	},
+
+	/** @private */
 	elements: null,
 
 	/** @private */
@@ -79,7 +97,7 @@ Scene.Standard = Class(
 
 	/**
 	 * @param {LibCanvas.Point} shift
-	 * @returns {LibCanvas.Canvas2D}
+	 * @returns {LibCanvas.Scene.Standard}
 	 */
 	addElementsShift: function (shift) {
 		this.elements.invoke( 'addShift', Point(shift) );
@@ -88,7 +106,7 @@ Scene.Standard = Class(
 
 	/**
 	 * @param {LibCanvas.Point} shift
-	 * @returns {LibCanvas.Canvas2D}
+	 * @returns {LibCanvas.Scene.Standard}
 	 */
 	addShift: function ( shift, withElements ) {
 		shift = Point( shift );
@@ -143,6 +161,8 @@ Scene.Standard = Class(
 
 	/** @private */
 	update: function (time) {
+		if (this.stopped) return this;
+
 		this.elements.sortBy( 'zIndex' ).invoke( 'onUpdate', time, this.resources );
 
 		return this.fireEvent( 'update', [ time, this.resources ]);
@@ -167,6 +187,8 @@ Scene.Standard = Class(
 
 	/** @private */
 	draw: function () {
+		if (this.stopped) return this;
+		
 		var i, l, elem,
 			clear     = [],
 			elements  = this.elements,
