@@ -39,7 +39,7 @@ var initDraggable = function () {
 			mouse
 				.removeEvent( 'move', dragFn)
 				.removeEvent(stopDrag, onStopDrag);
-		};
+		}.bind(this);
 
 	draggable.listenMouse();
 
@@ -47,10 +47,8 @@ var initDraggable = function () {
 		if (e.button !== 0) return;
 
 		if (!draggable['draggable.isDraggable']) return;
-		if (typeof e.stop == 'function') e.stop();
-		
-		draggable.fireEvent('startDrag', [ e ]);
 
+		draggable.fireEvent('startDrag', [ e ]);
 		mouse
 			.addEvent( 'move', dragFn )
 			.addEvent( stopDrag, onStopDrag );

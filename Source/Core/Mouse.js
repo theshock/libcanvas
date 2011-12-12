@@ -178,10 +178,10 @@ var Mouse = LibCanvas.Mouse = Class(
 		},
 		wheel = function (e) {
 			e.delta =
-				// IE, Opera, Chrome - multiplicity is 120
-				e.wheelDelta ?  e.wheelDelta / 120 :
+				// IE, Opera, Chrome
+				e.wheelDelta ? e.wheelDelta > 0 ? 1 : -1 :
 				// Fx
-				e.detail     ? -e.detail / 3 : null;
+				e.detail     ? e.detail     < 0 ? 1 : -1 : null;
 			e.up   = e.delta > 0;
 			e.down = e.delta < 0;
 			waitWheel(e);

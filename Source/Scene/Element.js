@@ -46,7 +46,7 @@ Scene.Element = Class(
 
 		if (ownShape || this.options.shape) {
 			if (!ownShape) this.shape = this.options.shape;
-			this.previousBoundingShape = this.currentBoundingShape;
+			this.saveCurrentBoundingShape();
 		}
 		if (this.options.zIndex != null) {
 			this.zIndex = Number( this.options.zIndex );
@@ -73,7 +73,7 @@ Scene.Element = Class(
 		return this;
 	},
 
-	onUpdate: function ( time ) {
+	onUpdate: function (time) {
 		return this;
 	},
 
@@ -82,10 +82,14 @@ Scene.Element = Class(
 		return this;
 	},
 
-	renderTo: function () {
+	saveCurrentBoundingShape: function () {
 		var shape = this.currentBoundingShape;
 		this.previousBoundingShape = shape.fillToPixel ?
 			shape.fillToPixel() : shape.clone().grow( 2 );
+		return this;
+	},
+
+	renderTo: function (ctx, resources) {
 		return this;
 	}
 });

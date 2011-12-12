@@ -28,9 +28,10 @@ Scene.Resources = Class(
 {
 
 	/** @constructs */
-	initialize: function (scene) {
+	initialize: function (scene, rectangle) {
 		this.scene = scene;
 		this.lc    = scene.libcanvas;
+		this._rectangle = rectangle;
 	},
 
 	getAudio: function (name) {
@@ -50,7 +51,7 @@ Scene.Resources = Class(
 
 	get mouse () {
 		if (this._mouse == null) {
-			this._mouse = new Scene.Mouse( this.scene );
+			this._mouse = new Scene.Mouse( this.lc.mouse );
 		}
 		return this._mouse;
 	},
@@ -60,6 +61,6 @@ Scene.Resources = Class(
 	},
 
 	get rectangle () {
-		return this.lc.ctx.rectangle;
+		return this._rectangle || this.lc.ctx.rectangle;
 	}
 });

@@ -106,7 +106,6 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 		autoStart: true,
 		clear: true,
 		invoke: false, // invoke objects each frame
-		backBuffer: 'off',
 		fps: 30
 	},
 
@@ -118,6 +117,8 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 	 */
 	initialize : function (elem, options) {
 		Class.bindAll( this, 'update' );
+
+		this._appSize = { width: 0, height: 0 };
 
 		this._shift = new Point( 0, 0 );
 		this.funcs = {
@@ -198,13 +199,33 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 				this.origElem[i] = size[i];
 			}
 			this.elem[i] = size[i];
-			
-			if (wrapper) {
-				this.wrapper       .css(i, size[i]);
-				this.wrapper.parent.css(i, size[i]);
-			}
+		}
+		if (wrapper) this.appSize(size);
+		return this;
+	},
+
+	/**
+	 * @param {number} size
+	 * @param {number} height
+	 * @returns {LibCanvas.Canvas2D}
+	 */
+	appSize: function (size, height) {
+		if (typeof size != 'object') {
+			size = { width: size, height: height };
+		}
+		for (var i in size) {
+			this.wrapper       .css(i, size[i]);
+			this.wrapper.parent.css(i, size[i]);
+			this._appSize[i] = size[i];
 		}
 		return this;
+	},
+
+	/**
+	 * @returns {object}
+	 */
+	getAppSize: function () {
+		return this._appSize;
 	},
 
 	/**
@@ -279,13 +300,8 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 
 	/** @private */
 	createProjectBuffer: function () {
-		if (this.options.backBuffer == 'off') {
-			this.elem = this.origElem;
-			this.ctx  = this.origCtx;
-		} else {
-			this.elem = this.createBuffer();
-			this.ctx  = this.elem.getContext('2d-libcanvas');
-		}
+		this.elem = this.origElem;
+		this.ctx  = this.origCtx;
 		return this;
 	},
 

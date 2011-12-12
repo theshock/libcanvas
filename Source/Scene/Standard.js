@@ -57,6 +57,7 @@ Scene.Standard = Class(
 	redrawElements: null,
 
 	/**
+	 * @deprecated
 	 * @param {atom.Class} Class
 	 * @returns {function}
 	 */
@@ -123,18 +124,25 @@ Scene.Standard = Class(
 		return elems;
 	},
 
+	/** @private */
+	autoIntersectionsSearch: function () {
+		return this.options.intersection !== 'manual';
+	},
 
 	/** @private */
 	draw: function () {
-		var i, l, elem, clear = [],
-			ctx = this.libcanvas.ctx,
-			redraw = this.redrawElements;
+		var i, l, elem,
+			clear     = [],
+			elements  = this.elements,
+			resources = this.resources,
+			ctx       = this.libcanvas.ctx,
+			redraw    = this.redrawElements;
 
 		for (i = 0; i < redraw.length; i++) {
 			elem = redraw[i];
 			clear.push( elem );
 
-			if (this.options.intersection !== 'manual') {
+			if (this.autoIntersectionsSearch()) {
 				this.findIntersections(elem.previousBoundingShape, elem)
 					.forEach(function (e) {
 						redraw.include( e );
@@ -148,18 +156,19 @@ Scene.Standard = Class(
 		}
 
 		for (i = clear.length; i--;) {
-			clear[i].clearPrevious( ctx );
+			clear[i].clearPrevious( ctx, resources );
 		}
 
 		redraw.sortBy( 'zIndex', true );
-
 		for (i = 0, l = redraw.length; i < l; i++) {
-			if (this.elements.contains( redraw[ i ] )) {
-				redraw[ i ].renderTo( ctx, this.resources );
+			elem = redraw[i];
+			if (elements.contains( elem )) {
+				elem.renderTo( ctx, resources );
+				elem.saveCurrentBoundingShape();
 			}
 		}
 		redraw.empty();
 
-		return this.fireEvent( 'render', [ ctx, this.resources ]);
+		return this.fireEvent( 'render', [ ctx, resources ]);
 	}
 });

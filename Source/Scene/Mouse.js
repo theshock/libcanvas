@@ -32,26 +32,16 @@ Scene.Mouse = Class(
 	mouse: null,
 
 	/** @constructs */
-	initialize: function (scene) {
+	initialize: function (globalMouse) {
 		var mouse = this;
 
 		mouse.lastMouseMove = [];
 		mouse.lastMouseDown = [];
 
-		mouse.scene = scene;
 		mouse.subscribers = [];
 
-		var events = function (force, types) {
-			var method = force ? 'forceEvent' : 'event';
-			types.forEach(function (type) {
-				mouse.mouse.addEvent( type, function (e) { mouse[method]( type, e ) } );
-			});
-		};
-
-		mouse.mouse = scene.libcanvas.mouse;
+		mouse.mouse = globalMouse;
 		mouse.point = mouse.mouse.point;
-		events(true , [ 'dblclick', 'contextmenu', 'wheel' ]);
-		events(false, [ 'down', 'up', 'move', 'out' ]);
 	},
 
 	/** @private */
@@ -82,8 +72,8 @@ Scene.Mouse = Class(
 	},
 
 	/** @private */
-	event: function (type, e) {
-		if (this.stopped || e._stopped) return;
+	event: function (type, e, stopped) {
+		if (this.stopped) return;
 
 		var event = new Scene.MouseEvent( type, e );
 
@@ -95,6 +85,7 @@ Scene.Mouse = Class(
 
 		var i,
 			elem,
+			mouse    = this.mouse,
 			lastDown = this.lastMouseDown,
 			lastMove = this.lastMouseMove,
 			lastOut  = [],
@@ -103,7 +94,7 @@ Scene.Mouse = Class(
 		if (type == 'move' || type == 'out') {
 			for (i = lastMove.length; i--;) {
 				elem = lastMove[i];
-				if (!this.mouse.isOver(elem)) {
+				if (!mouse.isOver(elem)) {
 					elem.fireEvent( 'mouseout', [event] );
 					lastMove.erase(elem);
 					lastOut.push(elem);
@@ -114,21 +105,24 @@ Scene.Mouse = Class(
 		for (i = sub.length; i--;) {
 			elem = sub[i];
 
-			if (event.stopped) {
+			if (stopped) {
 				if (type == 'move' || type == 'out') {
-					if (lastMove.contains(elem)) elem.fireEvent( 'mouseout', [event] );
+					if (lastMove.contains(elem)) {
+						elem.fireEvent( 'mouseout', [event] );
+						lastMove.erase(elem);
+					}
 				} else if (type == 'up') {
 					if (lastDown.contains(elem)) {
 						elem.fireEvent( 'mouseup', [event] );
-						if (this.mouse.isOver(elem)) {
+						if (mouse.isOver(elem)) {
 							elem.fireEvent( 'click', [event] );
 						}
 					}
 				}
-			} else if (this.mouse.isOver(elem)) {
+			} else if (mouse.isOver(elem)) {
 				if (type == 'move') {
 					if (!lastMove.contains(elem)) {
-						elem.fireEvent( 'mouseover', [event] );
+					 	elem.fireEvent( 'mouseover', [event] );
 						lastMove.push( elem );
 					}
 				} else if (type == 'down') {
@@ -138,23 +132,31 @@ Scene.Mouse = Class(
 					elem.fireEvent( 'click', [event] );
 				}
 				elem.fireEvent( 'mouse' + type, [event] );
-			} else if (type != 'move' && !lastOut.contains(elem)) {
+
+				if (!event.checkFalling()) stopped = true;
+			} else if (!lastOut.contains(elem)) {
 				elem.fireEvent( 'away:mouse' + type, [event] );
 			}
 		}
+
+		return stopped;
 	},
 
 	/** @private */
-	forceEvent: function (type, e) {
+	forceEvent: function (type, e, stopped) {
+		if (stopped) return stopped;
 		var
 			event = new Scene.MouseEvent( type, e ),
 			sub = this.subscribers.sortBy( 'zIndex', true ),
 			i   = sub.length;
 		while (i--) if (this.mouse.isOver(sub[i])) {
 			sub[i].fireEvent( type, event );
-			if (event.stopped) break;
+			if (!event.checkFalling()) {
+				stopped = true;
+				break;
+			}
 		}
-		return this;
+		return stopped;
 	}
 
 });

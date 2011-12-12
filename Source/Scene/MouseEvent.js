@@ -33,6 +33,9 @@ Scene.MouseEvent = Class(
 	/** @property {number} */
 	delta: 0,
 
+	/** @private */
+	falling: false,
+
 	/** @constructs */
 	initialize: function (type, original) {
 		this.type     = type;
@@ -58,12 +61,21 @@ Scene.MouseEvent = Class(
 	},
 
 	/** @private */
-	stopped: false,
+	checkFalling: function () {
+		var value = this.falling;
+		this.falling = false;
+		return value;
+	},
 
 	/** @returns {LibCanvas.Scene.MouseEvent} */
+	fall: function () {
+		this.falling = true;
+		return this;
+	},
+
+	/** @deprecated */
 	stop: function () {
-		this.stopped = true;
-		this.original._stopped = true;
+		//console.error('deprecated');
 		return this;
 	}
 });
