@@ -63,11 +63,8 @@ LibCanvas.App = Class(
 		this.scenes = [];
 		this.scenesIndexed = {};
 
-		return this;
-	},
+		libcanvas.start();
 
-	start: function () {
-		this.libcanvas.start();
 		return this;
 	},
 
