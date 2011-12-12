@@ -5882,6 +5882,12 @@ Scene.Element = Class(
 		return this.shape.hasPoint( point );
 	},
 
+	addShift: function (shift) {
+		this.shape.move( shift );
+		this.previousBoundingShape.move( shift );
+		return this;
+	},
+
 	redraw: function () {
 		this.scene.redrawElement( this );
 		return this;
@@ -6269,6 +6275,7 @@ Scene.Standard = Class(
 		this.resources = new Scene.Resources( this );
 		this.elements       = [];
 		this.redrawElements = [];
+		this.shift = new Point(0, 0);
 		return this;
 	},
 
@@ -6290,6 +6297,41 @@ Scene.Standard = Class(
 			scene.addElement( element );
 			return element;
 		};
+	},
+
+	/**
+	 * @private
+	 * @property {LibCanvas.Point}
+	 */
+	shift: null,
+
+	/**
+	 * @param {LibCanvas.Point} shift
+	 * @returns {LibCanvas.Canvas2D}
+	 */
+	addElementsShift: function (shift) {
+		this.elements.invoke( 'addShift', Point(shift) );
+		return this;
+	},
+
+	/**
+	 * @param {LibCanvas.Point} shift
+	 * @returns {LibCanvas.Canvas2D}
+	 */
+	addShift: function ( shift, withElements ) {
+		shift = Point( shift );
+		this.shift.move( shift );
+		this.libcanvas.addShift( shift );
+		this.libcanvas.ctx.translate( shift, true );
+		if (withElements) this.addElementsShift( shift );
+		return this;
+	},
+
+	/**
+	 * @returns {LibCanvas.Point}
+	 */
+	getShift: function () {
+		return this.shift;
 	},
 
 	/**

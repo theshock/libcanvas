@@ -68,6 +68,12 @@ Scene.Element = Class(
 		return this.shape.hasPoint( point );
 	},
 
+	addShift: function (shift) {
+		this.shape.move( shift );
+		this.previousBoundingShape.move( shift );
+		return this;
+	},
+
 	redraw: function () {
 		this.scene.redrawElement( this );
 		return this;
