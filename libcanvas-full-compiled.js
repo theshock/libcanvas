@@ -1497,10 +1497,10 @@ var Mouse = LibCanvas.Mouse = Class(
 		},
 		wheel = function (e) {
 			e.delta =
-				// IE, Opera, Chrome - multiplicity is 120
-				e.wheelDelta ?  e.wheelDelta / 120 :
+				// IE, Opera, Chrome
+				e.wheelDelta ? e.wheelDelta > 0 ? 1 : -1 :
 				// Fx
-				e.detail     ? -e.detail / 3 : null;
+				e.detail     ? e.detail     < 0 ? 1 : -1 : null;
 			e.up   = e.delta > 0;
 			e.down = e.delta < 0;
 			waitWheel(e);
@@ -1667,9 +1667,8 @@ provides: Behaviors.Clickable
 
 var Clickable = LibCanvas.Behaviors.Clickable = function () {
 
-var setValFn = function (object, name, val, noEventStop) {
+var setValFn = function (object, name, val) {
 	return function (event) {
-		if (!noEventStop && typeof event.stop == 'function') event.stop();
 		if (object[name] != val) {
 			object[name] = val;
 			object.fireEvent('statusChanged');
@@ -1683,13 +1682,12 @@ return Class({
 
 	clickable : function () { 
 		this.listenMouse();
-		
+
 		this.addEvent('mouseover', setValFn(this, 'hover' , true ));
 		this.addEvent('mouseout' , setValFn(this, 'hover' , false));
 		this.addEvent('mousedown', setValFn(this, 'active', true ));
-		this.addEvent('mouseup'  , setValFn(this, 'active', false));
-		this.addEvent(['away:mouseout', 'away:mouseup'],
-			setValFn(this, 'active', false, true));
+		this.addEvent(['mouseup', 'away:mouseout', 'away:mouseup'],
+			setValFn(this, 'active', false));
 		return this;
 	}
 });
@@ -1737,7 +1735,7 @@ var initDraggable = function () {
 			mouse
 				.removeEvent( 'move', dragFn)
 				.removeEvent(stopDrag, onStopDrag);
-		};
+		}.bind(this);
 
 	draggable.listenMouse();
 
@@ -1745,10 +1743,8 @@ var initDraggable = function () {
 		if (e.button !== 0) return;
 
 		if (!draggable['draggable.isDraggable']) return;
-		if (typeof e.stop == 'function') e.stop();
-		
-		draggable.fireEvent('startDrag', [ e ]);
 
+		draggable.fireEvent('startDrag', [ e ]);
 		mouse
 			.addEvent( 'move', dragFn )
 			.addEvent( stopDrag, onStopDrag );
@@ -2436,7 +2432,6 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 		autoStart: true,
 		clear: true,
 		invoke: false, // invoke objects each frame
-		backBuffer: 'off',
 		fps: 30
 	},
 
@@ -2448,6 +2443,8 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 	 */
 	initialize : function (elem, options) {
 		Class.bindAll( this, 'update' );
+
+		this._appSize = { width: 0, height: 0 };
 
 		this._shift = new Point( 0, 0 );
 		this.funcs = {
@@ -2528,13 +2525,33 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 				this.origElem[i] = size[i];
 			}
 			this.elem[i] = size[i];
-			
-			if (wrapper) {
-				this.wrapper       .css(i, size[i]);
-				this.wrapper.parent.css(i, size[i]);
-			}
+		}
+		if (wrapper) this.appSize(size);
+		return this;
+	},
+
+	/**
+	 * @param {number} size
+	 * @param {number} height
+	 * @returns {LibCanvas.Canvas2D}
+	 */
+	appSize: function (size, height) {
+		if (typeof size != 'object') {
+			size = { width: size, height: height };
+		}
+		for (var i in size) {
+			this.wrapper       .css(i, size[i]);
+			this.wrapper.parent.css(i, size[i]);
+			this._appSize[i] = size[i];
 		}
 		return this;
+	},
+
+	/**
+	 * @returns {object}
+	 */
+	getAppSize: function () {
+		return this._appSize;
 	},
 
 	/**
@@ -2609,13 +2626,8 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 
 	/** @private */
 	createProjectBuffer: function () {
-		if (this.options.backBuffer == 'off') {
-			this.elem = this.origElem;
-			this.ctx  = this.origCtx;
-		} else {
-			this.elem = this.createBuffer();
-			this.ctx  = this.elem.getContext('2d-libcanvas');
-		}
+		this.elem = this.origElem;
+		this.ctx  = this.origCtx;
 		return this;
 	},
 
@@ -5636,6 +5648,134 @@ LibCanvas.Processors.Mask = Class({
 /*
 ---
 
+name: "Scene.App"
+
+description: "LibCanvas.App"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+
+provides: App
+
+...
+*/
+
+LibCanvas.App = Class(
+/**
+ * @lends LibCanvas.App#
+ */
+{
+	Extends: Class.Options,
+
+	options: {
+		name     : 'main',
+		autoStart: false,
+		clear    : false,
+		invoke   : true,
+		width    : null,
+		height   : null,
+		keyboard : false,
+		mouse    : false,
+		fpsMeter : false,
+		fps      : 60
+	},
+
+	/**
+	 * @returns {LibCanvas.App}
+	 */
+	initialize: function (canvas, options) {
+		this.setOptions( options );
+		options = this.options;
+
+		var libcanvas = this.libcanvas = new LibCanvas( canvas, options );
+
+		if (options.width != null && options.height != null) {
+			libcanvas.size( options.width, options.height, true );
+		}
+
+		if (options.keyboard) libcanvas.listenKeyboard(options.keyboard);
+		if (options.mouse   ) {
+			libcanvas.listenMouse();
+			this.bindMouse(libcanvas.mouse);
+		}
+		if (options.fpsMeter) libcanvas.fpsMeter();
+
+		this.scenes = [];
+		this.scenesIndexed = {};
+
+		libcanvas.start();
+
+		return this;
+	},
+
+	createScene: function (name, zIndex, options) {
+		if (typeof zIndex == 'object') {
+			options = zIndex;
+			zIndex  = Infinity;
+		}
+
+		var layer = this.libcanvas.createLayer( name );
+		var scene = new LibCanvas.Scene.Standard( layer, options );
+
+		this.scenes.push( scene );
+		this.scenesIndexed[name] = scene;
+
+		return scene;
+	},
+
+	sceneExists: function (name) {
+		return name in this.scenesIndexed;
+	},
+
+	scene: function (name) {
+		if (this.sceneExists(name)) {
+			return this.scenesIndexed[name];
+		} else {
+			throw new Error('No scene with name «' + name + '»');
+		}
+	},
+
+	sortScenes: function () {
+		this.scenes.sort( function (left, right) {
+			return left.libcanvas.zIndex < right.libcanvas.zIndex ? -1 : 1;
+		});
+		return this.scenes;
+	},
+
+	bindMouse: function (mouse) {
+		var app = this;
+		var events = function (method, types) {
+			types.forEach(function (type) {
+				mouse.addEvent( type, function (e) {
+					var scenes = app.sortScenes(), stopped = false;
+					for (var i = scenes.length; i--;) {
+						stopped = scenes[i].resources.mouse[method]( type, e, stopped );
+					}
+				});
+			});
+		};
+		events('forceEvent', [ 'dblclick', 'contextmenu', 'wheel' ]);
+		events('event'     , [ 'down', 'up', 'move', 'out' ]);
+
+		console.log( mouse );
+	},
+
+	get rectangle () {
+		var size = this.libcanvas.getAppSize();
+		return new Rectangle( 0, 0, size.width, size.height );
+	}
+});
+
+/*
+---
+
 name: "Scene.Element"
 
 description: "LibCanvas.Scene"
@@ -5681,7 +5821,7 @@ Scene.Element = Class(
 
 		if (ownShape || this.options.shape) {
 			if (!ownShape) this.shape = this.options.shape;
-			this.previousBoundingShape = this.currentBoundingShape;
+			this.saveCurrentBoundingShape();
 		}
 		if (this.options.zIndex != null) {
 			this.zIndex = Number( this.options.zIndex );
@@ -5708,7 +5848,7 @@ Scene.Element = Class(
 		return this;
 	},
 
-	onUpdate: function ( time ) {
+	onUpdate: function (time) {
 		return this;
 	},
 
@@ -5717,10 +5857,14 @@ Scene.Element = Class(
 		return this;
 	},
 
-	renderTo: function () {
+	saveCurrentBoundingShape: function () {
 		var shape = this.currentBoundingShape;
 		this.previousBoundingShape = shape.fillToPixel ?
 			shape.fillToPixel() : shape.clone().grow( 2 );
+		return this;
+	},
+
+	renderTo: function (ctx, resources) {
 		return this;
 	}
 });
@@ -5760,6 +5904,9 @@ Scene.MouseEvent = Class(
 	/** @property {number} */
 	delta: 0,
 
+	/** @private */
+	falling: false,
+
 	/** @constructs */
 	initialize: function (type, original) {
 		this.type     = type;
@@ -5785,12 +5932,21 @@ Scene.MouseEvent = Class(
 	},
 
 	/** @private */
-	stopped: false,
+	checkFalling: function () {
+		var value = this.falling;
+		this.falling = false;
+		return value;
+	},
 
 	/** @returns {LibCanvas.Scene.MouseEvent} */
+	fall: function () {
+		this.falling = true;
+		return this;
+	},
+
+	/** @deprecated */
 	stop: function () {
-		this.stopped = true;
-		this.original._stopped = true;
+		//console.error('deprecated');
 		return this;
 	}
 });
@@ -5829,26 +5985,16 @@ Scene.Mouse = Class(
 	mouse: null,
 
 	/** @constructs */
-	initialize: function (scene) {
+	initialize: function (globalMouse) {
 		var mouse = this;
 
 		mouse.lastMouseMove = [];
 		mouse.lastMouseDown = [];
 
-		mouse.scene = scene;
 		mouse.subscribers = [];
 
-		var events = function (force, types) {
-			var method = force ? 'forceEvent' : 'event';
-			types.forEach(function (type) {
-				mouse.mouse.addEvent( type, function (e) { mouse[method]( type, e ) } );
-			});
-		};
-
-		mouse.mouse = scene.libcanvas.mouse;
+		mouse.mouse = globalMouse;
 		mouse.point = mouse.mouse.point;
-		events(true , [ 'dblclick', 'contextmenu', 'wheel' ]);
-		events(false, [ 'down', 'up', 'move', 'out' ]);
 	},
 
 	/** @private */
@@ -5879,8 +6025,8 @@ Scene.Mouse = Class(
 	},
 
 	/** @private */
-	event: function (type, e) {
-		if (this.stopped || e._stopped) return;
+	event: function (type, e, stopped) {
+		if (this.stopped) return;
 
 		var event = new Scene.MouseEvent( type, e );
 
@@ -5892,6 +6038,7 @@ Scene.Mouse = Class(
 
 		var i,
 			elem,
+			mouse    = this.mouse,
 			lastDown = this.lastMouseDown,
 			lastMove = this.lastMouseMove,
 			lastOut  = [],
@@ -5900,7 +6047,7 @@ Scene.Mouse = Class(
 		if (type == 'move' || type == 'out') {
 			for (i = lastMove.length; i--;) {
 				elem = lastMove[i];
-				if (!this.mouse.isOver(elem)) {
+				if (!mouse.isOver(elem)) {
 					elem.fireEvent( 'mouseout', [event] );
 					lastMove.erase(elem);
 					lastOut.push(elem);
@@ -5911,21 +6058,24 @@ Scene.Mouse = Class(
 		for (i = sub.length; i--;) {
 			elem = sub[i];
 
-			if (event.stopped) {
+			if (stopped) {
 				if (type == 'move' || type == 'out') {
-					if (lastMove.contains(elem)) elem.fireEvent( 'mouseout', [event] );
+					if (lastMove.contains(elem)) {
+						elem.fireEvent( 'mouseout', [event] );
+						lastMove.erase(elem);
+					}
 				} else if (type == 'up') {
 					if (lastDown.contains(elem)) {
 						elem.fireEvent( 'mouseup', [event] );
-						if (this.mouse.isOver(elem)) {
+						if (mouse.isOver(elem)) {
 							elem.fireEvent( 'click', [event] );
 						}
 					}
 				}
-			} else if (this.mouse.isOver(elem)) {
+			} else if (mouse.isOver(elem)) {
 				if (type == 'move') {
 					if (!lastMove.contains(elem)) {
-						elem.fireEvent( 'mouseover', [event] );
+					 	elem.fireEvent( 'mouseover', [event] );
 						lastMove.push( elem );
 					}
 				} else if (type == 'down') {
@@ -5935,23 +6085,31 @@ Scene.Mouse = Class(
 					elem.fireEvent( 'click', [event] );
 				}
 				elem.fireEvent( 'mouse' + type, [event] );
-			} else if (type != 'move' && !lastOut.contains(elem)) {
+
+				if (!event.checkFalling()) stopped = true;
+			} else if (!lastOut.contains(elem)) {
 				elem.fireEvent( 'away:mouse' + type, [event] );
 			}
 		}
+
+		return stopped;
 	},
 
 	/** @private */
-	forceEvent: function (type, e) {
+	forceEvent: function (type, e, stopped) {
+		if (stopped) return stopped;
 		var
 			event = new Scene.MouseEvent( type, e ),
 			sub = this.subscribers.sortBy( 'zIndex', true ),
 			i   = sub.length;
 		while (i--) if (this.mouse.isOver(sub[i])) {
 			sub[i].fireEvent( type, event );
-			if (event.stopped) break;
+			if (!event.checkFalling()) {
+				stopped = true;
+				break;
+			}
 		}
-		return this;
+		return stopped;
 	}
 
 });
@@ -5986,9 +6144,10 @@ Scene.Resources = Class(
 {
 
 	/** @constructs */
-	initialize: function (scene) {
+	initialize: function (scene, rectangle) {
 		this.scene = scene;
 		this.lc    = scene.libcanvas;
+		this._rectangle = rectangle;
 	},
 
 	getAudio: function (name) {
@@ -6008,7 +6167,7 @@ Scene.Resources = Class(
 
 	get mouse () {
 		if (this._mouse == null) {
-			this._mouse = new Scene.Mouse( this.scene );
+			this._mouse = new Scene.Mouse( this.lc.mouse );
 		}
 		return this._mouse;
 	},
@@ -6018,7 +6177,7 @@ Scene.Resources = Class(
 	},
 
 	get rectangle () {
-		return this.lc.ctx.rectangle;
+		return this._rectangle || this.lc.ctx.rectangle;
 	}
 });
 
@@ -6081,6 +6240,7 @@ Scene.Standard = Class(
 	redrawElements: null,
 
 	/**
+	 * @deprecated
 	 * @param {atom.Class} Class
 	 * @returns {function}
 	 */
@@ -6147,18 +6307,25 @@ Scene.Standard = Class(
 		return elems;
 	},
 
+	/** @private */
+	autoIntersectionsSearch: function () {
+		return this.options.intersection !== 'manual';
+	},
 
 	/** @private */
 	draw: function () {
-		var i, l, elem, clear = [],
-			ctx = this.libcanvas.ctx,
-			redraw = this.redrawElements;
+		var i, l, elem,
+			clear     = [],
+			elements  = this.elements,
+			resources = this.resources,
+			ctx       = this.libcanvas.ctx,
+			redraw    = this.redrawElements;
 
 		for (i = 0; i < redraw.length; i++) {
 			elem = redraw[i];
 			clear.push( elem );
 
-			if (this.options.intersection !== 'manual') {
+			if (this.autoIntersectionsSearch()) {
 				this.findIntersections(elem.previousBoundingShape, elem)
 					.forEach(function (e) {
 						redraw.include( e );
@@ -6172,19 +6339,20 @@ Scene.Standard = Class(
 		}
 
 		for (i = clear.length; i--;) {
-			clear[i].clearPrevious( ctx );
+			clear[i].clearPrevious( ctx, resources );
 		}
 
 		redraw.sortBy( 'zIndex', true );
-
 		for (i = 0, l = redraw.length; i < l; i++) {
-			if (this.elements.contains( redraw[ i ] )) {
-				redraw[ i ].renderTo( ctx, this.resources );
+			elem = redraw[i];
+			if (elements.contains( elem )) {
+				elem.renderTo( ctx, resources );
+				elem.saveCurrentBoundingShape();
 			}
 		}
 		redraw.empty();
 
-		return this.fireEvent( 'render', [ ctx, this.resources ]);
+		return this.fireEvent( 'render', [ ctx, resources ]);
 	}
 });
 
