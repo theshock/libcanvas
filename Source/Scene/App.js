@@ -29,7 +29,7 @@ LibCanvas.App = Class(
 
 	options: {
 		name     : 'main',
-		autoStart: false,
+		autoStart: true,
 		clear    : false,
 		invoke   : true,
 		width    : null,
@@ -63,8 +63,11 @@ LibCanvas.App = Class(
 		this.scenes = [];
 		this.scenesIndexed = {};
 
-		libcanvas.start();
+		return this;
+	},
 
+	start: function () {
+		this.libcanvas.start();
 		return this;
 	},
 
@@ -121,8 +124,6 @@ LibCanvas.App = Class(
 		};
 		events('forceEvent', [ 'dblclick', 'contextmenu', 'wheel' ]);
 		events('event'     , [ 'down', 'up', 'move', 'out' ]);
-
-		console.log( mouse );
 	},
 
 	get rectangle () {
