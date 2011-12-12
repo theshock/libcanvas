@@ -5688,6 +5688,7 @@ LibCanvas.App = Class(
 	},
 
 	/**
+	 * @constructs
 	 * @returns {LibCanvas.App}
 	 */
 	initialize: function (canvas, options) {
@@ -5715,13 +5716,32 @@ LibCanvas.App = Class(
 		return this;
 	},
 
+	/**
+	 * @param {string} [name=null]
+	 * @param {number} [zIndex=Infinity]
+	 * @param {object} [options={}]
+	 * @returns {LibCanvas.Scene.Standard}
+	 */
 	createScene: function (name, zIndex, options) {
+		if (name != null && typeof name != 'string') {
+			options = zIndex;
+			zIndex  = name;
+			name    = null;
+		}
 		if (typeof zIndex == 'object') {
 			options = zIndex;
 			zIndex  = Infinity;
 		}
 
-		var layer = this.libcanvas.createLayer( name );
+		var layer = this.libcanvas;
+		if (name) {
+			if (layer.layerExists(name)) {
+				layer = layer.layer(name);
+			} else {
+				layer = layer.createLayer(name);
+			}
+		}
+
 		var scene = new LibCanvas.Scene.Standard( layer, options );
 
 		this.scenes.push( scene );
@@ -5730,10 +5750,19 @@ LibCanvas.App = Class(
 		return scene;
 	},
 
+	/**
+	 * @param {string} name
+	 * @returns {boolean}
+	 */
 	sceneExists: function (name) {
 		return name in this.scenesIndexed;
 	},
 
+	/**
+	 * @param {string} name
+	 * @throws {Error}
+	 * @returns {LibCanvas.Scene.Standard}
+	 */
 	scene: function (name) {
 		if (this.sceneExists(name)) {
 			return this.scenesIndexed[name];
@@ -5742,6 +5771,7 @@ LibCanvas.App = Class(
 		}
 	},
 
+	/** @private */
 	sortScenes: function () {
 		this.scenes.sort( function (left, right) {
 			return left.libcanvas.zIndex < right.libcanvas.zIndex ? -1 : 1;
@@ -5749,11 +5779,16 @@ LibCanvas.App = Class(
 		return this.scenes;
 	},
 
-	ready: function (fn) {
-		this.libcanvas.addEvent( 'ready', fn.bind(this) );
+	/**
+	 * @param {function} callback
+	 * @returns {LibCanvas.App}
+	 */
+	ready: function (callback) {
+		this.libcanvas.addEvent( 'ready', callback.bind(this) );
 		return this;
 	},
 
+	/** @private */
 	bindMouse: function (mouse) {
 		var app = this;
 		var events = function (method, types) {
@@ -5770,6 +5805,7 @@ LibCanvas.App = Class(
 		events('event'     , [ 'down', 'up', 'move', 'out' ]);
 	},
 
+	/** @property {LibCanvas.Shapes.Rectangle} rectangle */
 	get rectangle () {
 		var size = this.libcanvas.getAppSize();
 		return new Rectangle( 0, 0, size.width, size.height );
