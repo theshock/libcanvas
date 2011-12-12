@@ -70,6 +70,9 @@ return Class({
 	getZIndex : function () {
 		return this.zIndex || 0;
 	},
+	hasPoint: function (point) {
+		return this.shape.hasPoint( point );
+	},
 	// @deprecated
 	setZIndex : function (zIndex) {
 		this.zIndex = zIndex;

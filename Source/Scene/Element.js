@@ -64,6 +64,10 @@ Scene.Element = Class(
 		return this;
 	},
 
+	hasPoint: function (point) {
+		return this.shape.hasPoint( point );
+	},
+
 	redraw: function () {
 		this.scene.redrawElement( this );
 		return this;
