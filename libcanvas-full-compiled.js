@@ -5749,6 +5749,11 @@ LibCanvas.App = Class(
 		return this.scenes;
 	},
 
+	ready: function (fn) {
+		this.libcanvas.addEvent( 'ready', fn );
+		return this;
+	},
+
 	bindMouse: function (mouse) {
 		var app = this;
 		var events = function (method, types) {
