@@ -103,7 +103,7 @@ LibCanvas.App = Class(
 	},
 
 	ready: function (fn) {
-		this.libcanvas.addEvent( 'ready', fn );
+		this.libcanvas.addEvent( 'ready', fn.bind(this) );
 		return this;
 	},
 
