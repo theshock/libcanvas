@@ -5712,8 +5712,6 @@ LibCanvas.App = Class(
 		this.scenesIndexed = {};
 
 		libcanvas.start();
-
-		return this;
 	},
 
 	/**
