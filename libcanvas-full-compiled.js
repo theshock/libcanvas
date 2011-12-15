@@ -2661,8 +2661,10 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 
 	/** @returns {LibCanvas.Canvas2D} */
 	listenMouse : function (elem) {
-		this._mouse = LibCanvas.isLibCanvas(elem) ? elem.mouse
-			: new Mouse(this.wrapper);
+		if (!this._mouse) {
+			this._mouse = LibCanvas.isLibCanvas(elem) ?
+				elem.mouse : new Mouse(this.wrapper);
+		}
 		return this;
 	},
 
@@ -2675,8 +2677,10 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 	},
 	/** @returns {LibCanvas.Canvas2D} */
 	listenKeyboard : function (elem) {
-		this._keyboard = LibCanvas.isLibCanvas(elem) ? elem.keyboard
-			: new Keyboard(/* preventDefault */elem);
+		if (!this._keyboard) {
+			this._keyboard = LibCanvas.isLibCanvas(elem) ? elem.keyboard
+				: new Keyboard(/* preventDefault */elem);
+		}
 		return this;
 	},
 	/** @returns {HTMLCanvasElement} */
@@ -2751,9 +2755,14 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 		return this;
 	},
 
+	stopped: true,
+
 	// Start, pause, stop
 	/** @returns {LibCanvas.Canvas2D} */
 	start : function (fn) {
+		if (!this.stopped) return this;
+
+		this.stopped = false;
 		fn && this.addRender(10, fn);
 		if (this.invoker.timeoutId == 0) {
 			this.invoker
@@ -2766,6 +2775,9 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 	},
 	/** @returns {LibCanvas.Canvas2D} */
 	stop: function () {
+		if (this.stopped) return this;
+
+		this.stopped = true;
 		this.invoker.stop();
 		return this;
 	},
@@ -5692,10 +5704,16 @@ LibCanvas.App = Class(
 	 * @returns {LibCanvas.App}
 	 */
 	initialize: function (canvas, options) {
+		var libcanvas;
+
 		this.setOptions( options );
 		options = this.options;
 
-		var libcanvas = this.libcanvas = new LibCanvas( canvas, options );
+		if (canvas instanceof LibCanvas) {
+			libcanvas = this.libcanvas = canvas;
+		} else {
+			libcanvas = this.libcanvas = new LibCanvas( canvas, options );
+		}
 
 		if (options.width != null && options.height != null) {
 			libcanvas.size( options.width, options.height, true );
@@ -6326,10 +6344,10 @@ Scene.Standard = Class(
 	 * @returns {LibCanvas.Scene.Standard}
 	 */
 	addElementsShift: function (shift) {
-			shift = Point(shift);
-			var e = this.elements, i = e.length;
-			while (i--) e[i].addShift(shift);
-			return this;
+		shift = Point(shift);
+		var e = this.elements, i = e.length;
+		while (i--) e[i].addShift(shift);
+		return this;
 	},
 
 	/**

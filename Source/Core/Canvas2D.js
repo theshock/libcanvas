@@ -335,8 +335,10 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 
 	/** @returns {LibCanvas.Canvas2D} */
 	listenMouse : function (elem) {
-		this._mouse = LibCanvas.isLibCanvas(elem) ? elem.mouse
-			: new Mouse(this.wrapper);
+		if (!this._mouse) {
+			this._mouse = LibCanvas.isLibCanvas(elem) ?
+				elem.mouse : new Mouse(this.wrapper);
+		}
 		return this;
 	},
 
@@ -349,8 +351,10 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 	},
 	/** @returns {LibCanvas.Canvas2D} */
 	listenKeyboard : function (elem) {
-		this._keyboard = LibCanvas.isLibCanvas(elem) ? elem.keyboard
-			: new Keyboard(/* preventDefault */elem);
+		if (!this._keyboard) {
+			this._keyboard = LibCanvas.isLibCanvas(elem) ? elem.keyboard
+				: new Keyboard(/* preventDefault */elem);
+		}
 		return this;
 	},
 	/** @returns {HTMLCanvasElement} */
@@ -425,9 +429,14 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 		return this;
 	},
 
+	stopped: true,
+
 	// Start, pause, stop
 	/** @returns {LibCanvas.Canvas2D} */
 	start : function (fn) {
+		if (!this.stopped) return this;
+
+		this.stopped = false;
 		fn && this.addRender(10, fn);
 		if (this.invoker.timeoutId == 0) {
 			this.invoker
@@ -440,6 +449,9 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 	},
 	/** @returns {LibCanvas.Canvas2D} */
 	stop: function () {
+		if (this.stopped) return this;
+
+		this.stopped = true;
 		this.invoker.stop();
 		return this;
 	},

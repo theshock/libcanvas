@@ -45,10 +45,16 @@ LibCanvas.App = Class(
 	 * @returns {LibCanvas.App}
 	 */
 	initialize: function (canvas, options) {
+		var libcanvas;
+
 		this.setOptions( options );
 		options = this.options;
 
-		var libcanvas = this.libcanvas = new LibCanvas( canvas, options );
+		if (canvas instanceof LibCanvas) {
+			libcanvas = this.libcanvas = canvas;
+		} else {
+			libcanvas = this.libcanvas = new LibCanvas( canvas, options );
+		}
 
 		if (options.width != null && options.height != null) {
 			libcanvas.size( options.width, options.height, true );
