@@ -5805,20 +5805,21 @@ LibCanvas.App = Class(
 	},
 
 	/** @private */
+	mouseEvents: [ 'down', 'up', 'move', 'out', 'dblclick', 'contextmenu', 'wheel' ],
+
+	/** @private */
 	bindMouse: function (mouse) {
 		var app = this;
-		var events = function (method, types) {
-			types.forEach(function (type) {
-				mouse.addEvent( type, function (e) {
-					var scenes = app.sortScenes(), stopped = false;
-					for (var i = scenes.length; i--;) {
-						stopped = scenes[i].resources.mouse[method]( type, e, stopped );
-					}
-				});
+		app.mouseEvents.forEach(function (type) {
+			mouse.addEvent( type, function (e) {
+				var
+					scenes = app.sortScenes(),
+					stopped = false;
+				for (var i = scenes.length; i--;) {
+					stopped = scenes[i].resources.mouse.event( type, e, stopped );
+				}
 			});
-		};
-		events('forceEvent', [ 'dblclick', 'contextmenu', 'wheel' ]);
-		events('event'     , [ 'down', 'up', 'move', 'out' ]);
+		});
 	},
 
 	/** @property {LibCanvas.Shapes.Rectangle} rectangle */
@@ -6089,12 +6090,17 @@ Scene.Mouse = Class(
 	event: function (type, e, stopped) {
 		if (this.stopped) return;
 
-		var event = new Scene.MouseEvent( type, e );
+		var event = new Scene.MouseEvent( type, e ), method = 'parseEvent';
 
 		if (['dblclick', 'contextmenu', 'wheel'].contains( type )) {
-			return this.forceEvent( type == 'wheel' ? 'mousewheel' : type, e );
+			if (type == 'mousewheel') type = 'mousewheel';
+			method = 'forceEvent';
 		}
+		return this[method]( type, event, stopped, this.subscribers );
+	},
 
+	/** @private */
+	parseEvent: function (type, event, stopped, elements) {
 		if (type == 'down') this.lastMouseDown.empty();
 
 		var i,
@@ -6103,8 +6109,9 @@ Scene.Mouse = Class(
 			lastDown = this.lastMouseDown,
 			lastMove = this.lastMouseMove,
 			lastOut  = [],
-			sub = this.subscribers.sortBy( 'zIndex', true );
+			sub = elements.sortBy( 'zIndex', true );
 
+		// В первую очередь - обрабатываем реальный mouseout с элементов
 		if (type == 'move' || type == 'out') {
 			for (i = lastMove.length; i--;) {
 				elem = lastMove[i];
@@ -6118,7 +6125,8 @@ Scene.Mouse = Class(
 
 		for (i = sub.length; i--;) {
 			elem = sub[i];
-
+			// проваливание события остановлено элементом
+			// необходимо сообщить остальным элементам о mouseout
 			if (stopped) {
 				if (type == 'move' || type == 'out') {
 					if (lastMove.contains(elem)) {
@@ -6133,6 +6141,8 @@ Scene.Mouse = Class(
 						}
 					}
 				}
+			// мышь над элементом, сообщаем о mousemove
+			// о mouseover, mousedown, click, если необходимо
 			} else if (mouse.isOver(elem)) {
 				if (type == 'move') {
 					if (!lastMove.contains(elem)) {
@@ -6148,6 +6158,8 @@ Scene.Mouse = Class(
 				elem.fireEvent( 'mouse' + type, [event] );
 
 				if (!event.checkFalling()) stopped = true;
+			// мышь не над элементом, событие проваливается,
+			// сообщаем элементу, что где-то произошло событие
 			} else if (!lastOut.contains(elem)) {
 				elem.fireEvent( 'away:mouse' + type, [event] );
 			}
@@ -6157,11 +6169,9 @@ Scene.Mouse = Class(
 	},
 
 	/** @private */
-	forceEvent: function (type, e, stopped) {
-		if (stopped) return stopped;
+	forceEvent: function (type, event, stopped, elements) {
 		var
-			event = new Scene.MouseEvent( type, e ),
-			sub = this.subscribers.sortBy( 'zIndex', true ),
+			sub = elements.sortBy( 'zIndex', true ),
 			i   = sub.length;
 		while (i--) if (this.mouse.isOver(sub[i])) {
 			sub[i].fireEvent( type, event );

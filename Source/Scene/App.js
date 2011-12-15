@@ -146,20 +146,21 @@ LibCanvas.App = Class(
 	},
 
 	/** @private */
+	mouseEvents: [ 'down', 'up', 'move', 'out', 'dblclick', 'contextmenu', 'wheel' ],
+
+	/** @private */
 	bindMouse: function (mouse) {
 		var app = this;
-		var events = function (method, types) {
-			types.forEach(function (type) {
-				mouse.addEvent( type, function (e) {
-					var scenes = app.sortScenes(), stopped = false;
-					for (var i = scenes.length; i--;) {
-						stopped = scenes[i].resources.mouse[method]( type, e, stopped );
-					}
-				});
+		app.mouseEvents.forEach(function (type) {
+			mouse.addEvent( type, function (e) {
+				var
+					scenes = app.sortScenes(),
+					stopped = false;
+				for (var i = scenes.length; i--;) {
+					stopped = scenes[i].resources.mouse.event( type, e, stopped );
+				}
 			});
-		};
-		events('forceEvent', [ 'dblclick', 'contextmenu', 'wheel' ]);
-		events('event'     , [ 'down', 'up', 'move', 'out' ]);
+		});
 	},
 
 	/** @property {LibCanvas.Shapes.Rectangle} rectangle */
