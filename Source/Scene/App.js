@@ -42,7 +42,6 @@ LibCanvas.App = Class(
 
 	/**
 	 * @constructs
-	 * @returns {LibCanvas.App}
 	 */
 	initialize: function (canvas, options) {
 		var libcanvas;
