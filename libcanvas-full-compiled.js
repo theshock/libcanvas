@@ -1778,7 +1778,14 @@ var initDraggable = function () {
 return Class({
 	Extends: MouseListener,
 
-	draggable : function (stopDrag) {
+	draggable : function (stop, callback) {
+		if (typeof stop == 'function') {
+			callback = stop;
+			stop = false;
+		}
+
+		if (callback) this.addEvent( 'moveDrag', callback );
+
 		if (! ('draggable.isDraggable' in this) ) {
 			if (this.libcanvas) {
 				initDraggable.call( this );
@@ -1786,7 +1793,7 @@ return Class({
 				this.addEvent('libcanvasSet', initDraggable);
 			}
 		}
-		this['draggable.isDraggable'] = !stopDrag;
+		this['draggable.isDraggable'] = !stop;
 		return this;
 	}
 });
