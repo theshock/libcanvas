@@ -51,6 +51,9 @@ Scene.Element = Class(
 		if (this.options.zIndex != null) {
 			this.zIndex = Number( this.options.zIndex );
 		}
+
+		this.childrenElements = [];
+		this.childFactory     = Scene.Element;
 	},
 
 	previousBoundingShape: null,
@@ -94,8 +97,30 @@ Scene.Element = Class(
 			shape.fillToPixel() : shape.clone().grow( 2 );
 		return this;
 	},
-
 	renderTo: function (ctx, resources) {
+		return this;
+	},
+
+	// Children
+	setChildrenFactory: function (Class) {
+		this.childFactory = Class;
+		return this;
+	},
+	createChild: function (options) {
+		var child = this.childFactory.factory( [this.scene].append(arguments) );
+		this.addChildren(child);
+		return child;
+	},
+	addChildren: function (child) {
+		for (var i = 0, l = arguments.length; i < l; i++) {
+			this.childrenElements.include(arguments[i]);
+		}
+		return this;
+	},
+	removeChildren: function (child) {
+		for (var i = 0, l = arguments.length; i < l; i++) {
+			this.childrenElements.erase(arguments[i]);
+		}
 		return this;
 	}
 });
