@@ -97,6 +97,8 @@ LibCanvas.App = Class(
 			} else {
 				layer = layer.createLayer(name);
 			}
+		} else {
+			name = layer.options.name;
 		}
 
 		var scene = new LibCanvas.Scene.Standard( layer, options );
