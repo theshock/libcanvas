@@ -67,6 +67,7 @@ LibCanvas.App = Class(
 		}
 		if (options.fpsMeter) libcanvas.fpsMeter();
 
+		this.resources = new LibCanvas.Scene.Resources( this, this.rectangle );
 		this.scenes = [];
 		this.scenesIndexed = {};
 
