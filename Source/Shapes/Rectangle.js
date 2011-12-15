@@ -222,7 +222,7 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class(
 	/** @returns {LibCanvas.Shapes.Rectangle} */
 	snapToPixel: function () {
 		this.from.snapToPixel();
-		this.to.snapToPixel();
+		this.to.snapToPixel().move(new Point(-1, -1));
 		return this;
 	},
 	/** @returns {string} */
