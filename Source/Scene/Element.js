@@ -122,5 +122,13 @@ Scene.Element = Class(
 			this.childrenElements.erase(arguments[i]);
 		}
 		return this;
+	},
+	invokeChildren: function (method, args) {
+		var children = this.childrenElements;
+		if (!args) args = [];
+		for (var i = 0, l = children.length; i < l; i++) {
+			children[i][method].apply( children[i], args );
+		}
+		return this;
 	}
 });

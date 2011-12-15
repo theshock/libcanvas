@@ -102,6 +102,10 @@ Scene.Mouse = Class(
 
 		var fire = function (event) {
 			this.fireEvent( event, eventArgs );
+			var children = this.childrenElements;
+			if (children.length) {
+				mouse.event(type, event, stopped, children);
+			}
 		};
 
 		elements.sortBy( 'zIndex', true );
@@ -166,11 +170,17 @@ Scene.Mouse = Class(
 
 	/** @private */
 	forceEvent: function (type, event, stopped, elements) {
-		var
-			sub = elements.sortBy( 'zIndex', true ),
-			i   = sub.length;
-		while (i--) if (this.mouse.isOver(sub[i])) {
-			sub[i].fireEvent( type, event );
+		elements.sortBy( 'zIndex', true );
+		var children, i = elements.length;
+		while (i--) {
+			var elem = elements[i];
+			if (!this.mouse.isOver(elem)) return;
+			
+			elem.fireEvent( type, event );
+			children = elem.childrenElements;
+			if (children.length) {
+				elem.event(type, event, stopped, children);
+			}
 			if (!event.checkFalling()) {
 				stopped = true;
 				break;
