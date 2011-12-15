@@ -1680,14 +1680,33 @@ var setValFn = function (object, name, val) {
 return Class({
 	Extends: MouseListener,
 
-	clickable : function () { 
+	clickable : function (stop, callback) {
+		if (typeof stop == 'function') {
+			callback = stop;
+			stop = false;
+		}
+
 		this.listenMouse();
 
-		this.addEvent('mouseover', setValFn(this, 'hover' , true ));
-		this.addEvent('mouseout' , setValFn(this, 'hover' , false));
-		this.addEvent('mousedown', setValFn(this, 'active', true ));
-		this.addEvent(['mouseup', 'away:mouseout', 'away:mouseup'],
-			setValFn(this, 'active', false));
+		var callbacks = this['clickable.callbacks'];
+
+		if (!callbacks) {
+			var deactivate = setValFn(this, 'active', false);
+			callbacks = this['clickable.callbacks'] = {
+				'mouseover': setValFn(this, 'hover' , true),
+				'mouseout' : setValFn(this, 'hover' , false),
+				'mousedown': setValFn(this, 'active', true ),
+				'mouseup'      : deactivate,
+				'away:mouseout': deactivate,
+				'away:mouseup' : deactivate
+			};
+		}
+
+		if (stop) {
+			this.removeEvent(callbacks);
+		} else {
+			this.addEvent(callbacks);
+		}
 		return this;
 	}
 });
