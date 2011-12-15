@@ -79,8 +79,10 @@ LibCanvas.App
 Ниже - пример оптимизированного сдвига слоя, ради оптимизации на момент drag'а останавливается отрисовка:
 
 
-	var drag  = null;
+	// В scene.resources.mouse находится общая для приложения мышь
+	// В scene.mouse - личная для сцены
 	var mouse = scene.resources.mouse;
+	var drag  = null;
 
 	// Обрабатываем отпускание кнопки мыши
 	var stopDrag = function () {
