@@ -119,9 +119,9 @@ Scene.Mouse = Class(
 						lastMove.erase(elem);
 					}
 				} else if (type == 'up') {
-					if (lastDown.contains(elem)) {
+					if (mouse.isOver(elem)) {
 						elem.fireEvent( 'mouseup', [event] );
-						if (mouse.isOver(elem)) {
+						if (lastDown.contains(elem)) {
 							elem.fireEvent( 'click', [event] );
 						}
 					}
