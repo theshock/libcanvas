@@ -42,6 +42,8 @@ return Class({
 			stop = false;
 		}
 
+		if (callback) this.addEvent( 'statusChanged', callback );
+
 		this.listenMouse();
 
 		var callbacks = this['clickable.callbacks'];
