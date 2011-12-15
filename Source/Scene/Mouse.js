@@ -75,13 +75,15 @@ Scene.Mouse = Class(
 	event: function (type, e, stopped) {
 		if (this.stopped) return;
 
-		var event = new Scene.MouseEvent( type, e ), method = 'parseEvent';
+		var
+			event = new Scene.MouseEvent( type, e ),
+			method = 'parseEvent';
 
 		if (['dblclick', 'contextmenu', 'wheel'].contains( type )) {
 			if (type == 'mousewheel') type = 'mousewheel';
 			method = 'forceEvent';
 		}
-		return this[method]( type, event, stopped, this.subscribers );
+		return this[method]( type, event, stopped, this.subscribers, 0 );
 	},
 
 	isOver: function (element) {
@@ -89,7 +91,7 @@ Scene.Mouse = Class(
 	},
 
 	/** @private */
-	parseEvent: function (type, event, stopped, elements) {
+	parseEvent: function (type, event, stopped, elements, deep) {
 		if (type == 'down') this.lastMouseDown.empty();
 
 		var i,
@@ -100,12 +102,12 @@ Scene.Mouse = Class(
 			lastOut  = [],
 			eventArgs = [event];
 
-		var fire = function (event) {
-			this.fireEvent( event, eventArgs );
+		var fire = function (eventName) {
 			var children = this.childrenElements;
 			if (children.length) {
-				mouse.event(type, event, stopped, children);
+				mouse.parseEvent(type, event, stopped, children, deep+1);
 			}
+			this.fireEvent( eventName, eventArgs );
 		};
 
 		elements.sortBy( 'zIndex', true );
@@ -114,7 +116,7 @@ Scene.Mouse = Class(
 		if (type == 'move' || type == 'out') {
 			for (i = lastMove.length; i--;) {
 				elem = lastMove[i];
-				if (!mouse.isOver(elem)) {
+				if (elements.contains(elem) && !mouse.isOver(elem)) {
 					fire.call( elem, 'mouseout' );
 					lastMove.erase(elem);
 					lastOut.push(elem);
@@ -128,14 +130,14 @@ Scene.Mouse = Class(
 			// необходимо сообщить остальным элементам о mouseout
 			if (stopped) {
 				if (type == 'move' || type == 'out') {
-					if (lastMove.contains(elem)) {
+					if (elements.contains(elem) && lastMove.contains(elem)) {
 						fire.call( elem, 'mouseout' );
 						lastMove.erase(elem);
 					}
 				} else if (type == 'up') {
 					if (mouse.isOver(elem)) {
 						fire.call( elem, 'mouseup' );
-						if (lastDown.contains(elem)) {
+						if (elements.contains(elem) && lastDown.contains(elem)) {
 							fire.call( elem, 'click' );
 						}
 					}
@@ -151,12 +153,14 @@ Scene.Mouse = Class(
 				} else if (type == 'down') {
 					lastDown.push(elem);
 				// If mouseup on this elem and last mousedown was on this elem - click
-				} else if (type == 'up' && lastDown.contains(elem)) {
+				} else if (type == 'up' && elements.contains(elem) && lastDown.contains(elem)) {
 					fire.call( elem, 'click' );
 				}
 				fire.call( elem, 'mouse' + type );
 
-				if (!event.checkFalling()) stopped = true;
+				if (!event.checkFalling()) {
+					stopped = true;
+				}
 			// мышь не над элементом, событие проваливается,
 			// сообщаем элементу, что где-то произошло событие
 			} else if (!lastOut.contains(elem)) {
@@ -179,7 +183,7 @@ Scene.Mouse = Class(
 			elem.fireEvent( type, event );
 			children = elem.childrenElements;
 			if (children.length) {
-				elem.event(type, event, stopped, children);
+				elem.forceEvent(type, event, stopped, children);
 			}
 			if (!event.checkFalling()) {
 				stopped = true;

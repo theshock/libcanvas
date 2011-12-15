@@ -38,7 +38,7 @@ Scene.Element = Class(
 		this.stopDrawing();
 		
 		this.scene = scene;
-		scene.addElement( this );
+		scene.addElement( this, true );
 		
 		this.setOptions( options );
 
@@ -108,19 +108,20 @@ Scene.Element = Class(
 	},
 	createChild: function (options) {
 		var child = this.childFactory.factory( [this.scene].append(arguments) );
-		this.addChildren(child);
+		this.addChildFast(child);
 		return child;
 	},
-	addChildren: function (child) {
-		for (var i = 0, l = arguments.length; i < l; i++) {
-			this.childrenElements.include(arguments[i]);
-		}
+	/** @private */
+	addChildFast: function (child) {
+		this.childrenElements.push(child);
 		return this;
 	},
-	removeChildren: function (child) {
-		for (var i = 0, l = arguments.length; i < l; i++) {
-			this.childrenElements.erase(arguments[i]);
-		}
+	addChild: function (child) {
+		this.childrenElements.include(child);
+		return this;
+	},
+	removeChild: function (child) {
+		this.childrenElements.erase(child);
 		return this;
 	},
 	invokeChildren: function (method, args) {
@@ -128,6 +129,13 @@ Scene.Element = Class(
 		if (!args) args = [];
 		for (var i = 0, l = children.length; i < l; i++) {
 			children[i][method].apply( children[i], args );
+		}
+		return this;
+	},
+	setChildrenProperty: function (property, value) {
+		var children = this.childrenElements;
+		for (var i = 0, l = children.length; i < l; i++) {
+			children[i][property] = value;
 		}
 		return this;
 	}

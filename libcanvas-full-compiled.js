@@ -1667,11 +1667,14 @@ provides: Behaviors.Clickable
 
 var Clickable = LibCanvas.Behaviors.Clickable = function () {
 
+var $window = atom.dom(window);
+
 var setValFn = function (object, name, val) {
+	var result = [name, val];
 	return function (event) {
 		if (object[name] != val) {
 			object[name] = val;
-			object.fireEvent('statusChanged');
+			object.fireEvent('statusChanged', result);
 		}
 	};
 };
@@ -1688,8 +1691,6 @@ return Class({
 
 		if (callback) this.addEvent( 'statusChanged', callback );
 
-		this.listenMouse();
-
 		var callbacks = this['clickable.callbacks'];
 
 		if (!callbacks) {
@@ -1699,7 +1700,6 @@ return Class({
 				'mouseout' : setValFn(this, 'hover' , false),
 				'mousedown': setValFn(this, 'active', true ),
 				'mouseup'      : deactivate,
-				'away:mouseout': deactivate,
 				'away:mouseup' : deactivate
 			};
 		}
@@ -5897,7 +5897,7 @@ Scene.Element = Class(
 		this.stopDrawing();
 		
 		this.scene = scene;
-		scene.addElement( this );
+		scene.addElement( this, true );
 		
 		this.setOptions( options );
 
@@ -5967,18 +5967,34 @@ Scene.Element = Class(
 	},
 	createChild: function (options) {
 		var child = this.childFactory.factory( [this.scene].append(arguments) );
-		this.addChildren(child);
+		this.addChildFast(child);
 		return child;
 	},
-	addChildren: function (child) {
-		for (var i = 0, l = arguments.length; i < l; i++) {
-			this.childrenElements.include(arguments[i]);
+	/** @private */
+	addChildFast: function (child) {
+		this.childrenElements.push(child);
+		return this;
+	},
+	addChild: function (child) {
+		this.childrenElements.include(child);
+		return this;
+	},
+	removeChild: function (child) {
+		this.childrenElements.erase(child);
+		return this;
+	},
+	invokeChildren: function (method, args) {
+		var children = this.childrenElements;
+		if (!args) args = [];
+		for (var i = 0, l = children.length; i < l; i++) {
+			children[i][method].apply( children[i], args );
 		}
 		return this;
 	},
-	removeChildren: function (child) {
-		for (var i = 0, l = arguments.length; i < l; i++) {
-			this.childrenElements.erase(arguments[i]);
+	setChildrenProperty: function (property, value) {
+		var children = this.childrenElements;
+		for (var i = 0, l = children.length; i < l; i++) {
+			children[i][property] = value;
 		}
 		return this;
 	}
@@ -6143,13 +6159,15 @@ Scene.Mouse = Class(
 	event: function (type, e, stopped) {
 		if (this.stopped) return;
 
-		var event = new Scene.MouseEvent( type, e ), method = 'parseEvent';
+		var
+			event = new Scene.MouseEvent( type, e ),
+			method = 'parseEvent';
 
 		if (['dblclick', 'contextmenu', 'wheel'].contains( type )) {
 			if (type == 'mousewheel') type = 'mousewheel';
 			method = 'forceEvent';
 		}
-		return this[method]( type, event, stopped, this.subscribers );
+		return this[method]( type, event, stopped, this.subscribers, 0 );
 	},
 
 	isOver: function (element) {
@@ -6157,7 +6175,7 @@ Scene.Mouse = Class(
 	},
 
 	/** @private */
-	parseEvent: function (type, event, stopped, elements) {
+	parseEvent: function (type, event, stopped, elements, deep) {
 		if (type == 'down') this.lastMouseDown.empty();
 
 		var i,
@@ -6168,12 +6186,12 @@ Scene.Mouse = Class(
 			lastOut  = [],
 			eventArgs = [event];
 
-		var fire = function (event) {
-			this.fireEvent( event, eventArgs );
+		var fire = function (eventName) {
 			var children = this.childrenElements;
 			if (children.length) {
-				mouse.event(type, event, stopped, children);
+				mouse.parseEvent(type, event, stopped, children, deep+1);
 			}
+			this.fireEvent( eventName, eventArgs );
 		};
 
 		elements.sortBy( 'zIndex', true );
@@ -6182,7 +6200,7 @@ Scene.Mouse = Class(
 		if (type == 'move' || type == 'out') {
 			for (i = lastMove.length; i--;) {
 				elem = lastMove[i];
-				if (!mouse.isOver(elem)) {
+				if (elements.contains(elem) && !mouse.isOver(elem)) {
 					fire.call( elem, 'mouseout' );
 					lastMove.erase(elem);
 					lastOut.push(elem);
@@ -6196,14 +6214,14 @@ Scene.Mouse = Class(
 			// необходимо сообщить остальным элементам о mouseout
 			if (stopped) {
 				if (type == 'move' || type == 'out') {
-					if (lastMove.contains(elem)) {
+					if (elements.contains(elem) && lastMove.contains(elem)) {
 						fire.call( elem, 'mouseout' );
 						lastMove.erase(elem);
 					}
 				} else if (type == 'up') {
 					if (mouse.isOver(elem)) {
 						fire.call( elem, 'mouseup' );
-						if (lastDown.contains(elem)) {
+						if (elements.contains(elem) && lastDown.contains(elem)) {
 							fire.call( elem, 'click' );
 						}
 					}
@@ -6219,12 +6237,14 @@ Scene.Mouse = Class(
 				} else if (type == 'down') {
 					lastDown.push(elem);
 				// If mouseup on this elem and last mousedown was on this elem - click
-				} else if (type == 'up' && lastDown.contains(elem)) {
+				} else if (type == 'up' && elements.contains(elem) && lastDown.contains(elem)) {
 					fire.call( elem, 'click' );
 				}
 				fire.call( elem, 'mouse' + type );
 
-				if (!event.checkFalling()) stopped = true;
+				if (!event.checkFalling()) {
+					stopped = true;
+				}
 			// мышь не над элементом, событие проваливается,
 			// сообщаем элементу, что где-то произошло событие
 			} else if (!lastOut.contains(elem)) {
@@ -6247,7 +6267,7 @@ Scene.Mouse = Class(
 			elem.fireEvent( type, event );
 			children = elem.childrenElements;
 			if (children.length) {
-				elem.event(type, event, stopped, children);
+				elem.forceEvent(type, event, stopped, children);
 			}
 			if (!event.checkFalling()) {
 				stopped = true;
@@ -6458,9 +6478,11 @@ Scene.Standard = Class(
 	 * @param {Drawable} element
 	 * @returns {LibCanvas.Scene.Standard}
 	 */
-	addElement: function (element) {
-		this.elements.include( element );
-		this.redrawElement( element );
+	addElement: function (element, force) {
+		if (force || !this.elements.contains(element)) {
+			this.elements.push( element );
+			this.redrawElement( element, true );
+		}
 		return this;
 	},
 
@@ -6469,9 +6491,9 @@ Scene.Standard = Class(
 	 * @param {Drawable} element
 	 * @returns {LibCanvas.Scene.Standard}
 	 */
-	redrawElement: function (element) {
-		if (this.elements.contains( element )) {
-			if (!this.redrawElements.contains( element )) {
+	redrawElement: function (element, force) {
+		if (force || this.elements.contains( element )) {
+			if (force || !this.redrawElements.contains( element )) {
 				this.redrawElements.push( element );
 				this.libcanvas.update();
 			}
@@ -6550,7 +6572,7 @@ Scene.Standard = Class(
 		redraw.sortBy( 'zIndex', true );
 		for (i = 0, l = redraw.length; i < l; i++) {
 			elem = redraw[i];
-			if (elements.contains( elem )) {
+			if (elements.indexOf( elem ) >= 0) {
 				elem.renderTo( ctx, resources );
 				elem.saveCurrentBoundingShape();
 			}

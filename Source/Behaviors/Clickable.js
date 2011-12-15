@@ -23,11 +23,14 @@ provides: Behaviors.Clickable
 
 var Clickable = LibCanvas.Behaviors.Clickable = function () {
 
+var $window = atom.dom(window);
+
 var setValFn = function (object, name, val) {
+	var result = [name, val];
 	return function (event) {
 		if (object[name] != val) {
 			object[name] = val;
-			object.fireEvent('statusChanged');
+			object.fireEvent('statusChanged', result);
 		}
 	};
 };
@@ -44,8 +47,6 @@ return Class({
 
 		if (callback) this.addEvent( 'statusChanged', callback );
 
-		this.listenMouse();
-
 		var callbacks = this['clickable.callbacks'];
 
 		if (!callbacks) {
@@ -55,7 +56,6 @@ return Class({
 				'mouseout' : setValFn(this, 'hover' , false),
 				'mousedown': setValFn(this, 'active', true ),
 				'mouseup'      : deactivate,
-				'away:mouseout': deactivate,
 				'away:mouseup' : deactivate
 			};
 		}

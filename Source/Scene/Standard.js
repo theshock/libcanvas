@@ -130,9 +130,11 @@ Scene.Standard = Class(
 	 * @param {Drawable} element
 	 * @returns {LibCanvas.Scene.Standard}
 	 */
-	addElement: function (element) {
-		this.elements.include( element );
-		this.redrawElement( element );
+	addElement: function (element, force) {
+		if (force || !this.elements.contains(element)) {
+			this.elements.push( element );
+			this.redrawElement( element, true );
+		}
 		return this;
 	},
 
@@ -141,9 +143,9 @@ Scene.Standard = Class(
 	 * @param {Drawable} element
 	 * @returns {LibCanvas.Scene.Standard}
 	 */
-	redrawElement: function (element) {
-		if (this.elements.contains( element )) {
-			if (!this.redrawElements.contains( element )) {
+	redrawElement: function (element, force) {
+		if (force || this.elements.contains( element )) {
+			if (force || !this.redrawElements.contains( element )) {
 				this.redrawElements.push( element );
 				this.libcanvas.update();
 			}
@@ -222,7 +224,7 @@ Scene.Standard = Class(
 		redraw.sortBy( 'zIndex', true );
 		for (i = 0, l = redraw.length; i < l; i++) {
 			elem = redraw[i];
-			if (elements.contains( elem )) {
+			if (elements.indexOf( elem ) >= 0) {
 				elem.renderTo( ctx, resources );
 				elem.saveCurrentBoundingShape();
 			}
