@@ -84,45 +84,55 @@ Scene.Mouse = Class(
 		return this[method]( type, event, stopped, this.subscribers );
 	},
 
+	isOver: function (element) {
+		return this.mouse.inCanvas && element.hasPoint( this.point );
+	},
+
 	/** @private */
 	parseEvent: function (type, event, stopped, elements) {
 		if (type == 'down') this.lastMouseDown.empty();
 
 		var i,
 			elem,
-			mouse    = this.mouse,
-			lastDown = this.lastMouseDown,
-			lastMove = this.lastMouseMove,
+			mouse    = this,
+			lastDown = mouse.lastMouseDown,
+			lastMove = mouse.lastMouseMove,
 			lastOut  = [],
-			sub = elements.sortBy( 'zIndex', true );
+			eventArgs = [event];
+
+		var fire = function (event) {
+			this.fireEvent( event, eventArgs );
+		};
+
+		elements.sortBy( 'zIndex', true );
 
 		// В первую очередь - обрабатываем реальный mouseout с элементов
 		if (type == 'move' || type == 'out') {
 			for (i = lastMove.length; i--;) {
 				elem = lastMove[i];
 				if (!mouse.isOver(elem)) {
-					elem.fireEvent( 'mouseout', [event] );
+					fire.call( elem, 'mouseout' );
 					lastMove.erase(elem);
 					lastOut.push(elem);
 				}
 			}
 		}
 
-		for (i = sub.length; i--;) {
-			elem = sub[i];
+		for (i = elements.length; i--;) {
+			elem = elements[i];
 			// проваливание события остановлено элементом
 			// необходимо сообщить остальным элементам о mouseout
 			if (stopped) {
 				if (type == 'move' || type == 'out') {
 					if (lastMove.contains(elem)) {
-						elem.fireEvent( 'mouseout', [event] );
+						fire.call( elem, 'mouseout' );
 						lastMove.erase(elem);
 					}
 				} else if (type == 'up') {
 					if (mouse.isOver(elem)) {
-						elem.fireEvent( 'mouseup', [event] );
+						fire.call( elem, 'mouseup' );
 						if (lastDown.contains(elem)) {
-							elem.fireEvent( 'click', [event] );
+							fire.call( elem, 'click' );
 						}
 					}
 				}
@@ -131,22 +141,23 @@ Scene.Mouse = Class(
 			} else if (mouse.isOver(elem)) {
 				if (type == 'move') {
 					if (!lastMove.contains(elem)) {
-					 	elem.fireEvent( 'mouseover', [event] );
+						fire.call( elem, 'mouseover' );
 						lastMove.push( elem );
 					}
 				} else if (type == 'down') {
 					lastDown.push(elem);
 				// If mouseup on this elem and last mousedown was on this elem - click
 				} else if (type == 'up' && lastDown.contains(elem)) {
-					elem.fireEvent( 'click', [event] );
+					fire.call( elem, 'click' );
 				}
-				elem.fireEvent( 'mouse' + type, [event] );
+				fire.call( elem, 'mouse' + type );
 
 				if (!event.checkFalling()) stopped = true;
 			// мышь не над элементом, событие проваливается,
 			// сообщаем элементу, что где-то произошло событие
 			} else if (!lastOut.contains(elem)) {
-				elem.fireEvent( 'away:mouse' + type, [event] );
+				// fast version
+				elem.fireEvent( 'away:mouse' + type, eventArgs );
 			}
 		}
 
