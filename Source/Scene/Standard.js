@@ -120,6 +120,14 @@ Scene.Standard = Class(
 	},
 
 	/**
+	 * @param {LibCanvas.Point} shift
+	 * @returns {LibCanvas.Scene.Standard}
+	 */
+	setShift: function (shift, withElements) {
+		return this.addShift( this.shift.diff(shift), withElements );
+	},
+
+	/**
 	 * @returns {LibCanvas.Point}
 	 */
 	getShift: function () {
