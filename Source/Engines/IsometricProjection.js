@@ -52,7 +52,7 @@ LibCanvas.Engines.IsometricProjection = atom.Class(
 
 	/**
 	 * @param {Point} point
-	 * @param {Number} z = 0
+	 * @param {int} [z=0]
 	 * @returns {Point3D}
 	 */
 	to3D: function (point, z) {

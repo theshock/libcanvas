@@ -119,7 +119,7 @@ var Point3D = LibCanvas.Point3D = atom.Class(
 	},
 
 	/**
-	 * @param {LibCanvas.Point3D}point3d
+	 * @param {LibCanvas.Point3D}p oint3d
 	 * @param {Number} accuracy
 	 * @returns {boolean}
 	 */
