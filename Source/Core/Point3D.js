@@ -21,7 +21,7 @@ provides: Point3D
 ...
 */
 
-LibCanvas.Point3D = atom.Class(
+var Point3D = LibCanvas.Point3D = atom.Class(
 /** @lends LibCanvas.Point3D# */
 {
 	Static: { invoke: LibCanvas.Geometry.invoke },
