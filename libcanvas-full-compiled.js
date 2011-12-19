@@ -6803,25 +6803,25 @@ Scene.Standard = Class(
 	initDragLayerMouseEvents: function () {
 		var drag = false, scene = this;
 
-		var stopDrag = function () {
+		var stopDrag = function (e) {
 			if (!drag) return;
 			scene.resources.mouse.start();
 			scene.addElementsShift();
 			scene.start();
 			drag = false;
-			scene.fireEvent( 'layerStopDrag' );
+			scene.fireEvent( 'layerStopDrag', [e] );
 		};
 
 		this.dragLayerEvents = {
-			down: function () {
+			down: function (e) {
 				if (!scene.startLayerDrag || (
 					typeof scene.startLayerDrag == 'function' &&
-						!scene.startLayerDrag.call(scene, this)
+						!scene.startLayerDrag.call(scene, this, e)
 				)) return;
 				scene.resources.mouse.stop();
 				scene.stop();
 				drag = true;
-				scene.fireEvent( 'layerStartDrag' );
+				scene.fireEvent( 'layerStartDrag', [e] );
 			},
 			up  : stopDrag,
 			out : stopDrag,
