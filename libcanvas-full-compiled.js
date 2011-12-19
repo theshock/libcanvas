@@ -6814,14 +6814,15 @@ Scene.Standard = Class(
 
 		this.dragLayerEvents = {
 			down: function (e) {
-				if (!scene.startLayerDrag || (
-					typeof scene.startLayerDrag == 'function' &&
-						!scene.startLayerDrag.call(scene, this, e)
-				)) return;
-				scene.resources.mouse.stop();
-				scene.stop();
-				drag = true;
-				scene.fireEvent( 'layerStartDrag', [e] );
+				if (scene.startLayerDrag && (
+					typeof scene.startLayerDrag != 'function' ||
+					scene.startLayerDrag.call(scene, this, e)
+				)) {
+					scene.resources.mouse.stop();
+					scene.stop();
+					drag = true;
+					scene.fireEvent( 'layerStartDrag', [e] );
+				}
 			},
 			up  : stopDrag,
 			out : stopDrag,
