@@ -76,7 +76,7 @@ Scene.Standard = Class(
 			down: function (e) {
 				if (scene.startLayerDrag && (
 					typeof scene.startLayerDrag != 'function' ||
-					scene.startLayerDrag.call(scene, this, e)
+					scene.startLayerDrag.call(scene, e)
 				)) {
 					scene.resources.mouse.stop();
 					scene.stop();
