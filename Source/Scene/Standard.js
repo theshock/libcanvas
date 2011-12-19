@@ -48,6 +48,7 @@ Scene.Standard = Class(
 		this.elements       = [];
 		this.redrawElements = [];
 		this.shift = new Point(0, 0);
+		this.elementsShift = new Point(0, 0);
 		return this;
 	},
 
@@ -96,13 +97,24 @@ Scene.Standard = Class(
 	shift: null,
 
 	/**
+	 * @private
+	 * @property {LibCanvas.Point}
+	 */
+	elementsShift: null,
+
+	/**
 	 * @param {LibCanvas.Point} shift
 	 * @returns {LibCanvas.Scene.Standard}
 	 */
 	addElementsShift: function (shift) {
-		shift = Point(shift);
+		if (!shift) {
+			shift = this.elementsShift.diff(this.shift);
+		} else {
+			shift = Point(shift);
+		}
 		var e = this.elements, i = e.length;
 		while (i--) e[i].addShift(shift);
+		this.elementsShift.move(shift);
 		return this;
 	},
 
@@ -112,6 +124,7 @@ Scene.Standard = Class(
 	 */
 	addShift: function ( shift, withElements ) {
 		shift = Point( shift );
+
 		this.shift.move( shift );
 		this.libcanvas.addShift( shift );
 		this.libcanvas.ctx.translate( shift, true );

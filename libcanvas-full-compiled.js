@@ -4769,6 +4769,313 @@ return Class(
 /*
 ---
 
+name: "Point3D"
+
+description: "A X/Y/Z point coordinates encapsulating class"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- Geometry
+
+provides: Point3D
+
+...
+*/
+
+var Point3D = LibCanvas.Point3D = atom.Class(
+/** @lends LibCanvas.Point3D# */
+{
+	Static: { invoke: LibCanvas.Geometry.invoke },
+
+	x: 0,
+	y: 0,
+	z: 0,
+
+	/** @private */
+	coordinatesArray: ['x', 'y', 'z'],
+
+	/**
+	 * @param {Number} x
+	 * @param {Number} y
+	 * @param {Number} z
+	 * @returns {LibCanvas.Point3D}
+	 */
+	initialize: LibCanvas.Geometry.prototype.initialize,
+
+	/**
+	 * @param {Number} x
+	 * @param {Number} y
+	 * @param {Number} z
+	 * @returns {LibCanvas.Point3D}
+	 */
+	set: function (x, y, z) {
+		if ( arguments.length === 3 || arguments.length === 2 ) {
+			this.x = Number(x) || 0;
+			this.y = Number(y) || 0;
+			this.z = Number(z) || 0;
+		} else if ( x && typeof x.x  === 'number' ) {
+			this.set( x.x, x.y, x.z );
+		} else if ( x && typeof x[0] === 'number' ) {
+			this.set( x[0], x[1], x[2] );
+		} else {
+			console.log( 'Wrong arguments in Isometric.Point3D', arguments );
+			throw new Error( 'Wrong arguments in Isometric.Point3D' );
+		}
+		return this;
+	},
+
+	/**
+	 * You can pass callback (function( value, axis, point ){})
+	 * @param {function} fn
+	 * @param {object} bind
+	 * @returns {LibCanvas.Point3D}
+	 */
+	map: function (fn, bind) {
+		var point = this;
+		point.coordinatesArray.forEach(function (axis) {
+			point[axis] = fn.call( bind || point, point[axis], axis, point );
+		});
+		return this;
+	},
+
+	/**
+	 * @param {Number} factor
+	 * @returns {LibCanvas.Point3D}
+	 */
+	add: function (factor) {
+		return this.map(function (c) { return c+factor });
+	},
+
+	/**
+	 * @param {Number} factor
+	 * @returns {LibCanvas.Point3D}
+	 */
+	mul: function (factor) {
+		return this.map(function (c) { return c*factor });
+	},
+
+	/**
+	 * @param {LibCanvas.Point3D} point3d
+	 * @returns {LibCanvas.Point3D}
+	 */
+	diff: function (point3d) {
+		point3d = LibCanvas.Point3D( point3d );
+		return new this.self(
+			point3d.x - this.x,
+			point3d.y - this.y,
+			point3d.z - this.z
+		);
+	},
+
+	/**
+	 * @param {LibCanvas.Point3D} point3d
+	 * @returns {LibCanvas.Point3D}
+	 */
+	move: function (point3d) {
+		point3d = LibCanvas.Point3D( arguments );
+		this.x += point3d.x;
+		this.y += point3d.y;
+		this.z += point3d.z;
+		return this;
+	},
+
+	/**
+	 * @param {LibCanvas.Point3D}p oint3d
+	 * @param {Number} accuracy
+	 * @returns {boolean}
+	 */
+	equals: function (point3d, accuracy) {
+		return point3d.x.equals( this.x, accuracy ) &&
+		       point3d.y.equals( this.y, accuracy ) &&
+		       point3d.z.equals( this.z, accuracy );
+	},
+
+	/** @returns {LibCanvas.Point3D} */
+	clone: function () {
+		return new this.self( this );
+	},
+
+	/** @returns Array */
+	toArray: function () {
+		return [this.x, this.y, this.z];
+	},
+
+	/** @returns String */
+	dump: function () {
+		return '[LibCanvas.Point3D(' + this.toArray() + ')]';
+	}
+});
+
+/*
+---
+
+name: "HexProjection"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- Point
+
+provides: Shapes.Polygon
+
+...
+*/
+
+LibCanvas.Engines.HexProjection = atom.Class({
+	Extends: atom.Class.Options,
+
+	options: {
+		baseLength : 0,
+		chordLength: 0,
+		hexHeight  : 0,
+		start      : new Point(0, 0)
+	},
+	/**
+	 * @param {object} options
+	 * @param {int} options.baseLength  - length of top and bottom lines
+	 * @param {int} options.chordLength - height of left and right triangle
+	 * @param {int} options.hexHeight   - height of the hex (length between top and bottom lines)
+	 */
+	initialize: function (options) {
+		this.setOptions( options );
+	},
+
+	/**
+	 * @param {int[]} coordinates
+	 * @returns {Point}
+	 */
+	rgbToPoint: function (coordinates) {
+		var
+			red     = coordinates[0],
+			green   = coordinates[1],
+			blue    = coordinates[2],
+			options = this.options,
+			base    = options.baseLength,
+			chord   = options.chordLength,
+			height  = options.hexHeight,
+			start   = options.start;
+		if (red + green + blue !== 0) {
+			throw new Error( 'Wrong coordinates: ' + red + ' ' + green + ' ' + blue);
+		}
+
+		return new Point(
+			start.x + (base + chord) * red,
+			start.y + (blue - green) * height / 2
+		);
+	},
+
+	/**
+	 * @param {Point} center
+	 * @returns {LibCanvas.Shapes.Polygon}
+	 */
+	createPolygon: function (center) {
+		var
+			options = this.options,
+			halfBase   = options.baseLength / 2,
+			halfHeight = options.hexHeight  / 2,
+			radius  = halfBase + options.chordLength,
+
+			right  = center.x + halfBase,
+			left   = center.x - halfBase,
+			top    = center.y - halfHeight,
+			bottom = center.y + halfHeight;
+
+		return new Polygon([
+			new Point(left , top),                  // top-left
+			new Point(right, top),                  // top-right
+			new Point(center.x + radius, center.y), // right
+			new Point(right, bottom),               // bottom-right
+			new Point(left , bottom),               // bottom-left
+			new Point(center.x - radius, center.y)  // left
+		]);
+	}
+});
+
+/*
+---
+
+name: "IsometricProjection"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- Point3D
+
+provides: Engines.IsometricProjection
+
+...
+*/
+
+LibCanvas.Engines.IsometricProjection = atom.Class(
+/** @lends LibCanvas.Engines.IsometricProjection# */
+{
+
+	/**
+	 * factor (and default factor in proto)
+	 * @property {Point3D}
+	 */
+	factor: [0.866, 0.5, 0.866],
+
+	/**
+	 * @constructs
+	 * @param {Point3D} factor
+	 */
+	initialize: function (factor) {
+		atom.Class.bindAll( this );
+		this.factor = Point3D( factor || this.factor );
+	},
+
+	/**
+	 * @param {Point3D} point3d
+	 * @returns {Point}
+	 */
+	toIsometric: function (point3d) {
+		point3d = Point3D( point3d );
+		return new Point(
+			(point3d.y + point3d.x) * this.factor.x,
+			(point3d.y - point3d.x) * this.factor.y - point3d.z * this.factor.z
+		);
+	},
+
+	/**
+	 * @param {Point} point
+	 * @param {int} [z=0]
+	 * @returns {Point3D}
+	 */
+	to3D: function (point, z) {
+		point = Point(point);
+		z = Number(z) || 0;
+
+		var
+			dXY = (point.y + z * this.factor.z) / this.factor.y,
+			pX  = (point.x / this.factor.x - dXY) / 2;
+
+		return new Point3D( pX, pX + dXY, z );
+	}
+});
+
+/*
+---
+
 name: "Engines.Tile"
 
 description: "Helper for building tile maps (e.g. for Tetris or ur's favorite Dune II - http://en.wikipedia.org/wiki/Tile_engine)"
@@ -6398,6 +6705,7 @@ Scene.Standard = Class(
 		this.elements       = [];
 		this.redrawElements = [];
 		this.shift = new Point(0, 0);
+		this.elementsShift = new Point(0, 0);
 		return this;
 	},
 
@@ -6446,13 +6754,24 @@ Scene.Standard = Class(
 	shift: null,
 
 	/**
+	 * @private
+	 * @property {LibCanvas.Point}
+	 */
+	elementsShift: null,
+
+	/**
 	 * @param {LibCanvas.Point} shift
 	 * @returns {LibCanvas.Scene.Standard}
 	 */
 	addElementsShift: function (shift) {
-		shift = Point(shift);
+		if (!shift) {
+			shift = this.elementsShift.diff(this.shift);
+		} else {
+			shift = Point(shift);
+		}
 		var e = this.elements, i = e.length;
 		while (i--) e[i].addShift(shift);
+		this.elementsShift.move(shift);
 		return this;
 	},
 
