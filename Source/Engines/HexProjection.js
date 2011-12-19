@@ -39,6 +39,14 @@ LibCanvas.Engines.HexProjection = atom.Class({
 	},
 
 	/**
+	 * @param {int} [padding=0]
+	 * @returns {LibCanvas.Engines.HexProjection.Sizes}
+	 */
+	sizes: function (padding) {
+		return LibCanvas.Engines.HexProjection.Sizes(this, padding);
+	},
+
+	/**
 	 * @param {int[]} coordinates
 	 * @returns {Point}
 	 */
@@ -87,4 +95,75 @@ LibCanvas.Engines.HexProjection = atom.Class({
 			new Point(center.x - radius, center.y)  // left
 		]);
 	}
+});
+
+LibCanvas.Engines.HexProjection.Sizes = Class({
+
+	initialize: function (projection, padding) {
+		this.projection = projection;
+		this.padding    = padding || 0;
+		this.centers    = [];
+	},
+
+	_limits: null,
+
+	/**
+	 * @param {int[]} coordinates
+	 * @returns {LibCanvas.Engines.HexProjection.Size}
+	 */
+	add: function (coordinates) {
+		this._limits = null;
+		this.centers.push(this.projection.rgbToPoint( coordinates ));
+		return this;
+	},
+
+	/**
+	 * @returns {object}
+	 */
+	limits: function () {
+		if (this._limits) return this._limits;
+
+		var min, max, centers = this.centers, i = centers.length, c;
+
+		while (i--) {
+			c = centers[i];
+			if (min == null) {
+				min = c.clone();
+				max = c.clone();
+			} else {
+				min.x = min.x.min( c.x );
+				min.y = min.y.min( c.y );
+				max.x = max.x.max( c.x );
+				max.y = max.y.max( c.y );
+			}
+		}
+
+		return this._limits = { min: min, max: max };
+	},
+
+	size: function () {
+		var
+			limits = this.limits(),
+			options = this.projection.options,
+			padding = this.padding;
+
+		return new Point(
+			limits.max.x - limits.min.x + options.baseLength + 2 * (padding + options.chordLength),
+			limits.max.y - limits.min.y + options.hexHeight  + 2 *  padding
+		);
+	},
+
+	center: function () {
+		var
+			min = this.limits().min,
+			options = this.projection.options,
+			padding = this.padding;
+
+		return new Point(
+			-( min.x-padding - options.baseLength/2 - options.chordLength ),
+			-( min.y-padding - options.hexHeight /2 )
+		);
+	}
+
+
 });

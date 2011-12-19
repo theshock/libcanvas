@@ -189,8 +189,12 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
 	 * @returns {LibCanvas.Canvas2D}
 	 */
 	size: function (size, height, wrapper) {
+
 		if (typeof size == 'object') {
 			wrapper = height;
+			if (size.width == null) {
+				size = { width: size.x, height: size.y };
+			}
 		} else {
 			size = { width: size, height: height };
 		}
