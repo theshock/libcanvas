@@ -49,7 +49,47 @@ Scene.Standard = Class(
 		this.redrawElements = [];
 		this.shift = new Point(0, 0);
 		this.elementsShift = new Point(0, 0);
-		return this;
+
+		this.initDragLayerMouseEvents();
+	},
+
+	/** @private */
+	startLayerDrag: false,
+
+	/** @private */
+	dragLayerEvents: null,
+
+	/** @private */
+	initDragLayerMouseEvents: function () {
+		var drag = false, scene = this;
+
+		var stopDrag = function () {
+			if (!drag) return;
+			scene.resources.mouse.start();
+			scene.addElementsShift();
+			scene.start();
+			drag = false;
+			scene.fireEvent( 'layerStopDrag' );
+		};
+
+		this.dragLayerEvents = {
+			down: function () {
+				if (!scene.startLayerDrag || (
+					typeof scene.startLayerDrag == 'function' &&
+						!scene.startLayerDrag.call(scene, this)
+				)) return;
+				scene.resources.mouse.stop();
+				scene.stop();
+				drag = true;
+				scene.fireEvent( 'layerStartDrag' );
+			},
+			up  : stopDrag,
+			out : stopDrag,
+			move: function (e) {
+				if (!drag) return;
+				scene.addShift( e.deltaOffset );
+			}
+		};
 	},
 
 	/** @private */
@@ -115,6 +155,25 @@ Scene.Standard = Class(
 		var e = this.elements, i = e.length;
 		while (i--) e[i].addShift(shift);
 		this.elementsShift.move(shift);
+		return this;
+	},
+
+	/**
+	 * @param {function} [callback=undefined]
+	 * @returns {Scene.Standard}
+	 */
+	startDraggableLayer: function (callback) {
+		this.startLayerDrag = typeof callback == 'function' ? callback : true;
+		this.libcanvas.mouse.addEvent( this.dragLayerEvents );
+		return this;
+	},
+
+	/**
+	 * @returns {Scene.Standard}
+	 */
+	stopDraggableLayer: function () {
+		this.startLayerDrag = false;
+		this.libcanvas.mouse.removeEvent( this.dragLayerEvents );
 		return this;
 	},
 

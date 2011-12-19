@@ -117,9 +117,7 @@ LibCanvas.Engines.HexProjection.Sizes = Class({
 		return this;
 	},
 
-	/**
-	 * @returns {object}
-	 */
+	/** @returns {object} */
 	limits: function () {
 		if (this._limits) return this._limits;
 
@@ -141,6 +139,7 @@ LibCanvas.Engines.HexProjection.Sizes = Class({
 		return this._limits = { min: min, max: max };
 	},
 
+	/** @returns {Point} */
 	size: function () {
 		var
 			limits = this.limits(),
@@ -153,6 +152,7 @@ LibCanvas.Engines.HexProjection.Sizes = Class({
 		);
 	},
 
+	/** @returns {Point} */
 	center: function () {
 		var
 			min = this.limits().min,
