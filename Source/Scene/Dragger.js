@@ -99,7 +99,7 @@ Scene.Dragger = Class({
 	shouldStartDrag: function (e) {
 		if (!this.started) return false;
 
-		return this.callback ? this.callback(e.offset) : true;
+		return this.callback ? this.callback(e) : true;
 	}
 
 });
