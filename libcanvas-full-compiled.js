@@ -7043,7 +7043,7 @@ Scene.Mouse = Class(
 			elem.fireEvent( type, event );
 			children = elem.childrenElements;
 			if (children.length) {
-				elem.forceEvent(type, event, stopped, children);
+				this.forceEvent(type, event, stopped, children);
 			}
 			if (!event.checkFalling()) {
 				stopped = true;
