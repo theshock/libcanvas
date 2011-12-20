@@ -6172,7 +6172,7 @@ LibCanvas.App = Class(
 			if (layer.layerExists(name)) {
 				layer = layer.layer(name);
 			} else {
-				layer = layer.createLayer(name);
+				layer = layer.createLayer(name, zIndex);
 			}
 		} else {
 			name = layer.options.name;
