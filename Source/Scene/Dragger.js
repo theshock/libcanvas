@@ -68,7 +68,7 @@ Scene.Dragger = Class({
 
 		for (var i = this.scenes.length; i--;) {
 			var scene = this.scenes[i];
-			scene.resources.mouse.stop();
+			scene.mouse.stop();
 			scene.stop();
 		}
 		this.drag = true;
@@ -80,7 +80,7 @@ Scene.Dragger = Class({
 
 		for (var i = this.scenes.length; i--;) {
 			var scene = this.scenes[i];
-			scene.resources.mouse.start();
+			scene.mouse.start();
 			scene.addElementsShift();
 			scene.start();
 		}

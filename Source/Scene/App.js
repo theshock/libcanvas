@@ -159,7 +159,7 @@ LibCanvas.App = Class(
 					scenes = app.sortScenes(),
 					stopped = false;
 				for (var i = scenes.length; i--;) {
-					stopped = scenes[i].resources.mouse.event( type, e, stopped );
+					stopped = scenes[i].mouse.event( type, e, stopped );
 				}
 			});
 		});

@@ -69,6 +69,15 @@ Scene.Standard = Class(
 		return this;
 	},
 
+	_mouse: null,
+
+	get mouse () {
+		if (this._mouse == null) {
+			this._mouse = new Scene.Mouse( this.resources.mouse );
+		}
+		return this._mouse;
+	},
+
 	/** @private */
 	elements: null,
 
