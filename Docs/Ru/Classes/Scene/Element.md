@@ -202,7 +202,7 @@ LibCanvas.Scene.Element
 
 		clearPrevious: function (ctx) {
 			// мы должны не очищать холст, а заливать его чёрным цветом
-			return this.fill( this.previousBoundingShape, 'black' );
+			return ctx.fill( this.previousBoundingShape, 'black' );
 		}
 	});
 
