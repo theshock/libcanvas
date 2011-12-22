@@ -8,7 +8,7 @@ LibCanvas.Engines.Tile
 Самый простой способ использования движка - передать слой с отключеной бек-буферизацией
 
 	var engine = new LibCanvas.Engines.Tile(
-		libcanvas.createLayer('tile', { backBuffer: 'off' });
+		libcanvas.createLayer('tile', { backBuffer: 'off' })
 	);
 
 ## Свойства
