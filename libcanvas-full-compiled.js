@@ -6677,7 +6677,7 @@ Scene.Element = Class(
 	Implements: Class.Options,
 
 	options: {
-		hidden: true
+		hidden: false
 	},
 
 	/** @constructs */
