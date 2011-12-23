@@ -7047,7 +7047,7 @@ Scene.Mouse = Class(
 		var children, i = elements.length;
 		while (i--) {
 			var elem = elements[i];
-			if (!this.mouse.isOver(elem)) return;
+			if (!this.isOver(elem)) continue;
 			
 			elem.fireEvent( type, event );
 			children = elem.childrenElements;
