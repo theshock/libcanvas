@@ -32,6 +32,10 @@ Scene.Element = Class(
 
 	Implements: Class.Options,
 
+	options: {
+		hidden: true
+	},
+
 	/** @constructs */
 	initialize: function (scene, options) {
 		scene.libcanvas.addElement( this );

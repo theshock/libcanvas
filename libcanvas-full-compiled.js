@@ -6478,7 +6478,7 @@ Scene.Standard = Class(
 		var i, e, elems = [];
 		for (i = this.elements.length; i--;) {
 			e = this.elements[i];
-			if (e != elem && e.currentBoundingShape.intersect( shape )) {
+			if (e != elem && !e.options.hidden && e.currentBoundingShape.intersect( shape )) {
 				elems.push( e );
 			}
 		}
@@ -6525,7 +6525,7 @@ Scene.Standard = Class(
 		redraw.sortBy( 'zIndex', true );
 		for (i = 0, l = redraw.length; i < l; i++) {
 			elem = redraw[i];
-			if (elements.indexOf( elem ) >= 0) {
+			if (!elem.options.hidden && elements.indexOf( elem ) >= 0) {
 				elem.renderTo( ctx, resources );
 				elem.saveCurrentBoundingShape();
 			}
@@ -6675,6 +6675,10 @@ Scene.Element = Class(
 	Extends: Drawable,
 
 	Implements: Class.Options,
+
+	options: {
+		hidden: true
+	},
 
 	/** @constructs */
 	initialize: function (scene, options) {
