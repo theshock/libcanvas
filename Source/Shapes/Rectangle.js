@@ -43,7 +43,7 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class(
 
 		if (a.length == 4) {
 			this.from = new Point(a[0], a[1]);
-			this.to   = this.from.clone().move({x:a[2], y:a[3]});
+			this.to   = new Point(a[0]+a[2], a[1]+a[3]);
 		} else if (a.length == 2) {
 			if ('width' in a[1] && 'height' in a[1]) {
 				this.set({ from: a[0], size: a[1] });
@@ -61,13 +61,14 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class(
 			if (a.to) this.to = Point(a.to);
 		
 			if (!a.from || !a.to) {
-				var as = a.size, size = {
-					x : (as ? [as.w, as[0], as.width ] : [ a.w, a.width  ]).pick(),
-					y : (as ? [as.h, as[1], as.height] : [ a.h, a.height ]).pick()
-				};
-				this.from ?
-					(this.to = this.from.clone().move(size, 0)) :
-					(this.from = this.to.clone().move(size, 1));
+				var as = a.size,
+					sizeX = (as ? [as.w, as[0], as.width ] : [ a.w, a.width  ]).pick(),
+					sizeY = (as ? [as.h, as[1], as.height] : [ a.h, a.height ]).pick();
+				if (this.from) {
+					this.to   = new Point(this.from.x + sizeX, this.from.y + sizeY);
+				} else {
+					this.from = new Point(this.to.x   - sizeX, this.to.y   - sizeY);
+				}
 			}
 		
 		}

@@ -132,13 +132,12 @@ var Tile = LibCanvas.Engines.Tile = Class({
 	getRect : function (cell) {
 		if (!this.rects['0.0']) this.each(function (cell) {
 			var index = cell.x + '.' + cell.y;
-			this.rects[index] = new Rectangle({
-				from : [
-					(this.cellWidth  + this.margin) * cell.x,
-					(this.cellHeight + this.margin) * cell.y
-				],
-				size : [this.cellWidth, this.cellHeight]
-			});
+			this.rects[index] = new Rectangle(
+				(this.cellWidth  + this.margin) * cell.x,
+				(this.cellHeight + this.margin) * cell.y,
+				this.cellWidth,
+				this.cellHeight
+			);
 		});
 		return this.rects[cell.x + '.' + cell.y];
 	},
@@ -146,7 +145,8 @@ var Tile = LibCanvas.Engines.Tile = Class({
 		point = Point(arguments);
 		if (point.x < 0 || point.y < 0) return null;
 		
-		var x = parseInt(point.x / (this.cellWidth  + this.margin)),
+		var
+			x = parseInt(point.x / (this.cellWidth  + this.margin)),
 			y = parseInt(point.y / (this.cellHeight + this.margin)),
 			row = this.points[y];
 		return row ? row[x] : null;
