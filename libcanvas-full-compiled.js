@@ -1375,6 +1375,62 @@ var Mouse = LibCanvas.Mouse = Class(
 				mouseup    : set(false),
 				blur       : set(false, 'all')
 			});
+		},
+		createOffset : function(elem) {
+			var top = 0, left = 0, offset;
+			if (elem.getBoundingClientRect) {
+				var box = elem.getBoundingClientRect();
+
+				// (2)
+				var body    = document.body;
+				var docElem = document.documentElement;
+
+				// (3)
+				var scrollTop  = window.pageYOffset || docElem.scrollTop  || body.scrollTop;
+				var scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft;
+
+				// (4)
+				var clientTop  = docElem.clientTop  || body.clientTop  || 0;
+				var clientLeft = docElem.clientLeft || body.clientLeft || 0;
+
+				// (5)
+				top  = box.top  + scrollTop  - clientTop;
+				left = box.left + scrollLeft - clientLeft;
+
+				return { top: top.round(), left: left.round() };
+			} else {
+				while(elem) {
+					top  = top  + parseInt(elem.offsetTop);
+					left = left + parseInt(elem.offsetLeft);
+					elem = elem.offsetParent;
+				}
+				return { top: top, left: left };
+			}
+		},
+		expandEvent: function (e) {
+			var from = e.changedTouches ? e.changedTouches[0] : e;
+			if (!('page' in e) || !('offset' in e)) {
+				e.page = from.page || {
+					x: 'pageX' in from ? from.pageX : from.clientX + document.scrollLeft,
+					y: 'pageY' in from ? from.pageY : from.clientY + document.scrollTop
+				};
+				if ('offsetX' in from) {
+					e.offset = new Point(from.offsetX, from.offsetY);
+				} else {
+					var offset = LibCanvas.Mouse.createOffset(from.target);
+					e.offset = new Point({
+						x: e.page.x - offset.left,
+						y: e.page.y - offset.top
+					});
+					e.offsetX = e.offset.x;
+					e.offsetY = e.offset.y;
+				}
+			}
+			return e;
+		},
+		getOffset : function (e) {
+			if (!e.offset) LibCanvas.Mouse.expandEvent(e);
+			return e.offset;
 		}
 	},
 	
@@ -1411,60 +1467,7 @@ var Mouse = LibCanvas.Mouse = Class(
 		return this;
 	},
 	getOffset : function (e) {
-		if (!e.offset) this.expandEvent(e);
-		return e.offset;
-	},
-	createOffset : function(elem) {
-		var top = 0, left = 0;
-		if (elem.getBoundingClientRect) {
-			var box = elem.getBoundingClientRect();
-
-			// (2)
-			var body    = document.body;
-			var docElem = document.documentElement;
-
-			// (3)
-			var scrollTop  = window.pageYOffset || docElem.scrollTop  || body.scrollTop;
-			var scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft;
-
-			// (4)
-			var clientTop  = docElem.clientTop  || body.clientTop  || 0;
-			var clientLeft = docElem.clientLeft || body.clientLeft || 0;
-
-			// (5)
-			top  = box.top  + scrollTop  - clientTop;
-			left = box.left + scrollLeft - clientLeft;
-
-			return { top: top.round(), left: left.round() };
-		} else {
-			while(elem) {
-				top  = top  + parseInt(elem.offsetTop);
-				left = left + parseInt(elem.offsetLeft);
-				elem = elem.offsetParent;
-			}
-			return { top: top, left: left };
-		}
-	},
-	expandEvent : function (e) {
-		var from = e.changedTouches ? e.changedTouches[0] : e;
-		if (!('page' in e && 'offset' in e)) {
-			e.page = from.page || {
-				x: 'pageX' in from ? from.pageX : from.clientX + document.scrollLeft,
-				y: 'pageY' in from ? from.pageY : from.clientY + document.scrollTop
-			};
-			if ('offsetX' in from) {
-				e.offset = new Point(from.offsetX, from.offsetY);
-			} else {
-				var offset = this.createOffset(from.target);
-				e.offset = new Point({
-					x: e.page.x - offset.left,
-					y: e.page.y - offset.top
-				});
-				e.offsetX = e.offset.x;
-				e.offsetY = e.offset.y;
-			}
-		}
-		return e;
+		return LibCanvas.Mouse.getOffset(e);
 	},
 	setEvents : function () {
 
