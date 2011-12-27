@@ -1375,6 +1375,62 @@ var Mouse = LibCanvas.Mouse = Class(
 				mouseup    : set(false),
 				blur       : set(false, 'all')
 			});
+		},
+		createOffset : function(elem) {
+			var top = 0, left = 0, offset;
+			if (elem.getBoundingClientRect) {
+				var box = elem.getBoundingClientRect();
+
+				// (2)
+				var body    = document.body;
+				var docElem = document.documentElement;
+
+				// (3)
+				var scrollTop  = window.pageYOffset || docElem.scrollTop  || body.scrollTop;
+				var scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft;
+
+				// (4)
+				var clientTop  = docElem.clientTop  || body.clientTop  || 0;
+				var clientLeft = docElem.clientLeft || body.clientLeft || 0;
+
+				// (5)
+				top  = box.top  + scrollTop  - clientTop;
+				left = box.left + scrollLeft - clientLeft;
+
+				return { top: top.round(), left: left.round() };
+			} else {
+				while(elem) {
+					top  = top  + parseInt(elem.offsetTop);
+					left = left + parseInt(elem.offsetLeft);
+					elem = elem.offsetParent;
+				}
+				return { top: top, left: left };
+			}
+		},
+		expandEvent: function (e) {
+			var from = e.changedTouches ? e.changedTouches[0] : e;
+			if (!('page' in e) || !('offset' in e)) {
+				e.page = from.page || {
+					x: 'pageX' in from ? from.pageX : from.clientX + document.scrollLeft,
+					y: 'pageY' in from ? from.pageY : from.clientY + document.scrollTop
+				};
+				if ('offsetX' in from) {
+					e.offset = new Point(from.offsetX, from.offsetY);
+				} else {
+					var offset = LibCanvas.Mouse.createOffset(from.target);
+					e.offset = new Point({
+						x: e.page.x - offset.left,
+						y: e.page.y - offset.top
+					});
+					e.offsetX = e.offset.x;
+					e.offsetY = e.offset.y;
+				}
+			}
+			return e;
+		},
+		getOffset : function (e) {
+			if (!e.offset) LibCanvas.Mouse.expandEvent(e);
+			return e.offset;
 		}
 	},
 	
@@ -1411,60 +1467,7 @@ var Mouse = LibCanvas.Mouse = Class(
 		return this;
 	},
 	getOffset : function (e) {
-		if (!e.offset) this.expandEvent(e);
-		return e.offset;
-	},
-	createOffset : function(elem) {
-		var top = 0, left = 0;
-		if (elem.getBoundingClientRect) {
-			var box = elem.getBoundingClientRect();
-
-			// (2)
-			var body    = document.body;
-			var docElem = document.documentElement;
-
-			// (3)
-			var scrollTop  = window.pageYOffset || docElem.scrollTop  || body.scrollTop;
-			var scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft;
-
-			// (4)
-			var clientTop  = docElem.clientTop  || body.clientTop  || 0;
-			var clientLeft = docElem.clientLeft || body.clientLeft || 0;
-
-			// (5)
-			top  = box.top  + scrollTop  - clientTop;
-			left = box.left + scrollLeft - clientLeft;
-
-			return { top: top.round(), left: left.round() };
-		} else {
-			while(elem) {
-				top  = top  + parseInt(elem.offsetTop);
-				left = left + parseInt(elem.offsetLeft);
-				elem = elem.offsetParent;
-			}
-			return { top: top, left: left };
-		}
-	},
-	expandEvent : function (e) {
-		var from = e.changedTouches ? e.changedTouches[0] : e;
-		if (!('page' in e && 'offset' in e)) {
-			e.page = from.page || {
-				x: 'pageX' in from ? from.pageX : from.clientX + document.scrollLeft,
-				y: 'pageY' in from ? from.pageY : from.clientY + document.scrollTop
-			};
-			if ('offsetX' in from) {
-				e.offset = new Point(from.offsetX, from.offsetY);
-			} else {
-				var offset = this.createOffset(from.target);
-				e.offset = new Point({
-					x: e.page.x - offset.left,
-					y: e.page.y - offset.top
-				});
-				e.offsetX = e.offset.x;
-				e.offsetY = e.offset.y;
-			}
-		}
-		return e;
+		return LibCanvas.Mouse.getOffset(e);
 	},
 	setEvents : function () {
 
@@ -3087,7 +3090,7 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class(
 
 		if (a.length == 4) {
 			this.from = new Point(a[0], a[1]);
-			this.to   = this.from.clone().move({x:a[2], y:a[3]});
+			this.to   = new Point(a[0]+a[2], a[1]+a[3]);
 		} else if (a.length == 2) {
 			if ('width' in a[1] && 'height' in a[1]) {
 				this.set({ from: a[0], size: a[1] });
@@ -3105,13 +3108,14 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class(
 			if (a.to) this.to = Point(a.to);
 		
 			if (!a.from || !a.to) {
-				var as = a.size, size = {
-					x : (as ? [as.w, as[0], as.width ] : [ a.w, a.width  ]).pick(),
-					y : (as ? [as.h, as[1], as.height] : [ a.h, a.height ]).pick()
-				};
-				this.from ?
-					(this.to = this.from.clone().move(size, 0)) :
-					(this.from = this.to.clone().move(size, 1));
+				var as = a.size,
+					sizeX = (as ? [as.w, as[0], as.width ] : [ a.w, a.width  ]).pick(),
+					sizeY = (as ? [as.h, as[1], as.height] : [ a.h, a.height ]).pick();
+				if (this.from) {
+					this.to   = new Point(this.from.x + sizeX, this.from.y + sizeY);
+				} else {
+					this.from = new Point(this.to.x   - sizeX, this.to.y   - sizeY);
+				}
 			}
 		
 		}
@@ -5308,13 +5312,12 @@ var Tile = LibCanvas.Engines.Tile = Class({
 	getRect : function (cell) {
 		if (!this.rects['0.0']) this.each(function (cell) {
 			var index = cell.x + '.' + cell.y;
-			this.rects[index] = new Rectangle({
-				from : [
-					(this.cellWidth  + this.margin) * cell.x,
-					(this.cellHeight + this.margin) * cell.y
-				],
-				size : [this.cellWidth, this.cellHeight]
-			});
+			this.rects[index] = new Rectangle(
+				(this.cellWidth  + this.margin) * cell.x,
+				(this.cellHeight + this.margin) * cell.y,
+				this.cellWidth,
+				this.cellHeight
+			);
 		});
 		return this.rects[cell.x + '.' + cell.y];
 	},
@@ -5322,7 +5325,8 @@ var Tile = LibCanvas.Engines.Tile = Class({
 		point = Point(arguments);
 		if (point.x < 0 || point.y < 0) return null;
 		
-		var x = parseInt(point.x / (this.cellWidth  + this.margin)),
+		var
+			x = parseInt(point.x / (this.cellWidth  + this.margin)),
 			y = parseInt(point.y / (this.cellHeight + this.margin)),
 			row = this.points[y];
 		return row ? row[x] : null;
