@@ -351,6 +351,8 @@ LibCanvas.Context2D
 
 `angle`  (*int*) угол наклона картинки в радианах
 
+`scale`  (*LibCanvas.Point*) ресайз картинки. Может использоваться для отражения картинки по вертикали или горизонатали
+
 Принцип простой - если есть `draw` и `crop`, то сначала применяется `crop` к картинке, потом она размещается согласно `from|center|draw`, потом разворачивается вокруг центра на угол angle по часовой стрелке и так отрисовывается.
 
 #### Пример
@@ -364,6 +366,12 @@ LibCanvas.Context2D
 		image: canvas,
 		crop : [100, 100, 50, 50],
 		draw : [250, 250, 50, 50]
+	});
+
+	context.drawImage({
+		image: this.image,
+		from : this.from,
+		scale: new Point(-1, 1) // flipX
 	});
 
 ## Метод projectiveImage
