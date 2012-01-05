@@ -40,7 +40,7 @@ LibCanvas.Engines.HexProjection = atom.Class({
 
 	/**
 	 * @param {int} [padding=0]
-	 * @returns {LibCanvas.Engines.HexProjection.Sizes}
+	 * @return LibCanvas.Engines.HexProjection.Sizes
 	 */
 	sizes: function (padding) {
 		return LibCanvas.Engines.HexProjection.Sizes(this, padding);
@@ -48,7 +48,7 @@ LibCanvas.Engines.HexProjection = atom.Class({
 
 	/**
 	 * @param {int[]} coordinates
-	 * @returns {Point}
+	 * @return Point
 	 */
 	rgbToPoint: function (coordinates) {
 		var
@@ -71,8 +71,53 @@ LibCanvas.Engines.HexProjection = atom.Class({
 	},
 
 	/**
+	 * @param {Point} point
+	 * @return int[]
+	 */
+	pointToRgb: function (point) {
+		var
+			options = this.options,
+			base    = options.baseLength,
+			chord   = options.chordLength,
+			height  = options.hexHeight,
+			start   = options.start,
+			// counting coords
+			red   = (point.x - start.x) / (base + chord),
+			blue  = (point.y - start.y - red * height / 2) / height,
+			green = 0 - red - blue;
+
+		var dist = function (c) {
+			return Math.abs(c[0] - red) + Math.abs(c[1] - green) + Math.abs(c[2] - blue);
+		};
+
+		var
+			rF = red  .floor(), rC = red  .ceil(),
+			gF = green.floor(), gC = green.ceil(),
+			bF = blue .floor(), bC = blue .ceil();
+
+		return [
+			// we need to find closest integer coordinates
+			[rF, gF, bF],
+			[rF, gC, bF],
+			[rF, gF, bC],
+			[rF, gC, bC],
+			[rC, gF, bF],
+			[rC, gC, bF],
+			[rC, gF, bC],
+			[rC, gC, bC]
+		].filter(function (v) {
+			// only correct variants - sum must be equals to zero
+			return v.sum() == 0;
+		})
+		.sort(function (left, right) {
+			// we need coordinates with the smallest distance
+			return dist(left) < dist(right) ? -1 : 1;
+		})[0];
+	},
+
+	/**
 	 * @param {Point} center
-	 * @returns {LibCanvas.Shapes.Polygon}
+	 * @return LibCanvas.Shapes.Polygon
 	 */
 	createPolygon: function (center) {
 		var
@@ -109,7 +154,7 @@ LibCanvas.Engines.HexProjection.Sizes = Class({
 
 	/**
 	 * @param {int[]} coordinates
-	 * @returns {LibCanvas.Engines.HexProjection.Size}
+	 * @return LibCanvas.Engines.HexProjection.Size
 	 */
 	add: function (coordinates) {
 		this._limits = null;
@@ -117,7 +162,7 @@ LibCanvas.Engines.HexProjection.Sizes = Class({
 		return this;
 	},
 
-	/** @returns {object} */
+	/** @return object */
 	limits: function () {
 		if (this._limits) return this._limits;
 
@@ -139,7 +184,7 @@ LibCanvas.Engines.HexProjection.Sizes = Class({
 		return this._limits = { min: min, max: max };
 	},
 
-	/** @returns {Point} */
+	/** @return Point */
 	size: function () {
 		var
 			limits = this.limits(),
@@ -152,7 +197,7 @@ LibCanvas.Engines.HexProjection.Sizes = Class({
 		);
 	},
 
-	/** @returns {Point} */
+	/** @return Point */
 	center: function () {
 		var
 			min = this.limits().min,
