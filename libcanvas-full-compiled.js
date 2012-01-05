@@ -5017,29 +5017,27 @@ LibCanvas.Engines.HexProjection = atom.Class({
 	 */
 	pointToRgb: function (point) {
 		var
-			red     = 0,
-			green   = 0,
-			blue    = 0,
 			options = this.options,
 			base    = options.baseLength,
 			chord   = options.chordLength,
 			height  = options.hexHeight,
-			start   = options.start;
+			start   = options.start,
+			// counting coords
+			red   = (point.x - start.x) / (base + chord),
+			blue  = (point.y - start.y - red * height / 2) / height,
+			green = 0 - red - blue;
 
 		var dist = function (c) {
 			return Math.abs(c[0] - red) + Math.abs(c[1] - green) + Math.abs(c[2] - blue);
 		};
-
-		red   = (point.x - start.x) / (base + chord);
-		blue  = (point.y - start.y - red * height / 2) / height;
-		green = 0 - red - blue;
 
 		var
 			rF = red  .floor(), rC = red  .ceil(),
 			gF = green.floor(), gC = green.ceil(),
 			bF = blue .floor(), bC = blue .ceil();
 
-		var variants = [
+		return [
+			// we need to find closest integer coordinates
 			[rF, gF, bF],
 			[rF, gC, bF],
 			[rF, gF, bC],
@@ -5049,12 +5047,13 @@ LibCanvas.Engines.HexProjection = atom.Class({
 			[rC, gF, bC],
 			[rC, gC, bC]
 		].filter(function (v) {
+			// only correct variants - sum must be equals to zero
 			return v.sum() == 0;
 		})
 		.sort(function (left, right) {
+			// we need coordinates with the smallest distance
 			return dist(left) < dist(right) ? -1 : 1;
-		});
-		return variants[0];
+		})[0];
 	},
 
 	/**
@@ -6668,6 +6667,12 @@ Scene.Dragger = Class({
 		return this;
 	},
 
+	addShift: function (delta) {
+		this.addLayersShift(delta);
+		this.closeLayersShift(false);
+		return this;
+	},
+
 	/** @private */
 	dragStart: function (e) {
 		if (!this.shouldStartDrag(e)) return;
@@ -6683,22 +6688,30 @@ Scene.Dragger = Class({
 	/** @private */
 	dragStop: function (e) {
 		if (!this.drag) return;
-
-		for (var i = this.scenes.length; i--;) {
-			var scene = this.scenes[i];
-			scene.mouse.start();
-			scene.addElementsShift();
-			scene.start();
-		}
-
+		this.closeLayersShift(true);
 		this.drag = false;
 		this.fireEvent( 'stop', [ e ]);
 	},
 	/** @private */
 	dragMove: function (e) {
-		if (!this.drag) return;
+		if (this.drag) {
+			this.addLayersShift(e.deltaOffset);
+		}
+	},
+	closeLayersShift: function (start) {
 		for (var i = this.scenes.length; i--;) {
-			this.scenes[i].addShift(e.deltaOffset);
+			var scene = this.scenes[i];
+			scene.addElementsShift();
+			if (start) {
+				scene.mouse.start();
+				scene.start();
+			}
+		}
+	},
+	/** @private */
+	addLayersShift: function (point) {
+		for (var i = this.scenes.length; i--;) {
+			this.scenes[i].addShift(point);
 		}
 	},
 	/** @private */

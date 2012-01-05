@@ -62,6 +62,12 @@ Scene.Dragger = Class({
 		return this;
 	},
 
+	addShift: function (delta) {
+		this.addLayersShift(delta);
+		this.closeLayersShift(false);
+		return this;
+	},
+
 	/** @private */
 	dragStart: function (e) {
 		if (!this.shouldStartDrag(e)) return;
@@ -77,22 +83,30 @@ Scene.Dragger = Class({
 	/** @private */
 	dragStop: function (e) {
 		if (!this.drag) return;
-
-		for (var i = this.scenes.length; i--;) {
-			var scene = this.scenes[i];
-			scene.mouse.start();
-			scene.addElementsShift();
-			scene.start();
-		}
-
+		this.closeLayersShift(true);
 		this.drag = false;
 		this.fireEvent( 'stop', [ e ]);
 	},
 	/** @private */
 	dragMove: function (e) {
-		if (!this.drag) return;
+		if (this.drag) {
+			this.addLayersShift(e.deltaOffset);
+		}
+	},
+	closeLayersShift: function (start) {
 		for (var i = this.scenes.length; i--;) {
-			this.scenes[i].addShift(e.deltaOffset);
+			var scene = this.scenes[i];
+			scene.addElementsShift();
+			if (start) {
+				scene.mouse.start();
+				scene.start();
+			}
+		}
+	},
+	/** @private */
+	addLayersShift: function (point) {
+		for (var i = this.scenes.length; i--;) {
+			this.scenes[i].addShift(point);
 		}
 	},
 	/** @private */
