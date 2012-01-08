@@ -21,7 +21,7 @@ provides: Behaviors.Draggable
 ...
 */
 
-var Draggable = LibCanvas.Behaviors.Draggable = function () {
+var Draggable = function () {
 
 
 var initDraggable = function () {
@@ -29,16 +29,16 @@ var initDraggable = function () {
 		mouse = draggable.libcanvas.mouse,
 		dragFn = function ( e ) {
 			draggable.shape.move( e.deltaOffset );
-			draggable.fireEvent('moveDrag', [e.deltaOffset, e]);
+			draggable.events.fire('moveDrag', [e.deltaOffset, e]);
 		},
 		stopDrag  = ['up', 'out'],
 		onStopDrag = function (e) {
 			if (e.button !== 0) return;
 
-			draggable.fireEvent('stopDrag', [ e ]);
-			mouse
-				.removeEvent( 'move', dragFn)
-				.removeEvent(stopDrag, onStopDrag);
+			draggable.events.fire('stopDrag', [ e ]);
+			mouse.events
+				.remove( 'move', dragFn)
+				.remove(stopDrag, onStopDrag);
 		}.bind(this);
 
 	draggable.listenMouse();
@@ -48,32 +48,29 @@ var initDraggable = function () {
 
 		if (!draggable['draggable.isDraggable']) return;
 
-		draggable.fireEvent('startDrag', [ e ]);
-		mouse
-			.addEvent( 'move', dragFn )
-			.addEvent( stopDrag, onStopDrag );
+		draggable.events.add('startDrag', [ e ]);
+		mouse.events.add( 'move', dragFn );
+		mouse.events.add( stopDrag, onStopDrag );
 	});
 
 
 	return this;
 };
 
-return Class({
-	Extends: MouseListener,
-
+return declare( 'LibCanvas.Behaviors.Draggable', {
 	draggable : function (stop, callback) {
 		if (typeof stop == 'function') {
 			callback = stop;
 			stop = false;
 		}
 
-		if (callback) this.addEvent( 'moveDrag', callback );
+		if (callback) this.events.add( 'moveDrag', callback );
 
 		if (! ('draggable.isDraggable' in this) ) {
 			if (this.libcanvas) {
 				initDraggable.call( this );
 			} else {
-				this.addEvent('libcanvasSet', initDraggable);
+				this.events.add('libcanvasSet', initDraggable);
 			}
 		}
 		this['draggable.isDraggable'] = !stop;

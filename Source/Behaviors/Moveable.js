@@ -20,7 +20,7 @@ provides: Behaviors.Moveable
 
 ...
 */
-var Moveable = LibCanvas.Behaviors.Moveable = Class({
+var Moveable = declare( 'LibCanvas.Behaviors.Moveable', {
 	stopMoving : function () {
 		var anim = this['moveTo.animation'];
 		if (anim) anim.stop();
@@ -32,10 +32,17 @@ var Moveable = LibCanvas.Behaviors.Moveable = Class({
 		var shape = this.shape, diff = shape.getCoords().diff(point);
 		if (!speed) {
 			shape.move(diff);
-			this.fireEvent('stopMove');
+			this.events.fire('stopMove');
 			return this;
 		}
 		var distance = Math.hypotenuse(diff.x, diff.y), prev = 0;
+		var events = this.events;
+
+		var fire = function (event) {
+			return function () {
+				events.fire(event);
+			};
+		};
 
 		this['moveTo.animation'] = new Animatable(function (change) {
 			shape.move({
@@ -46,9 +53,9 @@ var Moveable = LibCanvas.Behaviors.Moveable = Class({
 		}).animate({
 			fn        : fn || 'linear',
 			time      : distance / speed * 1000,
-			onProcess : this.fireEvent.bind(this, 'move'),
-			onAbort   : this.fireEvent.bind(this, 'stopMove'),
-			onFinish  : this.fireEvent.bind(this, 'stopMove')
+			onProcess : fire('move'),
+			onAbort   : fire('stopMove'),
+			onFinish  : fire('stopMove')
 		});
 
 		return this;

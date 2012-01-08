@@ -37,7 +37,7 @@ events:
 */
 
 // Should extends LibCanvas.Behaviors.Drawable
-var MouseListener = LibCanvas.Behaviors.MouseListener = Class({
+var MouseListener = declare( 'LibCanvas.Behaviors.MouseListener', {
 	'listenMouse.start': function () {
 		this.libcanvas.mouse.subscribe(this);
 	},
@@ -54,7 +54,7 @@ var MouseListener = LibCanvas.Behaviors.MouseListener = Class({
 		var method = this[ 'listenMouse.' + (stopListen ? 'stop' : 'start') ];
 
 		this.libcanvas ? method.call( this ) :
-			this.addEvent('libcanvasSet', method );
+			this.events.add('libcanvasSet', method );
 		return this;
 	}
 });

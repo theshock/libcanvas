@@ -21,7 +21,7 @@ provides: Behaviors.Clickable
 ...
 */
 
-var Clickable = LibCanvas.Behaviors.Clickable = function () {
+var Clickable = function () {
 
 var $window = atom.dom(window);
 
@@ -30,14 +30,13 @@ var setValFn = function (object, name, val) {
 	return function (event) {
 		if (object[name] != val) {
 			object[name] = val;
-			object.fireEvent('statusChanged', result);
+			object.events.fire('statusChanged', result);
 		}
 	};
 };
 
-// Should extends drawable, implements mouseListener
-return Class({
-	Extends: MouseListener,
+// Should mixin Drawable & MouseListener
+return declare( 'LibCanvas.Behaviors.Clickable', {
 
 	clickable : function (stop, callback) {
 		if (typeof stop == 'function') {
@@ -45,7 +44,7 @@ return Class({
 			stop = false;
 		}
 
-		if (callback) this.addEvent( 'statusChanged', callback );
+		if (callback) this.events.add( 'statusChanged', callback );
 
 		var callbacks = this['clickable.callbacks'];
 
@@ -61,12 +60,13 @@ return Class({
 		}
 
 		if (stop) {
-			this.removeEvent(callbacks);
+			this.events.remove(callbacks);
 		} else {
-			this.addEvent(callbacks);
+			this.events.add(callbacks);
 		}
 		return this;
 	}
+
 });
 
 }();

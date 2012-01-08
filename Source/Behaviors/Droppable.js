@@ -22,26 +22,25 @@ provides: Behaviors.Droppable
 ...
 */
 
-var Droppable = LibCanvas.Behaviors.Droppable = Class({
-	Extends: Draggable,
-
+// must be Draggable
+var Droppable = declare( 'LibCanvas.Behaviors.Droppable', {
 	drops : null,
 	drop : function (obj) {
 		if (this.drops === null) {
 			this.drops = [];
-			this.addEvent('stopDrag', function () {
+			this.events.add('stopDrag', function () {
 				var dropped = false;
 				var mouse = this.libcanvas.mouse;
 				if (mouse.inCanvas) {
 					this.drops.forEach(function (obj) {
-						if(obj.getShape().hasPoint(mouse.point)) {
+						if(obj.shape.hasPoint(mouse.point)) {
 							dropped = true;
-							this.fireEvent('dropped', [obj]);
+							this.events.fire('dropped', [obj]);
 						}
 					}.bind(this));
 				}
-				if (!dropped) this.fireEvent('dropped', [null]);
-			}.bind(this));
+				if (!dropped) this.events.fire('dropped', [null]);
+			});
 		}
 		this.drops.push(obj);
 		return this;

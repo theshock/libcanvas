@@ -21,11 +21,13 @@ provides: Behaviors.DrawableSprite
 ...
 */
 
-var DrawableSprite = LibCanvas.Behaviors.DrawableSprite = Class({
-	Extends: Drawable,
+var DrawableSprite = declare( 'LibCanvas.Behaviors.DrawableSprite', {
+	parent: Drawable,
 
-	draw: function () {
-		this.libcanvas.ctx.drawImage( this.sprite, this.shape );
-		return this;
+	proto: {
+		draw: function () {
+			this.libcanvas.ctx.drawImage( this.sprite, this.shape );
+			return this;
+		}
 	}
 });

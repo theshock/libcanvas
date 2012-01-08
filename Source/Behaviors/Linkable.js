@@ -20,7 +20,7 @@ provides: Behaviors.Linkable
 ...
 */
 
-var Linkable = LibCanvas.Behaviors.Linkable = Class({
+var Linkable = declare( 'LibCanvas.Behaviors.Linkable', {
 	links : null,
 	moveLinks : function (move) {
 		(this.links || []).forEach(function (elem) {
@@ -32,7 +32,7 @@ var Linkable = LibCanvas.Behaviors.Linkable = Class({
 	link : function (obj) {
 		if (this.links === null) {
 			this.links = [];
-			this.shape.addEvent('move',
+			this.shape.events.add('move',
 				this.moveLinks.bind(this)
 			);
 		}

@@ -20,93 +20,92 @@ provides: Behaviors.Drawable
 ...
 */
 
-var Drawable = LibCanvas.Behaviors.Drawable = function () {
+var Drawable = function () {
 	
 var start = function () {
 	this.libcanvas.addElement(this);
-	// todo: dont use removeEvent
-	return 'removeEvent';
+	this.events.remove('libcanvasSet', start);
 };
 var stop = function () {
 	this.libcanvas.rmElement(this);
-	// todo: dont use removeEvent
-	return 'removeEvent';
+	this.events.remove('libcanvasSet', stop);
+};
+var manage = function (first, second) {
+	return function () {
+		this.events.remove('libcanvasSet', first);
+
+		this.libcanvas ?
+			second.call( this ) :
+			this.events.add('libcanvasSet', second);
+		return this;
+	}
 };
 
-return Class({
+return declare( 'LibCanvas.Behaviors.Drawable', {
 	Implements: Class.Events,
-	libcanvasIsReady: false,
-	setLibcanvas : function (libcanvas) {
-		if (this.libcanvas) {
-			this.libcanvas.rmElement(this);
-			this.libcanvas = libcanvas;
-		} else {
-			this.libcanvas = libcanvas;
-			var isReady = this.libcanvas.isReady();
-			if (isReady) {
-				this.libcanvasIsReady = true;
+	proto: {
+		libcanvasIsReady: false,
+		setLibcanvas : function (libcanvas) {
+			if (this.libcanvas) {
+				this.libcanvas.rmElement(this);
+				this.libcanvas = libcanvas;
 			} else {
-				this.addEvent('libcanvasReady', function () {
+				this.libcanvas = libcanvas;
+				var isReady = this.libcanvas.isReady();
+				if (isReady) {
 					this.libcanvasIsReady = true;
-				});
-				this.libcanvas.addEvent('ready', this.readyEvent.bind(this, 'libcanvasReady'));
+				} else {
+					this.events.add('libcanvasReady', function () {
+						this.libcanvasIsReady = true;
+					});
+					this.libcanvas.events.add('ready', function () {
+						this.events.ready('libcanvasReady')
+					}.bind(this));
+				}
+				this.events.ready('libcanvasSet');
+				if (isReady) this.events.ready('libcanvasReady');
 			}
-			this.readyEvent('libcanvasSet');
-			if (isReady) this.readyEvent('libcanvasReady');
-		}
-		return this;
-	},
-	isReady : function () {
-		return this.libcanvasIsReady;
-	},
-	// @deprecated
-	getShape : function () {
-		return this.shape;
-	},
-	// @deprecated
-	setShape : function (shape) {
-		this.shape = shape;
-		return this;
-	},
-	// @deprecated
-	getZIndex : function () {
-		return this.zIndex || 0;
-	},
-	hasPoint: function (point) {
-		return this.shape.hasPoint( point );
-	},
-	// @deprecated
-	setZIndex : function (zIndex) {
-		this.zIndex = zIndex;
-		return this;
-	},
-	toLayer: function (name) {
-		if (this.libcanvas) {
-			this.libcanvas
-				.rmElement(this)
-				.layer(name)
-				.addElement(this);
-		}
-		return this;
-	},
-	startDrawing: function () {
-		this.removeEvent('libcanvasSet', stop);
+			return this;
+		},
+		isReady : function () {
+			return this.libcanvasIsReady;
+		},
+		// @deprecated
+		getShape : function () {
+			return this.shape;
+		},
+		// @deprecated
+		setShape : function (shape) {
+			this.shape = shape;
+			return this;
+		},
+		// @deprecated
+		getZIndex : function () {
+			return this.zIndex || 0;
+		},
+		hasPoint: function (point) {
+			return this.shape.hasPoint( point );
+		},
+		// @deprecated
+		setZIndex : function (zIndex) {
+			this.zIndex = zIndex;
+			return this;
+		},
+		toLayer: function (name) {
+			if (this.libcanvas) {
+				this.libcanvas
+					.rmElement(this)
+					.layer(name)
+					.addElement(this);
+			}
+			return this;
+		},
+		startDrawing: manage(stop , start),
+		 stopDrawing: manage(start, stop ),
 
-		this.libcanvas ?
-			start.call( this ) :
-			this.addEvent('libcanvasSet', start);
-		return this;
-	},
-	stopDrawing: function () {
-		this.removeEvent('libcanvasSet', start);
-
-		this.libcanvas ?
-			stop.call( this ) :
-			this.addEvent('libcanvasSet', stop);
-		return this;
-	},
-	update : Class.abstractMethod,
-	draw   : Class.abstractMethod
+		update : 'abstract',
+		draw   : 'abstract'
+	}
 });
 
 }();
