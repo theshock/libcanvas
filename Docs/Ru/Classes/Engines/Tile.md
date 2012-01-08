@@ -70,7 +70,7 @@ LibCanvas.Engines.Tile
 		.createMatrix(4, 3, 'test')
 		.setSize(15, 15, 0);
 
-	atom.log( engine.countSize() ); // { width: 60, height: 45 }
+	console.log( engine.countSize() ); // { width: 60, height: 45 }
 
 #### getCell(point)
 

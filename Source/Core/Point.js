@@ -70,7 +70,7 @@ return Class(
 				y = x.y;
 				x = x.x;
 			} else {
-				//atom.log('Wrong Arguments In Point.Set:', arguments);
+				//console.log('Wrong Arguments In Point.Set:', arguments);
 				throw new TypeError('Wrong Arguments In Point.Set: [' + atom.toArray(arguments).join(', ') + ']');
 			}
 		}

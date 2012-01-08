@@ -1056,7 +1056,7 @@ return Class(
 				y = x.y;
 				x = x.x;
 			} else {
-				//atom.log('Wrong Arguments In Point.Set:', arguments);
+				//console.log('Wrong Arguments In Point.Set:', arguments);
 				throw new TypeError('Wrong Arguments In Point.Set: [' + atom.toArray(arguments).join(', ') + ']');
 			}
 		}
@@ -1829,10 +1829,12 @@ var Drawable = LibCanvas.Behaviors.Drawable = function () {
 	
 var start = function () {
 	this.libcanvas.addElement(this);
+	// todo: dont use removeEvent
 	return 'removeEvent';
 };
 var stop = function () {
 	this.libcanvas.rmElement(this);
+	// todo: dont use removeEvent
 	return 'removeEvent';
 };
 
@@ -2333,7 +2335,7 @@ var DownloadingProgress = LibCanvas.Inner.DownloadingProgress = Class({
 				this.imagePreloader = new ImagePreloader(this.options.preloadImages, this.options.imagesSuffix)
 					.addEvent('ready', function (preloader) {
 						this.images = preloader.images;
-						atom.log(preloader.getInfo());
+						console.log(preloader.getInfo());
 						this.readyEvent('ready');
 						this.update();
 					}.bind(this));
@@ -3678,7 +3680,7 @@ var Context2D = Class(
 			var result = this.ctx2d[method].apply(this.ctx2d, args || []);
 			if (returnResult) return result;
 		} catch (e) {
-			atom.log('Error in context2d.original(', method, ',', (args || []), ')');
+			console.log('Error in context2d.original(', method, ',', (args || []), ')');
 			throw e;
 		}
 		return this;
