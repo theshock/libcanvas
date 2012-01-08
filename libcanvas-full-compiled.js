@@ -21,7 +21,10 @@ authors:
 // bug in Safari 5.1 ( 'use strict' + 'set prop' )
 // 'use strict';
 
-var undefined, Class = atom.Class;
+var undefined,
+	declare  = atom.declare,
+	Events   = atom.Events,
+	Settings = atom.Settings;
 /*
 ---
 
@@ -148,145 +151,149 @@ provides: Animation.Sprite
 ...
 */
 
-LibCanvas.Animation.Sprite = Class({
-	Implements: Class.Events,
-	sprites : null,
+declare( 'LibCanvas.Animation.Sprite', {
+	mixin: Events.Mixin,
 
-	initialize: function () {
-		this.sprites = {};
-	},
-	addSprite : function (index, sprite) {
-		this.sprites[index] = sprite;
-		return this;
-	},
-	addSprites : function (sprites, width) {
-		if (atom.typeOf(sprites) == 'object') {
-			atom.extend(this.sprites, sprites);
-		} else {
-			for (var w = 0; (w * width) < sprites.width; w++) {
-				this.addSprite(w, sprites.sprite(width*w, 0, width, sprites.height));
+	proto: {
+		sprites : null,
+
+		initialize: function () {
+			this.sprites = {};
+			this.events = new Events( this );
+		},
+		addSprite : function (index, sprite) {
+			this.sprites[index] = sprite;
+			return this;
+		},
+		addSprites : function (sprites, width) {
+			if (atom.typeOf(sprites) == 'object') {
+				atom.append(this.sprites, sprites);
+			} else {
+				for (var w = 0; (w * width) < sprites.width; w++) {
+					this.addSprite(w, sprites.sprite(width*w, 0, width, sprites.height));
+				}
 			}
-		}
-		return this;
-	},
-	defaultSprite : null,
-	setDefaultSprite : function (index) {
-		this.defaultSprite = index;
-		return this;
-	},
-	get sprite () {
-		return this._getFrame() ? this.sprites[this._getFrame().sprite] :
-			this.defaultSprite != null ? this.sprites[this.defaultSprite] : null;
-	},
-	getSprite : function () {
-		return this.sprite;
-	},
+			return this;
+		},
+		defaultSprite : null,
+		setDefaultSprite : function (index) {
+			this.defaultSprite = index;
+			return this;
+		},
+		get sprite () {
+			return this._getFrame() ? this.sprites[this._getFrame().sprite] :
+				this.defaultSprite != null ? this.sprites[this.defaultSprite] : null;
+		},
+		getSprite : function () {
+			return this.sprite;
+		},
 
-	animations : {},
-	add : function (animation, line) {
-		if (arguments.length == 2) {
-			return this.add({ name: animation, line: line });
-		}
+		animations : {},
+		add : function (animation, line) {
+			if (arguments.length == 2) {
+				return this.add({ name: animation, line: line });
+			}
 
-		if (!animation.frames && animation.line) {
-			animation.frames = [];
-			animation.line.forEach(function (f, i) {
-				animation.frames.push({sprite: f, delay: animation.delay || 40, name: i});
-			});
-			delete animation.line;
-			return this.add(animation);
-		}
-		this.animations[animation.name] = animation;
-		return this;
-	},
+			if (!animation.frames && animation.line) {
+				animation.frames = [];
+				animation.line.forEach(function (f, i) {
+					animation.frames.push({sprite: f, delay: animation.delay || 40, name: i});
+				});
+				delete animation.line;
+				return this.add(animation);
+			}
+			this.animations[animation.name] = animation;
+			return this;
+		},
 
-	_singleAnimationId: 0,
-	runOnce: function (cfg) {
-		var name = '_singleAnimation' + this._singleAnimationId++;
-		if (Array.isArray(cfg)) cfg = { line: cfg };
+		_singleAnimationId: 0,
+		runOnce: function (cfg) {
+			var name = '_singleAnimation' + this._singleAnimationId++;
+			if (Array.isArray(cfg)) cfg = { line: cfg };
 
-		return this
-			.add(atom.extend({ name : name }, cfg))
-			.run(name);
-	},
+			return this
+				.add(atom.extend({ name : name }, cfg))
+				.run(name);
+		},
 
-	_current : null,
-	_queue : [],
-	run : function (name, cfg) {
-		if (typeof name != 'string') {
-			return this.runOnce(name);
-		}
-		if (!name in this.animations) {
-			throw new Error('No animation «' + name + '»');
-		}
-		var args = {
-			name : name,
-			cfg  : cfg || {}
-		};
-		if (this._current) {
-			this._queue.push(args);
-		} else {
-			this._init(args);
-		}
-		return this;
-	},
-	stop : function (force) {
-		this._current = null;
-		if (force) {
-			this._queue = [];
-		} else {
-			this._stopped();
-		}
-		return this;
-	},
-	_stopped : function () {
-		var next = this._queue.shift();
-		return next != null && this._init(next);
-	},
-	_init : function (args) {
-		this._current = {
-			animation : this.animations[args.name],
-			index     : -1,
-			cfg       : args.cfg
-		};
-		this._current.repeat = this._getCfg('repeat');
-		return this._nextFrame();
-	},
-	_nextFrame : function () {
-		if (!this._current) return this;
-
-		this._current.index++;
-		var frame = this._getFrame();
-		if (!frame && (this._getCfg('loop') || this._current.repeat)) {
-			this._current.repeat && this._current.repeat--;
-			this._current.index = 0;
-			frame = this._getFrame();
-		}
-		var aniName = this._current.animation.name;
-		if (frame) {
-			var frameName = frame.name ? 'frame:' + frame.name : 'frame';
-			this.fireEvent('changed', [frameName, aniName]);
-			this.fireEvent(frameName, [frameName, aniName]);
-			// use invoker instead
-			if (frame.delay != null) this._nextFrame.delay(frame.delay, this);
-		} else {
-			this.fireEvent('changed', ['stop:' + aniName]);
-			this.fireEvent('stop:' + aniName, ['stop:' + aniName]);
-			this.fireEvent('stop', [aniName]);
+		_current : null,
+		_queue : [],
+		run : function (name, cfg) {
+			if (typeof name != 'string') {
+				return this.runOnce(name);
+			}
+			if (!name in this.animations) {
+				throw new Error('No animation «' + name + '»');
+			}
+			var args = {
+				name : name,
+				cfg  : cfg || {}
+			};
+			if (this._current) {
+				this._queue.push(args);
+			} else {
+				this._init(args);
+			}
+			return this;
+		},
+		stop : function (force) {
 			this._current = null;
-			this._stopped();
-		}
-		return this;
-	},
-	_getFrame : function () {
-		return this._current ? this._current.animation.frames[this._current.index] : null;
-	},
-	_getCfg : function (index) {
-		return index in this._current.cfg ?
-			this._current.cfg[index] :
-			this._current.animation[index];
-	},
-	toString: Function.lambda('[object LibCanvas.Animation.Sprite]')
+			if (force) {
+				this._queue = [];
+			} else {
+				this._stopped();
+			}
+			return this;
+		},
+		_stopped : function () {
+			var next = this._queue.shift();
+			return next != null && this._init(next);
+		},
+		_init : function (args) {
+			this._current = {
+				animation : this.animations[args.name],
+				index     : -1,
+				cfg       : args.cfg
+			};
+			this._current.repeat = this._getCfg('repeat');
+			return this._nextFrame();
+		},
+		_nextFrame : function () {
+			if (!this._current) return this;
+
+			this._current.index++;
+			var frame = this._getFrame();
+			if (!frame && (this._getCfg('loop') || this._current.repeat)) {
+				this._current.repeat && this._current.repeat--;
+				this._current.index = 0;
+				frame = this._getFrame();
+			}
+			var aniName = this._current.animation.name;
+			if (frame) {
+				var frameName = frame.name ? 'frame:' + frame.name : 'frame';
+				this.events.fire('changed', [frameName, aniName]);
+				this.events.fire(frameName, [frameName, aniName]);
+				// use invoker instead
+				if (frame.delay != null) this._nextFrame.delay(frame.delay, this);
+			} else {
+				this.events.fire('changed', ['stop:' + aniName]);
+				this.events.fire('stop:' + aniName, ['stop:' + aniName]);
+				this.events.fire('stop', [aniName]);
+				this._current = null;
+				this._stopped();
+			}
+			return this;
+		},
+		_getFrame : function () {
+			return this._current ? this._current.animation.frames[this._current.index] : null;
+		},
+		_getCfg : function (index) {
+			return index in this._current.cfg ?
+				this._current.cfg[index] :
+				this._current.animation[index];
+		},
+		toString: Function.lambda('[object LibCanvas.Animation.Sprite]')
+	}
 });
 
 
@@ -312,106 +319,107 @@ provides: Invoker
 ...
 */
 
-var Invoker = LibCanvas.Invoker = Class(
+var Invoker = declare( 'LibCanvas.Invoker',
 /**
  * @lends LibCanvas.Invoker.prototype
  * @augments Class.Options.prototype
  * @augments Class.Events.prototype
  */
 {
-	Static: {
-		AutoChoose: Class({
+	own: {
+		AutoChoose: declare({
 			get invoker () {
 				return 'libcanvas' in this ? this.libcanvas.invoker : LibCanvas.invoker;
 			}
 		})
 	},
-	Implements: [
-		Class.Options,
-		Class.Events
+	mixin: [
+		Settings.Mixin,
+		Events.Mixin
 	],
-	options: {
-		fpsLimit : 60,
-		timeCount: 5,
-		context  : null,
-		defaultPriority: 1
-	},
-	initialize: function (options) {
-		this.funcs = [];
-		this.time  = [0];
-		this.setOptions(options);
-	},
-	get minDelay () {
-		return 1000 / this.options.fpsLimit;
-	},
-	timeoutId: 0,
-	invoke: function () {
-		this.fireEvent('beforeInvoke');
+	proto: {
+		initialize: function (options) {
+			this.settings = new Settings({
+				fpsLimit : 60,
+				timeCount: 5,
+				context  : null,
+				defaultPriority: 1
+			}).set(options);
+			this.funcs = [];
+			this.time  = [0];
+		},
+		get minDelay () {
+			return 1000 / this.settings.get('fpsLimit');
+		},
+		timeoutId: 0,
+		invoke: function () {
+			this.fireEvent('beforeInvoke');
 
-		var i, all = this.time,
-			time   = Math.max(all.average(), this.minDelay);
-		this.timeoutId = this.invoke.delay(time, this);
-		
-		var startTime = new Date(),
-			funcs     = this.funcs.sortBy('priority'),
-			ignore    = false,
-			remove    = [];
+			var i, all = this.time,
+				time   = Math.max(all.average(), this.minDelay);
+			this.timeoutId = this.invoke.delay(time, this);
 
-		for (i = funcs.length; i--;) {
-			var result = funcs[i].call(this.options.context, time);
-			if (result === false) {
-				ignore = true;
-			} else if (result === 'remove') {
-				remove.push(funcs[i]);
+			var startTime = new Date(),
+				funcs     = this.funcs.sortBy('priority'),
+				ignore    = false,
+				remove    = [];
+
+			for (i = funcs.length; i--;) {
+				var result = funcs[i].call(this.settings.get('context'), time);
+				if (result === false) {
+					ignore = true;
+				} else if (result === 'remove') {
+					remove.push(funcs[i]);
+				}
 			}
-		}
-		if (!ignore) {
-			all.push(new Date() - startTime);
-			if (all.length > this.options.timeCount) all.shift();
-		}
-		for (i = remove.length; i--;) {
-			this.rmFunction(remove[i]);
-		}
-
-		this.fireEvent('afterInvoke', [time]);
-		return this;
-	},
-	after: function (timeLeft, priority, fn) {
-		if (arguments.length == 2) {
-			fn = priority;
-			fn.priority = this.options.defaultPriority;
-		}
-		var timeStart = Date.now(), argTime = timeLeft;
-		this.addFunction(priority, function (time) {
-			timeLeft -= time;
-			if (timeLeft < 0) {
-				fn(Date.now() - timeStart - argTime);
-				return 'remove';
+			if (!ignore) {
+				all.push(new Date() - startTime);
+				if (all.length > this.settings.get('timeCount')) all.shift();
 			}
-			return null;
-		});
-		return this;
-	},
-	stop: function () {
-		this.timeoutId.stop();
-		return this;
-	},
-	addFunction: function (priority, fn) {
-		if (fn == null) {
-			fn = priority;
-			fn.priority = this.options.defaultPriority;
-		}
-		if (typeof fn != 'function') {
-			throw new TypeError('Not a function');
-		}
-		this.funcs.push(fn);
-		return this;
-	},
-	rmFunction: function (fn) {
-		this.funcs.erase(fn);
-		return this;
-	},
-	toString: Function.lambda('[object LibCanvas.Invoker]')
+			for (i = remove.length; i--;) {
+				this.rmFunction(remove[i]);
+			}
+
+			this.events.fire('afterInvoke', [time]);
+			return this;
+		},
+		after: function (timeLeft, priority, fn) {
+			if (arguments.length == 2) {
+				fn = priority;
+				fn.priority = this.settings.get('defaultPriority');
+			}
+			var timeStart = Date.now(), argTime = timeLeft;
+			this.addFunction(priority, function (time) {
+				timeLeft -= time;
+				if (timeLeft < 0) {
+					fn(Date.now() - timeStart - argTime);
+					return 'remove';
+				}
+				return null;
+			});
+			return this;
+		},
+		stop: function () {
+			this.timeoutId.stop();
+			return this;
+		},
+		addFunction: function (priority, fn) {
+			if (fn == null) {
+				fn = priority;
+				fn.priority = this.settings.get('defaultPriority');
+			}
+			if (typeof fn != 'function') {
+				throw new TypeError('Not a function');
+			}
+			this.funcs.push(fn);
+			return this;
+		},
+		rmFunction: function (fn) {
+			this.funcs.erase(fn);
+			return this;
+		},
+		toString: Function.lambda('[object LibCanvas.Invoker]')
+	}
 });
 
 /*
@@ -709,125 +717,129 @@ provides: Behaviors.Animatable
 ...
 */
 
-var Animatable = LibCanvas.Behaviors.Animatable = function () {
+var Animatable = function () {
 
 var TF = TimingFunctions;
 
-return Class({
-	Implements: Invoker.AutoChoose,
+return declare( 'LibCanvas.Behaviors.Animatable', {
+	mixin: [ Invoker.AutoChoose ],
 
-	initialize: Class.hiddenMethod(function (element) {
-		this['animate.element'] = element;
-		this['animate.func']    = atom.typeOf(element) == 'function';
-	}),
+	proto: {
+		initialize: function (element) {
+			if (this.constructor !== Animatable) return;
 
-	animate : function (key, value) {
-		if (!this['animate.properties']) this['animate.properties'] = {};
+			this['animate.element'] = element;
+			this['animate.func']    = atom.typeOf(element) == 'function';
+		},
 
-		var args, elem = this['animate.element'] || this, isFn = !!this['animate.func'];
+		animate : function (key, value) {
+			if (!this['animate.properties']) this['animate.properties'] = {};
 
-		if (typeof key == 'string' && arguments.length == 2) {
-			args = {};
-			args[key] = value;
-		} else {
-			args = key;
-		}
+			var args, elem = this['animate.element'] || this, isFn = !!this['animate.func'];
 
-		if (!isFn && !args.props) {
-			args = { props : args };
-		}
-		args = atom.extend({
-			fn    : 'linear',
-			params: [],
-			time  : 500
-		}, args);
-
-		if (window.opera) args.time = (args.time / 2).round();
-
-		if (typeof args.props == 'function') {
-			elem = args.props;
-			isFn = true;
-		}
-		args.params = Array.from(args.params);
-
-		if (!Array.isArray(args.fn)) {
-			args.fn = args.fn.split('-');
-		}
-
-		var timeLeft = args.time,
-			diff     = {},
-			start    = {},
-			inAction = this['animate.properties'],
-			invoker  = this.invoker;
-
-		var animation = {
-			repeat: function () {
-				this.animate(args);
-			}.bind(this),
-			stop : function () {
-				// avoid calling twice
-				animation.stop = Function.lambda();
-
-				if (isFn) for (var i in args.props) inAction[i] = null;
-				invoker.rmFunction(fn);
-				args.onAbort && args.onAbort.call(this, animation, start);
-				return this;
-			}.bind(this),
-			instance: this
-		};
-
-		if ('onProccess' in args) args.onProcess = args.onProccess;
-		
-		var fn = function (time) {
-			timeLeft -= Math.min(time, timeLeft);
-
-			var progress = (args.time - timeLeft) / args.time;
-
-			var factor = TF.count(args.fn, progress, args.params);
-
-			if (isFn) {
-				elem.call(this, factor);
+			if (typeof key == 'string' && arguments.length == 2) {
+				args = {};
+				args[key] = value;
 			} else {
-				for (var i in diff) {
-					Object.path.set( elem, i,
-						start[i] instanceof Color ?
-							start[i].shift(diff[i].clone().mul(factor)).toString() :
-							start[i] + diff[i] * factor
-					);
+				args = key;
+			}
+
+			if (!isFn && !args.props) {
+				args = { props : args };
+			}
+			args = atom.extend({
+				fn    : 'linear',
+				params: [],
+				time  : 500
+			}, args);
+
+			if (window.opera) args.time = (args.time / 2).round();
+
+			if (typeof args.props == 'function') {
+				elem = args.props;
+				isFn = true;
+			}
+			args.params = Array.from(args.params);
+
+			if (!Array.isArray(args.fn)) {
+				args.fn = args.fn.split('-');
+			}
+
+			var timeLeft = args.time,
+				diff     = {},
+				start    = {},
+				inAction = this['animate.properties'],
+				invoker  = this.invoker;
+
+			var animation = {
+				repeat: function () {
+					this.animate(args);
+				}.bind(this),
+				stop : function () {
+					// avoid calling twice
+					animation.stop = Function.lambda();
+
+					if (isFn) for (var i in args.props) inAction[i] = null;
+					invoker.rmFunction(fn);
+					args.onAbort && args.onAbort.call(this, animation, start);
+					return this;
+				}.bind(this),
+				instance: this
+			};
+
+			if ('onProccess' in args) args.onProcess = args.onProccess;
+
+			var fn = function (time) {
+				timeLeft -= Math.min(time, timeLeft);
+
+				var progress = (args.time - timeLeft) / args.time;
+
+				var factor = TF.count(args.fn, progress, args.params);
+
+				if (isFn) {
+					elem.call(this, factor);
+				} else {
+					for (var i in diff) {
+						Object.path.set( elem, i,
+							start[i] instanceof Color ?
+								start[i].shift(diff[i].clone().mul(factor)).toString() :
+								start[i] + diff[i] * factor
+						);
+					}
+				}
+
+				args.onProcess && args.onProcess.call(this, animation, start);
+
+				if (timeLeft <= 0) {
+					args.onFinish && invoker.after(0, function() {
+						args.onFinish.call(this, animation, start);
+					}.bind(this));
+					return 'remove';
+				}
+
+				return true;
+			}.bind(this);
+
+
+			if (!isFn) for (var i in args.props) {
+				var elemValue = Object.path.get(elem, i);
+
+				// if this property is already animating - remove
+				if (i in inAction) invoker.rmFunction(inAction[i]);
+				inAction[i] = fn;
+
+				if (Color.isColorString(elemValue)) {
+					start[i] = new Color(elemValue);
+					diff[i]  = start[i].diff(args.props[i]);
+				} else {
+					start[i] = elemValue;
+					diff[i]  = args.props[i] - elemValue;
 				}
 			}
 
-			args.onProcess && args.onProcess.call(this, animation, start);
-
-			if (timeLeft <= 0) {
-				args.onFinish && invoker.after(0, function() {
-					args.onFinish.call(this, animation, start);
-				}.bind(this));
-				return 'remove';
-			}
-
-			return true;
-		}.bind(this);
-
-
-		if (!isFn) for (var i in args.props) {
-			var elemValue = Object.path.get(elem, i);
-
-			// if this property is already animating - remove
-			if (i in inAction) invoker.rmFunction(inAction[i]);
-			inAction[i] = fn;
-
-			if (Color.isColorString(elemValue)) {
-				start[i] = new Color(elemValue);
-				diff[i]  = start[i].diff(args.props[i]);
-			} else {
-				start[i] = elemValue;
-				diff[i]  = args.props[i] - elemValue;
-			}
+			invoker.addFunction(20, fn);
+			return animation;
 		}
-
-		invoker.addFunction(20, fn);
-		return animation;
 	}
 });
 
@@ -855,14 +867,14 @@ provides: Geometry
 ...
 */
 
-var Geometry = LibCanvas.Geometry = Class(
+var Geometry = declare( 'LibCanvas.Geometry',
 /**
  * @lends LibCanvas.Geometry.prototype
  * @augments Class.Events.prototype
  */
 {
-	Implements: Class.Events,
-	Static: {
+	mixin: [ Class.Events ],
+	own: {
 		invoke: function (obj) {
 			if (obj == null) throw new TypeError( 'element is not geometry' );
 
@@ -873,22 +885,25 @@ var Geometry = LibCanvas.Geometry = Class(
 			return this(obj);
 		}
 	},
-	initialize : function () {
-		if (arguments.length) this.set.apply(this, arguments);
-	},
-	invertDirection: function (distance, reverse) {
-		distance = Point( distance );
-		var multi = reverse ? -1 : 1;
-		return {
-			x : distance.x * multi,
-			y : distance.y * multi
-		};
-	},
-	move : function (distance, reverse) {
-		this.fireEvent('move', [this.invertDirection(distance, reverse)]);
-		return this;
-	},
-	toString: Function.lambda('[object LibCanvas.Geometry]')
+	proto: {
+		initialize : function () {
+			this.events = new Events(this);
+			if (arguments.length) this.set.apply(this, arguments);
+		},
+		invertDirection: function (distance, reverse) {
+			distance = Point( distance );
+			var multi = reverse ? -1 : 1;
+			return new Point(
+				distance.x * multi,
+				distance.y * multi
+			);
+		},
+		move : function (distance, reverse) {
+			this.events.fire('move', [this.invertDirection(distance, reverse)]);
+			return this;
+		},
+		toString: Function.lambda('[object LibCanvas.Geometry]')
+	}
 });
 
 /*
@@ -1008,7 +1023,7 @@ provides: Point
 ...
 */
 
-var Point = LibCanvas.Point = function () {
+var Point = function () {
 
 var shifts = {
 	top    : {x: 0, y:-1},
@@ -1025,183 +1040,191 @@ var shifts = {
 	br     : {x: 1, y: 1}
 };
 
-return Class(
+var Point = declare( 'LibCanvas.Point',
 /**
  * @lends LibCanvas.Point.prototype
  * @augments LibCanvas.Geometry.prototype
  */
 {
-	Extends: Geometry,
+	parent: Geometry,
 
-	Static: { shifts: shifts },
+	own: { shifts: shifts },
 
-	/**
-	 * @constructs
-	 * @param {Number} x
-	 * @param {Number} y
-	 * @returns {LibCanvas.Point}
-	 */
-	set : function (x, y) {
-		var args = arguments;
-		if (atom.typeOf(x) == 'arguments') {
-			args = x;
-			x = args[0];
-			y = args[1];
-		}
-		if (args.length != 2) {
-			if (x && x[0] !== undefined && x[1] !== undefined) {
-				y = x[1];
-				x = x[0];
-			} else if (x && x.x !== undefined && x.y !== undefined) {
-				y = x.y;
-				x = x.x;
+	proto: {
+		/**
+		 * @constructs
+		 * @param {Number} x
+		 * @param {Number} y
+		 * @returns {LibCanvas.Point}
+		 */
+		set : function (x, y) {
+			var args = arguments;
+			if (atom.typeOf(x) == 'arguments') {
+				args = x;
+				x = args[0];
+				y = args[1];
+			}
+			if (args.length != 2) {
+				if (x && x[0] !== undefined && x[1] !== undefined) {
+					y = x[1];
+					x = x[0];
+				} else if (x && x.x !== undefined && x.y !== undefined) {
+					y = x.y;
+					x = x.x;
+				} else {
+					//console.log('Wrong Arguments In Point.Set:', arguments);
+					throw new TypeError('Wrong Arguments In Point.Set: [' + atom.toArray(arguments).join(', ') + ']');
+				}
+			}
+			this.x = x == null ? null : Number(x);
+			this.y = y == null ? null : Number(y);
+			return this;
+		},
+		/** @returns {LibCanvas.Point} */
+		move: function (distance, reverse) {
+			distance = this.invertDirection(Point(distance), reverse);
+			this.x += distance.x;
+			this.y += distance.y;
+
+			return Geometry.prototype.parent.call(this, distance, false);
+		},
+		/** @returns {LibCanvas.Point} */
+		moveTo : function (newCoord) {
+			return this.move(this.diff(Point(arguments)));
+		},
+		/** @returns {Number} */
+		angleTo : function (point) {
+			var diff = Point(arguments).diff(this);
+			return Math.atan2(diff.y, diff.x).normalizeAngle();
+		},
+		/** @returns {Number} */
+		distanceTo : function (point) {
+			var diff = Point(arguments).diff(this);
+			return Math.hypotenuse(diff.x, diff.y);
+		},
+		/** @returns {LibCanvas.Point} */
+		diff : function (point) {
+			return new Point(arguments).move(this, true);
+		},
+		/** @returns {LibCanvas.Point} */
+		rotate : function (angle, pivot) {
+			pivot = Point(pivot || {x: 0, y: 0});
+			if (this.equals(pivot)) return this;
+
+			var radius = pivot.distanceTo(this);
+			var sides  = pivot.diff(this);
+			// TODO: check, maybe here should be "sides.y, sides.x" ?
+			var newAngle = Math.atan2(sides.x, sides.y) - angle;
+
+			return this.moveTo({
+				x : newAngle.sin() * radius + pivot.x,
+				y : newAngle.cos() * radius + pivot.y
+			});
+		},
+		/** @returns {LibCanvas.Point} */
+		scale : function (power, pivot) {
+			pivot = Point(pivot || {x: 0, y: 0});
+			var diff = this.diff(pivot), isObject = typeof power == 'object';
+			return this.moveTo({
+				x : pivot.x - diff.x  * (isObject ? power.x : power),
+				y : pivot.y - diff.y  * (isObject ? power.y : power)
+			});
+		},
+		/** @returns {LibCanvas.Point} */
+		alterPos : function (arg, fn) {
+			return this.moveTo({
+				x: fn(this.x, typeof arg == 'object' ? arg.x : arg),
+				y: fn(this.y, typeof arg == 'object' ? arg.y : arg)
+			});
+		},
+		/** @returns {LibCanvas.Point} */
+		mul : function (arg) {
+			return this.alterPos(arg, function(a, b) {
+				return a * b;
+			});
+		},
+		/** @returns {LibCanvas.Point} */
+		getNeighbour : function (dir) {
+			return this.clone().move(shifts[dir]);
+		},
+		/** @returns {LibCanvas.Point[]} */
+		get neighbours () {
+			return this.getNeighbours( true );
+		},
+		/** @returns {LibCanvas.Point[]} */
+		getNeighbours: function (corners, asObject) {
+			var shifts = ['t', 'l', 'r', 'b'], result, i, dir;
+
+			if (corners) shifts.push('tl', 'tr', 'bl', 'br');
+
+			if (asObject) {
+				result = {};
+				for (i = shifts.length; i--;) {
+					dir = shifts[i];
+					result[dir] = this.getNeighbour( dir );
+				}
+				return result;
 			} else {
-				//console.log('Wrong Arguments In Point.Set:', arguments);
-				throw new TypeError('Wrong Arguments In Point.Set: [' + atom.toArray(arguments).join(', ') + ']');
+				return shifts.map(this.getNeighbour.bind(this));
 			}
-		}
-		this.x = x == null ? null : Number(x);
-		this.y = y == null ? null : Number(y);
-		return this;
-	},
-	/** @returns {LibCanvas.Point} */
-	move: function (distance, reverse) {
-		distance = this.invertDirection(Point(distance), reverse);
-		this.x += distance.x;
-		this.y += distance.y;
-
-		return this.parent(distance, false);
-	},
-	/** @returns {LibCanvas.Point} */
-	moveTo : function (newCoord) {
-		return this.move(this.diff(Point(arguments)));
-	},
-	/** @returns {Number} */
-	angleTo : function (point) {
-		var diff = Point(arguments).diff(this);
-		return Math.atan2(diff.y, diff.x).normalizeAngle();
-	},
-	/** @returns {Number} */
-	distanceTo : function (point) {
-		var diff = Point(arguments).diff(this);
-		return Math.hypotenuse(diff.x, diff.y);
-	},
-	/** @returns {LibCanvas.Point} */
-	diff : function (point) {
-		return new Point(arguments).move(this, true);
-	},
-	/** @returns {LibCanvas.Point} */
-	rotate : function (angle, pivot) {
-		pivot = Point(pivot || {x: 0, y: 0});
-		if (this.equals(pivot)) return this;
-		
-		var radius = pivot.distanceTo(this);
-		var sides  = pivot.diff(this);
-		// TODO: check, maybe here should be "sides.y, sides.x" ?
-		var newAngle = Math.atan2(sides.x, sides.y) - angle;
-
-		return this.moveTo({
-			x : newAngle.sin() * radius + pivot.x,
-			y : newAngle.cos() * radius + pivot.y
-		});
-	},
-	/** @returns {LibCanvas.Point} */
-	scale : function (power, pivot) {
-		pivot = Point(pivot || {x: 0, y: 0});
-		var diff = this.diff(pivot), isObject = typeof power == 'object';
-		return this.moveTo({
-			x : pivot.x - diff.x  * (isObject ? power.x : power),
-			y : pivot.y - diff.y  * (isObject ? power.y : power)
-		});
-	},
-	/** @returns {LibCanvas.Point} */
-	alterPos : function (arg, fn) {
-		return this.moveTo({
-			x: fn(this.x, typeof arg == 'object' ? arg.x : arg),
-			y: fn(this.y, typeof arg == 'object' ? arg.y : arg)
-		});
-	},
-	/** @returns {LibCanvas.Point} */
-	mul : function (arg) {
-		return this.alterPos(arg, function(a, b) {
-			return a * b;
-		});
-	},
-	/** @returns {LibCanvas.Point} */
-	getNeighbour : function (dir) {
-		return this.clone().move(shifts[dir]);
-	},
-	/** @returns {LibCanvas.Point[]} */
-	get neighbours () {
-		return this.getNeighbours( true );
-	},
-	/** @returns {LibCanvas.Point[]} */
-	getNeighbours: function (corners, asObject) {
-		var shifts = ['t', 'l', 'r', 'b'], result, i, dir;
-
-		if (corners) shifts.push('tl', 'tr', 'bl', 'br');
-
-		if (asObject) {
-			result = {};
-			for (i = shifts.length; i--;) {
-				dir = shifts[i];
-				result[dir] = this.getNeighbour( dir );
+		},
+		/** @returns {boolean} */
+		equals : function (to, accuracy) {
+			to = Point(to);
+			return accuracy == null ? (to.x == this.x && to.y == this.y) :
+				(this.x.equals(to.x, accuracy) && this.y.equals(to.y, accuracy));
+		},
+		/** @returns {object} */
+		toObject: function () {
+			return {
+				x: this.x,
+				y: this.y
+			};
+		},
+		/** @returns {LibCanvas.Point} */
+		invoke: function (method) {
+			this.x = this.x[method]();
+			this.y = this.y[method]();
+			return this;
+		},
+		/** @returns {LibCanvas.Point} */
+		mean: function (points) {
+			var l = points.length, i = l, x = 0, y = 0;
+			while (i--) {
+				x += points[i].x;
+				y += points[i].y;
 			}
-			return result;
-		} else {
-			return shifts.map(this.getNeighbour.bind(this));
-		}
-	},
-	/** @returns {boolean} */
-	equals : function (to, accuracy) {
-		to = Point(to);
-		return accuracy == null ? (to.x == this.x && to.y == this.y) :
-			(this.x.equals(to.x, accuracy) && this.y.equals(to.y, accuracy));
-	},
-	/** @returns {object} */
-	toObject: function () {
-		return {
-			x: this.x,
-			y: this.y
-		};
-	},
-	/** @returns {LibCanvas.Point} */
-	invoke: function (method) {
-		this.x = this.x[method]();
-		this.y = this.y[method]();
-		return this;
-	},
-	/** @returns {LibCanvas.Point} */
-	mean: function (points) {
-		var l = points.length, i = l, x = 0, y = 0;
-		while (i--) {
-			x += points[i].x;
-			y += points[i].y;
-		}
-		return this.set(x/l, y/l);
-	},
-	/** @returns {LibCanvas.Point} */
-	snapToPixel: function () {
-		this.x += 0.5 - (this.x - this.x.floor());
-		this.y += 0.5 - (this.y - this.y.floor());
-		return this;
-	},
-	/** @returns {LibCanvas.Point} */
-	reverse: function () {
-		this.x *= -1;
-		this.y *= -1;
-		return this;
-	},
-	/** @returns {LibCanvas.Point} */
-	clone : function () {
-		return new this.self(this);
-	},
-	/** @returns {string} */
-	dump: function () {
-		return '[Point(' + this.x + ', ' + this.y + ')]';
-	},
-	toString: Function.lambda('[object LibCanvas.Point]')
+			return this.set(x/l, y/l);
+		},
+		/** @returns {LibCanvas.Point} */
+		snapToPixel: function () {
+			this.x += 0.5 - (this.x - this.x.floor());
+			this.y += 0.5 - (this.y - this.y.floor());
+			return this;
+		},
+		/** @returns {LibCanvas.Point} */
+		reverse: function () {
+			this.x *= -1;
+			this.y *= -1;
+			return this;
+		},
+		/** @returns {LibCanvas.Point} */
+		clone : function () {
+			return new this.self(this);
+		},
+		/** @returns {string} */
+		dump: function () {
+			return '[Point(' + this.x + ', ' + this.y + ')]';
+		},
+		toString: Function.lambda('[object LibCanvas.Point]')
+	}
 });
+
+for (var s in shifts) {
+	shifts[s] = new Point(shifts[s]);
+};
+
+return Point;
 
 }();
 
@@ -1342,15 +1365,15 @@ provides: Mouse
 */
 
 
-var Mouse = LibCanvas.Mouse = Class(
+var Mouse = declare( 'LibCanvas.Mouse',
 /**
  * @lends LibCanvas.Mouse.prototype
  * @augments Class.Events.prototype
  */
 {
-	Implements: Class.Events,
+	mixin: [ Events.Mixin ],
 	
-	Static: {
+	own: {
 		buttons: {
 			left  : false,
 			middle: false,
@@ -1377,7 +1400,7 @@ var Mouse = LibCanvas.Mouse = Class(
 			});
 		},
 		createOffset : function(elem) {
-			var top = 0, left = 0, offset;
+			var top = 0, left = 0;
 			if (elem.getBoundingClientRect) {
 				var box = elem.getBoundingClientRect();
 
@@ -1433,152 +1456,154 @@ var Mouse = LibCanvas.Mouse = Class(
 			return e.offset;
 		}
 	},
-	
-	initialize : function (elem) {
-		this.inCanvas = false;
-		this.point = new Point(null, null);
-		/** @private */
-		this.prev  = new Point(null, null);
-		/** @private */
-		this.diff  = new Point(null, null);
+	proto: {
+		initialize : function (elem) {
+			this.inCanvas = false;
+			this.point = new Point(null, null);
+			/** @private */
+			this.prev  = new Point(null, null);
+			/** @private */
+			this.diff  = new Point(null, null);
 
-		this.elem = elem;
+			this.elem = elem;
 
-		this.events = new MouseEvents(this);
+			this.events  = new Events(this);
+			this.handler = new MouseEvents(this);
 
-		this.setEvents();
-	},
-	isOver: function (elem) {
-		var translate = elem.mouseTranslate;
-		if (translate) this.point.move( translate, true );
-		var result = this.inCanvas && elem.hasPoint( this.point );
-		if (translate) this.point.move( translate );
-		return result;
-	},
-	button: function (key) {
-		return this.self.buttons[key || 'left'];
-	},
-	setCoords : function (point, inCanvas) {
-		this.prev.set( this.point );
-		this.diff = this.prev.diff( point );
-		this.inCanvas = inCanvas;
-		this.point.move( this.diff );
-		this.debugUpdate();
-		return this;
-	},
-	getOffset : function (e) {
-		return LibCanvas.Mouse.getOffset(e);
-	},
-	setEvents : function () {
+			this.setEvents();
+		},
+		isOver: function (elem) {
+			var translate = elem.mouseTranslate;
+			if (translate) this.point.move( translate, true );
+			var result = this.inCanvas && elem.hasPoint( this.point );
+			if (translate) this.point.move( translate );
+			return result;
+		},
+		button: function (key) {
+			return this.self.buttons[key || 'left'];
+		},
+		setCoords : function (point, inCanvas) {
+			this.prev.set( this.point );
+			this.diff = this.prev.diff( point );
+			this.inCanvas = inCanvas;
+			this.point.move( this.diff );
+			this.debugUpdate();
+			return this;
+		},
+		getOffset : function (e) {
+			return LibCanvas.Mouse.getOffset(e);
+		},
+		setEvents : function () {
 
-		// e.previousOffset = prev.clone();
-		// e.deltaOffset    = prev.diff( this.point );
-		var mouse = this,
-		waitEvent = function (event, isOffice) {
-			if (event.match(/^mouse/)) {
-				var shortE = event.substr(5);
-			}
+			// e.previousOffset = prev.clone();
+			// e.deltaOffset    = prev.diff( this.point );
+			var mouse = this,
+			waitEvent = function (event, isOffice) {
+				if (event.match(/^mouse/)) {
+					var shortE = event.substr(5);
+				}
 
-			return function (e) {
+				return function (e) {
+					prepare( e );
+					var wait     = mouse.isEventAdded(event),
+						waitShort = ( shortE && mouse.isEventAdded(shortE) );
+					if (isOffice || wait || waitShort) mouse.getOffset(e);
+
+					if (isOffice ) mouse.handler.event(event, e);
+					if (wait     ) mouse.events.fire(event, [e]);
+					if (waitShort) mouse.events.fire(shortE, [e]);
+					if (isOffice ) e.preventDefault();
+
+					return !isOffice;
+				};
+			},
+			waitWheel = waitEvent('wheel', false),
+			prepare = function (e) {
+				e.previousOffset = mouse.prev;
+				e.deltaOffset = mouse.diff;
+			},
+			wheel = function (e) {
+				e.delta =
+					// IE, Opera, Chrome
+					e.wheelDelta ? e.wheelDelta > 0 ? 1 : -1 :
+					// Fx
+					e.detail     ? e.detail     < 0 ? 1 : -1 : null;
+				e.up   = e.delta > 0;
+				e.down = e.delta < 0;
+				waitWheel(e);
+				mouse.handler.event('wheel', e);
+			},
+			down = waitEvent('mousedown', true),
+			up   = waitEvent('mouseup'  , true),
+			over = waitEvent('mouseover', true),
+			move = function ( e ) {
+				var offset = mouse.getOffset(e);
+				mouse.setCoords(offset, true);
 				prepare( e );
-				var wait      = mouse.isEventAdded(event),
-					waitShort = ( shortE && mouse.isEventAdded(shortE) );
-				if (isOffice || wait || waitShort) mouse.getOffset(e);
-
-				if (isOffice ) mouse.events.event(event, e);
-				if (wait     ) mouse.fireEvent(event, [e]);
-				if (waitShort) mouse.fireEvent(shortE, [e]);
-				if (isOffice ) e.preventDefault();
-
-				return !isOffice;
+				mouse.handler.event('mousemove', e);
+				mouse.events.fire('move', [e]);
+				mouse.isOut = false;
+				e.preventDefault();
+				return false;
+			},
+			out = function (e) {
+				var offset = mouse.getOffset(e);
+				mouse.setCoords(offset, false);
+				prepare( e );
+				mouse.handler.event('mouseout', e);
+				mouse.events.fire('mouseout', [e]);
+				mouse.events.fire('out', [e]);
+				mouse.isOut = true;
+				e.preventDefault();
+				return false;
 			};
-		},
-		waitWheel = waitEvent('wheel', false),
-		prepare = function (e) {
-			e.previousOffset = mouse.prev;
-			e.deltaOffset = mouse.diff;
-		},
-		wheel = function (e) {
-			e.delta =
-				// IE, Opera, Chrome
-				e.wheelDelta ? e.wheelDelta > 0 ? 1 : -1 :
-				// Fx
-				e.detail     ? e.detail     < 0 ? 1 : -1 : null;
-			e.up   = e.delta > 0;
-			e.down = e.delta < 0;
-			waitWheel(e);
-			mouse.events.event('wheel', e);
-		},
-		down = waitEvent('mousedown', true),
-		up   = waitEvent('mouseup'  , true),
-		over = waitEvent('mouseover', true),
-		move = function ( e ) {
-			var offset = mouse.getOffset(e);
-			mouse.setCoords(offset, true);
-			prepare( e );
-			mouse.events.event('mousemove', e);
-			mouse.fireEvent('move', [e]);
-			mouse.isOut = false;
-			e.preventDefault();
-			return false;
-		},
-		out = function (e) {
-			var offset = mouse.getOffset(e);
-			mouse.setCoords(offset, false);
-			prepare( e );
-			mouse.events.event('mouseout', e);
-			mouse.fireEvent('mouseout', [e]);
-			mouse.fireEvent('out', [e]);
-			mouse.isOut = true;
-			e.preventDefault();
-			return false;
-		};
 
-		atom.dom(mouse.elem).bind({
-			click      : waitEvent('click', false),
-			dblclick   : waitEvent('dblclick', false),
-			contextmenu: waitEvent('contextmenu', false),
-			mouseover  : over,
-			mousedown  : down,
-			mouseup    : up,
-			mousemove  : move,
-			mouseout   : out,
-			selectstart: false,
-			DOMMouseScroll: wheel,
-			mousewheel: wheel
-		});
-		return this;
-	},
-	subscribe : function (elem) {
-		this.events.subscribe(elem);
-		return this;
-	},
-	unsubscribe : function (elem) {
-		this.events.unsubscribe(elem);
-		return this;
-	},
-	debugTrace: null,
-	debugUpdate: function () {
-		if (this.debugTrace) {
-			this.debugTrace.trace( 'Mouse' +
-				(this.inCanvas ? ': ' + this.point.x.round() + ',' + this.point.y.round() : ' is out of canvas')
-			);
-		}
-	},
-	debug : function (on) {
-		if (on && !this.debugTrace) {
-			this.debugTrace = new Trace();
-		} else if (on === false) {
-			this.debugTrace = null;
-		}
-		this.debugUpdate();
-		return this;
-	},
-	dump: function () {
-		var p = this.point;
-		return '[Mouse(' + p.x + '*' + p.y + ')]';
-	},
-	toString: Function.lambda('[object LibCanvas.Mouse]')
+			atom.dom(mouse.elem).bind({
+				click      : waitEvent('click', false),
+				dblclick   : waitEvent('dblclick', false),
+				contextmenu: waitEvent('contextmenu', false),
+				mouseover  : over,
+				mousedown  : down,
+				mouseup    : up,
+				mousemove  : move,
+				mouseout   : out,
+				selectstart: false,
+				DOMMouseScroll: wheel,
+				mousewheel: wheel
+			});
+			return this;
+		},
+		subscribe : function (elem) {
+			this.handler.subscribe(elem);
+			return this;
+		},
+		unsubscribe : function (elem) {
+			this.handler.unsubscribe(elem);
+			return this;
+		},
+		debugTrace: null,
+		debugUpdate: function () {
+			if (this.debugTrace) {
+				this.debugTrace.trace( 'Mouse' +
+					(this.inCanvas ? ': ' + this.point.x.round() + ',' + this.point.y.round() : ' is out of canvas')
+				);
+			}
+		},
+		debug : function (on) {
+			if (on && !this.debugTrace) {
+				this.debugTrace = new Trace();
+			} else if (on === false) {
+				this.debugTrace = null;
+			}
+			this.debugUpdate();
+			return this;
+		},
+		dump: function () {
+			var p = this.point;
+			return '[Mouse(' + p.x + '*' + p.y + ')]';
+		},
+		toString: Function.lambda('[object LibCanvas.Mouse]')
+	}
 });
 
 LibCanvas.Mouse.listen();
@@ -1623,7 +1648,7 @@ events:
 */
 
 // Should extends LibCanvas.Behaviors.Drawable
-var MouseListener = LibCanvas.Behaviors.MouseListener = Class({
+var MouseListener = declare( 'LibCanvas.Behaviors.MouseListener', {
 	'listenMouse.start': function () {
 		this.libcanvas.mouse.subscribe(this);
 	},
@@ -1640,7 +1665,7 @@ var MouseListener = LibCanvas.Behaviors.MouseListener = Class({
 		var method = this[ 'listenMouse.' + (stopListen ? 'stop' : 'start') ];
 
 		this.libcanvas ? method.call( this ) :
-			this.addEvent('libcanvasSet', method );
+			this.events.add('libcanvasSet', method );
 		return this;
 	}
 });
@@ -1668,7 +1693,7 @@ provides: Behaviors.Clickable
 ...
 */
 
-var Clickable = LibCanvas.Behaviors.Clickable = function () {
+var Clickable = function () {
 
 var $window = atom.dom(window);
 
@@ -1677,14 +1702,13 @@ var setValFn = function (object, name, val) {
 	return function (event) {
 		if (object[name] != val) {
 			object[name] = val;
-			object.fireEvent('statusChanged', result);
+			object.events.fire('statusChanged', result);
 		}
 	};
 };
 
-// Should extends drawable, implements mouseListener
-return Class({
-	Extends: MouseListener,
+// Should mixin Drawable & MouseListener
+return declare( 'LibCanvas.Behaviors.Clickable', {
 
 	clickable : function (stop, callback) {
 		if (typeof stop == 'function') {
@@ -1692,7 +1716,7 @@ return Class({
 			stop = false;
 		}
 
-		if (callback) this.addEvent( 'statusChanged', callback );
+		if (callback) this.events.add( 'statusChanged', callback );
 
 		var callbacks = this['clickable.callbacks'];
 
@@ -1708,12 +1732,13 @@ return Class({
 		}
 
 		if (stop) {
-			this.removeEvent(callbacks);
+			this.events.remove(callbacks);
 		} else {
-			this.addEvent(callbacks);
+			this.events.add(callbacks);
 		}
 		return this;
 	}
+
 });
 
 }();
@@ -1741,7 +1766,7 @@ provides: Behaviors.Draggable
 ...
 */
 
-var Draggable = LibCanvas.Behaviors.Draggable = function () {
+var Draggable = function () {
 
 
 var initDraggable = function () {
@@ -1749,16 +1774,16 @@ var initDraggable = function () {
 		mouse = draggable.libcanvas.mouse,
 		dragFn = function ( e ) {
 			draggable.shape.move( e.deltaOffset );
-			draggable.fireEvent('moveDrag', [e.deltaOffset, e]);
+			draggable.events.fire('moveDrag', [e.deltaOffset, e]);
 		},
 		stopDrag  = ['up', 'out'],
 		onStopDrag = function (e) {
 			if (e.button !== 0) return;
 
-			draggable.fireEvent('stopDrag', [ e ]);
-			mouse
-				.removeEvent( 'move', dragFn)
-				.removeEvent(stopDrag, onStopDrag);
+			draggable.events.fire('stopDrag', [ e ]);
+			mouse.events
+				.remove( 'move', dragFn)
+				.remove(stopDrag, onStopDrag);
 		}.bind(this);
 
 	draggable.listenMouse();
@@ -1768,32 +1793,29 @@ var initDraggable = function () {
 
 		if (!draggable['draggable.isDraggable']) return;
 
-		draggable.fireEvent('startDrag', [ e ]);
-		mouse
-			.addEvent( 'move', dragFn )
-			.addEvent( stopDrag, onStopDrag );
+		draggable.events.add('startDrag', [ e ]);
+		mouse.events.add( 'move', dragFn );
+		mouse.events.add( stopDrag, onStopDrag );
 	});
 
 
 	return this;
 };
 
-return Class({
-	Extends: MouseListener,
-
+return declare( 'LibCanvas.Behaviors.Draggable', {
 	draggable : function (stop, callback) {
 		if (typeof stop == 'function') {
 			callback = stop;
 			stop = false;
 		}
 
-		if (callback) this.addEvent( 'moveDrag', callback );
+		if (callback) this.events.add( 'moveDrag', callback );
 
 		if (! ('draggable.isDraggable' in this) ) {
 			if (this.libcanvas) {
 				initDraggable.call( this );
 			} else {
-				this.addEvent('libcanvasSet', initDraggable);
+				this.events.add('libcanvasSet', initDraggable);
 			}
 		}
 		this['draggable.isDraggable'] = !stop;
@@ -1825,93 +1847,92 @@ provides: Behaviors.Drawable
 ...
 */
 
-var Drawable = LibCanvas.Behaviors.Drawable = function () {
+var Drawable = function () {
 	
 var start = function () {
 	this.libcanvas.addElement(this);
-	// todo: dont use removeEvent
-	return 'removeEvent';
+	this.events.remove('libcanvasSet', start);
 };
 var stop = function () {
 	this.libcanvas.rmElement(this);
-	// todo: dont use removeEvent
-	return 'removeEvent';
+	this.events.remove('libcanvasSet', stop);
+};
+var manage = function (first, second) {
+	return function () {
+		this.events.remove('libcanvasSet', first);
+
+		this.libcanvas ?
+			second.call( this ) :
+			this.events.add('libcanvasSet', second);
+		return this;
+	}
 };
 
-return Class({
+return declare( 'LibCanvas.Behaviors.Drawable', {
 	Implements: Class.Events,
-	libcanvasIsReady: false,
-	setLibcanvas : function (libcanvas) {
-		if (this.libcanvas) {
-			this.libcanvas.rmElement(this);
-			this.libcanvas = libcanvas;
-		} else {
-			this.libcanvas = libcanvas;
-			var isReady = this.libcanvas.isReady();
-			if (isReady) {
-				this.libcanvasIsReady = true;
+	proto: {
+		libcanvasIsReady: false,
+		setLibcanvas : function (libcanvas) {
+			if (this.libcanvas) {
+				this.libcanvas.rmElement(this);
+				this.libcanvas = libcanvas;
 			} else {
-				this.addEvent('libcanvasReady', function () {
+				this.libcanvas = libcanvas;
+				var isReady = this.libcanvas.isReady();
+				if (isReady) {
 					this.libcanvasIsReady = true;
-				});
-				this.libcanvas.addEvent('ready', this.readyEvent.bind(this, 'libcanvasReady'));
+				} else {
+					this.events.add('libcanvasReady', function () {
+						this.libcanvasIsReady = true;
+					});
+					this.libcanvas.events.add('ready', function () {
+						this.events.ready('libcanvasReady')
+					}.bind(this));
+				}
+				this.events.ready('libcanvasSet');
+				if (isReady) this.events.ready('libcanvasReady');
 			}
-			this.readyEvent('libcanvasSet');
-			if (isReady) this.readyEvent('libcanvasReady');
-		}
-		return this;
-	},
-	isReady : function () {
-		return this.libcanvasIsReady;
-	},
-	// @deprecated
-	getShape : function () {
-		return this.shape;
-	},
-	// @deprecated
-	setShape : function (shape) {
-		this.shape = shape;
-		return this;
-	},
-	// @deprecated
-	getZIndex : function () {
-		return this.zIndex || 0;
-	},
-	hasPoint: function (point) {
-		return this.shape.hasPoint( point );
-	},
-	// @deprecated
-	setZIndex : function (zIndex) {
-		this.zIndex = zIndex;
-		return this;
-	},
-	toLayer: function (name) {
-		if (this.libcanvas) {
-			this.libcanvas
-				.rmElement(this)
-				.layer(name)
-				.addElement(this);
-		}
-		return this;
-	},
-	startDrawing: function () {
-		this.removeEvent('libcanvasSet', stop);
+			return this;
+		},
+		isReady : function () {
+			return this.libcanvasIsReady;
+		},
+		// @deprecated
+		getShape : function () {
+			return this.shape;
+		},
+		// @deprecated
+		setShape : function (shape) {
+			this.shape = shape;
+			return this;
+		},
+		// @deprecated
+		getZIndex : function () {
+			return this.zIndex || 0;
+		},
+		hasPoint: function (point) {
+			return this.shape.hasPoint( point );
+		},
+		// @deprecated
+		setZIndex : function (zIndex) {
+			this.zIndex = zIndex;
+			return this;
+		},
+		toLayer: function (name) {
+			if (this.libcanvas) {
+				this.libcanvas
+					.rmElement(this)
+					.layer(name)
+					.addElement(this);
+			}
+			return this;
+		},
+		startDrawing: manage(stop , start),
+		 stopDrawing: manage(start, stop ),
 
-		this.libcanvas ?
-			start.call( this ) :
-			this.addEvent('libcanvasSet', start);
-		return this;
-	},
-	stopDrawing: function () {
-		this.removeEvent('libcanvasSet', start);
-
-		this.libcanvas ?
-			stop.call( this ) :
-			this.addEvent('libcanvasSet', stop);
-		return this;
-	},
-	update : Class.abstractMethod,
-	draw   : Class.abstractMethod
+		update : 'abstract',
+		draw   : 'abstract'
+	}
 });
 
 }();
@@ -1939,12 +1960,14 @@ provides: Behaviors.DrawableSprite
 ...
 */
 
-var DrawableSprite = LibCanvas.Behaviors.DrawableSprite = Class({
-	Extends: Drawable,
+var DrawableSprite = declare( 'LibCanvas.Behaviors.DrawableSprite', {
+	parent: Drawable,
 
-	draw: function () {
-		this.libcanvas.ctx.drawImage( this.sprite, this.shape );
-		return this;
+	proto: {
+		draw: function () {
+			this.libcanvas.ctx.drawImage( this.sprite, this.shape );
+			return this;
+		}
 	}
 });
 
@@ -1972,26 +1995,25 @@ provides: Behaviors.Droppable
 ...
 */
 
-var Droppable = LibCanvas.Behaviors.Droppable = Class({
-	Extends: Draggable,
-
+// must be Draggable
+var Droppable = declare( 'LibCanvas.Behaviors.Droppable', {
 	drops : null,
 	drop : function (obj) {
 		if (this.drops === null) {
 			this.drops = [];
-			this.addEvent('stopDrag', function () {
+			this.events.add('stopDrag', function () {
 				var dropped = false;
 				var mouse = this.libcanvas.mouse;
 				if (mouse.inCanvas) {
 					this.drops.forEach(function (obj) {
-						if(obj.getShape().hasPoint(mouse.point)) {
+						if(obj.shape.hasPoint(mouse.point)) {
 							dropped = true;
-							this.fireEvent('dropped', [obj]);
+							this.events.fire('dropped', [obj]);
 						}
 					}.bind(this));
 				}
-				if (!dropped) this.fireEvent('dropped', [null]);
-			}.bind(this));
+				if (!dropped) this.events.fire('dropped', [null]);
+			});
 		}
 		this.drops.push(obj);
 		return this;
@@ -2024,7 +2046,7 @@ provides: Behaviors.Linkable
 ...
 */
 
-var Linkable = LibCanvas.Behaviors.Linkable = Class({
+var Linkable = declare( 'LibCanvas.Behaviors.Linkable', {
 	links : null,
 	moveLinks : function (move) {
 		(this.links || []).forEach(function (elem) {
@@ -2036,7 +2058,7 @@ var Linkable = LibCanvas.Behaviors.Linkable = Class({
 	link : function (obj) {
 		if (this.links === null) {
 			this.links = [];
-			this.shape.addEvent('move',
+			this.shape.events.add('move',
 				this.moveLinks.bind(this)
 			);
 		}
@@ -2074,7 +2096,7 @@ provides: Behaviors.Moveable
 
 ...
 */
-var Moveable = LibCanvas.Behaviors.Moveable = Class({
+var Moveable = declare( 'LibCanvas.Behaviors.Moveable', {
 	stopMoving : function () {
 		var anim = this['moveTo.animation'];
 		if (anim) anim.stop();
@@ -2086,10 +2108,17 @@ var Moveable = LibCanvas.Behaviors.Moveable = Class({
 		var shape = this.shape, diff = shape.getCoords().diff(point);
 		if (!speed) {
 			shape.move(diff);
-			this.fireEvent('stopMove');
+			this.events.fire('stopMove');
 			return this;
 		}
 		var distance = Math.hypotenuse(diff.x, diff.y), prev = 0;
+		var events = this.events;
+
+		var fire = function (event) {
+			return function () {
+				events.fire(event);
+			};
+		};
 
 		this['moveTo.animation'] = new Animatable(function (change) {
 			shape.move({
@@ -2100,9 +2129,9 @@ var Moveable = LibCanvas.Behaviors.Moveable = Class({
 		}).animate({
 			fn        : fn || 'linear',
 			time      : distance / speed * 1000,
-			onProcess : this.fireEvent.bind(this, 'move'),
-			onAbort   : this.fireEvent.bind(this, 'stopMove'),
-			onFinish  : this.fireEvent.bind(this, 'stopMove')
+			onProcess : fire('move'),
+			onAbort   : fire('stopMove'),
+			onFinish  : fire('stopMove')
 		});
 
 		return this;
@@ -2383,7 +2412,7 @@ provides: Canvas2D
 ...
 */
 
-var Canvas2D = LibCanvas.Canvas2D = Class(
+var Canvas2D = declare( 'LibCanvas.Canvas2D',
 /**
  * @lends LibCanvas.Canvas2D.prototype
  * @augments LibCanvas.prototype
@@ -2394,538 +2423,540 @@ var Canvas2D = LibCanvas.Canvas2D = Class(
  * @augments Class.Options.prototype
  */
 {
-	Extends: LibCanvas,
-	Implements: [
+	parent: LibCanvas,
+	mixin: [
 		FrameRenderer,
 		InnerFpsMeter,
 		DownloadingProgress,
-		Class.Events,
-		Class.Options
+		Events.Mixin,
+		Options.Mixin
 	],
 
-	Generators: {
+	proto: {
+		/** @deprecated */
+		set fps (f) { this.settings.set({ fps: f }) },
+		/** @deprecated */
+		get fps ( ) { return this.settings.get('fps') },
+
 		/** @private */
-		mouse: function () {
-			throw new Error('Mouse is not listened by libcanvas');
+		interval: null,
+		/** @private */
+		name    : null,
+
+		options: {
+			name: 'main',
+			autoStart: true,
+			clear: true,
+			invoke: false, // invoke objects each frame
+			fps: 30
 		},
-		/** @private */
-		keyboard: function () {
-			throw new Error('Keyboard is not listened by libcanvas');
-		},
-		/** @private */
-		wrapper: function () {
-			var wrapper = atom.dom.create('div').css({
-				width   : '100%',
-				height  : '100%',
-				overflow: 'hidden',
-				position: 'absolute'
-			});
-			wrapper.parent = atom.dom.create('div').addClass('libcanvas-layers-container');
-			return wrapper.appendTo(wrapper.parent);
-		},
-		// Needs for right mouse behaviour
-		/** @private */
-		cover: function () {
-			if (this.parentLayer) return this.parentLayer.cover;
-			return atom.dom
-				.create('div')
-				.css({
-					position: 'absolute',
-					width : '100%',
-					height: '100%',
-					// 1px transparent gif for IE9
-					backgroundImage : 'url(data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEAAAEALAAAAAABAAEAAAICTAEAOw==)',
-					backgroundRepeat: 'repeat'
-				})
-				.addClass('libcanvas-layers-cover')
-				.appendTo(this.wrapper);
-		},
-		/** @private */
-		invoker: function () {
-			return new Invoker({
-				context: this,
-				defaultPriority: 10,
-				fpsLimit: this.options.fps
-			});
-		}
-	},
 
-	/** @deprecated */
-	set fps (f) { this.options.fps = f; },
-	/** @deprecated */
-	get fps ( ) { return this.options.fps; },
+		/**
+		 * @constructs
+		 * @param {atom.dom} elem
+		 * @param {object} options
+		 * @returns {LibCanvas.Canvas2D}
+		 */
+		initialize : function (elem, options) {
+			this.setOptions({});
 
-	/** @private */
-	interval: null,
-	/** @private */
-	name    : null,
+			this.bindMethods([ 'update' ]);
 
-	options: {
-		name: 'main',
-		autoStart: true,
-		clear: true,
-		invoke: false, // invoke objects each frame
-		fps: 30
-	},
+			this._appSize = { width: 0, height: 0 };
 
-	/**
-	 * @constructs
-	 * @param {atom.dom} elem
-	 * @param {object} options
-	 * @returns {LibCanvas.Canvas2D}
-	 */
-	initialize : function (elem, options) {
-		Class.bindAll( this, 'update' );
-
-		this._appSize = { width: 0, height: 0 };
-
-		this._shift = new Point( 0, 0 );
-		this.funcs = {
-			plain : [],
-			render: []
-		};
-		this.elems = [];
-		this.processors = { pre: [], post: [] };
+			this._shift = new Point( 0, 0 );
+			this.funcs = {
+				plain : [],
+				render: []
+			};
+			this.elems = [];
+			this.processors = { pre: [], post: [] };
 
 
-		var aElem = atom.dom(elem);
-		elem = aElem.first;
+			var aElem = atom.dom(elem);
+			elem = aElem.first;
 
-		this.setOptions(options);
+			this.settings.set(options);
 
-		this.origElem = elem;
-		this.origCtx  = elem.getContext('2d-libcanvas');
-		this.origElem.atom = aElem;
+			this.origElem = elem;
+			this.origCtx  = elem.getContext('2d-libcanvas');
+			this.origElem.atom = aElem;
 
-		this.createProjectBuffer().addClearer();
+			this.createProjectBuffer().addClearer();
 
-		var wrapper = this.wrapper, cover = this.cover;
+			var wrapper = this.wrapper, cover = this.cover;
 
-		this.name = this.options.name;
-		if (this.parentLayer) {
-			this._layers = this.parentLayer._layers;
-			aElem.appendTo(wrapper);
-		} else {
-			this._layers = {};
-			aElem
-				.replaceWith(wrapper.parent)
-				.appendTo(wrapper);
-
-			if (elem.width && elem.height) {
-				this.size(elem.width, elem.height, true);
-			}
-		}
-
-		this._layers[this.name] = this;
-		cover.css('zIndex', this.maxZIndex + 100);
-
-		if (this.options.autoStart) this.isReady();
-		
-		aElem
-			.attr('data-layer-name', this.name)
-			.css('position', 'absolute');
-		this.zIndex = Infinity;
-
-		return this;
-	},
-
-	/** @returns {LibCanvas.Canvas2D} */
-	show: function () {
-		this.origElem.atom.css('display', 'block');
-		return this;
-	},
-
-	/** @returns {LibCanvas.Canvas2D} */
-	hide: function () {
-		this.origElem.atom.css('display', 'none');
-		return this;
-	},
-
-	/**
-	 * @param {number} size
-	 * @param {number} height
-	 * @param {number} wrapper
-	 * @returns {LibCanvas.Canvas2D}
-	 */
-	size: function (size, height, wrapper) {
-
-		if (typeof size == 'object') {
-			wrapper = height;
-			if (size.width == null) {
-				size = { width: size.x, height: size.y };
-			}
-		} else {
-			size = { width: size, height: height };
-		}
-		for (var i in size) {
-			if (this.origElem != this.elem) {
-				this.origElem[i] = size[i];
-			}
-			this.elem[i] = size[i];
-		}
-		if (wrapper) this.appSize(size);
-		return this;
-	},
-
-	/**
-	 * @param {number} size
-	 * @param {number} height
-	 * @returns {LibCanvas.Canvas2D}
-	 */
-	appSize: function (size, height) {
-		if (typeof size != 'object') {
-			size = { width: size, height: height };
-		}
-		for (var i in size) {
-			this.wrapper       .css(i, size[i]);
-			this.wrapper.parent.css(i, size[i]);
-			this._appSize[i] = size[i];
-		}
-		return this;
-	},
-
-	/**
-	 * @returns {object}
-	 */
-	getAppSize: function () {
-		return this._appSize;
-	},
-
-	/**
-	 * @deprecated - use `setShift` or `addShift` instead
-	 * @param {object} shift
-	 * @returns {LibCanvas.Canvas2D}
-	 */
-	shift: function (shift, left) {
-		if (left != null) {
-			shift = { top: shift, left: left };
-		}
-		this.origElem.atom.css({
-			'margin-top' : shift.top,
-			'margin-left': shift.left
-		});
-		return this;
-	},
-
-	/**
-	 * @private
-	 * @property {LibCanvas.Point}
-	 */
-	_shift: null,
-
-	/**
-	 * @param {LibCanvas.Point} shift
-	 * @returns {LibCanvas.Canvas2D}
-	 */
-	translateMouse: function (shift) {
-		shift = Point(shift);
-		var elems = this.elems, e, i = elems.length;
-		while (i--) {
-			e = elems[i];
-			if (e.mouseTranslate) {
-				e.mouseTranslate.move( shift );
+			this.name = this.settings.get('name');
+			if (this.parentLayer) {
+				this._layers = this.parentLayer._layers;
+				aElem.appendTo(wrapper);
 			} else {
-				e.mouseTranslate = shift.clone();
+				this._layers = {};
+				aElem
+					.replaceWith(wrapper.parent)
+					.appendTo(wrapper);
+
+				if (elem.width && elem.height) {
+					this.size(elem.width, elem.height, true);
+				}
 			}
-		}
-		return this;
-	},
 
-	/**
-	 * @param {LibCanvas.Point} shift
-	 * @returns {LibCanvas.Canvas2D}
-	 */
-	addShift: function ( shift, withElements ) {
-		shift = Point( shift );
-		var newShift = this._shift.move( shift );
-		this.origElem.atom.css({
-			'margin-left': newShift.x,
-			'margin-top' : newShift.y
-		});
-		if (withElements) this.translateMouse( shift );
-		return this;
-	},
+			this._layers[this.name] = this;
+			cover.css('zIndex', this.maxZIndex + 100);
 
-	/**
-	 * @param {LibCanvas.Point} shift
-	 * @returns {LibCanvas.Canvas2D}
-	 */
-	setShift: function (shift, withElements) {
-		return this.addShift( this._shift.diff(shift), withElements );
-	},
+			if (this.settings.get('autoStart')) this.isReady();
 
-	/**
-	 * @returns {LibCanvas.Point}
-	 */
-	getShift: function () {
-		return this._shift;
-	},
+			aElem
+				.attr('data-layer-name', this.name)
+				.css('position', 'absolute');
+			this.zIndex = Infinity;
 
-	/** @private */
-	createProjectBuffer: function () {
-		this.elem = this.origElem;
-		this.ctx  = this.origCtx;
-		return this;
-	},
+			return this;
+		},
 
-	/** @private */
-	addClearer: function () {
-		var clear = this.options.clear;
-		if (clear) {
-			this.addProcessor('pre',
-				new Processors.Clearer(
-					typeof clear === 'string' ? clear : null
-				)
+		/** @returns {LibCanvas.Canvas2D} */
+		show: function () {
+			this.origElem.atom.css('display', 'block');
+			return this;
+		},
+
+		/** @returns {LibCanvas.Canvas2D} */
+		hide: function () {
+			this.origElem.atom.css('display', 'none');
+			return this;
+		},
+
+		/**
+		 * @param {number} size
+		 * @param {number} height
+		 * @param {number} wrapper
+		 * @returns {LibCanvas.Canvas2D}
+		 */
+		size: function (size, height, wrapper) {
+
+			if (typeof size == 'object') {
+				wrapper = height;
+				if (size.width == null) {
+					size = { width: size.x, height: size.y };
+				}
+			} else {
+				size = { width: size, height: height };
+			}
+			for (var i in size) {
+				if (this.origElem != this.elem) {
+					this.origElem[i] = size[i];
+				}
+				this.elem[i] = size[i];
+			}
+			if (wrapper) this.appSize(size);
+			return this;
+		},
+
+		/**
+		 * @param {number} size
+		 * @param {number} height
+		 * @returns {LibCanvas.Canvas2D}
+		 */
+		appSize: function (size, height) {
+			if (typeof size != 'object') {
+				size = { width: size, height: height };
+			}
+			for (var i in size) {
+				this.wrapper       .css(i, size[i]);
+				this.wrapper.parent.css(i, size[i]);
+				this._appSize[i] = size[i];
+			}
+			return this;
+		},
+
+		/**
+		 * @returns {object}
+		 */
+		getAppSize: function () {
+			return this._appSize;
+		},
+
+		/**
+		 * @deprecated - use `setShift` or `addShift` instead
+		 * @param {object} shift
+		 * @returns {LibCanvas.Canvas2D}
+		 */
+		shift: function (shift, left) {
+			if (left != null) {
+				shift = { top: shift, left: left };
+			}
+			this.origElem.atom.css({
+				'margin-top' : shift.top,
+				'margin-left': shift.left
+			});
+			return this;
+		},
+
+		/**
+		 * @private
+		 * @property {LibCanvas.Point}
+		 */
+		_shift: null,
+
+		/**
+		 * @param {LibCanvas.Point} shift
+		 * @returns {LibCanvas.Canvas2D}
+		 */
+		translateMouse: function (shift) {
+			shift = Point(shift);
+			var elems = this.elems, e, i = elems.length;
+			while (i--) {
+				e = elems[i];
+				if (e.mouseTranslate) {
+					e.mouseTranslate.move( shift );
+				} else {
+					e.mouseTranslate = shift.clone();
+				}
+			}
+			return this;
+		},
+
+		/**
+		 * @param {LibCanvas.Point} shift
+		 * @returns {LibCanvas.Canvas2D}
+		 */
+		addShift: function ( shift, withElements ) {
+			shift = Point( shift );
+			var newShift = this._shift.move( shift );
+			this.origElem.atom.css({
+				'margin-left': newShift.x,
+				'margin-top' : newShift.y
+			});
+			if (withElements) this.translateMouse( shift );
+			return this;
+		},
+
+		/**
+		 * @param {LibCanvas.Point} shift
+		 * @returns {LibCanvas.Canvas2D}
+		 */
+		setShift: function (shift, withElements) {
+			return this.addShift( this._shift.diff(shift), withElements );
+		},
+
+		/**
+		 * @returns {LibCanvas.Point}
+		 */
+		getShift: function () {
+			return this._shift;
+		},
+
+		/** @private */
+		createProjectBuffer: function () {
+			this.elem = this.origElem;
+			this.ctx  = this.origCtx;
+			return this;
+		},
+
+		/** @private */
+		addClearer: function () {
+			var clear = this.settings.get('clear');
+			if (clear) {
+				this.addProcessor('pre',
+					new Processors.Clearer(
+						typeof clear === 'string' ? clear : null
+					)
+				);
+			}
+			return this;
+		},
+
+		/** @private */
+		updateFrame : false,
+		/** @returns {LibCanvas.Canvas2D} */
+		update : function () {
+			this.updateFrame = true;
+			return this;
+		},
+		/** @private */
+		_freezed: false,
+		/** @returns {LibCanvas.Canvas2D} */
+		freeze: function (unfreeze) {
+			this._freezed = !unfreeze;
+			return this;
+		},
+
+		/** @returns {LibCanvas.Canvas2D} */
+		listenMouse : function (elem) {
+			if (!this._mouse) {
+				this._mouse = LibCanvas.isLibCanvas(elem) ?
+					elem.mouse : new Mouse(this.wrapper);
+			}
+			return this;
+		},
+
+		/**
+		 * @param {string} key
+		 * @returns {boolean}
+		 */
+		getKey : function (key) {
+			return this.keyboard.keyState(key);
+		},
+		/** @returns {LibCanvas.Canvas2D} */
+		listenKeyboard : function (elem) {
+			if (!this._keyboard) {
+				this._keyboard = LibCanvas.isLibCanvas(elem) ? elem.keyboard
+					: new Keyboard(/* preventDefault */elem);
+			}
+			return this;
+		},
+		/** @returns {HTMLCanvasElement} */
+		createBuffer : function (width, height) {
+			return Buffer.apply(LibCanvas,
+				arguments.length ? arguments :
+					Array.collect(this.origElem, ['width', 'height'])
 			);
-		}
-		return this;
-	},
+		},
+		/** @returns {Shaper} */
+		createShaper : function (options) {
+			var shaper = new Shaper(this, options);
+			this.addElement(shaper);
+			return shaper;
+		},
 
-	/** @private */
-	updateFrame : false,
-	/** @returns {LibCanvas.Canvas2D} */
-	update : function () {
-		this.updateFrame = true;
-		return this;
-	},
-	/** @private */
-	_freezed: false,
-	/** @returns {LibCanvas.Canvas2D} */
-	freeze: function (unfreeze) {
-		this._freezed = !unfreeze;
-		return this;
-	},
+		// post-/pre- procesing
+		/** @returns {Canvas2D} */
+		addProcessor : function (type, processor) {
+			this.processors[type].push(processor);
+			return this;
+		},
+		/** @returns {LibCanvas.Canvas2D} */
+		rmProcessor : function (type, processor) {
+			this.processors[type].erase(processor);
+			return this;
+		},
 
-	/** @returns {LibCanvas.Canvas2D} */
-	listenMouse : function (elem) {
-		if (!this._mouse) {
-			this._mouse = LibCanvas.isLibCanvas(elem) ?
-				elem.mouse : new Mouse(this.wrapper);
-		}
-		return this;
-	},
-
-	/**
-	 * @param {string} key
-	 * @returns {boolean}
-	 */
-	getKey : function (key) {
-		return this.keyboard.keyState(key);
-	},
-	/** @returns {LibCanvas.Canvas2D} */
-	listenKeyboard : function (elem) {
-		if (!this._keyboard) {
-			this._keyboard = LibCanvas.isLibCanvas(elem) ? elem.keyboard
-				: new Keyboard(/* preventDefault */elem);
-		}
-		return this;
-	},
-	/** @returns {HTMLCanvasElement} */
-	createBuffer : function (width, height) {
-		return Buffer.apply(LibCanvas,
-			arguments.length ? arguments :
-				Array.collect(this.origElem, ['width', 'height'])
-		);
-	},
-	/** @returns {Shaper} */
-	createShaper : function (options) {
-		var shaper = new Shaper(this, options);
-		this.addElement(shaper);
-		return shaper;
-	},
-
-	// post-/pre- procesing
-	/** @returns {Canvas2D} */
-	addProcessor : function (type, processor) {
-		this.processors[type].push(processor);
-		return this;
-	},
-	/** @returns {LibCanvas.Canvas2D} */
-	rmProcessor : function (type, processor) {
-		this.processors[type].erase(processor);
-		return this;
-	},
-
-	// Element : add, rm
-	/** @returns {LibCanvas.Canvas2D} */
-	addElement : function (elem) {
-		this.elems.include(elem);
-		if (elem.libcanvas != this) {
-			elem.setLibcanvas(this);
-		}
-		return this;
-	},
-	/** @returns {LibCanvas.Canvas2D} */
-	rmElement : function (elem) {
-		this.elems.erase(elem);
-		return this;
-	},
-	/** @returns {LibCanvas.Canvas2D} */
-	rmAllElements: function () {
-		this.elems.empty();
-		return this;
-	},
-
-	// Each frame funcs
-
-	/** @returns {LibCanvas.Canvas2D} */
-	addFunc: function (priority, fn, isRender) {
-		if (fn == null) {
-			fn = priority;
-			priority = fn.priority || 10;
-		}
-		var f = this.funcs;
-		if (!f.plain.contains(fn) && !f.render.contains(fn)) {
-			f[isRender ? 'render' : 'plain'].push(fn);
-		}
-		return this;
-	},
-	/** @returns {LibCanvas.Canvas2D} */
-	addRender: function (priority, fn) {
-		return this.addFunc(priority, fn, true);
-	},
-	/** @returns {Canvas2D} */
-	rmFunc : function (fn) {
-		var f = this.funcs;
-		f.plain.erase(fn);
-		f.render.erase(fn);
-		return this;
-	},
-
-	stopped: true,
-
-	// Start, pause, stop
-	/** @returns {LibCanvas.Canvas2D} */
-	start : function (fn) {
-		if (!this.stopped) return this;
-
-		this.stopped = false;
-		fn && this.addRender(10, fn);
-		if (this.invoker.timeoutId == 0) {
-			this.invoker
-				.addFunction(0, this.renderFrame)
-				.addEvent('beforeInvoke', this.fireEvent.bind(this, 'frameRenderStarted' ))
-				.addEvent( 'afterInvoke', this.fireEvent.bind(this, 'frameRenderFinished'));
-		}
-		this.invoker.invoke();
-		return this;
-	},
-	/** @returns {LibCanvas.Canvas2D} */
-	stop: function () {
-		if (this.stopped) return this;
-
-		this.stopped = true;
-		this.invoker.stop();
-		return this;
-	},
-
-	/** @property {LibCanvas.Canvas2D} */
-	parentLayer: null,
-	/** @returns {LibCanvas.Canvas2D} */
-	layer: function (name) {
-		if (!name) {
-			// gettin master layer
-			return this.parentLayer == null ? this : this.parentLayer.layer();
-		}
-		
-		if (this.layerExists(name)) {
-			return this._layers[name];
-		} else {
-			throw new Error('No layer «' + name + '»');
-		}
-	},
-
-	/** @returns {boolean} */
-	layerExists: function (name) {
-		return name in this._layers;
-	},
-
-	/** @returns {LibCanvas.Canvas2D} */
-	createLayer: function (name, z, options) {
-		if (this.layerExists(name)) {
-			throw new Error('Layer «' + name + '» already exists');
-		}
-		if (typeof z == 'object') {
-			options = z;
-			z = null;
-		}
-		options = atom.extend({ name: name }, options || {});
-		var layer = this._layers[name] = new Layer(this, this.options, options);
-		layer._layers = this._layers;
-		layer.zIndex  = z;
-		layer.origElem.atom.attr({ 'data-layer-name': name });
-		return layer;
-	},
-
-	/** @returns {LibCanvas.Canvas2D} */
-	get topLayer () {
-		var max = 0, layers = this._layers, nameMax = null, layer = null;
-		for (var name in layers) {
-			if (layers[name].zIndex > max) {
-				layer = layers[name];
-				max   = layer.zIndex;
+		// Element : add, rm
+		/** @returns {LibCanvas.Canvas2D} */
+		addElement : function (elem) {
+			this.elems.include(elem);
+			if (elem.libcanvas != this) {
+				elem.setLibcanvas(this);
 			}
-		}
-		return layer;
-	},
+			return this;
+		},
+		/** @returns {LibCanvas.Canvas2D} */
+		rmElement : function (elem) {
+			this.elems.erase(elem);
+			return this;
+		},
+		/** @returns {LibCanvas.Canvas2D} */
+		rmAllElements: function () {
+			this.elems.empty();
+			return this;
+		},
 
-	/** @returns {number} */
-	get maxZIndex () {
-		var top = this.topLayer;
-		return top ? top.zIndex : 1;
-	},
+		// Each frame funcs
 
-	/** @private */
-	_zIndex: null,
-	
-	set zIndex (value) {
-		var set = function (layer, z) {
-			layer._zIndex = z;
-			layer.origElem.atom.css('zIndex', z);
-			layer.showBuffer();
-		};
+		/** @returns {LibCanvas.Canvas2D} */
+		addFunc: function (priority, fn, isRender) {
+			if (fn == null) {
+				fn = priority;
+				priority = fn.priority || 10;
+			}
+			var f = this.funcs;
+			if (!f.plain.contains(fn) && !f.render.contains(fn)) {
+				f[isRender ? 'render' : 'plain'].push(fn);
+			}
+			return this;
+		},
+		/** @returns {LibCanvas.Canvas2D} */
+		addRender: function (priority, fn) {
+			return this.addFunc(priority, fn, true);
+		},
+		/** @returns {Canvas2D} */
+		rmFunc : function (fn) {
+			var f = this.funcs;
+			f.plain.erase(fn);
+			f.render.erase(fn);
+			return this;
+		},
 
-		if (Object.values(this._layers).length == 1) {
-			set(this, 1);
-			return;
-		}
+		stopped: true,
 
-		var current = this._zIndex;
-		
-		if (value == null) value = Infinity;
-		value = value.limit(1, this.maxZIndex + (current ? 0 : 1));
-		current = current || Infinity;
-		
-		for (var i in this._layers) if (this._layers[i] != this) {
-			var l = this._layers[i], z = l._zIndex;
-			if (current > z && value <= z) set(l, z+1);
-			if (current < z && value >= z) set(l, z-1);
-		}
-		set(this, value);
-	},
-	
-	get zIndex () {
-		return this._zIndex;
-	},
+		// Start, pause, stop
+		/** @returns {LibCanvas.Canvas2D} */
+		start : function (fn) {
+			if (!this.stopped) return this;
 
-	/**
-	 * not clonable
-	 * @returns {LibCanvas.Canvas2D}
-	 */
-	get clone () {
-		return this;
-	},
-	/** @returns {string} */
-	dump: function () {
-		var el = this.elem, 
-			pr = [
+			this.stopped = false;
+			fn && this.addRender(10, fn);
+			if (this.invoker.timeoutId == 0) {
+				this.invoker
+					.addFunction(0, this.renderFrame)
+					.addEvent('beforeInvoke', this.fireEvent.bind(this, 'frameRenderStarted' ))
+					.addEvent( 'afterInvoke', this.fireEvent.bind(this, 'frameRenderFinished'));
+			}
+			this.invoker.invoke();
+			return this;
+		},
+		/** @returns {LibCanvas.Canvas2D} */
+		stop: function () {
+			if (this.stopped) return this;
+
+			this.stopped = true;
+			this.invoker.stop();
+			return this;
+		},
+
+		/** @property {LibCanvas.Canvas2D} */
+		parentLayer: null,
+		/** @returns {LibCanvas.Canvas2D} */
+		layer: function (name) {
+			if (!name) {
+				// gettin master layer
+				return this.parentLayer == null ? this : this.parentLayer.layer();
+			}
+
+			if (this.layerExists(name)) {
+				return this._layers[name];
+			} else {
+				throw new Error('No layer «' + name + '»');
+			}
+		},
+
+		/** @returns {boolean} */
+		layerExists: function (name) {
+			return name in this._layers;
+		},
+
+		/** @returns {LibCanvas.Canvas2D} */
+		createLayer: function (name, z, options) {
+			if (this.layerExists(name)) {
+				throw new Error('Layer «' + name + '» already exists');
+			}
+			if (typeof z == 'object') {
+				options = z;
+				z = null;
+			}
+			options = atom.append({ name: name }, options || {});
+			var layer = this._layers[name] = new Layer(this, this.options, options);
+			layer._layers = this._layers;
+			layer.zIndex  = z;
+			layer.origElem.atom.attr({ 'data-layer-name': name });
+			return layer;
+		},
+
+		/** @returns {LibCanvas.Canvas2D} */
+		get topLayer () {
+			var max = 0, layers = this._layers, nameMax = null, layer = null;
+			for (var name in layers) {
+				if (layers[name].zIndex > max) {
+					layer = layers[name];
+					max   = layer.zIndex;
+				}
+			}
+			return layer;
+		},
+
+		/** @returns {number} */
+		get maxZIndex () {
+			var top = this.topLayer;
+			return top ? top.zIndex : 1;
+		},
+
+		/** @private */
+		_zIndex: null,
+
+		set zIndex (value) {
+			var set = function (layer, z) {
+				layer._zIndex = z;
+				layer.origElem.atom.css('zIndex', z);
+				layer.showBuffer();
+			};
+
+			if (Object.values(this._layers).length == 1) {
+				set(this, 1);
+				return;
+			}
+
+			var current = this._zIndex;
+
+			if (value == null) value = Infinity;
+			value = value.limit(1, this.maxZIndex + (current ? 0 : 1));
+			current = current || Infinity;
+
+			for (var i in this._layers) if (this._layers[i] != this) {
+				var l = this._layers[i], z = l._zIndex;
+				if (current > z && value <= z) set(l, z+1);
+				if (current < z && value >= z) set(l, z-1);
+			}
+			set(this, value);
+		},
+
+		get zIndex () {
+			return this._zIndex;
+		},
+
+		/**
+		 * not clonable
+		 * @returns {LibCanvas.Canvas2D}
+		 */
+		get clone () {
+			return this;
+		},
+		/** @returns {string} */
+		dump: function () {
+			return '[LibCanvas(' + [
 				'"' + this.name + '"',
 				'z=' + this.zIndex,
 				'e=' + this.elems.length
-			].join(',');
-		return '[LibCanvas(' + pr + ')]';
+			].join(',') + ')]';
+		},
+		toString: Function.lambda('[object LibCanvas.Canvas2D]')
+	}
+});
+
+atom.Class.Mutators.Generators.init( Canvas2D, {
+	/** @private */
+	mouse: function () {
+		throw new Error('Mouse is not listened by libcanvas');
 	},
-	toString: Function.lambda('[object LibCanvas.Canvas2D]')
+	/** @private */
+	keyboard: function () {
+		throw new Error('Keyboard is not listened by libcanvas');
+	},
+	/** @private */
+	wrapper: function () {
+		var wrapper = atom.dom.create('div').css({
+			width   : '100%',
+			height  : '100%',
+			overflow: 'hidden',
+			position: 'absolute'
+		});
+		wrapper.parent = atom.dom.create('div').addClass('libcanvas-layers-container');
+		return wrapper.appendTo(wrapper.parent);
+	},
+	// Needs for right mouse behaviour
+	/** @private */
+	cover: function () {
+		if (this.parentLayer) return this.parentLayer.cover;
+		return atom.dom
+			.create('div')
+			.css({
+				position: 'absolute',
+				width : '100%',
+				height: '100%',
+				// 1px transparent gif for IE9
+				backgroundImage : 'url(data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEAAAEALAAAAAABAAEAAAICTAEAOw==)',
+				backgroundRepeat: 'repeat'
+			})
+			.addClass('libcanvas-layers-cover')
+			.appendTo(this.wrapper);
+	},
+	/** @private */
+	invoker: function () {
+		return new Invoker({
+			context: this,
+			defaultPriority: 10,
+			fpsLimit: this.options.fps
+		});
+	}
 });
 
 /*
@@ -2959,92 +2990,94 @@ var shapeTestBuffer = function () {
 	return shapeTestBuffer.buffer;
 };
 
-var Shape = LibCanvas.Shape = Class(
+var Shape = declare( 'LibCanvas.Shape',
 /**
  * @lends LibCanvas.Shape.prototype
  * @augments LibCanvas.Geometry.prototype
  */
 {
-	Extends    : Geometry,
-	set        : Class.abstractMethod,
-	hasPoint   : Class.abstractMethod,
-	processPath: Class.abstractMethod,
-	draw : function (ctx, type) {
-		this.processPath(ctx)[type]();
-		return this;
-	},
-	// Методы ниже рассчитывают на то, что в фигуре есть точки from и to
-	getCoords : function () {
-		return this.from;
-	},
-	/** @returns {LibCanvas.Shape} */
-	grow: function (size) {
-		if (typeof size == 'number') {
-			size = new Point(size/2, size/2);
-		} else {
-			size = new Point(size);
-			size.x /= 2;
-			size.y /= 2;
-		}
+	parent : Geometry,
+	proto  : {
+		set        : 'abstract',
+		hasPoint   : 'abstract',
+		processPath: 'abstract',
+		draw : function (ctx, type) {
+			this.processPath(ctx)[type]();
+			return this;
+		},
+		// Методы ниже рассчитывают на то, что в фигуре есть точки from и to
+		getCoords : function () {
+			return this.from;
+		},
+		/** @returns {LibCanvas.Shape} */
+		grow: function (size) {
+			if (typeof size == 'number') {
+				size = new Point(size/2, size/2);
+			} else {
+				size = new Point(size);
+				size.x /= 2;
+				size.y /= 2;
+			}
 
-		this.from.move(size, true);
-		this. to .move(size);
-		return this;
-	},
-	get x () {
-		return this.getCoords().x;
-	},
-	get y () {
-		return this.getCoords().y;
-	},
-	set x (x) {
-		return this.move({ x : x - this.x, y : 0 });
-	},
-	set y (y) {
-		return this.move({ x : 0, y : y - this.y });
-	},
-	get bottomLeft () {
-		return new Point(this.from.x, this.to.y);
-	},
-	get topRight () {
-		return new Point(this.to.x, this.from.y);
-	},
-	get center () {
-		return new Point(
-			(this.from.x + this.to.x) / 2,
-			(this.from.y + this.to.y) / 2
-		);
-	},
-	getBoundingRectangle: function () {
-		return new Rectangle( this.from, this.to );
-	},
-	getCenter : function () {
-		return this.center;
-	},
-	move : function (distance, reverse) {
-		distance = this.invertDirection(distance, reverse);
-		this.fireEvent('beforeMove', distance);
-		this.from.move(distance);
-		this. to .move(distance);
-		return this.parent(distance);
-	},
-	equals : function (shape, accuracy) {
-		return shape instanceof this.self &&
-			shape.from.equals(this.from, accuracy) &&
-			shape.to  .equals(this.to  , accuracy);
-	},
-	clone : function () {
-		return new this.self(this.from.clone(), this.to.clone());
-	},
-	getPoints : function () {
-		return { from : this.from, to : this.to };
-	},
-	dump: function (shape) {
-		if (!shape) return this.toString();
-		var p = function (p) { return '[' + p.x + ', ' + p.y + ']'; };
-		return '[shape ' + shape + '(from'+p(this.from)+', to'+p(this.to)+')]';
-	},
-	toString: Function.lambda('[object LibCanvas.Shape]')
+			this.from.move(size, true);
+			this. to .move(size);
+			return this;
+		},
+		get x () {
+			return this.getCoords().x;
+		},
+		get y () {
+			return this.getCoords().y;
+		},
+		set x (x) {
+			return this.move({ x : x - this.x, y : 0 });
+		},
+		set y (y) {
+			return this.move({ x : 0, y : y - this.y });
+		},
+		get bottomLeft () {
+			return new Point(this.from.x, this.to.y);
+		},
+		get topRight () {
+			return new Point(this.to.x, this.from.y);
+		},
+		get center () {
+			return new Point(
+				(this.from.x + this.to.x) / 2,
+				(this.from.y + this.to.y) / 2
+			);
+		},
+		getBoundingRectangle: function () {
+			return new Rectangle( this.from, this.to );
+		},
+		getCenter : function () {
+			return this.center;
+		},
+		move : function (distance, reverse) {
+			distance = this.invertDirection(distance, reverse);
+			this.events.fire('beforeMove', distance);
+			this.from.move(distance);
+			this. to .move(distance);
+			return Geometry.prototype.move.call(this, distance);
+		},
+		equals : function (shape, accuracy) {
+			return shape instanceof this.self &&
+				shape.from.equals(this.from, accuracy) &&
+				shape.to  .equals(this.to  , accuracy);
+		},
+		clone : function () {
+			return new this.self(this.from.clone(), this.to.clone());
+		},
+		getPoints : function () {
+			return { from : this.from, to : this.to };
+		},
+		dump: function (shape) {
+			if (!shape) return this.toString();
+			var p = function (p) { return '[' + p.x + ', ' + p.y + ']'; };
+			return '[shape ' + shape + '(from'+p(this.from)+', to'+p(this.to)+')]';
+		},
+		toString: Function.lambda('[object LibCanvas.Shape]')
+	}
 });
 
 /*
@@ -3502,7 +3535,7 @@ provides: Context2D
 ...
 */
 
-var Context2D = LibCanvas.Context2D = function () {
+var Context2D = function () {
 
 var office = {
 	all : function (type, style) {
@@ -3609,7 +3642,7 @@ var constants =
 
 };
 
-var Context2D = Class(
+var Context2D = declare( 'LibCanvas.Context2D',
 /**
  * @lends LibCanvas.Context2D.prototype
  * @property {string} fillStyle
@@ -3629,725 +3662,727 @@ var Context2D = Class(
  * @property {string} textBaseline
  */
 {
-	Static: constants,
+	own: constants,
 
-	Implements: Class(accessors),
+	mixin: declare(accessors),
 
-	initialize : function (canvas) {
-		if (canvas instanceof CanvasRenderingContext2D) {
-			this.ctx2d  = canvas;
-			this.canvas = this.ctx2d.canvas;
-		} else {
-			this.canvas = canvas;
-			this.ctx2d  = canvas.getOriginalContext('2d');
-		}
-	},
-	get width () { return this.canvas.width; },
-	get height() { return this.canvas.height; },
-	set width (width)  { this.canvas.width  = width; },
-	set height(height) { this.canvas.height = height;},
-				 
-	get shadow () {
-		return [this.shadowOffsetX, this.shadowOffsetY, this.shadowBlur, this.shadowColor].join( ' ' );
-	},
-	
-	set shadow (value) {
-		value = value.split( ' ' );
-		this.shadowOffsetX = value[0];
-		this.shadowOffsetY = value[1];
-		this.shadowBlur    = value[2];
-		this.shadowColor   = value[3];
-	},
-	
-	_rectangle: null,
-	/** @returns {Rectangle} */
-	get rectangle () {
-		var rect = this._rectangle;
-		if (!rect) {
-			this._rectangle = rect = new Rectangle(0, 0, this.width, this.height)
-		} else {
-			rect.size = this;
-		}
-		return rect;
-	},
-	/** @deprecated */
-	getFullRectangle : function () {
-		return this.rectangle;
-	},
-	/** @returns {Context2D} */
-	original : function (method, args, returnResult) {
-		try {
-			var result = this.ctx2d[method].apply(this.ctx2d, args || []);
-			if (returnResult) return result;
-		} catch (e) {
-			console.log('Error in context2d.original(', method, ',', (args || []), ')');
-			throw e;
-		}
-		return this;
-	},
-	/** @returns {HTMLCanvasElement} */
-	getClone : function (width, height) {
-		var resize = !!(width || height), canvas = this.canvas;
-		width  = width  || canvas.width;
-		height = height || canvas.height;
-
-		var args = [canvas, 0, 0];
-		if (resize) args.push(width, height);
-
-		var clone = Buffer(width, height, true);
-		clone.ctx.original('drawImage', args);
-		return clone;
-	},
-
-	// Values
-	/** @returns {Context2D} */
-	set : function (name, value) {
-		if (typeof name == 'object') {
-			for (var i in name) this[i] = name[i];
-		} else this[name] = value;
-		return this;
-	},
-	/** @returns {string} */
-	get : function (name) {
-		return this[name];
-	},
-
-	// All
-	/** @returns {Context2D} */
-	fillAll : function (style) {
-		return office.all.call(this, 'fill', style);
-	},
-	/** @returns {Context2D} */
-	strokeAll : function (style) {
-		return office.all.call(this, 'stroke', style);
-	},
-	/** @returns {Context2D} */
-	clearAll : function (style) {
-		return office.all.call(this, 'clear', style);
-	},
-
-	// Save/Restore
-	/** @returns {Context2D} */
-	save : function () {
-		return this.original('save');
-	},
-	/** @returns {Context2D} */
-	restore : function () {
-		return this.original('restore');
-	},
-
-	// Fill/Stroke
-	/** @returns {Context2D} */
-	fill : function (shape) {
-		return office.fillStroke.call(this, 'fill', arguments);
-	},
-	/** @returns {Context2D} */
-	stroke : function (shape) {
-		return office.fillStroke.call(this, 'stroke', arguments);
-	},
-	/** @returns {Context2D} */
-	clear: function (shape) {
-		return shape instanceof Shape && shape.self != Rectangle ?
-			this
-				.save()
-				.set({ globalCompositeOperation: Context2D.COMPOSITE.DESTINATION_OUT })
-				.fill( shape )
-				.restore() :
-			this.clearRect( Rectangle(arguments) );
-	},
-
-	// Path
-	/** @returns {Context2D} */
-	beginPath : function (moveTo) {
-		var ret = this.original('beginPath');
-		arguments.length && this.moveTo.apply(this, arguments);
-		return ret;
-	},
-	/** @returns {Context2D} */
-	closePath : function () {
-		arguments.length && this.lineTo.apply(this, arguments);
-		return this.original('closePath');
-	},
-	/** @returns {Context2D} */
-	moveTo : function (point) {
-		return office.originalPoint.call(this, 'moveTo', arguments);
-	},
-	/** @returns {Context2D} */
-	lineTo : function (point) {
-		return office.originalPoint.call(this, 'lineTo', arguments);
-	},
-
-	/** @returns {Context2D} */
-	arc : function (x, y, r, startAngle, endAngle, anticlockwise) {
-		var a = Array.pickFrom(arguments), circle, angle, acw;
-		if (a.length > 1) {
-			return this.original('arc', a);
-		} else if ('circle' in a[0]) {
-			circle = Circle(a[0].circle);
-			angle  = Array.isArray(a[0].angle) ?
-				a[0].angle.associate(['start', 'end']) :
-				Object.collect(a[0].angle, ['start', 'end', 'size']);
-			if (Array.isArray(angle)) {
-				angle = angle.associate(['start', 'end']);
-			} else if (angle.size != null) {
-				if ('end' in angle) {
-					angle.end = angle.size + angle.start;
-				} else if ('start' in angle) {
-					angle.start = angle.end - angle.size;
-				}
+	proto: {
+		initialize : function (canvas) {
+			if (canvas instanceof CanvasRenderingContext2D) {
+				this.ctx2d  = canvas;
+				this.canvas = this.ctx2d.canvas;
+			} else {
+				this.canvas = canvas;
+				this.ctx2d  = canvas.getOriginalContext('2d');
 			}
-			acw = !!(a[0].anticlockwise || a[0].acw);
-		} else {
-			throw new TypeError('Wrong arguments in CanvasContext.arc');
-		}
-		return this.original('arc', [
-			circle.center.x, circle.center.y, circle.radius, angle.start, angle.end, acw
-		]);
-	},
+		},
+		get width () { return this.canvas.width; },
+		get height() { return this.canvas.height; },
+		set width (width)  { this.canvas.width  = width; },
+		set height(height) { this.canvas.height = height;},
 
-	/** @returns {Context2D} */
-	arcTo : function () {
-		// @todo Beauty arguments
-		return this.original('arcTo', arguments);
-	},
-	/** @returns {Context2D} */
-	curveTo: function (curve) {
-		var p, l, to;
+		get shadow () {
+			return [this.shadowOffsetX, this.shadowOffsetY, this.shadowBlur, this.shadowColor].join( ' ' );
+		},
 
-		if (typeof curve == 'number') {
-			if (arguments.length === 4) {
-				return this.original('quadraticCurveTo', arguments);
-			} else if (arguments.length === 6) {
+		set shadow (value) {
+			value = value.split( ' ' );
+			this.shadowOffsetX = value[0];
+			this.shadowOffsetY = value[1];
+			this.shadowBlur    = value[2];
+			this.shadowColor   = value[3];
+		},
+
+		_rectangle: null,
+		/** @returns {Rectangle} */
+		get rectangle () {
+			var rect = this._rectangle;
+			if (!rect) {
+				this._rectangle = rect = new Rectangle(0, 0, this.width, this.height)
+			} else {
+				rect.size = this;
+			}
+			return rect;
+		},
+		/** @deprecated */
+		getFullRectangle : function () {
+			return this.rectangle;
+		},
+		/** @returns {Context2D} */
+		original : function (method, args, returnResult) {
+			try {
+				var result = this.ctx2d[method].apply(this.ctx2d, args || []);
+				if (returnResult) return result;
+			} catch (e) {
+				console.log('Error in context2d.original(', method, ',', (args || []), ')');
+				throw e;
+			}
+			return this;
+		},
+		/** @returns {HTMLCanvasElement} */
+		getClone : function (width, height) {
+			var resize = !!(width || height), canvas = this.canvas;
+			width  = width  || canvas.width;
+			height = height || canvas.height;
+
+			var args = [canvas, 0, 0];
+			if (resize) args.push(width, height);
+
+			var clone = Buffer(width, height, true);
+			clone.ctx.original('drawImage', args);
+			return clone;
+		},
+
+		// Values
+		/** @returns {Context2D} */
+		set : function (name, value) {
+			if (typeof name == 'object') {
+				for (var i in name) this[i] = name[i];
+			} else this[name] = value;
+			return this;
+		},
+		/** @returns {string} */
+		get : function (name) {
+			return this[name];
+		},
+
+		// All
+		/** @returns {Context2D} */
+		fillAll : function (style) {
+			return office.all.call(this, 'fill', style);
+		},
+		/** @returns {Context2D} */
+		strokeAll : function (style) {
+			return office.all.call(this, 'stroke', style);
+		},
+		/** @returns {Context2D} */
+		clearAll : function (style) {
+			return office.all.call(this, 'clear', style);
+		},
+
+		// Save/Restore
+		/** @returns {Context2D} */
+		save : function () {
+			return this.original('save');
+		},
+		/** @returns {Context2D} */
+		restore : function () {
+			return this.original('restore');
+		},
+
+		// Fill/Stroke
+		/** @returns {Context2D} */
+		fill : function (shape) {
+			return office.fillStroke.call(this, 'fill', arguments);
+		},
+		/** @returns {Context2D} */
+		stroke : function (shape) {
+			return office.fillStroke.call(this, 'stroke', arguments);
+		},
+		/** @returns {Context2D} */
+		clear: function (shape) {
+			return shape instanceof Shape && shape.self != Rectangle ?
+				this
+					.save()
+					.set({ globalCompositeOperation: Context2D.COMPOSITE.DESTINATION_OUT })
+					.fill( shape )
+					.restore() :
+				this.clearRect( Rectangle(arguments) );
+		},
+
+		// Path
+		/** @returns {Context2D} */
+		beginPath : function (moveTo) {
+			var ret = this.original('beginPath');
+			arguments.length && this.moveTo.apply(this, arguments);
+			return ret;
+		},
+		/** @returns {Context2D} */
+		closePath : function () {
+			arguments.length && this.lineTo.apply(this, arguments);
+			return this.original('closePath');
+		},
+		/** @returns {Context2D} */
+		moveTo : function (point) {
+			return office.originalPoint.call(this, 'moveTo', arguments);
+		},
+		/** @returns {Context2D} */
+		lineTo : function (point) {
+			return office.originalPoint.call(this, 'lineTo', arguments);
+		},
+
+		/** @returns {Context2D} */
+		arc : function (x, y, r, startAngle, endAngle, anticlockwise) {
+			var a = Array.pickFrom(arguments), circle, angle, acw;
+			if (a.length > 1) {
+				return this.original('arc', a);
+			} else if ('circle' in a[0]) {
+				circle = Circle(a[0].circle);
+				angle  = Array.isArray(a[0].angle) ?
+					a[0].angle.associate(['start', 'end']) :
+					Object.collect(a[0].angle, ['start', 'end', 'size']);
+				if (Array.isArray(angle)) {
+					angle = angle.associate(['start', 'end']);
+				} else if (angle.size != null) {
+					if ('end' in angle) {
+						angle.end = angle.size + angle.start;
+					} else if ('start' in angle) {
+						angle.start = angle.end - angle.size;
+					}
+				}
+				acw = !!(a[0].anticlockwise || a[0].acw);
+			} else {
+				throw new TypeError('Wrong arguments in CanvasContext.arc');
+			}
+			return this.original('arc', [
+				circle.center.x, circle.center.y, circle.radius, angle.start, angle.end, acw
+			]);
+		},
+
+		/** @returns {Context2D} */
+		arcTo : function () {
+			// @todo Beauty arguments
+			return this.original('arcTo', arguments);
+		},
+		/** @returns {Context2D} */
+		curveTo: function (curve) {
+			var p, l, to;
+
+			if (typeof curve == 'number') {
+				if (arguments.length === 4) {
+					return this.original('quadraticCurveTo', arguments);
+				} else if (arguments.length === 6) {
+					return this.original('bezierCurveTo', arguments);
+				}
+			} else if (arguments.length > 1) {
+				p  = Array.from( arguments ).map(Point);
+				to = p.shift()
+			} else {
+				p  = Array.from( curve.points ).map(Point);
+				to = Point(curve.to);
+			}
+
+			l = p.length;
+
+			if (l == 2) {
+				this.original('bezierCurveTo', [
+					p[0].x, p[0].y, p[1].x, p[1].y, to.x, to.y
+				]);
+			} else if (l == 1) {
+				this.original('quadraticCurveTo', [
+					p[0].x, p[0].y, to.x, to.y
+				]);
+			} else {
+				this.original('lineTo', [to]);
+			}
+			return this;
+		},
+		/** @returns {Context2D} */
+		quadraticCurveTo : function () {
+			var a = arguments;
+			if (a.length == 4) {
 				return this.original('bezierCurveTo', arguments);
+			} else {
+				a = a.length == 2 ? a.associate(['p', 'to']) : a[0];
+				return this.curveTo({
+					to: a.to,
+					points: [a.p]
+				});
 			}
-		} else if (arguments.length > 1) {
-			p  = Array.from( arguments ).map(Point);
-			to = p.shift()
-		} else {
-			p  = Array.from( curve.points ).map(Point);
-			to = Point(curve.to);
-		}
+		},
+		/** @returns {Context2D} */
+		bezierCurveTo : function () {
+			var a = arguments;
+			if (a.length == 6) {
+				return this.original('bezierCurveTo', arguments);
+			} else {
+				a = a.length == 3 ? {p1:a[0], p2:a[1], to:a[2]} : a[0];
+				return this.curveTo({
+					to: a.to,
+					points: [a.p1, a.p2]
+				});
+			}
+		},
+		/** @returns {boolean} */
+		isPointInPath : function (x, y) {
+			var point = Point(arguments);
+			return this.original('isPointInPath', [point.x, point.y], true);
+		},
+		/** @returns {Context2D} */
+		clip : function (shape) {
+			if (shape && typeof shape.processPath == 'function') {
+				shape.processPath(this);
+			}
+			return this.original('clip');
+		},
 
-		l = p.length;
-
-		if (l == 2) {
-			this.original('bezierCurveTo', [
-				p[0].x, p[0].y, p[1].x, p[1].y, to.x, to.y
-			]);
-		} else if (l == 1) {
-			this.original('quadraticCurveTo', [
-				p[0].x, p[0].y, to.x, to.y
-			]);
-		} else {
-			this.original('lineTo', [to]);
-		}
-		return this;
-	},
-	/** @returns {Context2D} */
-	quadraticCurveTo : function () {
-		var a = arguments;
-		if (a.length == 4) {
-			return this.original('bezierCurveTo', arguments);
-		} else {
-			a = a.length == 2 ? a.associate(['p', 'to']) : a[0];
-			return this.curveTo({
-				to: a.to,
-				points: [a.p]
-			});
-		}
-	},
-	/** @returns {Context2D} */
-	bezierCurveTo : function () {
-		var a = arguments;
-		if (a.length == 6) {
-			return this.original('bezierCurveTo', arguments);
-		} else {
-			a = a.length == 3 ? {p1:a[0], p2:a[1], to:a[2]} : a[0];
-			return this.curveTo({
-				to: a.to,
-				points: [a.p1, a.p2]
-			});
-		}
-	},
-	/** @returns {boolean} */
-	isPointInPath : function (x, y) {
-		var point = Point(arguments);
-		return this.original('isPointInPath', [point.x, point.y], true);
-	},
-	/** @returns {Context2D} */
-	clip : function (shape) {
-		if (shape && typeof shape.processPath == 'function') {
-			shape.processPath(this);
-		}
-		return this.original('clip');
-	},
-
-	// transformation
-	/** @returns {Context2D} */
-	rotate : function (angle, pivot) {
-		if (angle) {
-			if (pivot) this.translate(pivot);
-			this.original('rotate', [angle]);
-			if (pivot) this.translate(pivot, true);
-		}
-		return this;
-	},
-	/** @returns {Context2D} */
-	translate : function (point, reverse) {
-		point = Point(
-			(arguments.length === 1 || typeof reverse === 'boolean')
-				? point : arguments
-		);
-		var multi = reverse === true ? -1 : 1;
-		this.original('translate', [point.x * multi, point.y * multi]);
-		return this;
-	},
-	/** @returns {Context2D} */
-	scale : function (power, pivot) {
-		if (typeof pivot == 'number') {
-			power = new Point(power, pivot);
-			pivot = null;
-		} else {
-			power = Point(power);
-		}
-		if (power.x != 1 || power.y != 1) {
-			if (pivot) this.translate(pivot);
-			this.original('scale', [power.x, power.y]);
-			if (pivot) this.translate(pivot, true);
-		}
-		return this;
-	},
-	/** @returns {Context2D} */
-	transform : function () {
-		// @todo Beauty arguments
-		return this.original('transform', arguments);
-	},
-	/** @returns {Context2D} */
-	setTransform : function () {
-		// @todo Beauty arguments
-		return this.original('setTransform', arguments);
-	},
-
-	// Rectangle
-	/** @returns {Context2D} */
-	fillRect : function (rectangle) {
-		return office.rect.call(this, 'fillRect', arguments);
-	},
-	/** @returns {Context2D} */
-	strokeRect : function (rectangle) {
-		return office.rect.call(this, 'strokeRect', arguments);
-	},
-	/** @returns {Context2D} */
-	clearRect : function (rectangle) {
-		return office.rect.call(this, 'clearRect', arguments);
-	},
-
-	// text
-	/** @returns {Context2D} */
-	fillText : function (text, x, y, maxWidth) {
-		var type = typeof x;
-		if (type != 'number' && type != 'string') {
-			maxWidth = y;
-			x = Point( x );
-			y = x.y;
-			x = x.x;
-		}
-		var args = [text, x, y];
-		if (maxWidth) args.push( maxWidth );
-		return this.original('fillText', args);
-	},
-	/** @returns {Context2D} */
-	strokeText : function (text, x, y, maxWidth) {
-		var type = typeof x;
-		if (type != 'number' && type != 'string') {
-			maxWidth = y;
-			x = Point( x );
-			y = x.y;
-			x = x.x;
-		}
-		var args = [text, x, y];
-		if (maxWidth) args.push( maxWidth );
-		return this.original('strokeText', args);
-	},
-	/** @returns {object} */
-	measureText : function (textToMeasure) {
-		return this.original('measureText', arguments, true);
-	},
-	/** @returns {Context2D} */
-	text : function (cfg) {
-		if (!this.ctx2d.fillText) return this;
-		
-		cfg = atom.append({
-			text   : '',
-			color  : null, /* @color */
-			wrap   : 'normal', /* no|normal */
-			to     : null,
-			align  : 'left', /* center|left|right */
-			size   : 16,
-			weigth : 'normal', /* bold|normal */
-			style  : 'normal', /* italic|normal */
-			family : 'arial,sans-serif', /* @fontFamily */
-			lineHeight : null,
-			overflow   : 'visible', /* hidden|visible */
-			padding : [0,0],
-			shadow : null
-		}, cfg);
-		
-		this.save();
-		if (atom.typeOf(cfg.padding) == 'number') {
-			cfg.padding = [cfg.padding, cfg.padding];
-		}
-		var to = cfg.to ? Rectangle(cfg.to) : this.rectangle;
-		var lh = (cfg.lineHeight || (cfg.size * 1.15)).round();
-		this.set('font', '{style}{weight}{size}px {family}'
-			.substitute({
-				style  : cfg.style == 'italic' ? 'italic ' : '',
-				weight : cfg.weight == 'bold'  ? 'bold '   : '',
-				size   : cfg.size,
-				family : cfg.family
-			})
-		);
-		if (cfg.shadow) this.shadow = cfg.shadow;
-		if (cfg.color) this.set({ fillStyle: cfg.color });
-		if (cfg.overflow == 'hidden') this.clip(to);
-		
-		var xGet = function (lineWidth) {
-			var al = cfg.align, pad = cfg.padding[1];
-			return Math.round(
-				al == 'left'  ? to.from.x + pad :
-				al == 'right' ? to.to.x - lineWidth - pad :
-					to.from.x + (to.width - lineWidth)/2
+		// transformation
+		/** @returns {Context2D} */
+		rotate : function (angle, pivot) {
+			if (angle) {
+				if (pivot) this.translate(pivot);
+				this.original('rotate', [angle]);
+				if (pivot) this.translate(pivot, true);
+			}
+			return this;
+		},
+		/** @returns {Context2D} */
+		translate : function (point, reverse) {
+			point = Point(
+				(arguments.length === 1 || typeof reverse === 'boolean')
+					? point : arguments
 			);
-		};
-		var lines = String(cfg.text).split('\n');
-		
-		var measure = function (text) { return Number(this.measureText(text).width); }.bind(this);
-		if (cfg.wrap == 'no') {
-			lines.forEach(function (line, i) {
-				if (!line) return;
-				
-				this.fillText(line, xGet(cfg.align == 'left' ? 0 : measure(line)), to.from.y + (i+1)*lh);
-			}.bind(this));
-		} else {
-			var lNum = 0;
-			lines.forEach(function (line) {
-				if (!line) {
-					lNum++;
-					return;
-				}
-				
-				var words = (line || ' ').match(/.+?(\s|$)/g);
-				if (!words) {
-					lNum++;
-					return;
-				}
-				var L  = '';
-				var Lw = 0;
-				for (var i = 0; i <= words.length; i++) {
-					var last = i == words.length;
-					if (!last) {
-						var text = words[i];
-						// @todo too slow. 2-4ms for 50words
-						var wordWidth = measure(text);
-						if (!Lw || Lw + wordWidth < to.width) {
-							Lw += wordWidth;
-							L  += text;
-							continue;
+			var multi = reverse === true ? -1 : 1;
+			this.original('translate', [point.x * multi, point.y * multi]);
+			return this;
+		},
+		/** @returns {Context2D} */
+		scale : function (power, pivot) {
+			if (typeof pivot == 'number') {
+				power = new Point(power, pivot);
+				pivot = null;
+			} else {
+				power = Point(power);
+			}
+			if (power.x != 1 || power.y != 1) {
+				if (pivot) this.translate(pivot);
+				this.original('scale', [power.x, power.y]);
+				if (pivot) this.translate(pivot, true);
+			}
+			return this;
+		},
+		/** @returns {Context2D} */
+		transform : function () {
+			// @todo Beauty arguments
+			return this.original('transform', arguments);
+		},
+		/** @returns {Context2D} */
+		setTransform : function () {
+			// @todo Beauty arguments
+			return this.original('setTransform', arguments);
+		},
+
+		// Rectangle
+		/** @returns {Context2D} */
+		fillRect : function (rectangle) {
+			return office.rect.call(this, 'fillRect', arguments);
+		},
+		/** @returns {Context2D} */
+		strokeRect : function (rectangle) {
+			return office.rect.call(this, 'strokeRect', arguments);
+		},
+		/** @returns {Context2D} */
+		clearRect : function (rectangle) {
+			return office.rect.call(this, 'clearRect', arguments);
+		},
+
+		// text
+		/** @returns {Context2D} */
+		fillText : function (text, x, y, maxWidth) {
+			var type = typeof x;
+			if (type != 'number' && type != 'string') {
+				maxWidth = y;
+				x = Point( x );
+				y = x.y;
+				x = x.x;
+			}
+			var args = [text, x, y];
+			if (maxWidth) args.push( maxWidth );
+			return this.original('fillText', args);
+		},
+		/** @returns {Context2D} */
+		strokeText : function (text, x, y, maxWidth) {
+			var type = typeof x;
+			if (type != 'number' && type != 'string') {
+				maxWidth = y;
+				x = Point( x );
+				y = x.y;
+				x = x.x;
+			}
+			var args = [text, x, y];
+			if (maxWidth) args.push( maxWidth );
+			return this.original('strokeText', args);
+		},
+		/** @returns {object} */
+		measureText : function (textToMeasure) {
+			return this.original('measureText', arguments, true);
+		},
+		/** @returns {Context2D} */
+		text : function (cfg) {
+			if (!this.ctx2d.fillText) return this;
+
+			cfg = atom.append({
+				text   : '',
+				color  : null, /* @color */
+				wrap   : 'normal', /* no|normal */
+				to     : null,
+				align  : 'left', /* center|left|right */
+				size   : 16,
+				weigth : 'normal', /* bold|normal */
+				style  : 'normal', /* italic|normal */
+				family : 'arial,sans-serif', /* @fontFamily */
+				lineHeight : null,
+				overflow   : 'visible', /* hidden|visible */
+				padding : [0,0],
+				shadow : null
+			}, cfg);
+
+			this.save();
+			if (atom.typeOf(cfg.padding) == 'number') {
+				cfg.padding = [cfg.padding, cfg.padding];
+			}
+			var to = cfg.to ? Rectangle(cfg.to) : this.rectangle;
+			var lh = (cfg.lineHeight || (cfg.size * 1.15)).round();
+			this.set('font', '{style}{weight}{size}px {family}'
+				.substitute({
+					style  : cfg.style == 'italic' ? 'italic ' : '',
+					weight : cfg.weight == 'bold'  ? 'bold '   : '',
+					size   : cfg.size,
+					family : cfg.family
+				})
+			);
+			if (cfg.shadow) this.shadow = cfg.shadow;
+			if (cfg.color) this.set({ fillStyle: cfg.color });
+			if (cfg.overflow == 'hidden') this.clip(to);
+
+			var xGet = function (lineWidth) {
+				var al = cfg.align, pad = cfg.padding[1];
+				return Math.round(
+					al == 'left'  ? to.from.x + pad :
+					al == 'right' ? to.to.x - lineWidth - pad :
+						to.from.x + (to.width - lineWidth)/2
+				);
+			};
+			var lines = String(cfg.text).split('\n');
+
+			var measure = function (text) { return Number(this.measureText(text).width); }.bind(this);
+			if (cfg.wrap == 'no') {
+				lines.forEach(function (line, i) {
+					if (!line) return;
+
+					this.fillText(line, xGet(cfg.align == 'left' ? 0 : measure(line)), to.from.y + (i+1)*lh);
+				}.bind(this));
+			} else {
+				var lNum = 0;
+				lines.forEach(function (line) {
+					if (!line) {
+						lNum++;
+						return;
+					}
+
+					var words = (line || ' ').match(/.+?(\s|$)/g);
+					if (!words) {
+						lNum++;
+						return;
+					}
+					var L  = '';
+					var Lw = 0;
+					for (var i = 0; i <= words.length; i++) {
+						var last = i == words.length;
+						if (!last) {
+							var text = words[i];
+							// @todo too slow. 2-4ms for 50words
+							var wordWidth = measure(text);
+							if (!Lw || Lw + wordWidth < to.width) {
+								Lw += wordWidth;
+								L  += text;
+								continue;
+							}
+						}
+						if (Lw) {
+							this.fillText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
+							if (last) {
+								L  = '';
+								Lw = 0;
+							} else {
+								L  = text;
+								Lw = wordWidth;
+							}
 						}
 					}
 					if (Lw) {
 						this.fillText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
-						if (last) {
-							L  = '';
-							Lw = 0;
-						} else {
-							L  = text;
-							Lw = wordWidth;
-						}
+						L  = '';
+						Lw = 0;
 					}
-				}
-				if (Lw) {
-					this.fillText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
-					L  = '';
-					Lw = 0;
-				}
-			}.bind(this));
-			
-		}
-		return this.restore();
-	},
+				}.bind(this));
 
-	// image
-	/** @returns {Context2D} */
-	drawImage : function (a) {
-		if (arguments.length > 2) return this.original('drawImage', arguments);
-		if (arguments.length == 2) {
-			a = { image: a, draw: arguments[1] };
-		} else if (atom.typeOf(a) == 'element') {
-			return this.original('drawImage', [a, 0, 0]);
-		}
-
-		if (!a.image) throw new TypeError('No image');
-		var center, from = a.center || a.from;
-
-		var scale = a.scale ? Point(a.scale) : null;
-
-		var transform = function (a, center) {
-			if (a.angle) this.rotate(a.angle, center);
-			if (scale  ) this.scale( scale, center );
-		}.bind(this);
-
-		var needTransform = a.angle || (scale && (scale.x != 1 || scale.y != 1));
-
-		this.save();
-		if (from) {
-			from = Point(from);
-			if (a.center) from = {
-				x : from.x - a.image.width/2,
-				y : from.y - a.image.height/2
-			};
-			if (needTransform) {
-				center = a.center || {
-					x : from.x + a.image.width/2,
-					y : from.y + a.image.height/2
-				};
-				transform(a, center);
-			} else if (a.optimize) {
-				from = { x: from.x.round(), y: from.y.round() }
 			}
-			this.original('drawImage', [
-				a.image, from.x, from.y
-			]);
-		} else if (a.draw) {
-			var draw = Rectangle(a.draw);
-			if (needTransform) transform(a, draw.center);
+			return this.restore();
+		},
 
-			if (a.crop) {
-				var crop = Rectangle(a.crop);
-				this.original('drawImage', [
-					a.image,
-					crop.from.x, crop.from.y, crop.width, crop.height,
-					draw.from.x, draw.from.y, draw.width, draw.height
-				]);
-			} else if (a.optimize) {
-				var size = draw.size, dSize = {
-					x: (size.width  - a.image.width ).abs(),
-					y: (size.height - a.image.height).abs()
+		// image
+		/** @returns {Context2D} */
+		drawImage : function (a) {
+			if (arguments.length > 2) return this.original('drawImage', arguments);
+			if (arguments.length == 2) {
+				a = { image: a, draw: arguments[1] };
+			} else if (atom.typeOf(a) == 'element') {
+				return this.original('drawImage', [a, 0, 0]);
+			}
+
+			if (!a.image) throw new TypeError('No image');
+			var center, from = a.center || a.from;
+
+			var scale = a.scale ? Point(a.scale) : null;
+
+			var transform = function (a, center) {
+				if (a.angle) this.rotate(a.angle, center);
+				if (scale  ) this.scale( scale, center );
+			}.bind(this);
+
+			var needTransform = a.angle || (scale && (scale.x != 1 || scale.y != 1));
+
+			this.save();
+			if (from) {
+				from = Point(from);
+				if (a.center) from = {
+					x : from.x - a.image.width/2,
+					y : from.y - a.image.height/2
 				};
-				from = { x: draw.from.x.round(), y: draw.from.y.round() };
-				if (dSize.x <= 1.1 && dSize.y <= 1.1 ) {
-					this.original('drawImage', [ a.image, from.x, from.y ]);
+				if (needTransform) {
+					center = a.center || {
+						x : from.x + a.image.width/2,
+						y : from.y + a.image.height/2
+					};
+					transform(a, center);
+				} else if (a.optimize) {
+					from = { x: from.x.round(), y: from.y.round() }
+				}
+				this.original('drawImage', [
+					a.image, from.x, from.y
+				]);
+			} else if (a.draw) {
+				var draw = Rectangle(a.draw);
+				if (needTransform) transform(a, draw.center);
+
+				if (a.crop) {
+					var crop = Rectangle(a.crop);
+					this.original('drawImage', [
+						a.image,
+						crop.from.x, crop.from.y, crop.width, crop.height,
+						draw.from.x, draw.from.y, draw.width, draw.height
+					]);
+				} else if (a.optimize) {
+					var size = draw.size, dSize = {
+						x: (size.width  - a.image.width ).abs(),
+						y: (size.height - a.image.height).abs()
+					};
+					from = { x: draw.from.x.round(), y: draw.from.y.round() };
+					if (dSize.x <= 1.1 && dSize.y <= 1.1 ) {
+						this.original('drawImage', [ a.image, from.x, from.y ]);
+					} else {
+						this.original('drawImage', [
+							a.image, from.x, from.y, size.width.round(), size.height.round()
+						]);
+					}
 				} else {
 					this.original('drawImage', [
-						a.image, from.x, from.y, size.width.round(), size.height.round()
+						a.image, draw.from.x, draw.from.y, draw.width, draw.height
 					]);
 				}
 			} else {
-				this.original('drawImage', [
-					a.image, draw.from.x, draw.from.y, draw.width, draw.height
-				]);
+				throw new TypeError('Wrong Args in Context.drawImage');
 			}
-		} else {
-			throw new TypeError('Wrong Args in Context.drawImage');
-		}
-		return this.restore();
-	},
+			return this.restore();
+		},
 
-	/** @returns {Context2D} */
-	projectiveImage : function (arg) {
-		// test
-		new ProjectiveTexture(arg.image)
-			.setContext(this.ctx2d)
-			.setQuality(arg.patchSize, arg.limit)
-			.render( arg.to );
-		return this;
-	},
+		/** @returns {Context2D} */
+		projectiveImage : function (arg) {
+			// test
+			new ProjectiveTexture(arg.image)
+				.setContext(this.ctx2d)
+				.setQuality(arg.patchSize, arg.limit)
+				.render( arg.to );
+			return this;
+		},
 
-	// image data
-	/** @returns {CanvasPixelArray} */
-	createImageData : function () {
-		var w, h;
+		// image data
+		/** @returns {CanvasPixelArray} */
+		createImageData : function () {
+			var w, h;
 
-		var args = Array.pickFrom(arguments);
-		switch (args.length) {
-			case 0:{
-				w = this.canvas.width;
-				h = this.canvas.height;
-			} break;
+			var args = Array.pickFrom(arguments);
+			switch (args.length) {
+				case 0:{
+					w = this.canvas.width;
+					h = this.canvas.height;
+				} break;
 
-			case 1: {
-				var obj = args[0];
-				if (atom.typeOf(obj) == 'object' && ('width' in obj) && ('height' in obj)) {
-					w = obj.width;
-					h = obj.height;
-				}
-				else {
-					throw new TypeError('Wrong argument in the Context.createImageData');
-				}
-			} break;
+				case 1: {
+					var obj = args[0];
+					if (atom.typeOf(obj) == 'object' && ('width' in obj) && ('height' in obj)) {
+						w = obj.width;
+						h = obj.height;
+					}
+					else {
+						throw new TypeError('Wrong argument in the Context.createImageData');
+					}
+				} break;
 
-			case 2: {
-				w = args[0];
-				h = args[1];
-			} break;
+				case 2: {
+					w = args[0];
+					h = args[1];
+				} break;
 
-			default: throw new TypeError('Wrong args number in the Context.createImageData');
-		}
+				default: throw new TypeError('Wrong args number in the Context.createImageData');
+			}
 
-		return this.original('createImageData', [w, h], true);
-	},
+			return this.original('createImageData', [w, h], true);
+		},
 
-	/** @returns {Context2D} */
-	putImageData : function () {
-		var a = arguments, put = {}, args, rect;
+		/** @returns {Context2D} */
+		putImageData : function () {
+			var a = arguments, put = {}, args, rect;
 
-		switch (a.length) {
-			case 1: {
-				if (!typeof a == 'object') {
-					throw new TypeError('Wrong argument in the Context.putImageData');
-				}
+			switch (a.length) {
+				case 1: {
+					if (!typeof a == 'object') {
+						throw new TypeError('Wrong argument in the Context.putImageData');
+					}
 
-				a = a[0];
-				put.image = a.image;
-				put.from = Point(a.from);
+					a = a[0];
+					put.image = a.image;
+					put.from = Point(a.from);
 
-				if (a.crop) put.crop = Rectangle(a.crop);
-			} break;
+					if (a.crop) put.crop = Rectangle(a.crop);
+				} break;
 
-			case 3: {
-				put.image = a[0];
-				put.from = Point([a[1], a[2]]);
-			} break;
+				case 3: {
+					put.image = a[0];
+					put.from = Point([a[1], a[2]]);
+				} break;
 
-			case 7: {
-				put.image = a[0];
-				put.from = new Point(a[1], a[2]);
-				put.crop = new Rectangle(a[3], a[4], a[5], a[6]);
-			} break;
+				case 7: {
+					put.image = a[0];
+					put.from = new Point(a[1], a[2]);
+					put.crop = new Rectangle(a[3], a[4], a[5], a[6]);
+				} break;
 
-			default : throw new TypeError('Wrong args number in the Context.putImageData');
-		}
+				default : throw new TypeError('Wrong args number in the Context.putImageData');
+			}
 
-		args = [put.image, put.from.x, put.from.y];
+			args = [put.image, put.from.x, put.from.y];
 
-		if (put.crop) {
-			rect = put.crop;
-			args.append([rect.from.x, rect.from.y, rect.width, rect.height])
-		}
+			if (put.crop) {
+				rect = put.crop;
+				args.append([rect.from.x, rect.from.y, rect.width, rect.height])
+			}
 
-		return this.original('putImageData', args);
-	},
-	/** @returns {CanvasPixelArray} */
-	getImageData : function (rectangle) {
-		var rect = office.makeRect.call(this, arguments);
+			return this.original('putImageData', args);
+		},
+		/** @returns {CanvasPixelArray} */
+		getImageData : function (rectangle) {
+			var rect = office.makeRect.call(this, arguments);
 
-		return this.original('getImageData', [rect.from.x, rect.from.y, rect.width, rect.height], true);
-	},
-	getPixels : function (rectangle) {
-		var rect = Rectangle(arguments),
-			data = this.getImageData(rect).data,
-			result = [],
-			line = [];
-		for (var i = 0, L = data.length; i < L; i+=4)  {
-			line.push({
-				r : data[i],
-				g : data[i+1],
-				b : data[i+2],
-				a : data[i+3] / 255
-			});
-			if (line.length == rect.width) {
-				result.push(line);
+			return this.original('getImageData', [rect.from.x, rect.from.y, rect.width, rect.height], true);
+		},
+		getPixels : function (rectangle) {
+			var rect = Rectangle(arguments),
+				data = this.getImageData(rect).data,
+				result = [],
 				line = [];
+			for (var i = 0, L = data.length; i < L; i+=4)  {
+				line.push({
+					r : data[i],
+					g : data[i+1],
+					b : data[i+2],
+					a : data[i+3] / 255
+				});
+				if (line.length == rect.width) {
+					result.push(line);
+					line = [];
+				}
 			}
-		}
-		return result;
-	},
-	getPixel: function (point) {
-		point = Point( arguments );
-		var data = this.getImageData(new Rectangle({ from: point, size: [1,1] })).data;
+			return result;
+		},
+		getPixel: function (point) {
+			point = Point( arguments );
+			var data = this.getImageData(new Rectangle({ from: point, size: [1,1] })).data;
 
-		return {
-			r: data[0],
-			g: data[1],
-			b: data[2],
-			a: data[3] / 255
-		};
-	},
+			return {
+				r: data[0],
+				g: data[1],
+				b: data[2],
+				a: data[3] / 255
+			};
+		},
 
 
-	/** @returns {CanvasGradient} */
-	createGradient: function (from, to, colors) {
-		var gradient;
-		if ( from instanceof Rectangle ) {
-			colors   = to;
-			gradient = this.createLinearGradient( from );
-		} else if (from instanceof Circle) {
-			gradient = this.createRadialGradient( from, to );
-		} else if (from instanceof Point) {
-			gradient = this.createLinearGradient( from, to, colors );
-		} else {
-			throw new Error('Unknown arguments');
-		}
-		if (typeof colors == 'object') gradient.addColorStop( colors );
-		return gradient;
-	},
-	/** @returns {CanvasGradient} */
-	createRectangleGradient: function (rectangle, colors) {
-		rectangle = Rectangle( rectangle );
-
-		var from = rectangle.from, line = new Line( rectangle.bottomLeft, rectangle.topRight );
-
-		return this.createGradient( from, line.perpendicular(from).scale(2, from), colors );
-	},
-	/** @returns {CanvasGradient} */
-	createLinearGradient : function (from, to) {
-		var a = arguments;
-		if (a.length != 4) {
-			if (a.length == 2) {
-				to   = Point(to);
-				from = Point(from);
-			} else if (a.length == 1) {
-				// wee
-				to   = Point(a[0].to);
-				from = Point(a[0].from);
-			}
-			a = [from.x, from.y, to.x, to.y];
-		}
-		return fixGradient( this.original('createLinearGradient', a, true) );
-	},
-	/** @returns {CanvasGradient} */
-	createRadialGradient: function () {
-		var points, c1, c2, a = arguments;
-		if (a.length == 1 || a.length == 2) {
-			if (a.length == 2) {
-				c1 = Circle( a[0] );
-				c2 = Circle( a[1] );
+		/** @returns {CanvasGradient} */
+		createGradient: function (from, to, colors) {
+			var gradient;
+			if ( from instanceof Rectangle ) {
+				colors   = to;
+				gradient = this.createLinearGradient( from );
+			} else if (from instanceof Circle) {
+				gradient = this.createRadialGradient( from, to );
+			} else if (from instanceof Point) {
+				gradient = this.createLinearGradient( from, to, colors );
 			} else {
-				c1 = Circle( a.start );
-				c2 = Circle( a.end   );
+				throw new Error('Unknown arguments');
 			}
-			points = [c1.center.x, c1.center.y, c1.radius, c2.center.x, c2.center.y, c2.radius];
-		} else if (a.length == 6) {
-			points = a;
-		} else {
-			throw new TypeError('Wrong args number in the Context.createRadialGradient');
-		}
+			if (typeof colors == 'object') gradient.addColorStop( colors );
+			return gradient;
+		},
+		/** @returns {CanvasGradient} */
+		createRectangleGradient: function (rectangle, colors) {
+			rectangle = Rectangle( rectangle );
 
-		return fixGradient( this.original('createRadialGradient', points, true) );
-	},
+			var from = rectangle.from, line = new Line( rectangle.bottomLeft, rectangle.topRight );
 
-	/** @returns {CanvasPattern} */
-	createPattern : function () {
-		return this.original('createPattern', arguments, true);
-	},
-	/** @returns {CanvasGradient} */
-	drawWindow : function () {
-		return this.original('drawWindow', arguments);
-	},
-	/** @returns {string} */
-	toString: Function.lambda('[object LibCanvas.Context2D]')
-	// Such moz* methods wasn't duplicated:
-	// mozTextStyle, mozDrawText, mozMeasureText, mozPathText, mozTextAlongPath
+			return this.createGradient( from, line.perpendicular(from).scale(2, from), colors );
+		},
+		/** @returns {CanvasGradient} */
+		createLinearGradient : function (from, to) {
+			var a = arguments;
+			if (a.length != 4) {
+				if (a.length == 2) {
+					to   = Point(to);
+					from = Point(from);
+				} else if (a.length == 1) {
+					// wee
+					to   = Point(a[0].to);
+					from = Point(a[0].from);
+				}
+				a = [from.x, from.y, to.x, to.y];
+			}
+			return fixGradient( this.original('createLinearGradient', a, true) );
+		},
+		/** @returns {CanvasGradient} */
+		createRadialGradient: function () {
+			var points, c1, c2, a = arguments;
+			if (a.length == 1 || a.length == 2) {
+				if (a.length == 2) {
+					c1 = Circle( a[0] );
+					c2 = Circle( a[1] );
+				} else {
+					c1 = Circle( a.start );
+					c2 = Circle( a.end   );
+				}
+				points = [c1.center.x, c1.center.y, c1.radius, c2.center.x, c2.center.y, c2.radius];
+			} else if (a.length == 6) {
+				points = a;
+			} else {
+				throw new TypeError('Wrong args number in the Context.createRadialGradient');
+			}
+
+			return fixGradient( this.original('createRadialGradient', points, true) );
+		},
+
+		/** @returns {CanvasPattern} */
+		createPattern : function () {
+			return this.original('createPattern', arguments, true);
+		},
+		/** @returns {CanvasGradient} */
+		drawWindow : function () {
+			return this.original('drawWindow', arguments);
+		},
+		/** @returns {string} */
+		toString: Function.lambda('[object LibCanvas.Context2D]')
+		// Such moz* methods wasn't duplicated:
+		// mozTextStyle, mozDrawText, mozMeasureText, mozPathText, mozTextAlongPath
+	}
 });
 
 var addColorStop = function () {
@@ -4435,7 +4470,7 @@ EC.getPoints = function (prevPos, pos, width, inverted) {
 	        new Point(pos.x - dx, pos.y - dy*inverted)];
 };
 
-EC.getGradientFunction = function (attr) {	
+EC.getGradientFunction = function (attr) {
 	switch (typeof attr.gradient) {
 		case 'undefined' : 
 			return Function.lambda( EC.getColor(attr.color) );
@@ -4508,64 +4543,60 @@ EC.curvesFunctions = [
 	}
 ];
 
-LibCanvas.Context2D.implement({
-	drawCurve:function (obj) {
-	console.time('curve')
-		var points = [Point(obj.from)].append( obj.points.map(Point), [Point(obj.to)] );
-		
-		var gradientFunction = EC.getGradientFunction(obj),             //Getting gradient function
-			widthFunction    = EC.getWidthFunction(obj),                //Getting width function
-			curveFunction    = EC.curvesFunctions[ obj.points.length ]; //Getting curve function
-		
-		if (!curveFunction) throw new Error('LibCanvas.Context2D.drawCurve -- unexpected number of points');
-		
-		var step = obj.step || 0.02;
-		
-		var invertedMultipler = obj.inverted ? 1 : -1;
-		
-		var controlPoint, prevContorolPoint,
-			drawPoints  , prevDrawPoints   ,
-			width , color, prevColor, style;
-		
-		var add = function (a, b) {
-			return a + b;
-		};
-        
-		prevContorolPoint = curveFunction(points, -step);
-		
-		for (var t=-step ; t<1.02 ; t += step) {
-			controlPoint = curveFunction(points, t);
-			color = gradientFunction(t);
-			width = widthFunction(t) / 2;
+LibCanvas.Context2D.prototype.drawCurve = function (obj) {
+	var points = [Point(obj.from)].append( obj.points.map(Point), [Point(obj.to)] );
 
-			drawPoints = EC.getPoints(prevContorolPoint, controlPoint, width, invertedMultipler);
-			
-			if (t >= step) {			
-				if ( EC.getColor(prevColor).diff(color).reduce(add) > 150 ) {
-					style = this.createLinearGradient(prevContorolPoint, controlPoint);
-					style.addColorStop(0, prevColor);
-					style.addColorStop(1,     color);
-				} else {
-					style = color;
-				}
-				
-					this
-						.set("lineWidth",1)
-						.beginPath(prevDrawPoints[0])
-						.lineTo   (prevDrawPoints[1])
-						.lineTo   (drawPoints[1])
-						.lineTo   (drawPoints[0])
-						.fill  (style)
-						.stroke(style);
+	var gradientFunction = EC.getGradientFunction(obj),             //Getting gradient function
+		widthFunction    = EC.getWidthFunction(obj),                //Getting width function
+		curveFunction    = EC.curvesFunctions[ obj.points.length ]; //Getting curve function
+
+	if (!curveFunction) throw new Error('LibCanvas.Context2D.drawCurve -- unexpected number of points');
+
+	var step = obj.step || 0.02;
+
+	var invertedMultipler = obj.inverted ? 1 : -1;
+
+	var controlPoint, prevContorolPoint,
+		drawPoints  , prevDrawPoints   ,
+		width , color, prevColor, style;
+
+	var add = function (a, b) {
+		return a + b;
+	};
+
+	prevContorolPoint = curveFunction(points, -step);
+
+	for (var t=-step ; t<1.02 ; t += step) {
+		controlPoint = curveFunction(points, t);
+		color = gradientFunction(t);
+		width = widthFunction(t) / 2;
+
+		drawPoints = EC.getPoints(prevContorolPoint, controlPoint, width, invertedMultipler);
+
+		if (t >= step) {
+			if ( EC.getColor(prevColor).diff(color).reduce(add) > 150 ) {
+				style = this.createLinearGradient(prevContorolPoint, controlPoint);
+				style.addColorStop(0, prevColor);
+				style.addColorStop(1,     color);
+			} else {
+				style = color;
 			}
-			prevDrawPoints    = drawPoints;
-			prevContorolPoint = controlPoint;
-			prevColor         = color;
+
+				this
+					.set("lineWidth",1)
+					.beginPath(prevDrawPoints[0])
+					.lineTo   (prevDrawPoints[1])
+					.lineTo   (drawPoints[1])
+					.lineTo   (drawPoints[0])
+					.fill  (style)
+					.stroke(style);
 		}
-	console.timeEnd('curve');
-		return this;
+		prevDrawPoints    = drawPoints;
+		prevContorolPoint = controlPoint;
+		prevColor         = color;
 	}
-});
+	return this;
+};
 
 };
 
@@ -4591,16 +4622,16 @@ provides: Keyboard
 ...
 */
 
-var Keyboard = LibCanvas.Keyboard = function () {
+var Keyboard = function () {
 
-var Keyboard = Class(
+var Keyboard = declare( 'LibCanvas.Keyboard',
 /**
  * @lends LibCanvas.Keyboard.prototype
  * @augments Class.Events.prototype
  */
 {
-	Implements: Class.Events,
-	Static: {
+	mixin: [ Events.Mixin ],
+	own: {
 		keyCodes : {
 			// Alphabet
 			a:65, b:66, c:67, d:68, e:69,
@@ -4653,65 +4684,68 @@ var Keyboard = Class(
 			return this[typeof code == 'number' ? 'codeNames' : 'keyCodes'][code] || null;
 		}
 	},
-	initialize : function (preventDefault) {
-		this.preventDefault = preventDefault;
-		
-		atom.dom(window).bind({
-			keydown:  this.keyEvent('down'),
-			keyup:    this.keyEvent('up'),
-			keypress: this.keyEvent('press')
-		});
-	},
-	keyEvent: function (event) {
-		return function (e) {
-			var key = this.self.key(e);
-			e.keyName = key;
-			this.fireEvent( event, [e] );
-			if (event != 'press') {
-				if (event == 'down') this.fireEvent(key, [e]);
-				if (event == 'up')   this.fireEvent(key + ':up', [e]);
-				if (event == 'down') {
-					this.self.keyStates[key] = true;
-				} else if ( key in this.self.keyStates ) {
-					delete this.self.keyStates[key];
+	proto: {
+		initialize : function (preventDefault) {
+			this.events   = new Events(this);
+			this.preventDefault = preventDefault;
+
+			atom.dom(window).bind({
+				keydown:  this.keyEvent('down'),
+				keyup:    this.keyEvent('up'),
+				keypress: this.keyEvent('press')
+			});
+		},
+		keyEvent: function (event) {
+			return function (e) {
+				var key = this.self.key(e);
+				e.keyName = key;
+				this.events.fire( event, [e] );
+				if (event != 'press') {
+					if (event == 'down') this.events.fire(key, [e]);
+					if (event == 'up')   this.events.fire(key + ':up', [e]);
+					if (event == 'down') {
+						this.self.keyStates[key] = true;
+					} else if ( key in this.self.keyStates ) {
+						delete this.self.keyStates[key];
+					}
+				} else {
+					this.events.fire(key + ':press', [e]);
 				}
-			} else {
-				this.fireEvent(key + ':press', [e]);
+				var prevent = this.prevent(key);
+				if (prevent) e.preventDefault();
+				this.debugUpdate();
+				return !prevent;
+			}.bind(this);
+		},
+		prevent : function (key) {
+			var pD = this.preventDefault;
+			return pD && (!Array.isArray(pD) || pD.contains(key));
+		},
+		keyState : function (keyName) {
+			return this.self.keyState(keyName);
+		},
+		_debugTrace: null,
+		debugUpdate: function () {
+			if (this._debugTrace) {
+				var keys = '', states = this.self.keyStates;
+				for (var key in states) if (states[key]) {
+					keys += '\n = ' + key;
+				}
+				this._debugTrace.trace( 'Keyboard:' + keys );
 			}
-			var prevent = this.prevent(key);
-			if (prevent) e.preventDefault();
+			return this;
+		},
+		debug : function (on) {
+			if (on && !this._debugTrace) {
+				this._debugTrace = new Trace();
+			} else if (on === false) {
+				this._debugTrace = null;
+			}
 			this.debugUpdate();
-			return !prevent;
-		}.bind(this);
-	},
-	prevent : function (key) {
-		var pD = this.preventDefault;
-		return pD && (!Array.isArray(pD) || pD.contains(key));
-	},
-	keyState : function (keyName) {
-		return this.self.keyState(keyName);
-	},
-	_debugTrace: null,
-	debugUpdate: function () {
-		if (this._debugTrace) {
-			var keys = '', states = this.self.keyStates;
-			for (var key in states) if (states[key]) {
-				keys += '\n = ' + key;
-			}
-			this._debugTrace.trace( 'Keyboard:' + keys );
-		}
-		return this;
-	},
-	debug : function (on) {
-		if (on && !this._debugTrace) {
-			this._debugTrace = new Trace();
-		} else if (on === false) {
-			this._debugTrace = null;
-		}
-		this.debugUpdate();
-		return this;
-	},
-	toString: Function.lambda('[object LibCanvas.Keyboard]')
+			return this;
+		},
+		toString: Function.lambda('[object LibCanvas.Keyboard]')
+	}
 });
 
 Keyboard.extend({ codeNames: Object.invert(Keyboard.keyCodes) });
@@ -4743,7 +4777,7 @@ provides: Layer
 ...
 */
 
-var Layer = LibCanvas.Layer = function () {
+var Layer = function () {
 	
 var callParent = function (method) {
 	return function () {
@@ -4752,47 +4786,49 @@ var callParent = function (method) {
 	};
 };
 
-return Class(
+return declare( 'LibCanvas.Layer',
 /**
  * @lends LibCanvas.Layer.prototype
  * @augments LibCanvas.Canvas2D.prototype
  */
 {
-	Extends: Canvas2D,
+	parent: Canvas2D,
 
-	Generators: {
-		mouse: function () {
-			return this.parentLayer.mouse;
+	proto: {
+		initialize : function (elem, parentOptions, options) {
+			this.setOptions({});
+			this.parentLayer = elem;
+
+			this.settings.set(parentOptions).set(options);
+
+			Canvas2D.prototype.initialize.call(this, elem.createBuffer());
 		},
-		keyboard: function () {
-			return this.parentLayer.keyboard;
+
+		listenMouse    : callParent('listenMouse'),
+		listenKeyboard : callParent('listenKeyboard'),
+
+		start : function () {
+			throw new Error('Start can be called only from master layer');
 		},
-		invoker: function () {
-			return this.parentLayer.invoker;
-		},
-		wrapper: function () {
-			return this.parentLayer.wrapper;
-		}
-	},
-	
-	initialize : function (elem, parentOptions, options) {
-		this.parentLayer = elem;
-
-		this.setOptions(parentOptions).setOptions(options);
-
-		this.parent(elem.createBuffer());
-	},
-
-	listenMouse    : callParent('listenMouse'),
-	listenKeyboard : callParent('listenKeyboard'),
-
-	start : function () {
-		throw new Error('Start can be called only from master layer');
-	},
-	toString: Function.lambda('[object LibCanvas.Layer]')
+		toString: Function.lambda('[object LibCanvas.Layer]')
+	}
 });
 
 }();
+atom.Class.Mutators.Generators.init(Layer, {
+	mouse: function () {
+		return this.parentLayer.mouse;
+	},
+	keyboard: function () {
+		return this.parentLayer.keyboard;
+	},
+	invoker: function () {
+		return this.parentLayer.invoker;
+	},
+	wrapper: function () {
+		return this.parentLayer.wrapper;
+	}
+});
 
 /*
 ---
@@ -4817,127 +4853,129 @@ provides: Point3D
 ...
 */
 
-var Point3D = LibCanvas.Point3D = atom.Class(
+var Point3D = declare( 'LibCanvas.Point3D',
 /** @lends LibCanvas.Point3D# */
 {
-	Static: { invoke: LibCanvas.Geometry.invoke },
+	own: { invoke: LibCanvas.Geometry.invoke },
 
-	x: 0,
-	y: 0,
-	z: 0,
+	proto: {
+		x: 0,
+		y: 0,
+		z: 0,
 
-	/** @private */
-	coordinatesArray: ['x', 'y', 'z'],
+		/** @private */
+		coordinatesArray: ['x', 'y', 'z'],
 
-	/**
-	 * @param {Number} x
-	 * @param {Number} y
-	 * @param {Number} z
-	 * @returns {LibCanvas.Point3D}
-	 */
-	initialize: LibCanvas.Geometry.prototype.initialize,
+		/**
+		 * @param {Number} x
+		 * @param {Number} y
+		 * @param {Number} z
+		 * @returns {LibCanvas.Point3D}
+		 */
+		initialize: LibCanvas.Geometry.prototype.initialize,
 
-	/**
-	 * @param {Number} x
-	 * @param {Number} y
-	 * @param {Number} z
-	 * @returns {LibCanvas.Point3D}
-	 */
-	set: function (x, y, z) {
-		if ( arguments.length === 3 || arguments.length === 2 ) {
-			this.x = Number(x) || 0;
-			this.y = Number(y) || 0;
-			this.z = Number(z) || 0;
-		} else if ( x && typeof x.x  === 'number' ) {
-			this.set( x.x, x.y, x.z );
-		} else if ( x && typeof x[0] === 'number' ) {
-			this.set( x[0], x[1], x[2] );
-		} else {
-			console.log( 'Wrong arguments in Isometric.Point3D', arguments );
-			throw new Error( 'Wrong arguments in Isometric.Point3D' );
+		/**
+		 * @param {Number} x
+		 * @param {Number} y
+		 * @param {Number} z
+		 * @returns {LibCanvas.Point3D}
+		 */
+		set: function (x, y, z) {
+			if ( arguments.length === 3 || arguments.length === 2 ) {
+				this.x = Number(x) || 0;
+				this.y = Number(y) || 0;
+				this.z = Number(z) || 0;
+			} else if ( x && typeof x.x  === 'number' ) {
+				this.set( x.x, x.y, x.z );
+			} else if ( x && typeof x[0] === 'number' ) {
+				this.set( x[0], x[1], x[2] );
+			} else {
+				console.log( 'Wrong arguments in Isometric.Point3D', arguments );
+				throw new Error( 'Wrong arguments in Isometric.Point3D' );
+			}
+			return this;
+		},
+
+		/**
+		 * You can pass callback (function( value, axis, point ){})
+		 * @param {function} fn
+		 * @param {object} bind
+		 * @returns {LibCanvas.Point3D}
+		 */
+		map: function (fn, bind) {
+			var point = this;
+			point.coordinatesArray.forEach(function (axis) {
+				point[axis] = fn.call( bind || point, point[axis], axis, point );
+			});
+			return this;
+		},
+
+		/**
+		 * @param {Number} factor
+		 * @returns {LibCanvas.Point3D}
+		 */
+		add: function (factor) {
+			return this.map(function (c) { return c+factor });
+		},
+
+		/**
+		 * @param {Number} factor
+		 * @returns {LibCanvas.Point3D}
+		 */
+		mul: function (factor) {
+			return this.map(function (c) { return c*factor });
+		},
+
+		/**
+		 * @param {LibCanvas.Point3D} point3d
+		 * @returns {LibCanvas.Point3D}
+		 */
+		diff: function (point3d) {
+			point3d = LibCanvas.Point3D( point3d );
+			return new this.self(
+				point3d.x - this.x,
+				point3d.y - this.y,
+				point3d.z - this.z
+			);
+		},
+
+		/**
+		 * @param {LibCanvas.Point3D} point3d
+		 * @returns {LibCanvas.Point3D}
+		 */
+		move: function (point3d) {
+			point3d = LibCanvas.Point3D( arguments );
+			this.x += point3d.x;
+			this.y += point3d.y;
+			this.z += point3d.z;
+			return this;
+		},
+
+		/**
+		 * @param {LibCanvas.Point3D}p oint3d
+		 * @param {Number} accuracy
+		 * @returns {boolean}
+		 */
+		equals: function (point3d, accuracy) {
+			return point3d.x.equals( this.x, accuracy ) &&
+					 point3d.y.equals( this.y, accuracy ) &&
+					 point3d.z.equals( this.z, accuracy );
+		},
+
+		/** @returns {LibCanvas.Point3D} */
+		clone: function () {
+			return new this.self( this );
+		},
+
+		/** @returns Array */
+		toArray: function () {
+			return [this.x, this.y, this.z];
+		},
+
+		/** @returns String */
+		dump: function () {
+			return '[LibCanvas.Point3D(' + this.toArray() + ')]';
 		}
-		return this;
-	},
-
-	/**
-	 * You can pass callback (function( value, axis, point ){})
-	 * @param {function} fn
-	 * @param {object} bind
-	 * @returns {LibCanvas.Point3D}
-	 */
-	map: function (fn, bind) {
-		var point = this;
-		point.coordinatesArray.forEach(function (axis) {
-			point[axis] = fn.call( bind || point, point[axis], axis, point );
-		});
-		return this;
-	},
-
-	/**
-	 * @param {Number} factor
-	 * @returns {LibCanvas.Point3D}
-	 */
-	add: function (factor) {
-		return this.map(function (c) { return c+factor });
-	},
-
-	/**
-	 * @param {Number} factor
-	 * @returns {LibCanvas.Point3D}
-	 */
-	mul: function (factor) {
-		return this.map(function (c) { return c*factor });
-	},
-
-	/**
-	 * @param {LibCanvas.Point3D} point3d
-	 * @returns {LibCanvas.Point3D}
-	 */
-	diff: function (point3d) {
-		point3d = LibCanvas.Point3D( point3d );
-		return new this.self(
-			point3d.x - this.x,
-			point3d.y - this.y,
-			point3d.z - this.z
-		);
-	},
-
-	/**
-	 * @param {LibCanvas.Point3D} point3d
-	 * @returns {LibCanvas.Point3D}
-	 */
-	move: function (point3d) {
-		point3d = LibCanvas.Point3D( arguments );
-		this.x += point3d.x;
-		this.y += point3d.y;
-		this.z += point3d.z;
-		return this;
-	},
-
-	/**
-	 * @param {LibCanvas.Point3D}p oint3d
-	 * @param {Number} accuracy
-	 * @returns {boolean}
-	 */
-	equals: function (point3d, accuracy) {
-		return point3d.x.equals( this.x, accuracy ) &&
-		       point3d.y.equals( this.y, accuracy ) &&
-		       point3d.z.equals( this.z, accuracy );
-	},
-
-	/** @returns {LibCanvas.Point3D} */
-	clone: function () {
-		return new this.self( this );
-	},
-
-	/** @returns Array */
-	toArray: function () {
-		return [this.x, this.y, this.z];
-	},
-
-	/** @returns String */
-	dump: function () {
-		return '[LibCanvas.Point3D(' + this.toArray() + ')]';
 	}
 });
 
@@ -5019,29 +5057,27 @@ LibCanvas.Engines.HexProjection = atom.Class({
 	 */
 	pointToRgb: function (point) {
 		var
-			red     = 0,
-			green   = 0,
-			blue    = 0,
 			options = this.options,
 			base    = options.baseLength,
 			chord   = options.chordLength,
 			height  = options.hexHeight,
-			start   = options.start;
+			start   = options.start,
+			// counting coords
+			red   = (point.x - start.x) / (base + chord),
+			blue  = (point.y - start.y - red * height / 2) / height,
+			green = 0 - red - blue;
 
 		var dist = function (c) {
 			return Math.abs(c[0] - red) + Math.abs(c[1] - green) + Math.abs(c[2] - blue);
 		};
-
-		red   = (point.x - start.x) / (base + chord);
-		blue  = (point.y - start.y - red * height / 2) / height;
-		green = 0 - red - blue;
 
 		var
 			rF = red  .floor(), rC = red  .ceil(),
 			gF = green.floor(), gC = green.ceil(),
 			bF = blue .floor(), bC = blue .ceil();
 
-		var variants = [
+		return [
+			// we need to find closest integer coordinates
 			[rF, gF, bF],
 			[rF, gC, bF],
 			[rF, gF, bC],
@@ -5051,12 +5087,13 @@ LibCanvas.Engines.HexProjection = atom.Class({
 			[rC, gF, bC],
 			[rC, gC, bC]
 		].filter(function (v) {
+			// only correct variants - sum must be equals to zero
 			return v.sum() == 0;
 		})
 		.sort(function (left, right) {
+			// we need coordinates with the smallest distance
 			return dist(left) < dist(right) ? -1 : 1;
-		});
-		return variants[0];
+		})[0];
 	},
 
 	/**
