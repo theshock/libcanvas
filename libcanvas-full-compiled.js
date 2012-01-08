@@ -3903,8 +3903,19 @@ var Context2D = Class(
 		return this;
 	},
 	/** @returns {Context2D} */
-	scale : function () {
-		return office.originalPoint.call(this, 'scale', arguments);
+	scale : function (power, pivot) {
+		if (typeof pivot == 'number') {
+			power = new Point(power, pivot);
+			pivot = null;
+		} else {
+			power = Point(power);
+		}
+		if (power.x != 1 || power.y != 1) {
+			if (pivot) this.translate(pivot);
+			this.original('scale', [power.x, power.y]);
+			if (pivot) this.translate(pivot, true);
+		}
+		return this;
 	},
 	/** @returns {Context2D} */
 	transform : function () {
@@ -4079,6 +4090,15 @@ var Context2D = Class(
 		if (!a.image) throw new TypeError('No image');
 		var center, from = a.center || a.from;
 
+		var scale = a.scale ? Point(a.scale) : null;
+
+		var transform = function (a, center) {
+			if (a.angle) this.rotate(a.angle, center);
+			if (scale  ) this.scale( scale, center );
+		}.bind(this);
+
+		var needTransform = a.angle || (scale && (scale.x != 1 || scale.y != 1));
+
 		this.save();
 		if (from) {
 			from = Point(from);
@@ -4086,12 +4106,12 @@ var Context2D = Class(
 				x : from.x - a.image.width/2,
 				y : from.y - a.image.height/2
 			};
-			if (a.angle) {
+			if (needTransform) {
 				center = a.center || {
 					x : from.x + a.image.width/2,
 					y : from.y + a.image.height/2
 				};
-				this.rotate(a.angle, center);
+				transform(a, center);
 			} else if (a.optimize) {
 				from = { x: from.x.round(), y: from.y.round() }
 			}
@@ -4100,7 +4120,7 @@ var Context2D = Class(
 			]);
 		} else if (a.draw) {
 			var draw = Rectangle(a.draw);
-			if (a.angle) this.rotate(a.angle, draw.center);
+			if (needTransform) transform(a, draw.center);
 
 			if (a.crop) {
 				var crop = Rectangle(a.crop);
@@ -4109,25 +4129,23 @@ var Context2D = Class(
 					crop.from.x, crop.from.y, crop.width, crop.height,
 					draw.from.x, draw.from.y, draw.width, draw.height
 				]);
-			} else {
-				if (a.optimize) {
-					var size = draw.size, dSize = {
-						x: (size.width  - a.image.width ).abs(),
-						y: (size.height - a.image.height).abs()
-					};
-					from = { x: draw.from.x.round(), y: draw.from.y.round() };
-					if (dSize.x <= 1.1 && dSize.y <= 1.1 ) {
-						this.original('drawImage', [ a.image, from.x, from.y ]);
-					} else {
-						this.original('drawImage', [
-							a.image, from.x, from.y, size.width.round(), size.height.round()
-						]);
-					}
+			} else if (a.optimize) {
+				var size = draw.size, dSize = {
+					x: (size.width  - a.image.width ).abs(),
+					y: (size.height - a.image.height).abs()
+				};
+				from = { x: draw.from.x.round(), y: draw.from.y.round() };
+				if (dSize.x <= 1.1 && dSize.y <= 1.1 ) {
+					this.original('drawImage', [ a.image, from.x, from.y ]);
 				} else {
 					this.original('drawImage', [
-						a.image, draw.from.x, draw.from.y, draw.width, draw.height
+						a.image, from.x, from.y, size.width.round(), size.height.round()
 					]);
 				}
+			} else {
+				this.original('drawImage', [
+					a.image, draw.from.x, draw.from.y, draw.width, draw.height
+				]);
 			}
 		} else {
 			throw new TypeError('Wrong Args in Context.drawImage');
@@ -4965,7 +4983,7 @@ LibCanvas.Engines.HexProjection = atom.Class({
 
 	/**
 	 * @param {int} [padding=0]
-	 * @returns {LibCanvas.Engines.HexProjection.Sizes}
+	 * @return LibCanvas.Engines.HexProjection.Sizes
 	 */
 	sizes: function (padding) {
 		return LibCanvas.Engines.HexProjection.Sizes(this, padding);
@@ -4973,7 +4991,7 @@ LibCanvas.Engines.HexProjection = atom.Class({
 
 	/**
 	 * @param {int[]} coordinates
-	 * @returns {Point}
+	 * @return Point
 	 */
 	rgbToPoint: function (coordinates) {
 		var
@@ -4996,8 +5014,54 @@ LibCanvas.Engines.HexProjection = atom.Class({
 	},
 
 	/**
+	 * @param {Point} point
+	 * @return int[]
+	 */
+	pointToRgb: function (point) {
+		var
+			red     = 0,
+			green   = 0,
+			blue    = 0,
+			options = this.options,
+			base    = options.baseLength,
+			chord   = options.chordLength,
+			height  = options.hexHeight,
+			start   = options.start;
+
+		var dist = function (c) {
+			return Math.abs(c[0] - red) + Math.abs(c[1] - green) + Math.abs(c[2] - blue);
+		};
+
+		red   = (point.x - start.x) / (base + chord);
+		blue  = (point.y - start.y - red * height / 2) / height;
+		green = 0 - red - blue;
+
+		var
+			rF = red  .floor(), rC = red  .ceil(),
+			gF = green.floor(), gC = green.ceil(),
+			bF = blue .floor(), bC = blue .ceil();
+
+		var variants = [
+			[rF, gF, bF],
+			[rF, gC, bF],
+			[rF, gF, bC],
+			[rF, gC, bC],
+			[rC, gF, bF],
+			[rC, gC, bF],
+			[rC, gF, bC],
+			[rC, gC, bC]
+		].filter(function (v) {
+			return v.sum() == 0;
+		})
+		.sort(function (left, right) {
+			return dist(left) < dist(right) ? -1 : 1;
+		});
+		return variants[0];
+	},
+
+	/**
 	 * @param {Point} center
-	 * @returns {LibCanvas.Shapes.Polygon}
+	 * @return LibCanvas.Shapes.Polygon
 	 */
 	createPolygon: function (center) {
 		var
@@ -5034,7 +5098,7 @@ LibCanvas.Engines.HexProjection.Sizes = Class({
 
 	/**
 	 * @param {int[]} coordinates
-	 * @returns {LibCanvas.Engines.HexProjection.Size}
+	 * @return LibCanvas.Engines.HexProjection.Size
 	 */
 	add: function (coordinates) {
 		this._limits = null;
@@ -5042,7 +5106,7 @@ LibCanvas.Engines.HexProjection.Sizes = Class({
 		return this;
 	},
 
-	/** @returns {object} */
+	/** @return object */
 	limits: function () {
 		if (this._limits) return this._limits;
 
@@ -5064,7 +5128,7 @@ LibCanvas.Engines.HexProjection.Sizes = Class({
 		return this._limits = { min: min, max: max };
 	},
 
-	/** @returns {Point} */
+	/** @return Point */
 	size: function () {
 		var
 			limits = this.limits(),
@@ -5077,7 +5141,7 @@ LibCanvas.Engines.HexProjection.Sizes = Class({
 		);
 	},
 
-	/** @returns {Point} */
+	/** @return Point */
 	center: function () {
 		var
 			min = this.limits().min,
