@@ -20,7 +20,10 @@ authors:
 // bug in Safari 5.1 ( 'use strict' + 'set prop' )
 // 'use strict';
 
-var undefined, Class = atom.Class;
+var undefined,
+	declare  = atom.declare,
+	Events   = atom.Events,
+	Settings = atom.Settings;
 /*** [Code] ***/
 
 }).call(typeof window == 'undefined' ? exports : window, atom, Math);

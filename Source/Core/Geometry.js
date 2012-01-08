@@ -20,14 +20,14 @@ provides: Geometry
 ...
 */
 
-var Geometry = LibCanvas.Geometry = Class(
+var Geometry = declare( 'LibCanvas.Geometry',
 /**
  * @lends LibCanvas.Geometry.prototype
  * @augments Class.Events.prototype
  */
 {
-	Implements: Class.Events,
-	Static: {
+	mixin: [ Class.Events ],
+	own: {
 		invoke: function (obj) {
 			if (obj == null) throw new TypeError( 'element is not geometry' );
 
@@ -38,20 +38,23 @@ var Geometry = LibCanvas.Geometry = Class(
 			return this(obj);
 		}
 	},
-	initialize : function () {
-		if (arguments.length) this.set.apply(this, arguments);
-	},
-	invertDirection: function (distance, reverse) {
-		distance = Point( distance );
-		var multi = reverse ? -1 : 1;
-		return {
-			x : distance.x * multi,
-			y : distance.y * multi
-		};
-	},
-	move : function (distance, reverse) {
-		this.fireEvent('move', [this.invertDirection(distance, reverse)]);
-		return this;
-	},
-	toString: Function.lambda('[object LibCanvas.Geometry]')
+	proto: {
+		initialize : function () {
+			this.events = new Events(this);
+			if (arguments.length) this.set.apply(this, arguments);
+		},
+		invertDirection: function (distance, reverse) {
+			distance = Point( distance );
+			var multi = reverse ? -1 : 1;
+			return new Point(
+				distance.x * multi,
+				distance.y * multi
+			);
+		},
+		move : function (distance, reverse) {
+			this.events.fire('move', [this.invertDirection(distance, reverse)]);
+			return this;
+		},
+		toString: Function.lambda('[object LibCanvas.Geometry]')
+	}
 });

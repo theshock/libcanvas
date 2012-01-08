@@ -20,16 +20,16 @@ provides: Keyboard
 ...
 */
 
-var Keyboard = LibCanvas.Keyboard = function () {
+var Keyboard = function () {
 
-var Keyboard = Class(
+var Keyboard = declare( 'LibCanvas.Keyboard',
 /**
  * @lends LibCanvas.Keyboard.prototype
  * @augments Class.Events.prototype
  */
 {
-	Implements: Class.Events,
-	Static: {
+	mixin: [ Events.Mixin ],
+	own: {
 		keyCodes : {
 			// Alphabet
 			a:65, b:66, c:67, d:68, e:69,
@@ -82,65 +82,68 @@ var Keyboard = Class(
 			return this[typeof code == 'number' ? 'codeNames' : 'keyCodes'][code] || null;
 		}
 	},
-	initialize : function (preventDefault) {
-		this.preventDefault = preventDefault;
-		
-		atom.dom(window).bind({
-			keydown:  this.keyEvent('down'),
-			keyup:    this.keyEvent('up'),
-			keypress: this.keyEvent('press')
-		});
-	},
-	keyEvent: function (event) {
-		return function (e) {
-			var key = this.self.key(e);
-			e.keyName = key;
-			this.fireEvent( event, [e] );
-			if (event != 'press') {
-				if (event == 'down') this.fireEvent(key, [e]);
-				if (event == 'up')   this.fireEvent(key + ':up', [e]);
-				if (event == 'down') {
-					this.self.keyStates[key] = true;
-				} else if ( key in this.self.keyStates ) {
-					delete this.self.keyStates[key];
+	proto: {
+		initialize : function (preventDefault) {
+			this.events   = new Events(this);
+			this.preventDefault = preventDefault;
+
+			atom.dom(window).bind({
+				keydown:  this.keyEvent('down'),
+				keyup:    this.keyEvent('up'),
+				keypress: this.keyEvent('press')
+			});
+		},
+		keyEvent: function (event) {
+			return function (e) {
+				var key = this.self.key(e);
+				e.keyName = key;
+				this.events.fire( event, [e] );
+				if (event != 'press') {
+					if (event == 'down') this.events.fire(key, [e]);
+					if (event == 'up')   this.events.fire(key + ':up', [e]);
+					if (event == 'down') {
+						this.self.keyStates[key] = true;
+					} else if ( key in this.self.keyStates ) {
+						delete this.self.keyStates[key];
+					}
+				} else {
+					this.events.fire(key + ':press', [e]);
 				}
-			} else {
-				this.fireEvent(key + ':press', [e]);
+				var prevent = this.prevent(key);
+				if (prevent) e.preventDefault();
+				this.debugUpdate();
+				return !prevent;
+			}.bind(this);
+		},
+		prevent : function (key) {
+			var pD = this.preventDefault;
+			return pD && (!Array.isArray(pD) || pD.contains(key));
+		},
+		keyState : function (keyName) {
+			return this.self.keyState(keyName);
+		},
+		_debugTrace: null,
+		debugUpdate: function () {
+			if (this._debugTrace) {
+				var keys = '', states = this.self.keyStates;
+				for (var key in states) if (states[key]) {
+					keys += '\n = ' + key;
+				}
+				this._debugTrace.trace( 'Keyboard:' + keys );
 			}
-			var prevent = this.prevent(key);
-			if (prevent) e.preventDefault();
+			return this;
+		},
+		debug : function (on) {
+			if (on && !this._debugTrace) {
+				this._debugTrace = new Trace();
+			} else if (on === false) {
+				this._debugTrace = null;
+			}
 			this.debugUpdate();
-			return !prevent;
-		}.bind(this);
-	},
-	prevent : function (key) {
-		var pD = this.preventDefault;
-		return pD && (!Array.isArray(pD) || pD.contains(key));
-	},
-	keyState : function (keyName) {
-		return this.self.keyState(keyName);
-	},
-	_debugTrace: null,
-	debugUpdate: function () {
-		if (this._debugTrace) {
-			var keys = '', states = this.self.keyStates;
-			for (var key in states) if (states[key]) {
-				keys += '\n = ' + key;
-			}
-			this._debugTrace.trace( 'Keyboard:' + keys );
-		}
-		return this;
-	},
-	debug : function (on) {
-		if (on && !this._debugTrace) {
-			this._debugTrace = new Trace();
-		} else if (on === false) {
-			this._debugTrace = null;
-		}
-		this.debugUpdate();
-		return this;
-	},
-	toString: Function.lambda('[object LibCanvas.Keyboard]')
+			return this;
+		},
+		toString: Function.lambda('[object LibCanvas.Keyboard]')
+	}
 });
 
 Keyboard.extend({ codeNames: Object.invert(Keyboard.keyCodes) });

@@ -23,15 +23,15 @@ provides: Mouse
 */
 
 
-var Mouse = LibCanvas.Mouse = Class(
+var Mouse = declare( 'LibCanvas.Mouse',
 /**
  * @lends LibCanvas.Mouse.prototype
  * @augments Class.Events.prototype
  */
 {
-	Implements: Class.Events,
+	mixin: [ Events.Mixin ],
 	
-	Static: {
+	own: {
 		buttons: {
 			left  : false,
 			middle: false,
@@ -58,7 +58,7 @@ var Mouse = LibCanvas.Mouse = Class(
 			});
 		},
 		createOffset : function(elem) {
-			var top = 0, left = 0, offset;
+			var top = 0, left = 0;
 			if (elem.getBoundingClientRect) {
 				var box = elem.getBoundingClientRect();
 
@@ -114,152 +114,154 @@ var Mouse = LibCanvas.Mouse = Class(
 			return e.offset;
 		}
 	},
-	
-	initialize : function (elem) {
-		this.inCanvas = false;
-		this.point = new Point(null, null);
-		/** @private */
-		this.prev  = new Point(null, null);
-		/** @private */
-		this.diff  = new Point(null, null);
+	proto: {
+		initialize : function (elem) {
+			this.inCanvas = false;
+			this.point = new Point(null, null);
+			/** @private */
+			this.prev  = new Point(null, null);
+			/** @private */
+			this.diff  = new Point(null, null);
 
-		this.elem = elem;
+			this.elem = elem;
 
-		this.events = new MouseEvents(this);
+			this.events  = new Events(this);
+			this.handler = new MouseEvents(this);
 
-		this.setEvents();
-	},
-	isOver: function (elem) {
-		var translate = elem.mouseTranslate;
-		if (translate) this.point.move( translate, true );
-		var result = this.inCanvas && elem.hasPoint( this.point );
-		if (translate) this.point.move( translate );
-		return result;
-	},
-	button: function (key) {
-		return this.self.buttons[key || 'left'];
-	},
-	setCoords : function (point, inCanvas) {
-		this.prev.set( this.point );
-		this.diff = this.prev.diff( point );
-		this.inCanvas = inCanvas;
-		this.point.move( this.diff );
-		this.debugUpdate();
-		return this;
-	},
-	getOffset : function (e) {
-		return LibCanvas.Mouse.getOffset(e);
-	},
-	setEvents : function () {
+			this.setEvents();
+		},
+		isOver: function (elem) {
+			var translate = elem.mouseTranslate;
+			if (translate) this.point.move( translate, true );
+			var result = this.inCanvas && elem.hasPoint( this.point );
+			if (translate) this.point.move( translate );
+			return result;
+		},
+		button: function (key) {
+			return this.self.buttons[key || 'left'];
+		},
+		setCoords : function (point, inCanvas) {
+			this.prev.set( this.point );
+			this.diff = this.prev.diff( point );
+			this.inCanvas = inCanvas;
+			this.point.move( this.diff );
+			this.debugUpdate();
+			return this;
+		},
+		getOffset : function (e) {
+			return LibCanvas.Mouse.getOffset(e);
+		},
+		setEvents : function () {
 
-		// e.previousOffset = prev.clone();
-		// e.deltaOffset    = prev.diff( this.point );
-		var mouse = this,
-		waitEvent = function (event, isOffice) {
-			if (event.match(/^mouse/)) {
-				var shortE = event.substr(5);
-			}
+			// e.previousOffset = prev.clone();
+			// e.deltaOffset    = prev.diff( this.point );
+			var mouse = this,
+			waitEvent = function (event, isOffice) {
+				if (event.match(/^mouse/)) {
+					var shortE = event.substr(5);
+				}
 
-			return function (e) {
+				return function (e) {
+					prepare( e );
+					var wait     = mouse.isEventAdded(event),
+						waitShort = ( shortE && mouse.isEventAdded(shortE) );
+					if (isOffice || wait || waitShort) mouse.getOffset(e);
+
+					if (isOffice ) mouse.handler.event(event, e);
+					if (wait     ) mouse.events.fire(event, [e]);
+					if (waitShort) mouse.events.fire(shortE, [e]);
+					if (isOffice ) e.preventDefault();
+
+					return !isOffice;
+				};
+			},
+			waitWheel = waitEvent('wheel', false),
+			prepare = function (e) {
+				e.previousOffset = mouse.prev;
+				e.deltaOffset = mouse.diff;
+			},
+			wheel = function (e) {
+				e.delta =
+					// IE, Opera, Chrome
+					e.wheelDelta ? e.wheelDelta > 0 ? 1 : -1 :
+					// Fx
+					e.detail     ? e.detail     < 0 ? 1 : -1 : null;
+				e.up   = e.delta > 0;
+				e.down = e.delta < 0;
+				waitWheel(e);
+				mouse.handler.event('wheel', e);
+			},
+			down = waitEvent('mousedown', true),
+			up   = waitEvent('mouseup'  , true),
+			over = waitEvent('mouseover', true),
+			move = function ( e ) {
+				var offset = mouse.getOffset(e);
+				mouse.setCoords(offset, true);
 				prepare( e );
-				var wait      = mouse.isEventAdded(event),
-					waitShort = ( shortE && mouse.isEventAdded(shortE) );
-				if (isOffice || wait || waitShort) mouse.getOffset(e);
-
-				if (isOffice ) mouse.events.event(event, e);
-				if (wait     ) mouse.fireEvent(event, [e]);
-				if (waitShort) mouse.fireEvent(shortE, [e]);
-				if (isOffice ) e.preventDefault();
-
-				return !isOffice;
+				mouse.handler.event('mousemove', e);
+				mouse.events.fire('move', [e]);
+				mouse.isOut = false;
+				e.preventDefault();
+				return false;
+			},
+			out = function (e) {
+				var offset = mouse.getOffset(e);
+				mouse.setCoords(offset, false);
+				prepare( e );
+				mouse.handler.event('mouseout', e);
+				mouse.events.fire('mouseout', [e]);
+				mouse.events.fire('out', [e]);
+				mouse.isOut = true;
+				e.preventDefault();
+				return false;
 			};
-		},
-		waitWheel = waitEvent('wheel', false),
-		prepare = function (e) {
-			e.previousOffset = mouse.prev;
-			e.deltaOffset = mouse.diff;
-		},
-		wheel = function (e) {
-			e.delta =
-				// IE, Opera, Chrome
-				e.wheelDelta ? e.wheelDelta > 0 ? 1 : -1 :
-				// Fx
-				e.detail     ? e.detail     < 0 ? 1 : -1 : null;
-			e.up   = e.delta > 0;
-			e.down = e.delta < 0;
-			waitWheel(e);
-			mouse.events.event('wheel', e);
-		},
-		down = waitEvent('mousedown', true),
-		up   = waitEvent('mouseup'  , true),
-		over = waitEvent('mouseover', true),
-		move = function ( e ) {
-			var offset = mouse.getOffset(e);
-			mouse.setCoords(offset, true);
-			prepare( e );
-			mouse.events.event('mousemove', e);
-			mouse.fireEvent('move', [e]);
-			mouse.isOut = false;
-			e.preventDefault();
-			return false;
-		},
-		out = function (e) {
-			var offset = mouse.getOffset(e);
-			mouse.setCoords(offset, false);
-			prepare( e );
-			mouse.events.event('mouseout', e);
-			mouse.fireEvent('mouseout', [e]);
-			mouse.fireEvent('out', [e]);
-			mouse.isOut = true;
-			e.preventDefault();
-			return false;
-		};
 
-		atom.dom(mouse.elem).bind({
-			click      : waitEvent('click', false),
-			dblclick   : waitEvent('dblclick', false),
-			contextmenu: waitEvent('contextmenu', false),
-			mouseover  : over,
-			mousedown  : down,
-			mouseup    : up,
-			mousemove  : move,
-			mouseout   : out,
-			selectstart: false,
-			DOMMouseScroll: wheel,
-			mousewheel: wheel
-		});
-		return this;
-	},
-	subscribe : function (elem) {
-		this.events.subscribe(elem);
-		return this;
-	},
-	unsubscribe : function (elem) {
-		this.events.unsubscribe(elem);
-		return this;
-	},
-	debugTrace: null,
-	debugUpdate: function () {
-		if (this.debugTrace) {
-			this.debugTrace.trace( 'Mouse' +
-				(this.inCanvas ? ': ' + this.point.x.round() + ',' + this.point.y.round() : ' is out of canvas')
-			);
-		}
-	},
-	debug : function (on) {
-		if (on && !this.debugTrace) {
-			this.debugTrace = new Trace();
-		} else if (on === false) {
-			this.debugTrace = null;
-		}
-		this.debugUpdate();
-		return this;
-	},
-	dump: function () {
-		var p = this.point;
-		return '[Mouse(' + p.x + '*' + p.y + ')]';
-	},
-	toString: Function.lambda('[object LibCanvas.Mouse]')
+			atom.dom(mouse.elem).bind({
+				click      : waitEvent('click', false),
+				dblclick   : waitEvent('dblclick', false),
+				contextmenu: waitEvent('contextmenu', false),
+				mouseover  : over,
+				mousedown  : down,
+				mouseup    : up,
+				mousemove  : move,
+				mouseout   : out,
+				selectstart: false,
+				DOMMouseScroll: wheel,
+				mousewheel: wheel
+			});
+			return this;
+		},
+		subscribe : function (elem) {
+			this.handler.subscribe(elem);
+			return this;
+		},
+		unsubscribe : function (elem) {
+			this.handler.unsubscribe(elem);
+			return this;
+		},
+		debugTrace: null,
+		debugUpdate: function () {
+			if (this.debugTrace) {
+				this.debugTrace.trace( 'Mouse' +
+					(this.inCanvas ? ': ' + this.point.x.round() + ',' + this.point.y.round() : ' is out of canvas')
+				);
+			}
+		},
+		debug : function (on) {
+			if (on && !this.debugTrace) {
+				this.debugTrace = new Trace();
+			} else if (on === false) {
+				this.debugTrace = null;
+			}
+			this.debugUpdate();
+			return this;
+		},
+		dump: function () {
+			var p = this.point;
+			return '[Mouse(' + p.x + '*' + p.y + ')]';
+		},
+		toString: Function.lambda('[object LibCanvas.Mouse]')
+	}
 });
 
 LibCanvas.Mouse.listen();
