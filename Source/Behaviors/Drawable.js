@@ -24,10 +24,12 @@ var Drawable = LibCanvas.Behaviors.Drawable = function () {
 	
 var start = function () {
 	this.libcanvas.addElement(this);
+	// todo: dont use removeEvent
 	return 'removeEvent';
 };
 var stop = function () {
 	this.libcanvas.rmElement(this);
+	// todo: dont use removeEvent
 	return 'removeEvent';
 };
 

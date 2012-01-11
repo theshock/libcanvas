@@ -47,7 +47,7 @@ LibCanvas.Point
 
 #### События
 	point.addEvent('move', function (distance) {
-		atom.log('Точка передвинулась на '
+		console.log('Точка передвинулась на '
 			+ distance.x + ' по оси X и на '
 			+ distance.y + ' по оси Y'
 		);
@@ -183,10 +183,10 @@ LibCanvas.Point
 	var bar = new LibCanvas.Point(12.88888324, 15.1111127);
 	var foo = new LibCanvas.Point(12.88888115, 15.1111093);
 
-	atom.log(bar == foo);      // false
-	atom.log(bar.equals(foo)); // false
-	atom.log(bar.equals(foo, 8)); // false
-	atom.log(bar.equals(foo, 4)); // true
+	console.log(bar == foo);      // false
+	console.log(bar.equals(foo)); // false
+	console.log(bar.equals(foo, 8)); // false
+	console.log(bar.equals(foo, 4)); // true
 
 ## Метод toObject
 
@@ -208,5 +208,5 @@ LibCanvas.Point
 #### Пример
 	var point = new LibCanvas.Point(15, 15);
 	var clone = point.clone();
-	atom.log(point == clone); // false
-	atom.log(point.equals(clone)); // true
+	console.log(point == clone); // false
+	console.log(point.equals(clone)); // true

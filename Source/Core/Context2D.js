@@ -202,7 +202,7 @@ var Context2D = Class(
 			var result = this.ctx2d[method].apply(this.ctx2d, args || []);
 			if (returnResult) return result;
 		} catch (e) {
-			atom.log('Error in context2d.original(', method, ',', (args || []), ')');
+			console.log('Error in context2d.original(', method, ',', (args || []), ')');
 			throw e;
 		}
 		return this;
