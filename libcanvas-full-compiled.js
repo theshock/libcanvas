@@ -47,7 +47,7 @@ provides: LibCanvas
 var LibCanvas = this.LibCanvas = declare(
 /** @lends LibCanvas.prototype */
 {
-	Static: {
+	own: {
 		Buffer: function (width, height, withCtx) {
 			var a = Array.pickFrom(arguments), zero = (width == null || width === true);
 			if (zero || width.width == null || width.height == null) {
@@ -104,12 +104,14 @@ var LibCanvas = this.LibCanvas = declare(
 			return this._invoker;
 		}
 	},
-	/**
-	 * @constructs
-	 * @returns {LibCanvas.Canvas2D}
-	 */
-	initialize: function() {
-		return Canvas2D.factory(arguments);
+	proto: {
+		/**
+		 * @constructs
+		 * @returns {LibCanvas.Canvas2D}
+		 */
+		initialize: function() {
+			return Canvas2D.factory(arguments);
+		}
 	}
 });
 
@@ -882,7 +884,7 @@ var Geometry = declare( 'LibCanvas.Geometry',
  * @augments Class.Events.prototype
  */
 {
-	mixin: [ Class.Events ],
+	mixin: [ Events.Mixin ],
 	own: {
 		invoke: function (obj) {
 			if (obj == null) throw new TypeError( 'element is not geometry' );
@@ -1095,7 +1097,7 @@ var Point = declare( 'LibCanvas.Point',
 			this.x += distance.x;
 			this.y += distance.y;
 
-			return Geometry.prototype.parent.call(this, distance, false);
+			return Geometry.prototype.move.call(this, distance, false);
 		},
 		/** @returns {LibCanvas.Point} */
 		moveTo : function (newCoord) {
@@ -1882,7 +1884,7 @@ var manage = function (first, second) {
 };
 
 return declare( 'LibCanvas.Behaviors.Drawable', {
-	Implements: Class.Events,
+	mixin: Events.Mixin,
 	proto: {
 		libcanvasIsReady: false,
 		setLibcanvas : function (libcanvas) {
@@ -2396,7 +2398,7 @@ var DownloadingProgress = declare( 'LibCanvas.Inner.DownloadingProgress', {
 		this.createPreloader();
 		if (this.parentLayer) return this.parentLayer.isReady();
 
-		var pI = settings.get('preloadImages');
+		var pI = this.settings.get('preloadImages');
 		return !pI || !Object.keys(pI).length
 			|| (this.imagePreloader && this.imagePreloader.isReady());
 	}
@@ -2445,7 +2447,7 @@ var Canvas2D = declare( 'LibCanvas.Canvas2D',
 		InnerFpsMeter,
 		DownloadingProgress,
 		Events.Mixin,
-		Options.Mixin
+		Settings.Mixin
 	],
 
 	proto: {
@@ -2474,6 +2476,7 @@ var Canvas2D = declare( 'LibCanvas.Canvas2D',
 		 * @returns {LibCanvas.Canvas2D}
 		 */
 		initialize : function (elem, options) {
+			if (!this.events) this.events = new Events(this);
 			this.setOptions({});
 
 			this.bindMethods([ 'update' ]);
@@ -4768,7 +4771,7 @@ var Keyboard = declare( 'LibCanvas.Keyboard',
 	}
 });
 
-Keyboard.extend({ codeNames: Object.invert(Keyboard.keyCodes) });
+Keyboard.codeNames = Object.invert(Keyboard.keyCodes);
 
 return Keyboard;
 }();
@@ -4816,6 +4819,7 @@ return declare( 'LibCanvas.Layer',
 
 	proto: {
 		initialize : function (elem, parentOptions, options) {
+			if (!this.events) this.events = new Events(this);
 			this.setOptions({});
 			this.parentLayer = elem;
 
@@ -5475,7 +5479,7 @@ var Tile = declare( 'LibCanvas.Engines.Tile', {
 	}
 });
 
-declare( 'Tile.Point', {
+Tile.Point = declare( 'LibCanvas.Engines.Tile.Point', {
 	parent: Point,
 
 	proto: {
@@ -5553,10 +5557,10 @@ source: "http://acko.net/blog/projective-texturing-with-canvas"
 ...
 */
 
-var ProjectiveTexture = LibCanvas.Inner.ProjectiveTexture = function () {
+var ProjectiveTexture = function () {
 
 
-var declare = Class( 'LibCanvas.Inner.ProjectiveTexture', {
+var ProjectiveTexture = declare( 'LibCanvas.Inner.ProjectiveTexture', {
 	initialize : function (image) {
 		if (typeof image == 'string') {
 			this.image = new Image;
@@ -7300,7 +7304,7 @@ provides: Shapes.Ellipse
 ...
 */
 
-var Ellipse = LibCanvas.Shapes.Ellipse = Class(
+var Ellipse = declare( 'LibCanvas.Shapes.Ellipse',
 /** @lends {LibCanvas.Shapes.Ellipse.prototype} */
 {
 	parent: Rectangle,
@@ -7413,13 +7417,13 @@ provides: Shapes.Line
 ...
 */
 
-var Line = LibCanvas.Shapes.Line = function () {
+var Line = function () {
 
 var between = function (x, a, b, accuracy) {
 	return x.equals(a, accuracy) || x.equals(b, accuracy) || (a < x && x < b) || (b < x && x < a);
 };
 
-return Class(
+return declare( 'LibCanvas.Shapes.Line',
 /** @lends {LibCanvas.Shapes.Line.prototype} */
 {
 	parent: Shape,

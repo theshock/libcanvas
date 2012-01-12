@@ -70,6 +70,7 @@ var Canvas2D = declare( 'LibCanvas.Canvas2D',
 		 * @returns {LibCanvas.Canvas2D}
 		 */
 		initialize : function (elem, options) {
+			if (!this.events) this.events = new Events(this);
 			this.setOptions({});
 
 			this.bindMethods([ 'update' ]);

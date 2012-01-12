@@ -40,6 +40,7 @@ return declare( 'LibCanvas.Layer',
 
 	proto: {
 		initialize : function (elem, parentOptions, options) {
+			if (!this.events) this.events = new Events(this);
 			this.setOptions({});
 			this.parentLayer = elem;
 

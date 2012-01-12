@@ -106,7 +106,7 @@ var DownloadingProgress = declare( 'LibCanvas.Inner.DownloadingProgress', {
 		this.createPreloader();
 		if (this.parentLayer) return this.parentLayer.isReady();
 
-		var pI = settings.get('preloadImages');
+		var pI = this.settings.get('preloadImages');
 		return !pI || !Object.keys(pI).length
 			|| (this.imagePreloader && this.imagePreloader.isReady());
 	}

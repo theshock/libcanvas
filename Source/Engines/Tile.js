@@ -187,7 +187,7 @@ var Tile = declare( 'LibCanvas.Engines.Tile', {
 	}
 });
 
-declare( 'Tile.Point', {
+Tile.Point = declare( 'LibCanvas.Engines.Tile.Point', {
 	parent: Point,
 
 	proto: {
