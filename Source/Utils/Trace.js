@@ -20,8 +20,8 @@ provides: Utils.Trace
 ...
 */
 
-var Trace = LibCanvas.Utils.Trace = Class({
-	Static: {
+var Trace = declare( 'LibCanvas.Utils.Trace', {
+	own: {
 		dumpRec : function (obj, level, plain) {
 			level  = parseInt(level) || 0;
 			
@@ -70,106 +70,109 @@ var Trace = LibCanvas.Utils.Trace = Class({
 			return (this.dumpRec(object, 0));
 		}
 	},
-	initialize : function (object) {
-		if (arguments.length) this.trace(object);
-		this.stopped = false;
-		return this;
-	},
-	stop  : function () {
-		this.stopped = true;
-		return this;
-	},
-	set value (value) {
-		if (!this.stopped && !this.blocked) {
-			var html = this.self.dump(value)
-				.replaceAll({
-					'\t': '&nbsp;'.repeat(3),
-					'\n': '<br />'
-				});
-			this.createNode().html(html);
-		}
-	},
-	trace : function (value) {
-		this.value = value;
-		return this;
-	},
-	getContainer : function () {
-		var cont = atom.dom('#traceContainer');
-		return cont.length ? cont :
-			atom.dom.create('div', { 'id' : 'traceContainer'})
-				.css({
-					'zIndex'   : '87223',
-					'position' : 'fixed',
-					'top'      : '3px',
-					'right'    : '6px',
-					'maxWidth' : '70%',
-					'maxHeight': '100%',
-					'overflowY': 'auto',
-					'background': 'rgba(0,192,0,0.2)'
-				})
-				.appendTo('body');
-	},
-	events : function (remove) {
-		var trace = this;
-		// add events unbind
-		!remove || this.node.bind({
-			mouseover : function () {
-				this.css('background', '#222');
-			},
-			mouseout  : function () {
-				this.css('background', '#000');
-			},
-			mousedown : function () {
-				trace.blocked = true;
-			},
-			mouseup : function () {
-				trace.blocked = false;
-			}
-		});
-		return this.node;
-	},
-	destroy : function () {
-		this.node.css('background', '#300');
-		this.timeout = (function () {
-			if (this.node) {
-				this.node.destroy();
-				this.node = null;
-			}
-		}.delay(500, this));
-		return this;
-	},
-	createNode : function () {
-		if (this.node) {
-			if (this.timeout) {
-				this.timeout.stop();
-				this.events(this.node);
-				this.node.css('background', '#000');
-			}
-			return this.node;
-		}
 
-		this.node = atom.dom
-			.create('div')
-			.css({
-				background : '#000',
-				border     : '1px dashed #0c0',
-				color      : '#0c0',
-				cursor     : 'pointer',
-				fontFamily : 'monospace',
-				margin     : '1px',
-				minWidth   : '200px',
-				overflow   : 'auto',
-				padding    : '3px 12px',
-				whiteSpace : 'pre'
-			})
-			.appendTo(this.getContainer())
-			.bind({
-				click    : this.destroy.bind(this),
-				dblclick : function () { this.stop().destroy(); }.bind(this)
+	proto: {
+		initialize : function (object) {
+			if (arguments.length) this.trace(object);
+			this.stopped = false;
+			return this;
+		},
+		stop  : function () {
+			this.stopped = true;
+			return this;
+		},
+		set value (value) {
+			if (!this.stopped && !this.blocked) {
+				var html = this.constructor.dump(value)
+					.replaceAll({
+						'\t': '&nbsp;'.repeat(3),
+						'\n': '<br />'
+					});
+				this.createNode().html(html);
+			}
+		},
+		trace : function (value) {
+			this.value = value;
+			return this;
+		},
+		getContainer : function () {
+			var cont = atom.dom('#traceContainer');
+			return cont.length ? cont :
+				atom.dom.create('div', { 'id' : 'traceContainer'})
+					.css({
+						'zIndex'   : '87223',
+						'position' : 'fixed',
+						'top'      : '3px',
+						'right'    : '6px',
+						'maxWidth' : '70%',
+						'maxHeight': '100%',
+						'overflowY': 'auto',
+						'background': 'rgba(0,192,0,0.2)'
+					})
+					.appendTo('body');
+		},
+		bindEvents : function (remove) {
+			var trace = this;
+			// add events unbind
+			!remove || this.node.bind({
+				mouseover : function () {
+					this.css('background', '#222');
+				},
+				mouseout  : function () {
+					this.css('background', '#000');
+				},
+				mousedown : function () {
+					trace.blocked = true;
+				},
+				mouseup : function () {
+					trace.blocked = false;
+				}
 			});
-		return this.events();
-	},
-	toString: Function.lambda('[object LibCanvas.Utils.Trace]')
+			return this.node;
+		},
+		destroy : function () {
+			this.node.css('background', '#300');
+			this.timeout = (function () {
+				if (this.node) {
+					this.node.destroy();
+					this.node = null;
+				}
+			}.delay(500, this));
+			return this;
+		},
+		createNode : function () {
+			if (this.node) {
+				if (this.timeout) {
+					this.timeout.stop();
+					this.bindEvents(this.node);
+					this.node.css('background', '#000');
+				}
+				return this.node;
+			}
+
+			this.node = atom.dom
+				.create('div')
+				.css({
+					background : '#000',
+					border     : '1px dashed #0c0',
+					color      : '#0c0',
+					cursor     : 'pointer',
+					fontFamily : 'monospace',
+					margin     : '1px',
+					minWidth   : '200px',
+					overflow   : 'auto',
+					padding    : '3px 12px',
+					whiteSpace : 'pre'
+				})
+				.appendTo(this.getContainer())
+				.bind({
+					click    : this.destroy.bind(this),
+					dblclick : function () { this.stop().destroy(); }.bind(this)
+				});
+			return this.bindEvents();
+		},
+		toString: Function.lambda('[object LibCanvas.Utils.Trace]')
+	}
 });
 
 try {

@@ -21,7 +21,7 @@ provides: Utils.FpsMeter
 ...
 */
 
-var FpsMeter = LibCanvas.Utils.FpsMeter = Class({
+var FpsMeter = declare( 'LibCanvas.Utils.FpsMeter', {
 	initialize : function (framesMax) {
 		this.trace = new Trace();
 		this.genTime   = [];
