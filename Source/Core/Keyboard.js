@@ -95,16 +95,16 @@ var Keyboard = declare( 'LibCanvas.Keyboard',
 		},
 		keyEvent: function (event) {
 			return function (e) {
-				var key = this.self.key(e);
+				var key = this.constructor.key(e);
 				e.keyName = key;
 				this.events.fire( event, [e] );
 				if (event != 'press') {
 					if (event == 'down') this.events.fire(key, [e]);
 					if (event == 'up')   this.events.fire(key + ':up', [e]);
 					if (event == 'down') {
-						this.self.keyStates[key] = true;
-					} else if ( key in this.self.keyStates ) {
-						delete this.self.keyStates[key];
+						this.constructor.keyStates[key] = true;
+					} else if ( key in this.constructor.keyStates ) {
+						delete this.constructor.keyStates[key];
 					}
 				} else {
 					this.events.fire(key + ':press', [e]);
@@ -120,12 +120,12 @@ var Keyboard = declare( 'LibCanvas.Keyboard',
 			return pD && (!Array.isArray(pD) || pD.contains(key));
 		},
 		keyState : function (keyName) {
-			return this.self.keyState(keyName);
+			return this.constructor.keyState(keyName);
 		},
 		_debugTrace: null,
 		debugUpdate: function () {
 			if (this._debugTrace) {
-				var keys = '', states = this.self.keyStates;
+				var keys = '', states = this.constructor.keyStates;
 				for (var key in states) if (states[key]) {
 					keys += '\n = ' + key;
 				}

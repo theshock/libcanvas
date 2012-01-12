@@ -542,9 +542,7 @@ return declare( 'LibCanvas.Inner.TimingFunctions', {
 			return Math.pow(2, 10 * --p) * Math.cos(20 * p * Math.PI * (x && x[0] || 1) / 3);
 		}
 	}
-}).implement(
-
-);
+});
 
 }();
 
@@ -1221,7 +1219,7 @@ var Point = declare( 'LibCanvas.Point',
 		},
 		/** @returns {LibCanvas.Point} */
 		clone : function () {
-			return new this.self(this);
+			return new this.constructor(this);
 		},
 		/** @returns {string} */
 		dump: function () {
@@ -1495,7 +1493,7 @@ var Mouse = declare( 'LibCanvas.Mouse',
 			return result;
 		},
 		button: function (key) {
-			return this.self.buttons[key || 'left'];
+			return this.constructor.buttons[key || 'left'];
 		},
 		setCoords : function (point, inCanvas) {
 			this.prev.set( this.point );
@@ -3079,12 +3077,12 @@ var Shape = declare( 'LibCanvas.Shape',
 			return Geometry.prototype.move.call(this, distance);
 		},
 		equals : function (shape, accuracy) {
-			return shape instanceof this.self &&
+			return shape instanceof this.constructor &&
 				shape.from.equals(this.from, accuracy) &&
 				shape.to  .equals(this.to  , accuracy);
 		},
 		clone : function () {
-			return new this.self(this.from.clone(), this.to.clone());
+			return new this.constructor(this.from.clone(), this.to.clone());
 		},
 		getPoints : function () {
 			return { from : this.from, to : this.to };
@@ -3279,7 +3277,7 @@ var Rectangle = declare( 'LibCanvas.Shapes.Rectangle',
 		},
 		/** @returns {boolean} */
 		intersect : function (obj) {
-			if (obj.self != this.constructor) {
+			if (obj.prototype != this.constructor) {
 				if (obj.getBoundingRectangle) {
 					obj = obj.getBoundingRectangle();
 				} else return false;
@@ -3803,7 +3801,7 @@ var Context2D = declare( 'LibCanvas.Context2D',
 		},
 		/** @returns {Context2D} */
 		clear: function (shape) {
-			return shape instanceof Shape && shape.self != Rectangle ?
+			return shape instanceof Shape && shape.prototype != Rectangle ?
 				this
 					.save()
 					.set({ globalCompositeOperation: Context2D.COMPOSITE.DESTINATION_OUT })
@@ -4719,16 +4717,16 @@ var Keyboard = declare( 'LibCanvas.Keyboard',
 		},
 		keyEvent: function (event) {
 			return function (e) {
-				var key = this.self.key(e);
+				var key = this.constructor.key(e);
 				e.keyName = key;
 				this.events.fire( event, [e] );
 				if (event != 'press') {
 					if (event == 'down') this.events.fire(key, [e]);
 					if (event == 'up')   this.events.fire(key + ':up', [e]);
 					if (event == 'down') {
-						this.self.keyStates[key] = true;
-					} else if ( key in this.self.keyStates ) {
-						delete this.self.keyStates[key];
+						this.constructor.keyStates[key] = true;
+					} else if ( key in this.constructor.keyStates ) {
+						delete this.constructor.keyStates[key];
 					}
 				} else {
 					this.events.fire(key + ':press', [e]);
@@ -4744,12 +4742,12 @@ var Keyboard = declare( 'LibCanvas.Keyboard',
 			return pD && (!Array.isArray(pD) || pD.contains(key));
 		},
 		keyState : function (keyName) {
-			return this.self.keyState(keyName);
+			return this.constructor.keyState(keyName);
 		},
 		_debugTrace: null,
 		debugUpdate: function () {
 			if (this._debugTrace) {
-				var keys = '', states = this.self.keyStates;
+				var keys = '', states = this.constructor.keyStates;
 				for (var key in states) if (states[key]) {
 					keys += '\n = ' + key;
 				}
@@ -4954,7 +4952,7 @@ var Point3D = declare( 'LibCanvas.Point3D',
 		 */
 		diff: function (point3d) {
 			point3d = LibCanvas.Point3D( point3d );
-			return new this.self(
+			return new this.constructor(
 				point3d.x - this.x,
 				point3d.y - this.y,
 				point3d.z - this.z
@@ -4986,7 +4984,7 @@ var Point3D = declare( 'LibCanvas.Point3D',
 
 		/** @returns {LibCanvas.Point3D} */
 		clone: function () {
-			return new this.self( this );
+			return new this.constructor( this );
 		},
 
 		/** @returns Array */
@@ -5503,7 +5501,7 @@ declare( 'Tile.Point', {
 		},
 
 		getNeighbour : function (dir) {
-			var shift = this.self.shifts[dir];
+			var shift = this.constructor.shifts[dir];
 			if (shift) {
 				var row = this.engine.points[this.y + shift.y];
 				if (row) return row[this.x + shift.x] || null;
@@ -6838,7 +6836,7 @@ declare( 'LibCanvas.Scene.Element',
 
 			this.setOptions( options );
 
-			var ownShape = this.shape && this.shape != this.self.prototype.shape;
+			var ownShape = this.shape && this.shape != this.constructor.prototype.shape;
 
 			if (ownShape || this.options.shape) {
 				if (!ownShape) this.shape = this.options.shape;

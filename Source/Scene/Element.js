@@ -45,7 +45,7 @@ declare( 'LibCanvas.Scene.Element',
 
 			this.setOptions( options );
 
-			var ownShape = this.shape && this.shape != this.self.prototype.shape;
+			var ownShape = this.shape && this.shape != this.constructor.prototype.shape;
 
 			if (ownShape || this.options.shape) {
 				if (!ownShape) this.shape = this.options.shape;

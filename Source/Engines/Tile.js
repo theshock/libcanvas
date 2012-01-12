@@ -213,7 +213,7 @@ declare( 'Tile.Point', {
 		},
 
 		getNeighbour : function (dir) {
-			var shift = this.self.shifts[dir];
+			var shift = this.constructor.shifts[dir];
 			if (shift) {
 				var row = this.engine.points[this.y + shift.y];
 				if (row) return row[this.x + shift.x] || null;

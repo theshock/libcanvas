@@ -138,7 +138,7 @@ var Mouse = declare( 'LibCanvas.Mouse',
 			return result;
 		},
 		button: function (key) {
-			return this.self.buttons[key || 'left'];
+			return this.constructor.buttons[key || 'left'];
 		},
 		setCoords : function (point, inCanvas) {
 			this.prev.set( this.point );

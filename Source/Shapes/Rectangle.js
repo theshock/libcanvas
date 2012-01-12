@@ -179,7 +179,7 @@ var Rectangle = declare( 'LibCanvas.Shapes.Rectangle',
 		},
 		/** @returns {boolean} */
 		intersect : function (obj) {
-			if (obj.self != this.constructor) {
+			if (obj.prototype != this.constructor) {
 				if (obj.getBoundingRectangle) {
 					obj = obj.getBoundingRectangle();
 				} else return false;

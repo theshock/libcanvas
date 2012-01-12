@@ -100,12 +100,12 @@ var Shape = declare( 'LibCanvas.Shape',
 			return Geometry.prototype.move.call(this, distance);
 		},
 		equals : function (shape, accuracy) {
-			return shape instanceof this.self &&
+			return shape instanceof this.constructor &&
 				shape.from.equals(this.from, accuracy) &&
 				shape.to  .equals(this.to  , accuracy);
 		},
 		clone : function () {
-			return new this.self(this.from.clone(), this.to.clone());
+			return new this.constructor(this.from.clone(), this.to.clone());
 		},
 		getPoints : function () {
 			return { from : this.from, to : this.to };

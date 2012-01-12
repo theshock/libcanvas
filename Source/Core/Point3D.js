@@ -100,7 +100,7 @@ var Point3D = declare( 'LibCanvas.Point3D',
 		 */
 		diff: function (point3d) {
 			point3d = LibCanvas.Point3D( point3d );
-			return new this.self(
+			return new this.constructor(
 				point3d.x - this.x,
 				point3d.y - this.y,
 				point3d.z - this.z
@@ -132,7 +132,7 @@ var Point3D = declare( 'LibCanvas.Point3D',
 
 		/** @returns {LibCanvas.Point3D} */
 		clone: function () {
-			return new this.self( this );
+			return new this.constructor( this );
 		},
 
 		/** @returns Array */

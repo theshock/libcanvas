@@ -209,7 +209,7 @@ var Point = declare( 'LibCanvas.Point',
 		},
 		/** @returns {LibCanvas.Point} */
 		clone : function () {
-			return new this.self(this);
+			return new this.constructor(this);
 		},
 		/** @returns {string} */
 		dump: function () {
