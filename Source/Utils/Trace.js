@@ -112,12 +112,12 @@ var Trace = LibCanvas.Utils.Trace = Class({
 	events : function (remove) {
 		var trace = this;
 		// add events unbind
-		!remove || this.node.bind({
+		!remove || trace.node.bind({
 			mouseover : function () {
-				this.css('background', '#222');
+				trace.node.css('background', '#222');
 			},
 			mouseout  : function () {
-				this.css('background', '#000');
+				trace.node.css('background', '#000');
 			},
 			mousedown : function () {
 				trace.blocked = true;
@@ -126,7 +126,7 @@ var Trace = LibCanvas.Utils.Trace = Class({
 				trace.blocked = false;
 			}
 		});
-		return this.node;
+		return trace.node;
 	},
 	destroy : function () {
 		this.node.css('background', '#300');
