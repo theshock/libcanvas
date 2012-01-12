@@ -19,7 +19,7 @@ provides: Engines.IsometricProjection
 ...
 */
 
-LibCanvas.Engines.IsometricProjection = atom.Class(
+declare( 'LibCanvas.Engines.IsometricProjection',
 /** @lends LibCanvas.Engines.IsometricProjection# */
 {
 
@@ -34,7 +34,7 @@ LibCanvas.Engines.IsometricProjection = atom.Class(
 	 * @param {Point3D} factor
 	 */
 	initialize: function (factor) {
-		atom.Class.bindAll( this );
+		this.bindMethods();
 		this.factor = Point3D( factor || this.factor );
 	},
 

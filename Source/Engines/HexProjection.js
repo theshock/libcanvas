@@ -19,15 +19,7 @@ provides: Shapes.Polygon
 ...
 */
 
-LibCanvas.Engines.HexProjection = atom.Class({
-	Extends: atom.Class.Options,
-
-	options: {
-		baseLength : 0,
-		chordLength: 0,
-		hexHeight  : 0,
-		start      : new Point(0, 0)
-	},
+declare( 'LibCanvas.Engines.HexProjection', {
 	/**
 	 * @param {object} options
 	 * @param {int} options.baseLength  - length of top and bottom lines
@@ -35,7 +27,12 @@ LibCanvas.Engines.HexProjection = atom.Class({
 	 * @param {int} options.hexHeight   - height of the hex (length between top and bottom lines)
 	 */
 	initialize: function (options) {
-		this.setOptions( options );
+		this.settings = new Settings({
+			baseLength : 0,
+			chordLength: 0,
+			hexHeight  : 0,
+			start      : new Point(0, 0)
+		});
 	},
 
 	/**
@@ -52,14 +49,14 @@ LibCanvas.Engines.HexProjection = atom.Class({
 	 */
 	rgbToPoint: function (coordinates) {
 		var
-			red     = coordinates[0],
-			green   = coordinates[1],
-			blue    = coordinates[2],
-			options = this.options,
-			base    = options.baseLength,
-			chord   = options.chordLength,
-			height  = options.hexHeight,
-			start   = options.start;
+			red      = coordinates[0],
+			green    = coordinates[1],
+			blue     = coordinates[2],
+			settings = this.settings,
+			base     = settings.get('baseLength'),
+			chord    = settings.get('chordLength'),
+			height   = settings.get('hexHeight'),
+			start    = settings.get('start');
 		if (red + green + blue !== 0) {
 			throw new Error( 'Wrong coordinates: ' + red + ' ' + green + ' ' + blue);
 		}
@@ -76,11 +73,11 @@ LibCanvas.Engines.HexProjection = atom.Class({
 	 */
 	pointToRgb: function (point) {
 		var
-			options = this.options,
-			base    = options.baseLength,
-			chord   = options.chordLength,
-			height  = options.hexHeight,
-			start   = options.start,
+			settings = this.settings,
+			base     = settings.get('baseLength'),
+			chord    = settings.get('chordLength'),
+			height   = settings.get('hexHeight'),
+			start    = settings.get('start'),
 			// counting coords
 			red   = (point.x - start.x) / (base + chord),
 			blue  = (point.y - start.y - red * height / 2) / height,
@@ -121,10 +118,10 @@ LibCanvas.Engines.HexProjection = atom.Class({
 	 */
 	createPolygon: function (center) {
 		var
-			options = this.options,
-			halfBase   = options.baseLength / 2,
-			halfHeight = options.hexHeight  / 2,
-			radius  = halfBase + options.chordLength,
+			settings   = this.settings,
+			halfBase   = settings.get('baseLength') / 2,
+			halfHeight = settings.get('hexHeight')  / 2,
+			radius     = halfBase + settings.get('chordLength'),
 
 			right  = center.x + halfBase,
 			left   = center.x - halfBase,
@@ -142,7 +139,7 @@ LibCanvas.Engines.HexProjection = atom.Class({
 	}
 });
 
-LibCanvas.Engines.HexProjection.Sizes = Class({
+declare( 'LibCanvas.Engines.HexProjection.Sizes', {
 
 	initialize: function (projection, padding) {
 		this.projection = projection;
@@ -187,26 +184,32 @@ LibCanvas.Engines.HexProjection.Sizes = Class({
 	/** @return Point */
 	size: function () {
 		var
-			limits = this.limits(),
-			options = this.projection.options,
-			padding = this.padding;
+			limits   = this.limits(),
+			settings = this.projection.settings,
+			base     = settings.get('baseLength'),
+			chord    = settings.get('chordLength'),
+			height   = settings.get('hexHeight'),
+			padding  = this.padding;
 
 		return new Point(
-			limits.max.x - limits.min.x + options.baseLength + 2 * (padding + options.chordLength),
-			limits.max.y - limits.min.y + options.hexHeight  + 2 *  padding
+			limits.max.x - limits.min.x + base    + 2 * (padding + chord),
+			limits.max.y - limits.min.y + height  + 2 *  padding
 		);
 	},
 
 	/** @return Point */
 	center: function () {
 		var
-			min = this.limits().min,
-			options = this.projection.options,
-			padding = this.padding;
+			min      = this.limits().min,
+			settings = this.projection.settings,
+			base     = settings.get('baseLength'),
+			chord    = settings.get('chordLength'),
+			height   = settings.get('hexHeight'),
+			padding  = this.padding;
 
 		return new Point(
-			-( min.x-padding - options.baseLength/2 - options.chordLength ),
-			-( min.y-padding - options.hexHeight /2 )
+			padding + base   /2 + chord - min.x,
+			padding + height /2         - min.y
 		);
 	}
 
