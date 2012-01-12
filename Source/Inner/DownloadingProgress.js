@@ -19,7 +19,7 @@ provides: Inner.DownloadingProgress
 
 ...
 */
-var DownloadingProgress = LibCanvas.Inner.DownloadingProgress = Class({
+var DownloadingProgress = declare( 'LibCanvas.Inner.DownloadingProgress', {
 	imageExists: function (name) {
 		if (this.parentLayer) return this.parentLayer.imageExists(name);
 
@@ -46,12 +46,12 @@ var DownloadingProgress = LibCanvas.Inner.DownloadingProgress = Class({
 	renderProgress : function () {
 		if (this.parentLayer) return;
 		
-		if (this.options.progressBarStyle && !this.progressBar) {
+		if (this.settings.get('progressBarStyle') && !this.progressBar) {
 			if (typeof ProgressBar == 'undefined') {
 				throw new Error('LibCanvas.Utils.ProgressBar is not loaded');
 			}
 			this.progressBar = new ProgressBar()
-				.setStyle(this.options.progressBarStyle);
+				.setStyle(this.settings.get('progressBarStyle'));
 		}
 		if (this.progressBar) {
 			this.progressBar
@@ -62,39 +62,42 @@ var DownloadingProgress = LibCanvas.Inner.DownloadingProgress = Class({
 	},
 	createPreloader : function () {
 		if (!this.imagePreloader) {
+
+			var settings = this.settings;
+			var events   = this.events;
 			
 			if (this.parentLayer) {
 				this.parentLayer.addEvent('ready', function () {
-					this.readyEvent('ready');
-				}.bind(this));
+					events.ready('ready');
+				});
 				this.imagePreloader = true;
 				return;
 			}
 			
-			if (this.options.preloadAudio) {
+			if (settings.get('preloadAudio')) {
 				if (typeof AudioContainer == 'undefined') {
 					throw new Error('LibCanvas.Utils.AudioContainer is not loaded');
 				}
-				this._audio = new AudioContainer(this.options.preloadAudio);
+				this._audio = new AudioContainer(settings.get('preloadAudio'));
 			} else {
 				this._audio = null;
 			}
 
-			if (this.options.preloadImages) {
+			if (settings.get('preloadImages')) {
 				if (typeof ImagePreloader == 'undefined') {
 					throw new Error('LibCanvas.Utils.ImagePreloader is not loaded');
 				}
-				this.imagePreloader = new ImagePreloader(this.options.preloadImages, this.options.imagesSuffix)
+				this.imagePreloader = new ImagePreloader(settings.get('preloadImages'), settings.get('imagesSuffix'))
 					.addEvent('ready', function (preloader) {
 						this.images = preloader.images;
 						console.log(preloader.getInfo());
-						this.readyEvent('ready');
+						events.ready('ready');
 						this.update();
 					}.bind(this));
 			} else {
 				this.images = {};
 				this.imagePreloader = true;
-				this.readyEvent('ready');
+				events.ready('ready');
 			}
 		}
 
@@ -103,8 +106,8 @@ var DownloadingProgress = LibCanvas.Inner.DownloadingProgress = Class({
 		this.createPreloader();
 		if (this.parentLayer) return this.parentLayer.isReady();
 
-		var pI = this.options.preloadImages;
-		return !pI || !Object.values(pI).length
+		var pI = settings.get('preloadImages');
+		return !pI || !Object.keys(pI).length
 			|| (this.imagePreloader && this.imagePreloader.isReady());
 	}
 });

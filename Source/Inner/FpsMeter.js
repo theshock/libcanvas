@@ -19,7 +19,7 @@ provides: Inner.FpsMeter
 
 ...
 */
-var InnerFpsMeter = LibCanvas.Inner.FpsMeter = Class({
+var InnerFpsMeter = declare( 'LibCanvas.Inner.FpsMeter', {
 	fpsMeter : function (frames) {
 		if (typeof FpsMeter == 'undefined') {
 			throw new Error('LibCanvas.Utils.FpsMeter is not loaded');

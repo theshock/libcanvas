@@ -28,96 +28,114 @@ provides: Ui.Shaper
 ...
 */
 
-var Shaper = LibCanvas.Ui.Shaper = Class({
-	Extends: Class.Options,
-	Implements: [
-		Drawable, Animatable, Clickable, MouseListener,
-		Linkable, Draggable , Droppable, Moveable
+var Shaper = declare( 'LibCanvas.Ui.Shaper', {
+	parent: Drawable,
+
+	mixin: [
+		Settings.Mixin,
+		Animatable,
+		Clickable,
+		MouseListener,
+		Linkable,
+		Draggable,
+		Droppable,
+		Moveable
 	],
 
-	active: false,
-	hover : false,
+	proto: {
+		active: false,
+		hover : false,
 
-	initialize : function (libcanvas, options) {
-		this.update = libcanvas.update;
+		initialize : function (libcanvas, options) {
+			this.update = libcanvas.update;
 
-		this.setOptions(options);
-		this.setShape(options.shape);
+			this.events   = new Events(this);
+			this.settings = new Settings(options).addEvents(this.events);
+			this.shape    = this.settings.get('shape');
 
-		this.getShape().addEvent('move', libcanvas.update);
-		this.addEvent(['moveDrag', 'statusChanged'], libcanvas.update);
-	},
-	setOptions : function (options) {
-		this.update();
-		return this.parent(options);
-	},
-	getStyle : function (type) {
-		var o = this.options;
-		return (this.active && o.active) ? o.active[type] :
-		       (this.hover  && o.hover)  ? o.hover [type] :
-		                      (o[type]  || null);
-	},
+			this.shape.addEvent('move', libcanvas.update);
+			this.events.add(['moveDrag', 'statusChanged'], libcanvas.update);
+		},
+		setOptions : function (options) {
+			this.update();
+			// todo: bind to events
+			return Settings.Mixin.prototype.setOptions.call(this, options);
+		},
+		getStyle : function (type) {
+			var s = this.settings;
+			return (this.active && s.get('active')) ? s.get('active')[type] :
+				   (this.hover  && s.get('hover'))  ? s.get('hover') [type] :
+								  (s.get(type)  || null);
+		},
 
-	drawTo : function (ctx) {
-		var fill    = this.getStyle('fill'),
-			stroke  = this.getStyle('stroke'),
-			lineW   = this.getStyle('lineWidth'),
-			opacity = this.getStyle('opacity');
+		drawTo : function (ctx) {
+			var fill    = this.getStyle('fill'),
+				stroke  = this.getStyle('stroke'),
+				lineW   = this.getStyle('lineWidth'),
+				opacity = this.getStyle('opacity');
 
-		ctx.save();
-		if (lineW  ) ctx.set('lineWidth', lineW);
-		if (opacity) ctx.set('globalOpacity', opacity);
-		if (fill   ) ctx.fill  (this.getShape(), fill  );
-		if (stroke ) ctx.stroke(this.getShape(), stroke);
-		ctx.restore();
-		return this;
-	},
-	draw : function () {
-		return this.drawTo(this.libcanvas.ctx);
-	},
+			ctx.save();
+			if (lineW  ) ctx.set('lineWidth', lineW);
+			if (opacity) ctx.set('globalOpacity', opacity);
+			if (fill   ) ctx.fill  (this.shape, fill  );
+			if (stroke ) ctx.stroke(this.shape, stroke);
+			ctx.restore();
+			return this;
+		},
+		draw : function () {
+			return this.drawTo(this.libcanvas.ctx);
+		},
 
-	// accessors
+		// accessors
 
 
-	get fill () {
-		return this.options.fill;
-	},
-	set fill (value) {
-		this.options.fill = value;
-		this.update();
-	},
+		get fill () {
+			return this.settings.get('fill');
+		},
+		set fill (value) {
+			this.settings.set({ fill: value });
+			this.update();
+		},
 
-	get stroke () {
-		return this.options.stroke;
-	},
-	set stroke (value) {
-		this.options.stroke = value;
-		this.update();
-	},
+		get stroke () {
+			return this.settings.get('stroke');
+		},
+		set stroke (value) {
+			this.settings.set({ stroke: value });
+			this.update();
+		},
 
-	get lineWidth () {
-		return this.options.lineWidth;
-	},
-	set lineWidth (value) {
-		this.options.lineWidth = value;
-		this.update();
-	},
+		get lineWidth () {
+			return this.settings.get('lineWidth');
+		},
+		set lineWidth (value) {
+			this.settings.set({ lineWidth: value });
+			this.update();
+		},
 
-	get radius () {
-		if (!Circle.isInstance(this.shape)) {
-			throw new TypeError('Shape is not circle');
-		}
-		return this.shape.radius;
-	},
-	set radius (value) {
-		if (!Circle.isInstance(this.shape)) {
-			throw new TypeError('Shape is not circle');
-		}
-		this.shape.radius = value;
-		this.update();
-	},
-	dump: function () {
-		return '[Shaper ' + this.shape.dump() + ']';
-	},
-	toString: Function.lambda('[object LibCanvas.Ui.Shaper]')
+		get radius () {
+			if (this.shape instanceof Circle) {
+				return this.shape.radius;
+			} else {
+				throw new TypeError('Shape is not circle');
+			}
+		},
+		set radius (value) {
+			if (this.shape instanceof Circle) {
+			this.shape.radius = value;
+			this.update();
+			} else {
+				throw new TypeError('Shape is not circle');
+			}
+			if (!Circle.isInstance(this.shape)) {
+				throw new TypeError('Shape is not circle');
+			}
+			this.shape.radius = value;
+			this.update();
+		},
+		dump: function () {
+			return '[Shaper ' + this.shape.dump() + ']';
+		},
+		toString: Function.lambda('[object LibCanvas.Ui.Shaper]')
+	}
 });

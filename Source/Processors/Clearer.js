@@ -21,7 +21,7 @@ provides: Processors.Clearer
 ...
 */
 
-LibCanvas.Processors.Clearer = Class({
+declare( 'LibCanvas.Processors.Clearer', {
 	style : null,
 	initialize : function (style) {
 		this.style = style || null;

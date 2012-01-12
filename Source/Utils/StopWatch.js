@@ -20,7 +20,7 @@ provides: Utils.StopWatch
 ...
 */
 
-var StopWatch = LibCanvas.Utils.StopWatch = Class({
+var StopWatch = declare( 'LibCanvas.Utils.StopWatch', {
 	startTime : 0,
 	initialize : function (autoStart) {
 		autoStart && this.start();

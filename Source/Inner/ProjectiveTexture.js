@@ -25,7 +25,7 @@ source: "http://acko.net/blog/projective-texturing-with-canvas"
 var ProjectiveTexture = LibCanvas.Inner.ProjectiveTexture = function () {
 
 
-var ProjectiveTexture = Class({
+var declare = Class( 'LibCanvas.Inner.ProjectiveTexture', {
 	initialize : function (image) {
 		if (typeof image == 'string') {
 			this.image = new Image;

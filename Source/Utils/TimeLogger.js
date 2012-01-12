@@ -22,7 +22,7 @@ provides: Utils.TimeLogger
 ...
 */
 
-var TimeLogger = LibCanvas.Utils.TimeLogger = Class({
+var TimeLogger = declare( 'LibCanvas.Utils.TimeLogger', {
 	last : 10,
 	sw   : null,
 	trace: null,

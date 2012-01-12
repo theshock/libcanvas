@@ -20,7 +20,7 @@ provides: Utils.AudioContainer
 ...
 */
 
-var AudioContainer = LibCanvas.Utils.AudioContainer = Class({
+var AudioContainer = declare( 'LibCanvas.Utils.AudioContainer', {
 	support : false,
 	initialize: function (files) {
 		this.allAudios = [];

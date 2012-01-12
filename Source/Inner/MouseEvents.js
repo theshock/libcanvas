@@ -21,7 +21,7 @@ provides: Inner.MouseEvents
 ...
 */
 
-var MouseEvents = LibCanvas.Inner.MouseEvents = Class({
+var MouseEvents = declare( 'LibCanvas.Inner.MouseEvents', {
 	initialize : function (mouse) {
 		this.subscribers   = [];
 		this.lastMouseMove = [];
@@ -71,8 +71,12 @@ var MouseEvents = LibCanvas.Inner.MouseEvents = Class({
 		}
 		return elements;
 	},
-	fireEvent : function (elem, eventName, e) {
-		elem.fireEvent(eventName, [e, eventName]);
+	trigger : function (elem, eventName, e) {
+		if (elem.events) {
+			elem.events.fire( eventName, [ e, eventName ] );
+		} else {
+			elem.fireEvent(eventName, [e, eventName]);
+		}
 	},
 	event : function (type, e) {
 		var mouse = this,
@@ -84,26 +88,26 @@ var MouseEvents = LibCanvas.Inner.MouseEvents = Class({
 		subscribers.over.forEach(function (elem) {
 			// Mouse move firstly on this element
 			if (type == 'mousemove' && !mouse.lastMouseMove.contains(elem)) {
-				mouse.fireEvent(elem, 'mouseover', e);
+				mouse.trigger(elem, 'mouseover', e);
 				mouse.lastMouseMove.push(elem);
 			} else if (type == 'mousedown') {
 				mouse.lastMouseDown.push(elem);
 			// If mouseup on this elem and last mousedown was on this elem - click
 			} else if (type == 'mouseup' && mouse.lastMouseDown.contains(elem)) {
-				mouse.fireEvent(elem, 'click', e);
+				mouse.trigger(elem, 'click', e);
 			}
-			mouse.fireEvent(elem, type, e);
+			mouse.trigger(elem, type, e);
 		});
 
 		subscribers.out.forEach(function (elem) {
 			var mouseout = false;
 			if (isMove && mouse.lastMouseMove.contains(elem)) {
 				mouse.fireEvent(elem, 'mouseout', e);
-				if (type == 'mouseout') mouse.fireEvent(elem, 'away:mouseout', e);
+				if (type == 'mouseout') mouse.trigger(elem, 'away:mouseout', e);
 				mouse.lastMouseMove.erase(elem);
 				mouseout = true;
 			}
-			if (!mouseout) mouse.fireEvent(elem, 'away:' + type, e);
+			if (!mouseout) mouse.trigger(elem, 'away:' + type, e);
 		});
 
 		return this;
