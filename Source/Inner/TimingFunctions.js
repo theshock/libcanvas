@@ -23,10 +23,16 @@ inspiration:
 ...
 */
 
-var TimingFunctions = LibCanvas.Inner.TimingFunctions = function () {
+var TimingFunctions = function () {
+
+var pow = function(i){
+	return function (p) {
+		return Math.pow(p, i + 2);
+	}
+};
 	
-return Class({
-	Static: {
+return declare( 'LibCanvas.Inner.TimingFunctions', {
+	own: {
 		_instance: null,
 		get instance () {
 			if (!this._instance) {
@@ -65,52 +71,55 @@ return Class({
 		}
 	},
 
-	linear: function (p) {
-		return p;
-	},
+	proto: {
 
-	pow: function(p, x){
-		return Math.pow(p, x && x[0] || 6);
-	},
+		linear: function (p) {
+			return p;
+		},
 
-	expo: function(p){
-		return Math.pow(2, 8 * (p - 1));
-	},
+		pow: function(p, x){
+			return Math.pow(p, x && x[0] || 6);
+		},
 
-	circ: function(p){
-		return 1 - Math.sin(Math.acos(p));
-	},
+		quad : pow(2),
+		cubic: pow(3),
+		quart: pow(4),
+		quint: pow(5),
 
-	sine: function(p){
-		return 1 - Math.sin((1 - p) * Math.PI / 2);
-	},
+		expo: function(p){
+			return Math.pow(2, 8 * (p - 1));
+		},
 
-	back: function(p, x){
-		x = x && x[0] || 1.618;
-		return Math.pow(p, 2) * ((x + 1) * p - x);
-	},
+		circ: function(p){
+			return 1 - Math.sin(Math.acos(p));
+		},
 
-	bounce: function(p){
-		var value;
-		for (var a = 0, b = 1; 1; a += b, b /= 2){
-			if (p >= (7 - 4 * a) / 11){
-				value = b * b - Math.pow((11 - 6 * a - 11 * p) / 4, 2);
-				break;
+		sine: function(p){
+			return 1 - Math.sin((1 - p) * Math.PI / 2);
+		},
+
+		back: function(p, x){
+			x = x && x[0] || 1.618;
+			return Math.pow(p, 2) * ((x + 1) * p - x);
+		},
+
+		bounce: function(p){
+			var value;
+			for (var a = 0, b = 1; 1; a += b, b /= 2){
+				if (p >= (7 - 4 * a) / 11){
+					value = b * b - Math.pow((11 - 6 * a - 11 * p) / 4, 2);
+					break;
+				}
 			}
-		}
-		return value;
-	},
+			return value;
+		},
 
-	elastic: function(p, x){
-		return Math.pow(2, 10 * --p) * Math.cos(20 * p * Math.PI * (x && x[0] || 1) / 3);
+		elastic: function(p, x){
+			return Math.pow(2, 10 * --p) * Math.cos(20 * p * Math.PI * (x && x[0] || 1) / 3);
+		}
 	}
 }).implement(
-	['quad', 'cubic', 'quart', 'quint']
-		.associate(function(name, i){
-			return function (p) {
-				return Math.pow(p, i + 2);
-			}
-		})
+
 );
 
 }();

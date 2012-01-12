@@ -21,7 +21,7 @@ provides: Inner.FrameRenderer
 ...
 */
 
-var FrameRenderer = LibCanvas.Inner.FrameRenderer = Class({
+var FrameRenderer = declare( 'LibCanvas.Inner.FrameRenderer', {
 	checkAutoDraw : function () {
 		if (!this._freezed && this.updateFrame) {
 			this.updateFrame = false;
@@ -30,9 +30,9 @@ var FrameRenderer = LibCanvas.Inner.FrameRenderer = Class({
 		return false;
 	},
 	showBuffer : function () {
+		// todo: remove this
 		if (this.elem != this.origElem) {
-			this.origCtx.clearAll();
-			this.origCtx.drawImage(this.elem);
+			this.origCtx.clearAll().drawImage(this.elem);
 		}
 		return this;
 	},
@@ -46,7 +46,7 @@ var FrameRenderer = LibCanvas.Inner.FrameRenderer = Class({
 		return this;
 	},
 	updateAll : function (time) {
-		if (!this.options.invoke) return this;
+		if (!this.settings.get('invoke')) return this;
 		return this.invokeAll('update', time);
 	},
 	drawAll : function (time) {
