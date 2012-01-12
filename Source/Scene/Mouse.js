@@ -22,7 +22,7 @@ provides: Scene.Mouse
 ...
 */
 
-Scene.Mouse = Class(
+declare( 'LibCanvas.Scene.Mouse',
 /**
  * @lends LibCanvas.Scene.Mouse#
  */
@@ -107,7 +107,7 @@ Scene.Mouse = Class(
 			if (children.length) {
 				mouse.parseEvent(type, event, stopped, children, deep+1);
 			}
-			this.fireEvent( eventName, eventArgs );
+			this.events.fire( eventName, eventArgs );
 		};
 
 		elements.sortBy( 'zIndex', true );
@@ -165,7 +165,7 @@ Scene.Mouse = Class(
 			// сообщаем элементу, что где-то произошло событие
 			} else if (!lastOut.contains(elem)) {
 				// fast version
-				elem.fireEvent( 'away:mouse' + type, eventArgs );
+				elem.events.fire( 'away:mouse' + type, eventArgs );
 			}
 		}
 
@@ -180,7 +180,7 @@ Scene.Mouse = Class(
 			var elem = elements[i];
 			if (!this.isOver(elem)) continue;
 			
-			elem.fireEvent( type, event );
+			elem.events.fire( type, event );
 			children = elem.childrenElements;
 			if (children.length) {
 				this.forceEvent(type, event, stopped, children);

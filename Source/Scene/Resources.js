@@ -21,7 +21,7 @@ provides: Scene.Resources
 ...
 */
 
-Scene.Resources = Class(
+declare( 'LibCanvas.Scene.Resources',
 /**
  * @lends LibCanvas.Scene.Resources#
  */

@@ -21,7 +21,7 @@ provides: Scene.MouseEvent
 ...
 */
 
-Scene.MouseEvent = Class(
+declare( 'LibCanvas.Scene.MouseEvent',
 /**
  * @lends LibCanvas.Scene.MouseEvent#
  */
