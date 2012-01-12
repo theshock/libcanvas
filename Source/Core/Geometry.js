@@ -26,7 +26,7 @@ var Geometry = declare( 'LibCanvas.Geometry',
  * @augments Class.Events.prototype
  */
 {
-	mixin: [ Class.Events ],
+	mixin: [ Events.Mixin ],
 	own: {
 		invoke: function (obj) {
 			if (obj == null) throw new TypeError( 'element is not geometry' );

@@ -146,7 +146,7 @@ var Keyboard = declare( 'LibCanvas.Keyboard',
 	}
 });
 
-Keyboard.extend({ codeNames: Object.invert(Keyboard.keyCodes) });
+Keyboard.codeNames = Object.invert(Keyboard.keyCodes);
 
 return Keyboard;
 }();

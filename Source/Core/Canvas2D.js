@@ -41,7 +41,7 @@ var Canvas2D = declare( 'LibCanvas.Canvas2D',
 		InnerFpsMeter,
 		DownloadingProgress,
 		Events.Mixin,
-		Options.Mixin
+		Settings.Mixin
 	],
 
 	proto: {

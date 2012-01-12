@@ -22,13 +22,13 @@ provides: Shapes.Line
 ...
 */
 
-var Line = LibCanvas.Shapes.Line = function () {
+var Line = function () {
 
 var between = function (x, a, b, accuracy) {
 	return x.equals(a, accuracy) || x.equals(b, accuracy) || (a < x && x < b) || (b < x && x < a);
 };
 
-return Class(
+return declare( 'LibCanvas.Shapes.Line',
 /** @lends {LibCanvas.Shapes.Line.prototype} */
 {
 	parent: Shape,

@@ -20,7 +20,7 @@ provides: LibCanvas
 var LibCanvas = this.LibCanvas = declare(
 /** @lends LibCanvas.prototype */
 {
-	Static: {
+	own: {
 		Buffer: function (width, height, withCtx) {
 			var a = Array.pickFrom(arguments), zero = (width == null || width === true);
 			if (zero || width.width == null || width.height == null) {
@@ -77,12 +77,14 @@ var LibCanvas = this.LibCanvas = declare(
 			return this._invoker;
 		}
 	},
-	/**
-	 * @constructs
-	 * @returns {LibCanvas.Canvas2D}
-	 */
-	initialize: function() {
-		return Canvas2D.factory(arguments);
+	proto: {
+		/**
+		 * @constructs
+		 * @returns {LibCanvas.Canvas2D}
+		 */
+		initialize: function() {
+			return Canvas2D.factory(arguments);
+		}
 	}
 });
 

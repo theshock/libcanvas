@@ -22,7 +22,7 @@ provides: Shapes.Ellipse
 ...
 */
 
-var Ellipse = LibCanvas.Shapes.Ellipse = Class(
+var Ellipse = declare( 'LibCanvas.Shapes.Ellipse',
 /** @lends {LibCanvas.Shapes.Ellipse.prototype} */
 {
 	parent: Rectangle,

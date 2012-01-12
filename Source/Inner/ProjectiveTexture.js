@@ -22,10 +22,10 @@ source: "http://acko.net/blog/projective-texturing-with-canvas"
 ...
 */
 
-var ProjectiveTexture = LibCanvas.Inner.ProjectiveTexture = function () {
+var ProjectiveTexture = function () {
 
 
-var declare = Class( 'LibCanvas.Inner.ProjectiveTexture', {
+var ProjectiveTexture = declare( 'LibCanvas.Inner.ProjectiveTexture', {
 	initialize : function (image) {
 		if (typeof image == 'string') {
 			this.image = new Image;

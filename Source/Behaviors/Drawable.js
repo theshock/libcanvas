@@ -42,7 +42,7 @@ var manage = function (first, second) {
 };
 
 return declare( 'LibCanvas.Behaviors.Drawable', {
-	Implements: Class.Events,
+	mixin: Events.Mixin,
 	proto: {
 		libcanvasIsReady: false,
 		setLibcanvas : function (libcanvas) {

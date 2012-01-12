@@ -85,7 +85,7 @@ var Point = declare( 'LibCanvas.Point',
 			this.x += distance.x;
 			this.y += distance.y;
 
-			return Geometry.prototype.parent.call(this, distance, false);
+			return Geometry.prototype.move.call(this, distance, false);
 		},
 		/** @returns {LibCanvas.Point} */
 		moveTo : function (newCoord) {
