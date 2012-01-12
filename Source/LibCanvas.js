@@ -17,7 +17,7 @@ provides: LibCanvas
 ...
 */
 
-var LibCanvas = this.LibCanvas = Class(
+var LibCanvas = this.LibCanvas = declare(
 /** @lends LibCanvas.prototype */
 {
 	Static: {
