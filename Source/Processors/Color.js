@@ -20,7 +20,7 @@ provides: Processors.Color
 ...
 */
 
-LibCanvas.Processors.Color = Class({
+declare( 'LibCanvas.Processors.Color', {
 	rgbToHsb: function(red, green, blue){
 		var hue = 0,
 			max = Math.max(red, green, blue),

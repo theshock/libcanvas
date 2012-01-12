@@ -20,7 +20,7 @@ provides: Processors.Grayscale
 ...
 */
 
-LibCanvas.Processors.Grayscale = Class({
+ declare( 'LibCanvas.Processors.Grayscale', {
 	style : null,
 	initialize : function (type) {
 		// sepia, luminance, average, red, green, blue, default

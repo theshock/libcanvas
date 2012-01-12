@@ -20,7 +20,7 @@ provides: Processors.Invert
 ...
 */
 
-LibCanvas.Processors.Invert = Class({
+declare( 'LibCanvas.Processors.Invert', {
 	processPixels : function (data) {
 		var d = data.data, i = 0, l = d.length;
 		for (;i < l; i++) if (i % 4 != 3) d[i] = 255 - d[i];
