@@ -26,6 +26,8 @@ LibCanvas.Animation.Sprite = Class({
 
 	initialize: function () {
 		this.sprites = {};
+		this._queue  = [];
+		this.animations = {};
 	},
 	addSprite : function (index, sprite) {
 		this.sprites[index] = sprite;
