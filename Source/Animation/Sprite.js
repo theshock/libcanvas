@@ -27,7 +27,9 @@ declare( 'LibCanvas.Animation.Sprite', {
 		sprites : null,
 
 		initialize: function () {
-			this.sprites = {};
+			this._queue     = [];
+			this.sprites    = {};
+			this.animations = {};
 			this.events = new Events( this );
 		},
 		addSprite : function (index, sprite) {
