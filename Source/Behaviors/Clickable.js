@@ -14,59 +14,57 @@ authors:
 
 requires:
 	- LibCanvas
-	- Behaviors.MouseListener
+	- Behaviors
 
 provides: Behaviors.Clickable
 
 ...
 */
 
-var Clickable = function () {
+new function () {
 
-var $window = atom.dom(window);
-
-var setValFn = function (object, name, val) {
+function setValueFn (name, val) {
 	var result = [name, val];
-	return function (event) {
-		if (object[name] != val) {
-			object[name] = val;
-			object.events.fire('statusChanged', result);
+	return function () {
+		if (this[name] != val) {
+			this[name] = val;
+			this.events.fire('statusChange', result);
 		}
 	};
-};
+}
 
-// Should mixin Drawable & MouseListener
 return declare( 'LibCanvas.Behaviors.Clickable', {
 
-	clickable : function (stop, callback) {
-		if (typeof stop == 'function') {
-			callback = stop;
-			stop = false;
+	parent: Behavior,
+
+	own: { index: 'clickable' },
+
+	prototype: {
+		callbacks: {
+			'mouseover'   : setValueFn('hover' , true ),
+			'mouseout'    : setValueFn('hover' , false),
+			'mousedown'   : setValueFn('active', true ),
+			'mouseup'     : setValueFn('active', false),
+			'away:mouseup': setValueFn('active', false)
+		},
+
+		initialize: function (behaviors, args) {
+			this.events = behaviors.element.events;
+			this.eventArgs(args, 'statusChange');
+		},
+
+		start: function () {
+			if (!this.changeStatus(true)) return this;
+
+			this.events.add(this.callbacks);
+		},
+
+		stop: function () {
+			if (!this.changeStatus(false)) return this;
+
+			this.events.remove(this.callbacks);
 		}
-
-		if (callback) this.events.add( 'statusChanged', callback );
-
-		var callbacks = this['clickable.callbacks'];
-
-		if (!callbacks) {
-			var deactivate = setValFn(this, 'active', false);
-			callbacks = this['clickable.callbacks'] = {
-				'mouseover': setValFn(this, 'hover' , true),
-				'mouseout' : setValFn(this, 'hover' , false),
-				'mousedown': setValFn(this, 'active', true ),
-				'mouseup'      : deactivate,
-				'away:mouseup' : deactivate
-			};
-		}
-
-		if (stop) {
-			this.events.remove(callbacks);
-		} else {
-			this.events.add(callbacks);
-		}
-		return this;
 	}
-
 });
 
-}();
+};

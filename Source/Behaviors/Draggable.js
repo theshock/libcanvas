@@ -14,68 +14,72 @@ authors:
 
 requires:
 	- LibCanvas
-	- Behaviors.MouseListener
+	- Behaviors
 
 provides: Behaviors.Draggable
 
 ...
 */
 
-var Draggable = function () {
+declare( 'LibCanvas.Behaviors.Draggable', {
 
+	parent: Behavior,
 
-var initDraggable = function () {
-	var draggable = this,
-		mouse = draggable.libcanvas.mouse,
-		dragFn = function ( e ) {
-			draggable.shape.move( e.deltaOffset );
-			draggable.events.fire('moveDrag', [e.deltaOffset, e]);
+	own: { index: 'draggable' },
+
+	prototype: {
+		stopDrag: [ 'up', 'out' ],
+
+		initialize: function (behaviors, args) {
+			this.bindMethods([ 'onStop', 'onDrag', 'onStart' ]);
+
+			this.element = behaviors.element;
+			this.events  = behaviors.element.events;
+			this.eventArgs(args, 'moveDrag');
 		},
-		stopDrag  = ['up', 'out'],
-		onStopDrag = function (e) {
+
+		bindMouse: function (method) {
+			var mouse = this.element.mouse, stop = this.stopDrag;
+			if (!mouse) throw new Error('No mouse in element');
+
+			mouse.events
+				[method]( 'move', this.onDrag )
+				[method](  stop , this.onStop );
+
+			return mouse;
+		},
+
+		start: function () {
+			if (!this.changeStatus(true)) return this;
+
+			this.events.add( 'mousedown', this.onStart );
+		},
+
+		stop: function () {
+			if (!this.changeStatus(false)) return this;
+
+			this.events.remove( 'mousedown', this.onStart );
+		},
+
+		/** @private */
+		onStart: function (e) {
 			if (e.button !== 0) return;
 
-			draggable.events.fire('stopDrag', [ e ]);
-			mouse.events
-				.remove( 'move', dragFn)
-				.remove(stopDrag, onStopDrag);
-		}.bind(this);
+			this.bindMouse('add');
+			this.events.fire('startDrag', [ e ]);
+		},
 
-	draggable.listenMouse();
+		/** @private */
+		onDrag: function (e) {
+			this.element.move( e.deltaOffset );
+			this.events.fire('moveDrag', [e.deltaOffset, e]);
+		},
 
-	draggable.addEvent( 'mousedown' , function (e) {
-		if (e.button !== 0) return;
-
-		if (!draggable['draggable.isDraggable']) return;
-
-		draggable.events.add('startDrag', [ e ]);
-		mouse.events.add( 'move', dragFn );
-		mouse.events.add( stopDrag, onStopDrag );
-	});
-
-
-	return this;
-};
-
-return declare( 'LibCanvas.Behaviors.Draggable', {
-	draggable : function (stop, callback) {
-		if (typeof stop == 'function') {
-			callback = stop;
-			stop = false;
+		/** @private */
+		onStop: function (e) {
+			if (e.button !== 0) return;
+			this.bindMouse('remove');
+			this.events.fire('stopDrag', [ e ]);
 		}
-
-		if (callback) this.events.add( 'moveDrag', callback );
-
-		if (! ('draggable.isDraggable' in this) ) {
-			if (this.libcanvas) {
-				initDraggable.call( this );
-			} else {
-				this.events.add('libcanvasSet', initDraggable);
-			}
-		}
-		this['draggable.isDraggable'] = !stop;
-		return this;
 	}
 });
-	
-}();
