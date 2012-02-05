@@ -15,7 +15,6 @@ authors:
 requires:
 	- LibCanvas
 	- Point
-	- Inner.MouseEvents
 
 provides: Mouse
 
@@ -72,11 +71,11 @@ return declare( 'LibCanvas.Mouse', {
 			dblclick   : 'dblclick',
 			contextmenu: 'contextmenu',
 
-			mouseover  : 'over',
-			mousedown  : 'down',
-			mouseup    : 'up',
-			mousemove  : 'move',
-			mouseout   : 'out',
+			mouseover : 'over',
+			mouseout  : 'out',
+			mousedown : 'down',
+			mouseup   : 'up',
+			mousemove : 'move',
 
 			DOMMouseScroll: 'wheel',
 			mousewheel    : 'wheel'
@@ -96,14 +95,19 @@ return declare( 'LibCanvas.Mouse', {
 			this.listen(this.onEvent);
 		},
 		/** @private */
+		fire: function (name, e) {
+			this.events.fire(name, [e, this]);
+			return this;
+		},
+		/** @private */
 		onEvent: function (e) {
 			var
 				name = this.mapping[e.type],
 				fn   = this.eventActions[name];
 
-			if (fn) fn.call( this, e );
+			if (fn) fn.call(this, e);
 
-			this.events.fire(name, [e, this]);
+			this.fire(name, e);
 		},
 		/** @private */
 		getOffset: function (e) {
@@ -132,9 +136,26 @@ return declare( 'LibCanvas.Mouse', {
 				this.set(e, true);
 			},
 
+			over: function (e) {
+				if (this.checkEvent(e)) {
+					this.fire('enter', e);
+				}
+			},
+
 			out: function (e) {
-				this.set(e, false);
+				if (this.checkEvent(e)) {
+					this.set(e, false);
+					this.fire('leave', e);
+				}
 			}
+		},
+		/** @private */
+		checkEvent: function (e) {
+			var related = e.relatedTarget, elem = this.elem;
+
+			return related == null || (
+				related && related != elem.first && !elem.contains(related)
+			);
 		},
 		/** @private */
 		listen : function (callback) {

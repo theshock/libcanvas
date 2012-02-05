@@ -30,7 +30,7 @@ var office = {
 	all : function (type, style) {
 		this.save();
 		if (style) this.set(type + 'Style', style);
-		this[type + 'Rect'](this.getFullRectangle());
+		this[type + 'Rect'](this.rectangle);
 		this.restore();
 		return this;
 	},
@@ -60,25 +60,6 @@ var office = {
 		return this.original(func, [point.x, point.y]);
 	}
 };
-
-var accessors = {};
-[ 'fillStyle','font','globalAlpha','globalCompositeOperation','lineCap',
-  'lineJoin','lineWidth','miterLimit','shadowOffsetX','shadowOffsetY',
-  'shadowBlur','shadowColor','strokeStyle','textAlign','textBaseline'
-].forEach(function (property) {
-	atom.accessors.define(accessors, property, {
-		set: function (value) {
-			try {
-				this.ctx2d[property] = value;
-			} catch (e) {
-				throw TypeError('Exception while setting «' + property + '» to «' + value + '»: ' + e.message);
-			}
-		},
-		get: function () {
-			return this.ctx2d[property];
-		}
-	})
-});
 
 var constants =
 /** @lends LibCanvas.Context2D */
@@ -153,8 +134,6 @@ var Context2D = declare( 'LibCanvas.Context2D',
 {
 	own: constants,
 
-	mixin: declare(accessors),
-
 	proto: {
 		initialize : function (canvas) {
 			if (canvas instanceof CanvasRenderingContext2D) {
@@ -217,7 +196,7 @@ var Context2D = declare( 'LibCanvas.Context2D',
 			var args = [canvas, 0, 0];
 			if (resize) args.push(width, height);
 
-			var clone = Buffer(width, height, true);
+			var clone = LibCanvas.buffer(width, height, true);
 			clone.ctx.original('drawImage', args);
 			return clone;
 		},
@@ -872,6 +851,25 @@ var Context2D = declare( 'LibCanvas.Context2D',
 		// Such moz* methods wasn't duplicated:
 		// mozTextStyle, mozDrawText, mozMeasureText, mozPathText, mozTextAlongPath
 	}
+});
+
+
+[ 'fillStyle','font','globalAlpha','globalCompositeOperation','lineCap',
+  'lineJoin','lineWidth','miterLimit','shadowOffsetX','shadowOffsetY',
+  'shadowBlur','shadowColor','strokeStyle','textAlign','textBaseline'
+].forEach(function (property) {
+	atom.accessors.define(Context2D.prototype, property, {
+		set: function (value) {
+			try {
+				this.ctx2d[property] = value;
+			} catch (e) {
+				throw TypeError('Exception while setting «' + property + '» to «' + value + '»: ' + e.message);
+			}
+		},
+		get: function () {
+			return this.ctx2d[property];
+		}
+	})
 });
 
 var addColorStop = function () {

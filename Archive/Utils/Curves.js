@@ -1,7 +1,7 @@
 /*
 ---
 
-name: "EC"
+name: "Utils.ExtendedCurves"
 
 description: "Curves with dynamic width and color"
 
@@ -16,7 +16,7 @@ requires:
 	- Inner.TimingFunctions
 	- Context2D
 
-provides: EC
+provides: Utils.ExtendedCurves
 
 ...
 */
@@ -27,11 +27,13 @@ new function () {
 	The following text contains bad code and due to it's code it should not be readed by ANYONE!
 */
 
-var Color = LibCanvas.Utils.Color,
-	TimingFunctions = LibCanvas.Inner.TimingFunctions,
+var Transition = atom.Transition,
+	Color = atom.Color,
 	Point = LibCanvas.Point;
 
 var EC = {};
+
+/** @returns {atom.Color} */
 EC.getColor = function (color) {
 	return new Color(color || [0,0,0,1]);
 };
@@ -39,27 +41,27 @@ EC.getColor = function (color) {
 EC.getPoints = function (prevPos, pos, width, inverted) {
 	var w    = pos.x-prevPos.x,
 	    h    = pos.y-prevPos.y,
-	    dist = Math.hypotenuse(w, h);
-		
-	var sin = h / dist,
-	    cos = w / dist;
-		
-	var dx = sin * width,
+	    dist = Math.hypotenuse(w, h),
+
+		sin = h / dist,
+	    cos = w / dist,
+
+		dx = sin * width,
 	    dy = cos * width;
 		
-	return [new Point(pos.x + dx, pos.y + dy*inverted),
-	        new Point(pos.x - dx, pos.y - dy*inverted)];
+	return [
+		new Point(pos.x + dx, pos.y + dy*inverted),
+		new Point(pos.x - dx, pos.y - dy*inverted)
+	];
 };
 
 EC.getGradientFunction = function (attr) {
 	switch (typeof attr.gradient) {
 		case 'undefined' : 
-			return Function.lambda( EC.getColor(attr.color) );
-			break;
+			return atom.fn.lambda( EC.getColor(attr.color) );
 		
 		case 'function' :
 			return attr.gradient;
-			break;
 		
 		default :
 			var gradient = { fn: attr.gradient.fn || 'linear' };
@@ -74,20 +76,19 @@ EC.getGradientFunction = function (attr) {
 			var diff = gradient.from.diff( gradient.to );
 			
 			return function (t) {
-				var factor = TimingFunctions.count(gradient.fn, t);
+				var factor = Transition.get(gradient.fn)(t);
 				return gradient.from.shift( diff.clone().mul(factor) ).toString();
 			};
-			break;
 	}
 };
 
 EC.getWidthFunction = function (attr) {
 	attr.width = attr.width || 1;
 	switch (typeof attr.width) {
-		case 'number'  : return Function.lambda(attr.width);
+		case 'number'  : return atom.fn.lambda(attr.width);
 		case 'function': return attr.width;
 		case 'object'  : return EC.getWidthFunction.range( attr.width );
-		default: throw new Error('LibCanvas.Context2D.drawCurve -- unexpected type of width');
+		default: throw new TypeError('LibCanvas.Context2D.drawCurve -- unexpected type of width');
 	}
 };
 
@@ -97,7 +98,7 @@ EC.getWidthFunction.range = function (width) {
 	}
 	var diff = width.to - width.from;
 	return function(t){
-		return width.from + diff * TimingFunctions.count(width.fn || 'linear', t);
+		return width.from + diff * Transition.get(width.fn || 'linear')(t);
 	}
 };
 
@@ -141,9 +142,7 @@ LibCanvas.Context2D.prototype.drawCurve = function (obj) {
 		drawPoints  , prevDrawPoints   ,
 		width , color, prevColor, style;
 
-	var add = function (a, b) {
-		return a + b;
-	};
+	var add = function (a, b) { return a + b };
 
 	prevContorolPoint = curveFunction(points, -step);
 
@@ -155,6 +154,7 @@ LibCanvas.Context2D.prototype.drawCurve = function (obj) {
 		drawPoints = EC.getPoints(prevContorolPoint, controlPoint, width, invertedMultipler);
 
 		if (t >= step) {
+			// #todo: reduce is part of array, not color
 			if ( EC.getColor(prevColor).diff(color).reduce(add) > 150 ) {
 				style = this.createLinearGradient(prevContorolPoint, controlPoint);
 				style.addColorStop(0, prevColor);

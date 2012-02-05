@@ -24,90 +24,66 @@ provides: Point
 
 var Point = function () {
 
-var shifts = {
-	top    : {x: 0, y:-1},
-	right  : {x: 1, y: 0},
-	bottom : {x: 0, y: 1},
-	left   : {x:-1, y: 0},
-	t      : {x: 0, y:-1},
-	r      : {x: 1, y: 0},
-	b      : {x: 0, y: 1},
-	l      : {x:-1, y: 0},
-	tl     : {x:-1, y:-1},
-	tr     : {x: 1, y:-1},
-	bl     : {x:-1, y: 1},
-	br     : {x: 1, y: 1}
-};
-
-var Point = declare( 'LibCanvas.Point',
-/**
- * @lends LibCanvas.Point.prototype
- * @augments LibCanvas.Geometry.prototype
- */
-{
+var Point = declare( 'LibCanvas.Point', {
 	parent: Geometry,
 
-	own: { shifts: shifts },
-
-	proto: {
+	prototype: {
 		/**
+		 *   new Point(1, 1);
+		 *   new Point([1, 1]);
+		 *   new Point({x:1, y:1});
+		 *   new Point(point);
 		 * @constructs
 		 * @param {Number} x
 		 * @param {Number} y
-		 * @returns {LibCanvas.Point}
+		 * @returns {Point}
 		 */
 		set : function (x, y) {
-			var args = arguments;
-			if (atom.typeOf(x) == 'arguments') {
-				args = x;
-				x = args[0];
-				y = args[1];
-			}
-			if (args.length != 2) {
-				if (x && x[0] !== undefined && x[1] !== undefined) {
+			if (arguments.length != 2) {
+				if (atom.core.isArrayLike(x)) {
 					y = x[1];
 					x = x[0];
-				} else if (x && x.x !== undefined && x.y !== undefined) {
+				} else if (x && x.x != null && x.y != null) {
 					y = x.y;
 					x = x.x;
 				} else {
-					//console.log('Wrong Arguments In Point.Set:', arguments);
-					throw new TypeError('Wrong Arguments In Point.Set: [' + atom.toArray(arguments).join(', ') + ']');
+					throw new TypeError( 'Wrong Arguments In Point.Set' );
 				}
 			}
-			this.x = x == null ? null : Number(x);
-			this.y = y == null ? null : Number(y);
+
+			this.x = Number(x);
+			this.y = Number(y);
 			return this;
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
 		move: function (distance, reverse) {
-			distance = this.invertDirection(Point(distance), reverse);
-			this.x += distance.x;
-			this.y += distance.y;
-
-			return Geometry.prototype.move.call(this, distance, false);
+			distance = this.cast(distance);
+			reverse  = reverse ? -1 : 1;
+			this.x += distance.x * reverse;
+			this.y += distance.y * reverse;
+			return this;
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
 		moveTo : function (newCoord) {
-			return this.move(this.diff(Point(arguments)));
+			return this.move(this.diff(this.cast(arguments)));
 		},
 		/** @returns {Number} */
 		angleTo : function (point) {
-			var diff = Point(arguments).diff(this);
+			var diff = this.cast(arguments).diff(this);
 			return Math.atan2(diff.y, diff.x).normalizeAngle();
 		},
 		/** @returns {Number} */
 		distanceTo : function (point) {
-			var diff = Point(arguments).diff(this);
+			var diff = this.cast(arguments).diff(this);
 			return Math.hypotenuse(diff.x, diff.y);
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
 		diff : function (point) {
-			return new Point(arguments).move(this, true);
+			return new this.constructor(arguments).move(this, true);
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
 		rotate : function (angle, pivot) {
-			pivot = Point(pivot || {x: 0, y: 0});
+			pivot = pivot ? this.cast(pivot) : new this.constructor(0, 0);
 			if (this.equals(pivot)) return this;
 
 			var radius = pivot.distanceTo(this);
@@ -116,41 +92,42 @@ var Point = declare( 'LibCanvas.Point',
 			var newAngle = Math.atan2(sides.x, sides.y) - angle;
 
 			return this.moveTo({
-				x : newAngle.sin() * radius + pivot.x,
-				y : newAngle.cos() * radius + pivot.y
+				x : Math.sin(newAngle) * radius + pivot.x,
+				y : Math.cos(newAngle) * radius + pivot.y
 			});
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
 		scale : function (power, pivot) {
-			pivot = Point(pivot || {x: 0, y: 0});
+			pivot = pivot ? this.cast(pivot) : new this.constructor(0, 0);
+			
 			var diff = this.diff(pivot), isObject = typeof power == 'object';
 			return this.moveTo({
 				x : pivot.x - diff.x  * (isObject ? power.x : power),
 				y : pivot.y - diff.y  * (isObject ? power.y : power)
 			});
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
 		alterPos : function (arg, fn) {
 			return this.moveTo({
 				x: fn(this.x, typeof arg == 'object' ? arg.x : arg),
 				y: fn(this.y, typeof arg == 'object' ? arg.y : arg)
 			});
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
 		mul : function (arg) {
 			return this.alterPos(arg, function(a, b) {
 				return a * b;
 			});
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
 		getNeighbour : function (dir) {
-			return this.clone().move(shifts[dir]);
+			return this.clone().move(this.constructor.shifts[dir]);
 		},
-		/** @returns {LibCanvas.Point[]} */
+		/** @returns {Point[]} */
 		get neighbours () {
 			return this.getNeighbours( true );
 		},
-		/** @returns {LibCanvas.Point[]} */
+		/** @returns {Point[]} */
 		getNeighbours: function (corners, asObject) {
 			var shifts = ['t', 'l', 'r', 'b'], result, i, dir;
 
@@ -169,24 +146,29 @@ var Point = declare( 'LibCanvas.Point',
 		},
 		/** @returns {boolean} */
 		equals : function (to, accuracy) {
-			to = Point(to);
-			return accuracy == null ? (to.x == this.x && to.y == this.y) :
-				(this.x.equals(to.x, accuracy) && this.y.equals(to.y, accuracy));
+			to = this.cast(to);
+			if (accuracy == null) {
+				return to.x == this.x && to.y == this.y;
+			}
+			return this.x.equals(to.x, accuracy) && this.y.equals(to.y, accuracy);
 		},
 		/** @returns {object} */
 		toObject: function () {
-			return {
-				x: this.x,
-				y: this.y
-			};
+			return { x: this.x, y: this.y };
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
 		invoke: function (method) {
 			this.x = this.x[method]();
 			this.y = this.y[method]();
 			return this;
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
+		map: function (fn, context) {
+			this.x = fn.call(context || this, this.x, 'x', this);
+			this.y = fn.call(context || this, this.y, 'y', this);
+			return this;
+		},
+		/** @returns {Point} */
 		mean: function (points) {
 			var l = points.length, i = l, x = 0, y = 0;
 			while (i--) {
@@ -195,33 +177,43 @@ var Point = declare( 'LibCanvas.Point',
 			}
 			return this.set(x/l, y/l);
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
 		snapToPixel: function () {
 			this.x += 0.5 - (this.x - this.x.floor());
 			this.y += 0.5 - (this.y - this.y.floor());
 			return this;
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
 		reverse: function () {
 			this.x *= -1;
 			this.y *= -1;
 			return this;
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
 		clone : function () {
 			return new this.constructor(this);
 		},
 		/** @returns {string} */
 		dump: function () {
 			return '[Point(' + this.x + ', ' + this.y + ')]';
-		},
-		toString: Function.lambda('[object LibCanvas.Point]')
+		}
 	}
 });
 
-for (var s in shifts) {
-	shifts[s] = new Point(shifts[s]);
-};
+Point.shifts = atom.object.map({
+	top    : [ 0, -1],
+	right  : [ 1,  0],
+	bottom : [ 0,  1],
+	left   : [-1,  0],
+	t      : [ 0, -1],
+	r      : [ 1,  0],
+	b      : [ 0,  1],
+	l      : [-1,  0],
+	tl     : [-1, -1],
+	tr     : [ 1, -1],
+	bl     : [-1,  1],
+	br     : [ 1,  1]
+}, Point);
 
 return Point;
 
