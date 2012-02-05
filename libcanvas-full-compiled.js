@@ -22,8 +22,17 @@ authors:
 // 'use strict';
 
 var undefined,
+	/** @global {Object} global */
+	global   = this,
+	/** @global {Function} slice */
+	slice    = [].slice,
+	/** @global {Function} declare  */
 	declare  = atom.declare,
+	/** @global {Function} Registry  */
+	Registry = atom.Registry,
+	/** @global {Function} Events  */
 	Events   = atom.Events,
+	/** @global {Function} Settings  */
 	Settings = atom.Settings;
 /*
 ---
@@ -44,99 +53,46 @@ provides: LibCanvas
 ...
 */
 
-var LibCanvas = this.LibCanvas = declare(
-/** @lends LibCanvas.prototype */
-{
+var LibCanvas = this.LibCanvas = declare({
+	name: 'LibCanvas',
+
 	own: {
-		Buffer: function (width, height, withCtx) {
-			var a = Array.pickFrom(arguments), zero = (width == null || width === true);
-			if (zero || width.width == null || width.height == null) {
-				width   = zero ? 0 : a[0];
-				height  = zero ? 0 : a[1];
-				withCtx = zero ? a[0] : a[2];
-			} else {
-				withCtx = !!height;
-				height  = width.height;
-				width   = width.width
-			}
+		Buffer: function () {
+			return LibCanvas.buffer.apply( LibCanvas, arguments );
+		},
+		buffer: function (width, height, withCtx) {
+			var size, a = slice.call(arguments), last = a[a.length-1];
+
+			withCtx = (typeof last === 'boolean' ? a.pop() : false);
+
+			size = Size(a.length == 1 ? a[0] : a);
 			
-			var canvas = atom.dom
-				.create("canvas", {
-					width  : width,
-					height : height
-				}).get();
+			var canvas = atom.dom.create("canvas", {
+				width  : size.width,
+				height : size.height
+			}).first;
 			
 			if (withCtx) canvas.ctx = canvas.getContext('2d-libcanvas');
 			return canvas;
 		},
-		isLibCanvas: function (elem) {
-			return elem && elem instanceof Canvas2D;
-		},
-		namespace: function (namespace) {
-			var current;
-			Array.from(arguments).forEach(function (namespace) {
-				current = LibCanvas;
-				namespace.split('.').forEach(function(part){
-					if (current[part] == null) current[part] = {};
-					current = current[part];
-				});
-			});
-			return current;
-		},
 		extract: function (to) {
-			to = to || atom.global;
-
-			for (var i in {Shapes: 1, Behaviors: 1, Utils: 1}) {
-				for (var k in LibCanvas[i]) {
-					to[k] = LibCanvas[i][k];
-				}
+			to = to || global;
+			for (var k in LibCanvas.Shapes) {
+				to[k] = LibCanvas.Shapes[k];
 			}
-			for (i in {Point: 1, Animation: 1, Processors: 1, Context2D: 1}) {
-				to[i] = LibCanvas[i];
-			}
+			to.Point = LibCanvas.Point;
+			to.Size  = LibCanvas.Size;
 			return to;
-		},
-
-		get invoker () {
-			if (this._invoker == null) {
-				this._invoker = new Invoker().invoke();
-			}
-			return this._invoker;
-		}
-	},
-	proto: {
-		/**
-		 * @constructs
-		 * @returns {LibCanvas.Canvas2D}
-		 */
-		initialize: function() {
-			return Canvas2D.factory(arguments);
 		}
 	}
 });
 
-LibCanvas.Animation  = {};
-LibCanvas.Behaviors  = {};
-LibCanvas.Engines    = {};
-LibCanvas.Inner      = {};
-LibCanvas.Processors = {};
-LibCanvas.Scene      = {};
-LibCanvas.Shapes     = {};
-LibCanvas.Ui         = {};
-LibCanvas.Utils      = {};
-
-var
-	Inner      = LibCanvas.Inner,
-	Processors = LibCanvas.Processors,
-	Buffer     = LibCanvas.Buffer,
-	Scene      = LibCanvas.Scene;
-
 /*
 ---
 
-name: "Animation.Sprite"
+name: "App"
 
-description: "Provides basic animation via sprites"
+description: "LibCanvas.App"
 
 license:
 	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
@@ -148,288 +104,43 @@ authors:
 requires:
 	- LibCanvas
 
-provides: Animation.Sprite
+provides: App
 
 ...
 */
 
-declare( 'LibCanvas.Animation.Sprite', {
-	mixin: Events.Mixin,
 
-	proto: {
-		sprites : null,
+var App = declare( 'LibCanvas.App', {
+	initialize: function (settings) {
+		this.bindMethods( 'tick' );
 
-		initialize: function () {
-			this.sprites = {};
-			this.events = new Events( this );
-		},
-		addSprite : function (index, sprite) {
-			this.sprites[index] = sprite;
-			return this;
-		},
-		addSprites : function (sprites, width) {
-			if (atom.typeOf(sprites) == 'object') {
-				atom.append(this.sprites, sprites);
-			} else {
-				for (var w = 0; (w * width) < sprites.width; w++) {
-					this.addSprite(w, sprites.sprite(width*w, 0, width, sprites.height));
-				}
-			}
-			return this;
-		},
-		defaultSprite : null,
-		setDefaultSprite : function (index) {
-			this.defaultSprite = index;
-			return this;
-		},
-		get sprite () {
-			return this._getFrame() ? this.sprites[this._getFrame().sprite] :
-				this.defaultSprite != null ? this.sprites[this.defaultSprite] : null;
-		},
-		getSprite : function () {
-			return this.sprite;
-		},
+		this.scenes    = [];
+		this.settings  = new Settings(settings);
+		this.container = new App.Container(
+			this.settings.get(['size', 'appendTo', 'invoke'])
+		);
+		this.resources = new Registry();
 
-		animations : {},
-		add : function (animation, line) {
-			if (arguments.length == 2) {
-				return this.add({ name: animation, line: line });
-			}
-
-			if (!animation.frames && animation.line) {
-				animation.frames = [];
-				animation.line.forEach(function (f, i) {
-					animation.frames.push({sprite: f, delay: animation.delay || 40, name: i});
-				});
-				delete animation.line;
-				return this.add(animation);
-			}
-			this.animations[animation.name] = animation;
-			return this;
-		},
-
-		_singleAnimationId: 0,
-		runOnce: function (cfg) {
-			var name = '_singleAnimation' + this._singleAnimationId++;
-			if (Array.isArray(cfg)) cfg = { line: cfg };
-
-			return this
-				.add(atom.extend({ name : name }, cfg))
-				.run(name);
-		},
-
-		_current : null,
-		_queue : [],
-		run : function (name, cfg) {
-			if (typeof name != 'string') {
-				return this.runOnce(name);
-			}
-			if (!name in this.animations) {
-				throw new Error('No animation «' + name + '»');
-			}
-			var args = {
-				name : name,
-				cfg  : cfg || {}
-			};
-			if (this._current) {
-				this._queue.push(args);
-			} else {
-				this._init(args);
-			}
-			return this;
-		},
-		stop : function (force) {
-			this._current = null;
-			if (force) {
-				this._queue = [];
-			} else {
-				this._stopped();
-			}
-			return this;
-		},
-		_stopped : function () {
-			var next = this._queue.shift();
-			return next != null && this._init(next);
-		},
-		_init : function (args) {
-			this._current = {
-				animation : this.animations[args.name],
-				index     : -1,
-				cfg       : args.cfg
-			};
-			this._current.repeat = this._getCfg('repeat');
-			return this._nextFrame();
-		},
-		_nextFrame : function () {
-			if (!this._current) return this;
-
-			this._current.index++;
-			var frame = this._getFrame();
-			if (!frame && (this._getCfg('loop') || this._current.repeat)) {
-				this._current.repeat && this._current.repeat--;
-				this._current.index = 0;
-				frame = this._getFrame();
-			}
-			var aniName = this._current.animation.name;
-			if (frame) {
-				var frameName = frame.name ? 'frame:' + frame.name : 'frame';
-				this.events.fire('changed', [frameName, aniName]);
-				this.events.fire(frameName, [frameName, aniName]);
-				// use invoker instead
-				if (frame.delay != null) this._nextFrame.delay(frame.delay, this);
-			} else {
-				this.events.fire('changed', ['stop:' + aniName]);
-				this.events.fire('stop:' + aniName, ['stop:' + aniName]);
-				this.events.fire('stop', [aniName]);
-				this._current = null;
-				this._stopped();
-			}
-			return this;
-		},
-		_getFrame : function () {
-			return this._current ? this._current.animation.frames[this._current.index] : null;
-		},
-		_getCfg : function (index) {
-			return index in this._current.cfg ?
-				this._current.cfg[index] :
-				this._current.animation[index];
-		},
-		toString: Function.lambda('[object LibCanvas.Animation.Sprite]')
-	}
-});
-
-
-/*
----
-
-name: "Invoker"
-
-description: "Invoker calles functions"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-
-provides: Invoker
-
-...
-*/
-
-var Invoker = declare( 'LibCanvas.Invoker',
-/**
- * @lends LibCanvas.Invoker.prototype
- * @augments Class.Options.prototype
- * @augments Class.Events.prototype
- */
-{
-	own: {
-		AutoChoose: declare({
-			get invoker () {
-				return 'libcanvas' in this ? this.libcanvas.invoker : LibCanvas.invoker;
-			}
-		})
+		atom.frame.add( this.tick );
 	},
-	mixin: [
-		Settings.Mixin,
-		Events.Mixin
-	],
-	proto: {
-		initialize: function (options) {
-			this.settings = new Settings({
-				fpsLimit : 60,
-				timeCount: 5,
-				context  : null,
-				defaultPriority: 1
-			}).set(options);
-			this.funcs = [];
-			this.time  = [0];
-		},
-		get minDelay () {
-			return 1000 / this.settings.get('fpsLimit');
-		},
-		timeoutId: 0,
-		invoke: function () {
-			this.fireEvent('beforeInvoke');
 
-			var i, all = this.time,
-				time   = Math.max(all.average(), this.minDelay);
-			this.timeoutId = this.invoke.delay(time, this);
+	createScene: function (settings) {
+		var scene = new App.Scene(this, settings);
+		this.scenes.push(scene);
+		return scene;
+	},
 
-			var startTime = new Date(),
-				funcs     = this.funcs.sortBy('priority'),
-				ignore    = false,
-				remove    = [];
-
-			for (i = funcs.length; i--;) {
-				var result = funcs[i].call(this.settings.get('context'), time);
-				if (result === false) {
-					ignore = true;
-				} else if (result === 'remove') {
-					remove.push(funcs[i]);
-				}
-			}
-			if (!ignore) {
-				all.push(new Date() - startTime);
-				if (all.length > this.settings.get('timeCount')) all.shift();
-			}
-			for (i = remove.length; i--;) {
-				this.rmFunction(remove[i]);
-			}
-
-			this.events.fire('afterInvoke', [time]);
-			return this;
-		},
-		after: function (timeLeft, priority, fn) {
-			if (arguments.length == 2) {
-				fn = priority;
-				fn.priority = this.settings.get('defaultPriority');
-			}
-			var timeStart = Date.now(), argTime = timeLeft;
-			this.addFunction(priority, function (time) {
-				timeLeft -= time;
-				if (timeLeft < 0) {
-					fn(Date.now() - timeStart - argTime);
-					return 'remove';
-				}
-				return null;
-			});
-			return this;
-		},
-		stop: function () {
-			this.timeoutId.stop();
-			return this;
-		},
-		addFunction: function (priority, fn) {
-			if (fn == null) {
-				fn = priority;
-				fn.priority = this.settings.get('defaultPriority');
-			}
-			if (typeof fn != 'function') {
-				throw new TypeError('Not a function');
-			}
-			this.funcs.push(fn);
-			return this;
-		},
-		rmFunction: function (fn) {
-			this.funcs.erase(fn);
-			return this;
-		},
-		toString: Function.lambda('[object LibCanvas.Invoker]')
+	tick: function (time) {
+		atom.array.invoke(this.scenes, 'tick', time);
 	}
 });
 
 /*
 ---
 
-name: "Inner.TimingFunctions"
+name: "App.Container"
 
-description: "Animated Timing Functions"
+description: ""
 
 license:
 	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
@@ -440,120 +151,445 @@ authors:
 
 requires:
 	- LibCanvas
+	- App
 
-provides: Inner.TimingFunctions
-
-inspiration:
-  - "[MooTools](http://mootools.net)"
+provides: App.Container
 
 ...
 */
 
-var TimingFunctions = function () {
+/** @private */
+App.Container = declare( 'LibCanvas.App.Container', {
+	/** @private
+	 *  @property {Size} */
+	currentSize: null,
 
-var pow = function(i){
-	return function (p) {
-		return Math.pow(p, i + 2);
+	/** @property {App.Layer[]} */
+	layers: [],
+
+	initialize: function (settings) {
+		this.layers      = [];
+		this.settings    = new Settings(settings);
+		this.currentSize = new Size(this.settings.get('size') || [0,0]);
+		this.createWrappers();
+	},
+
+	set size(size) {
+		size = this.currentSize.set(size);
+
+		this.wrapper.css({ width: size.width, height: size.height });
+	},
+
+	get size() {
+		return this.currentSize;
+	},
+
+	createLayer: function (settings) {
+		var layer = new App.Layer( this, settings );
+		this.layers.push(layer);
+		return layer;
+	},
+
+	appendTo: function (element) {
+		if (element) this.wrapper.appendTo( element );
+		return this;
+	},
+
+	/** @private */
+	createWrappers: function () {
+		this.bounds = atom.dom.create('div').css({
+			width   : '100%',
+			height  : '100%',
+			overflow: 'hidden',
+			position: 'absolute'
+		});
+		
+		this.wrapper = atom.dom.create('div')
+			.css(this.currentSize.toObject())
+			.addClass('libcanvas-layers-container');
+
+		this.bounds .appendTo(this.wrapper);
+		this.wrapper.appendTo(this.settings.get( 'appendTo' ));
 	}
-};
+});
+
+/*
+---
+
+name: "App.Element"
+
+description: "LibCanvas.Scene"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- App
+
+provides: App.Element
+
+...
+*/
+
+declare( 'LibCanvas.App.Element', {
+	/** @constructs */
+	initialize: function (scene, settings) {
+		this.settings = new Settings({ hidden: false }).set(settings);
+		scene.addElement( this );
+
+		var ownShape = this.shape && this.shape != this.constructor.prototype.shape;
+
+		if (ownShape || this.settings.get('shape')) {
+			if (!ownShape) this.shape = this.settings.get('shape');
+			this.saveCurrentBoundingShape();
+		}
+		if (this.settings.get('zIndex') != null) {
+			this.zIndex = Number( this.settings.get('zIndex') );
+		}
+	},
+
+	previousBoundingShape: null,
+
+	get currentBoundingShape () {
+		return this.shape;
+	},
+
+	destroy: function () {
+		this.scene.rmElement( this );
+		return this;
+	},
+
+	hasPoint: function (point) {
+		return this.shape.hasPoint( point );
+	},
+
+	addShift: function (shift) {
+		this.shape.move( shift );
+		this.previousBoundingShape.move( shift );
+		return this;
+	},
+
+	isVisible: function () {
+		return !this.settings.get('hidden');
+	},
+
+	redraw: function () {
+		this.scene.redrawElement( this );
+		return this;
+	},
+
+	onUpdate: function (time) {
+		return this;
+	},
+
+	clearPrevious: function ( ctx ) {
+		ctx.clear( this.previousBoundingShape );
+		return this;
+	},
+
+	saveCurrentBoundingShape: function () {
+		var shape = this.currentBoundingShape;
+		this.previousBoundingShape = shape.fillToPixel ?
+			shape.fillToPixel() : shape.clone().grow( 2 );
+		return this;
+	},
+	renderTo: function (ctx, resources) {
+		return this;
+	}
+});
+
+/*
+---
+
+name: "App.Layer"
+
+description: ""
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- App
+
+provides: App.Layer
+
+...
+*/
+
+
+App.Layer = declare( 'LibCanvas.App.Layer', {
+	/** @private
+	 *  @property {Size} */
+	currentSize: null,
 	
-return declare( 'LibCanvas.Inner.TimingFunctions', {
-	own: {
-		_instance: null,
-		get instance () {
-			if (!this._instance) {
-				this._instance = new this;
+	/** @private
+	 *  @property {App.Container} */
+	container: null,
+
+	/** @private
+	 *  @property {Point} */
+	shift: null,
+
+	/** @private */
+	z: 0,
+
+	initialize: function (container, settings) {
+		this.container = container;
+		this.settings  = new Settings(settings);
+		this.shift = new Point(0,0);
+		this.name  = this.settings.get('name') || '';
+		this.createSize();
+		this.createElement();
+		this.zIndex = this.settings.get('zIndex') || 0;
+	},
+
+	set zIndex (z) {
+		this.z = z;
+		this.element.css('zIndex', z);
+	},
+
+	get zIndex () {
+		return this.z;
+	},
+
+	set size(size) {
+		size = this.currentSize.set(size);
+
+		this.canvas.width  = size.width ;
+		this.canvas.height = size.height;
+	},
+
+	get size() {
+		return this.currentSize;
+	},
+
+	/**
+	 * @param {Point} shift
+	 * @returns {App.Layer}
+	 */
+	addShift: function ( shift ) {
+		shift = Point( shift );
+		var newShift = this.shift.move( shift );
+		this.element.css({
+			marginLeft: newShift.x,
+			marginTop : newShift.y
+		});
+		return this;
+	},
+
+	/**
+	 * @param {Point} shift
+	 * @returns {App.Layer}
+	 */
+	setShift: function (shift) {
+		return this.addShift( this.shift.diff(shift) );
+	},
+
+	/** @returns {Point} */
+	getShift: function () {
+		return this.shift;
+	},
+
+	/** @private */
+	createSize: function () {
+		this.currentSize = this.settings.get('size') || this.container.size.clone();
+	},
+
+	/** @private */
+	createElement: function () {
+		this.canvas  = new LibCanvas.Buffer(this.size,true);
+		this.element = atom.dom(this.canvas)
+			.attr({ 'data-name': this.name  })
+			.css ({ 'position' : 'absolute' })
+			.appendTo( this.container.bounds );
+	}
+});
+
+/*
+---
+
+name: "App.Scene"
+
+description: ""
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- App
+
+provides: App.Scene
+
+...
+*/
+
+App.Scene = declare( 'LibCanvas.App.Scene', {
+
+	initialize: function (app, settings) {
+		this.settings = new Settings({
+			invoke      : false,
+			intersection: 'auto' // 'auto'|'manual'
+		}).set(settings);
+
+		this.app      = app;
+		this.elements = [];
+		this.redraw   = [];
+		this.createLayer();
+	},
+
+	/** @private */
+	tick: function (time) {
+		if (this.settings.get( 'invoke' )) {
+			this.sortElements();
+			this.updateAll(time);
+		}
+
+		if (this.needUpdate) {
+			this.draw();
+			this.needUpdate = false;
+		}
+
+		return this;
+	},
+
+
+	/** @private */
+	draw: function () {
+		var i, elem,
+			ctx   = this.layer.canvas.ctx,
+			resources = this.app.resources,
+			redraw    = this.redraw;
+
+		if (this.settings.get('intersection') !== 'manual') {
+			this.addIntersections();
+		}
+
+		// draw elements with the lower zIndex first
+		atom.array.sortBy( redraw, 'zIndex' );
+
+		for (i = redraw.length; i--;) {
+			redraw[i].clearPrevious( ctx, resources );
+		}
+
+		for (i = redraw.length; i--;) {
+			elem = redraw[i];
+			if (elem.scene == this && elem.isVisible()) {
+				elem.renderTo( ctx, resources );
+				elem.redrawRequested = false;
+				elem.saveCurrentBoundingShape();
 			}
-			return this._instance;
-		},
-		count: function (fn, progress, params) {
-			if (typeof fn == 'string') fn = fn.split('-');
-			if (typeof (this.instance[fn[0]]) != 'function') {
-				throw new TypeError('No timing function «' + fn[0] + '»');
-			}
-			var In = fn.contains('in'), Out = fn.contains('out');
-			if (In && !Out) {
-				return this.easeIn(fn[0], progress, params);
-			} else if (!In && Out) {
-				return this.easeOut(fn[0], progress, params);
-			} else {
-				fn = fn.filter(function (name) {
-					return name != 'in' && name != 'out';
+		}
+
+		redraw.length = 0;
+	},
+
+	/** @private */
+	sortElements: function () {
+		atom.array.sortBy( this.elements, 'zIndex' );
+	},
+
+	/** @private */
+	updateAll: function (time) {
+		atom.array.invoke( this.elements, 'onUpdate', time, this.app.resources );
+	},
+
+	/** @private */
+	needUpdate: false,
+
+	/** @private */
+	createLayer: function () {
+		this.layer = this.app.container.createLayer(
+			this.settings.get([ 'name', 'zIndex' ])
+		);
+	},
+
+	/** @private */
+	addElement: function (element) {
+		if (element.scene != this) {
+			element.scene = this;
+			this.elements.push( element );
+			this.redrawElement( element );
+		}
+		return this;
+	},
+
+	/** @private */
+	rmElement: function (element) {
+		if (element.scene == this) {
+			this.redrawElement ( element );
+			this.elements.erase( element );
+			element.scene = null;
+		}
+		return this;
+	},
+
+	/** @private */
+	redrawElement: function (element) {
+		if (element.scene == this && !element.redrawRequested) {
+			this.redraw.push( element );
+			this.needUpdate = true;
+		}
+		return this;
+	},
+
+	/** @private */
+	addIntersections: function () {
+		var i, elem,
+			redraw = this.redraw,
+			scene  = this;
+
+		for (i = 0; i < redraw.length; i++) {
+			elem = redraw[i];
+
+			this.findIntersections(elem.previousBoundingShape, elem)
+				.forEach(function (e) {
+					scene.redrawElement( e );
 				});
-				if (fn.length < 2) fn[1] = fn[0];
-				return this.easeInOut(fn, progress, params);
-			}
-		},
-		easeIn: function(fn, progress, params){
-			return this.instance[fn](progress, params);
-		},
-		easeOut: function(fn, progress, params){
-			return 1 - this.instance[fn](1 - progress, params);
-		},
-		easeInOut: function(fn, progress, params){
-			return (progress <= 0.5) ?
-				this.instance[fn[0]](2 * progress, params) / 2 :
-				(2 - this.instance[fn[1]](2 * (1 - progress), params)) / 2;
+			this.findIntersections(elem.currentBoundingShape, elem)
+				.forEach(function (e) {
+					// we need to redraw it, only if it is over our element
+					if (e.zIndex > elem.zIndex) {
+						scene.redrawElement( e );
+					}
+				});
 		}
 	},
 
-	proto: {
-
-		linear: function (p) {
-			return p;
-		},
-
-		pow: function(p, x){
-			return Math.pow(p, x && x[0] || 6);
-		},
-
-		quad : pow(2),
-		cubic: pow(3),
-		quart: pow(4),
-		quint: pow(5),
-
-		expo: function(p){
-			return Math.pow(2, 8 * (p - 1));
-		},
-
-		circ: function(p){
-			return 1 - Math.sin(Math.acos(p));
-		},
-
-		sine: function(p){
-			return 1 - Math.sin((1 - p) * Math.PI / 2);
-		},
-
-		back: function(p, x){
-			x = x && x[0] || 1.618;
-			return Math.pow(p, 2) * ((x + 1) * p - x);
-		},
-
-		bounce: function(p){
-			var value;
-			for (var a = 0, b = 1; 1; a += b, b /= 2){
-				if (p >= (7 - 4 * a) / 11){
-					value = b * b - Math.pow((11 - 6 * a - 11 * p) / 4, 2);
-					break;
-				}
+	/** @private */
+	findIntersections: function (shape, elem) {
+		var i, e, elems = [];
+		for (i = this.elements.length; i--;) {
+			e = this.elements[i];
+			if (e != elem && e.isVisible() && e.currentBoundingShape.intersect( shape )) {
+				elems.push( e );
 			}
-			return value;
-		},
-
-		elastic: function(p, x){
-			return Math.pow(2, 10 * --p) * Math.cos(20 * p * Math.PI * (x && x[0] || 1) / 3);
 		}
+		return elems;
 	}
-});
 
-}();
+});
 
 /*
 ---
 
-name: "Utils.Color"
+name: "Behaviors"
 
-description: "Provides Color class"
+description: ""
 
 license:
 	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
@@ -565,140 +601,51 @@ authors:
 requires:
 	- LibCanvas
 
-provides: Utils.Color
+provides: Behaviors
 
 ...
 */
 
-var Color = declare( 'LibCanvas.Utils.Color', {
-	Static: {
-		invoke: function (color) {
-			if (color == null) return null;
+declare( 'LibCanvas.Behaviors', {
+	initialize: function (element) {
+		this.element   = element;
+		this.behaviors = {};
+	},
 
-			return (typeof color == 'object' && color[0] instanceof Color) ?
-				color[0] : color instanceof Color ? color : new Color(color);
-		},
-		isColorString : function (string) {
-			if (typeof string != 'string') return false;
-			return string in this.colorNames ||
-			       string.match(/^#\w{3,6}$/) ||
-			       string.match(/^rgba?\([\d, ]+\)$/);
-		},
-		colorNames: {
-			white:  '#ffffff',
-			silver: '#c0c0c0',
-			gray:   '#808080',
-			black:  '#000000',
-			red:    '#ff0000',
-			maroon: '#800000',
-			yellow: '#ffff00',
-			olive:  '#808000',
-			lime:   '#00ff00',
-			green:  '#008000',
-			aqua:   '#00ffff',
-			teal:   '#008080',
-			blue:   '#0000ff',
-			navy:   '#000080',
-			fuchsia:'#ff00ff',
-			purple: '#800080',
-			orange: '#ffa500'
-		},
-		/**
-		 * @param html - only html color names
-		 */
-		random: function (html) {
-			return new Color(html ?
-				Object.values(this.colorNames).random :
-				Array.create(3, Number.random.bind(Number, 0, 255))
-			);
+	add: function (Behaviour, args) {
+		if (typeof Behaviour == 'string') {
+			Behaviour = this.constructor[Behaviour];
+		}
+
+		this.behaviors[Behaviour.index] = new Behaviour(this, slice.call( arguments, 1 ));
+		return this;
+	},
+
+	get: function (name) {
+		return this.behaviors[name] || null;
+	}
+});
+
+
+var Behavior = declare( 'LibCanvas.Behavior',
+{
+
+	started: false,
+
+	/** @private */
+	eventArgs: function (args, eventName) {
+		if (atom.core.isFunction(args[0])) {
+			this.events.add( eventName, args[0] );
 		}
 	},
-	proto: {
-		r: 0,
-		g: 0,
-		b: 0,
-		a: null,
-		initialize: function (value) {
-			var rgb = value;
-			if (value && value.length == 1) value = value[0];
-			if (arguments.length == 3) {
-				rgb = arguments;
-			} else if (!Array.isArray(value)) {
-				var type = atom.typeOf(value);
-				if (type == 'arguments') {
-					rgb = Array.from(rgb);
-				} else if (type == 'string') {
-					value = value.toLowerCase();
 
-					value = Color.colorNames[value] || value;
-					var hex = value.match(/^#(\w{1,2})(\w{1,2})(\w{1,2})$/);
-					if (hex) {
-						rgb = hex.slice(1).map(function (part) {
-							if (part.length == 1) part += part;
-							return parseInt(part, 16);
-						});
-					} else {
-						rgb = value.match(/([\.\d]{1,3})/g).map( Number );
-						if (rgb.length < 3) {
-							throw new TypeError('Wrong value format: ' + atom.toArray(arguments));
-						}
-					}
-				} else if (type == 'object' && 'r' in value && 'g' in value && 'b' in value) {
-					rgb = [value.r, value.g, value.b, value.a];
-				} else {
-					throw new TypeError('Unknown value type: ' + type);
-				}
-			}
-			this.r = rgb[0];
-			this.g = rgb[1];
-			this.b = rgb[2];
-			if (rgb[3] != null) this.a = rgb[3];
-		},
-		toArray: function () {
-			return this.a == null ?
-				[this.r, this.g, this.b] :
-				[this.r, this.g, this.b, this.a];
-		},
-		toString: function (type) {
-			var arr = this.toArray();
-			return type == 'hex' ?
-				'#' + arr.map(function (color, i) {
-					if (i > 2) return '';
-					var bit = (color - 0).toString(16);
-					return bit.length == 1 ? '0' + bit : bit;
-				}).join('')
-				: (arr.length == 4 ? 'rgba(' : 'rgb(') + arr + ')';
-		},
-		diff: function (color) {
-			color = Color( Array.from( arguments ) );
-			var result = [
-				color.r - this.r,
-				color.g - this.g,
-				color.b - this.b
-			];
-			if ((color.a != null) || (this.a != null)) {
-				result.push(
-					color.a == null ? 1 : color.a -
-					this .a == null ? 1 : this .a
-				);
-			}
-			return result;
-		},
-		shift: function (array) {
-			var clone = this.clone();
-			clone.r += Math.round(array[0]);
-			clone.g += Math.round(array[1]);
-			clone.b += Math.round(array[2]);
-			if (array[3] != null) {
-				clone.a += array[3];
-			}
-			return clone;
-		},
-		dump: function () {
-			return '[Color(' + this.toArray().invoke('round', 2) + ')]';
-		},
-		clone: function () {
-			return new Color(this.toArray());
+	/** @private */
+	changeStatus: function (status){
+		if (this.started == status) {
+			return false;
+		} else {
+			this.started = status;
+			return true;
 		}
 	}
 });
@@ -706,9 +653,9 @@ var Color = declare( 'LibCanvas.Utils.Color', {
 /*
 ---
 
-name: "Behaviors.Animatable"
+name: "Behaviors.Clickable"
 
-description: "Basic abstract class for animatable objects."
+description: "Provides interface for clickable canvas objects"
 
 license:
 	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
@@ -719,142 +666,146 @@ authors:
 
 requires:
 	- LibCanvas
-	- Invoker
-	- Inner.TimingFunctions
-	- Utils.Color
+	- Behaviors
 
-provides: Behaviors.Animatable
+provides: Behaviors.Clickable
 
 ...
 */
 
-var Animatable = function () {
+new function () {
 
-var TF = TimingFunctions;
+function setValueFn (name, val) {
+	var result = [name, val];
+	return function () {
+		if (this[name] != val) {
+			this[name] = val;
+			this.events.fire('statusChange', result);
+		}
+	};
+}
 
-return declare( 'LibCanvas.Behaviors.Animatable', {
-	mixin: [ Invoker.AutoChoose ],
+return declare( 'LibCanvas.Behaviors.Clickable', {
 
-	proto: {
-		initialize: function (element) {
-			if (this.constructor !== Animatable) return;
+	parent: Behavior,
 
-			this['animate.element'] = element;
-			this['animate.func']    = atom.typeOf(element) == 'function';
+	own: { index: 'clickable' },
+
+	prototype: {
+		callbacks: {
+			'mouseover'   : setValueFn('hover' , true ),
+			'mouseout'    : setValueFn('hover' , false),
+			'mousedown'   : setValueFn('active', true ),
+			'mouseup'     : setValueFn('active', false),
+			'away:mouseup': setValueFn('active', false)
 		},
 
-		animate : function (key, value) {
-			if (!this['animate.properties']) this['animate.properties'] = {};
+		initialize: function (behaviors, args) {
+			this.events = behaviors.element.events;
+			this.eventArgs(args, 'statusChange');
+		},
 
-			var args, elem = this['animate.element'] || this, isFn = !!this['animate.func'];
+		start: function () {
+			if (!this.changeStatus(true)) return this;
 
-			if (typeof key == 'string' && arguments.length == 2) {
-				args = {};
-				args[key] = value;
-			} else {
-				args = key;
-			}
+			this.events.add(this.callbacks);
+		},
 
-			if (!isFn && !args.props) {
-				args = { props : args };
-			}
-			args = atom.extend({
-				fn    : 'linear',
-				params: [],
-				time  : 500
-			}, args);
+		stop: function () {
+			if (!this.changeStatus(false)) return this;
 
-			if (window.opera) args.time = (args.time / 2).round();
-
-			if (typeof args.props == 'function') {
-				elem = args.props;
-				isFn = true;
-			}
-			args.params = Array.from(args.params);
-
-			if (!Array.isArray(args.fn)) {
-				args.fn = args.fn.split('-');
-			}
-
-			var timeLeft = args.time,
-				diff     = {},
-				start    = {},
-				inAction = this['animate.properties'],
-				invoker  = this.invoker;
-
-			var animation = {
-				repeat: function () {
-					this.animate(args);
-				}.bind(this),
-				stop : function () {
-					// avoid calling twice
-					animation.stop = Function.lambda();
-
-					if (isFn) for (var i in args.props) inAction[i] = null;
-					invoker.rmFunction(fn);
-					args.onAbort && args.onAbort.call(this, animation, start);
-					return this;
-				}.bind(this),
-				instance: this
-			};
-
-			if ('onProccess' in args) args.onProcess = args.onProccess;
-
-			var fn = function (time) {
-				timeLeft -= Math.min(time, timeLeft);
-
-				var progress = (args.time - timeLeft) / args.time;
-
-				var factor = TF.count(args.fn, progress, args.params);
-
-				if (isFn) {
-					elem.call(this, factor);
-				} else {
-					for (var i in diff) {
-						Object.path.set( elem, i,
-							start[i] instanceof Color ?
-								start[i].shift(diff[i].clone().mul(factor)).toString() :
-								start[i] + diff[i] * factor
-						);
-					}
-				}
-
-				args.onProcess && args.onProcess.call(this, animation, start);
-
-				if (timeLeft <= 0) {
-					args.onFinish && invoker.after(0, function() {
-						args.onFinish.call(this, animation, start);
-					}.bind(this));
-					return 'remove';
-				}
-
-				return true;
-			}.bind(this);
-
-
-			if (!isFn) for (var i in args.props) {
-				var elemValue = Object.path.get(elem, i);
-
-				// if this property is already animating - remove
-				if (i in inAction) invoker.rmFunction(inAction[i]);
-				inAction[i] = fn;
-
-				if (Color.isColorString(elemValue)) {
-					start[i] = new Color(elemValue);
-					diff[i]  = start[i].diff(args.props[i]);
-				} else {
-					start[i] = elemValue;
-					diff[i]  = args.props[i] - elemValue;
-				}
-			}
-
-			invoker.addFunction(20, fn);
-			return animation;
+			this.events.remove(this.callbacks);
 		}
 	}
 });
 
-}();
+};
+
+/*
+---
+
+name: "Behaviors.Draggable"
+
+description: "When object implements LibCanvas.Behaviors.Draggable interface dragging made possible"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- Behaviors
+
+provides: Behaviors.Draggable
+
+...
+*/
+
+declare( 'LibCanvas.Behaviors.Draggable', {
+
+	parent: Behavior,
+
+	own: { index: 'draggable' },
+
+	prototype: {
+		stopDrag: [ 'up', 'out' ],
+
+		initialize: function (behaviors, args) {
+			this.bindMethods([ 'onStop', 'onDrag', 'onStart' ]);
+
+			this.element = behaviors.element;
+			this.events  = behaviors.element.events;
+			this.eventArgs(args, 'moveDrag');
+		},
+
+		bindMouse: function (method) {
+			var mouse = this.element.mouse, stop = this.stopDrag;
+			if (!mouse) throw new Error('No mouse in element');
+
+			mouse.events
+				[method]( 'move', this.onDrag )
+				[method](  stop , this.onStop );
+
+			return mouse;
+		},
+
+		start: function () {
+			if (!this.changeStatus(true)) return this;
+
+			this.events.add( 'mousedown', this.onStart );
+		},
+
+		stop: function () {
+			if (!this.changeStatus(false)) return this;
+
+			this.events.remove( 'mousedown', this.onStart );
+		},
+
+		/** @private */
+		onStart: function (e) {
+			if (e.button !== 0) return;
+
+			this.bindMouse('add');
+			this.events.fire('startDrag', [ e ]);
+		},
+
+		/** @private */
+		onDrag: function (e) {
+			this.element.move( e.deltaOffset );
+			this.events.fire('moveDrag', [e.deltaOffset, e]);
+		},
+
+		/** @private */
+		onStop: function (e) {
+			if (e.button !== 0) return;
+			this.bindMouse('remove');
+			this.events.fire('stopDrag', [ e ]);
+		}
+	}
+});
 
 /*
 ---
@@ -884,36 +835,19 @@ var Geometry = declare( 'LibCanvas.Geometry',
  * @augments Class.Events.prototype
  */
 {
-	mixin: [ Events.Mixin ],
 	own: {
-		invoke: function (obj) {
-			if (obj == null) throw new TypeError( 'element is not geometry' );
-
-			return (typeof obj == 'object' && obj[0] instanceof this) ?
-				obj[0] : (obj instanceof this ? obj : new this(obj));
-		},
+		invoke: declare.castArguments,
 		from : function (obj) {
 			return this(obj);
 		}
 	},
 	proto: {
 		initialize : function () {
-			this.events = new Events(this);
 			if (arguments.length) this.set.apply(this, arguments);
 		},
-		invertDirection: function (distance, reverse) {
-			distance = Point( distance );
-			var multi = reverse ? -1 : 1;
-			return new Point(
-				distance.x * multi,
-				distance.y * multi
-			);
-		},
-		move : function (distance, reverse) {
-			this.events.fire('move', [this.invertDirection(distance, reverse)]);
-			return this;
-		},
-		toString: Function.lambda('[object LibCanvas.Geometry]')
+		cast: function (args) {
+			return this.constructor.castArguments(args);
+		}
 	}
 });
 
@@ -941,7 +875,7 @@ provides: Utils.Math
 
 	var degreesCache = {}, d360;
 
-	atom.implement(Number, {
+	atom.core.append(Number.prototype, {
 		/**
 		 * Cast degrees to radians
 		 * (90).degree() == Math.PI/2
@@ -1001,7 +935,7 @@ provides: Utils.Math
 
 })();
 
-atom.extend(Math, {
+atom.core.append(Math, {
 	hypotenuse: function (cathetus1, cathetus2)  {
 		return (cathetus1*cathetus1 + cathetus2*cathetus2).sqrt();
 	},
@@ -1036,90 +970,66 @@ provides: Point
 
 var Point = function () {
 
-var shifts = {
-	top    : {x: 0, y:-1},
-	right  : {x: 1, y: 0},
-	bottom : {x: 0, y: 1},
-	left   : {x:-1, y: 0},
-	t      : {x: 0, y:-1},
-	r      : {x: 1, y: 0},
-	b      : {x: 0, y: 1},
-	l      : {x:-1, y: 0},
-	tl     : {x:-1, y:-1},
-	tr     : {x: 1, y:-1},
-	bl     : {x:-1, y: 1},
-	br     : {x: 1, y: 1}
-};
-
-var Point = declare( 'LibCanvas.Point',
-/**
- * @lends LibCanvas.Point.prototype
- * @augments LibCanvas.Geometry.prototype
- */
-{
+var Point = declare( 'LibCanvas.Point', {
 	parent: Geometry,
 
-	own: { shifts: shifts },
-
-	proto: {
+	prototype: {
 		/**
+		 *   new Point(1, 1);
+		 *   new Point([1, 1]);
+		 *   new Point({x:1, y:1});
+		 *   new Point(point);
 		 * @constructs
 		 * @param {Number} x
 		 * @param {Number} y
-		 * @returns {LibCanvas.Point}
+		 * @returns {Point}
 		 */
 		set : function (x, y) {
-			var args = arguments;
-			if (atom.typeOf(x) == 'arguments') {
-				args = x;
-				x = args[0];
-				y = args[1];
-			}
-			if (args.length != 2) {
-				if (x && x[0] !== undefined && x[1] !== undefined) {
+			if (arguments.length != 2) {
+				if (atom.core.isArrayLike(x)) {
 					y = x[1];
 					x = x[0];
-				} else if (x && x.x !== undefined && x.y !== undefined) {
+				} else if (x && x.x != null && x.y != null) {
 					y = x.y;
 					x = x.x;
 				} else {
-					//console.log('Wrong Arguments In Point.Set:', arguments);
-					throw new TypeError('Wrong Arguments In Point.Set: [' + atom.toArray(arguments).join(', ') + ']');
+					throw new TypeError( 'Wrong Arguments In Point.Set' );
 				}
 			}
-			this.x = x == null ? null : Number(x);
-			this.y = y == null ? null : Number(y);
+
+			this.x = Number(x);
+			this.y = Number(y);
 			return this;
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
 		move: function (distance, reverse) {
-			distance = this.invertDirection(Point(distance), reverse);
-			this.x += distance.x;
-			this.y += distance.y;
-
-			return Geometry.prototype.move.call(this, distance, false);
+			distance = this.cast(distance);
+			reverse  = reverse ? -1 : 1;
+			this.x += distance.x * reverse;
+			this.y += distance.y * reverse;
+			return this;
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
 		moveTo : function (newCoord) {
-			return this.move(this.diff(Point(arguments)));
+			return this.move(this.diff(this.cast(arguments)));
 		},
 		/** @returns {Number} */
 		angleTo : function (point) {
-			var diff = Point(arguments).diff(this);
+			var diff = this.cast(arguments).diff(this);
 			return Math.atan2(diff.y, diff.x).normalizeAngle();
 		},
 		/** @returns {Number} */
 		distanceTo : function (point) {
-			var diff = Point(arguments).diff(this);
+			var diff = this.cast(arguments).diff(this);
 			return Math.hypotenuse(diff.x, diff.y);
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
 		diff : function (point) {
-			return new Point(arguments).move(this, true);
+			return new this.constructor(arguments).move(this, true);
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
 		rotate : function (angle, pivot) {
-			pivot = Point(pivot || {x: 0, y: 0});
+			pivot = pivot ? this.cast(pivot) : new this.constructor(0, 0);
 			if (this.equals(pivot)) return this;
 
 			var radius = pivot.distanceTo(this);
@@ -1128,41 +1038,42 @@ var Point = declare( 'LibCanvas.Point',
 			var newAngle = Math.atan2(sides.x, sides.y) - angle;
 
 			return this.moveTo({
-				x : newAngle.sin() * radius + pivot.x,
-				y : newAngle.cos() * radius + pivot.y
+				x : Math.sin(newAngle) * radius + pivot.x,
+				y : Math.cos(newAngle) * radius + pivot.y
 			});
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
 		scale : function (power, pivot) {
-			pivot = Point(pivot || {x: 0, y: 0});
+			pivot = pivot ? this.cast(pivot) : new this.constructor(0, 0);
+			
 			var diff = this.diff(pivot), isObject = typeof power == 'object';
 			return this.moveTo({
 				x : pivot.x - diff.x  * (isObject ? power.x : power),
 				y : pivot.y - diff.y  * (isObject ? power.y : power)
 			});
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
 		alterPos : function (arg, fn) {
 			return this.moveTo({
 				x: fn(this.x, typeof arg == 'object' ? arg.x : arg),
 				y: fn(this.y, typeof arg == 'object' ? arg.y : arg)
 			});
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
 		mul : function (arg) {
 			return this.alterPos(arg, function(a, b) {
 				return a * b;
 			});
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
 		getNeighbour : function (dir) {
-			return this.clone().move(shifts[dir]);
+			return this.clone().move(this.constructor.shifts[dir]);
 		},
-		/** @returns {LibCanvas.Point[]} */
+		/** @returns {Point[]} */
 		get neighbours () {
 			return this.getNeighbours( true );
 		},
-		/** @returns {LibCanvas.Point[]} */
+		/** @returns {Point[]} */
 		getNeighbours: function (corners, asObject) {
 			var shifts = ['t', 'l', 'r', 'b'], result, i, dir;
 
@@ -1181,24 +1092,29 @@ var Point = declare( 'LibCanvas.Point',
 		},
 		/** @returns {boolean} */
 		equals : function (to, accuracy) {
-			to = Point(to);
-			return accuracy == null ? (to.x == this.x && to.y == this.y) :
-				(this.x.equals(to.x, accuracy) && this.y.equals(to.y, accuracy));
+			to = this.cast(to);
+			if (accuracy == null) {
+				return to.x == this.x && to.y == this.y;
+			}
+			return this.x.equals(to.x, accuracy) && this.y.equals(to.y, accuracy);
 		},
 		/** @returns {object} */
 		toObject: function () {
-			return {
-				x: this.x,
-				y: this.y
-			};
+			return { x: this.x, y: this.y };
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
 		invoke: function (method) {
 			this.x = this.x[method]();
 			this.y = this.y[method]();
 			return this;
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
+		map: function (fn, context) {
+			this.x = fn.call(context || this, this.x, 'x', this);
+			this.y = fn.call(context || this, this.y, 'y', this);
+			return this;
+		},
+		/** @returns {Point} */
 		mean: function (points) {
 			var l = points.length, i = l, x = 0, y = 0;
 			while (i--) {
@@ -1207,1776 +1123,47 @@ var Point = declare( 'LibCanvas.Point',
 			}
 			return this.set(x/l, y/l);
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
 		snapToPixel: function () {
 			this.x += 0.5 - (this.x - this.x.floor());
 			this.y += 0.5 - (this.y - this.y.floor());
 			return this;
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
 		reverse: function () {
 			this.x *= -1;
 			this.y *= -1;
 			return this;
 		},
-		/** @returns {LibCanvas.Point} */
+		/** @returns {Point} */
 		clone : function () {
 			return new this.constructor(this);
 		},
 		/** @returns {string} */
 		dump: function () {
 			return '[Point(' + this.x + ', ' + this.y + ')]';
-		},
-		toString: Function.lambda('[object LibCanvas.Point]')
+		}
 	}
 });
 
-for (var s in shifts) {
-	shifts[s] = new Point(shifts[s]);
-};
+Point.shifts = atom.object.map({
+	top    : [ 0, -1],
+	right  : [ 1,  0],
+	bottom : [ 0,  1],
+	left   : [-1,  0],
+	t      : [ 0, -1],
+	r      : [ 1,  0],
+	b      : [ 0,  1],
+	l      : [-1,  0],
+	tl     : [-1, -1],
+	tr     : [ 1, -1],
+	bl     : [-1,  1],
+	br     : [ 1,  1]
+}, Point);
 
 return Point;
 
 }();
-
-/*
----
-
-name: "Inner.MouseEvents"
-
-description: "Class which contains several basic mouse events "
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Point
-
-provides: Inner.MouseEvents
-
-...
-*/
-
-var MouseEvents = declare( 'LibCanvas.Inner.MouseEvents', {
-	initialize : function (mouse) {
-		this.subscribers   = [];
-		this.lastMouseMove = [];
-		this.lastMouseDown = [];
-
-		this.mouse = mouse;
-		this.point = mouse.point;
-		this.prev  = mouse.point.clone();
-	},
-	subscribe : function (elem) {
-		this.subscribers.include(elem);
-		return this;
-	},
-	unsubscribe : function (elem) {
-		this.subscribers.erase(elem);
-		return this;
-	},
-	overElem : function (elem) {
-		return this.mouse.isOver( elem );
-	},
-	getOverSubscribers : function () {
-		var elements = {
-			over : [],
-			out  : []
-		};
-		var maxOverMouseLCZ = 0, maxOverMouseZ = 0, sub = this.subscribers;
-		sub.sort(function ($0, $1) {
-			var diff = $1.libcanvas.zIndex - $0.libcanvas.zIndex;
-			if (diff) return diff < 0 ? -1 : 1;
-			diff = $1.getZIndex() - $0.getZIndex();
-			return diff ? (diff < 0 ? -1 : 1) : 0;
-		});
-		
-		
-		for (var i = 0, l = sub.length; i < l; i++) {
-			var elem = sub[i];
-			
-			if (elem.getZIndex() >= maxOverMouseZ
-			 && elem.libcanvas.zIndex >= maxOverMouseLCZ
-			 && this.overElem(elem)) {
-				maxOverMouseZ   = elem.getZIndex();
-				maxOverMouseLCZ = elem.libcanvas.zIndex;
-				elements.over.push(elem);
-			} else {
-				elements.out.push(elem);
-			}
-		}
-		return elements;
-	},
-	trigger : function (elem, eventName, e) {
-		if (elem.events) {
-			elem.events.fire( eventName, [ e, eventName ] );
-		} else {
-			elem.fireEvent(eventName, [e, eventName]);
-		}
-	},
-	event : function (type, e) {
-		var mouse = this,
-			isMove = ['mousemove', 'mouseout'].contains(type),
-			subscribers = this.getOverSubscribers();
-
-		if (type == 'mousedown') mouse.lastMouseDown.empty();
-		
-		subscribers.over.forEach(function (elem) {
-			// Mouse move firstly on this element
-			if (type == 'mousemove' && !mouse.lastMouseMove.contains(elem)) {
-				mouse.trigger(elem, 'mouseover', e);
-				mouse.lastMouseMove.push(elem);
-			} else if (type == 'mousedown') {
-				mouse.lastMouseDown.push(elem);
-			// If mouseup on this elem and last mousedown was on this elem - click
-			} else if (type == 'mouseup' && mouse.lastMouseDown.contains(elem)) {
-				mouse.trigger(elem, 'click', e);
-			}
-			mouse.trigger(elem, type, e);
-		});
-
-		subscribers.out.forEach(function (elem) {
-			var mouseout = false;
-			if (isMove && mouse.lastMouseMove.contains(elem)) {
-				mouse.fireEvent(elem, 'mouseout', e);
-				if (type == 'mouseout') mouse.trigger(elem, 'away:mouseout', e);
-				mouse.lastMouseMove.erase(elem);
-				mouseout = true;
-			}
-			if (!mouseout) mouse.trigger(elem, 'away:' + type, e);
-		});
-
-		return this;
-	}
-});
-
-/*
----
-
-name: "Mouse"
-
-description: "A mouse control abstraction class"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Point
-	- Inner.MouseEvents
-
-provides: Mouse
-
-...
-*/
-
-
-var Mouse = declare( 'LibCanvas.Mouse',
-/**
- * @lends LibCanvas.Mouse.prototype
- * @augments Class.Events.prototype
- */
-{
-	mixin: [ Events.Mixin ],
-	
-	own: {
-		buttons: {
-			left  : false,
-			middle: false,
-			// not supported
-			right : false
-		},
-		listen: function () {
-			var Mouse   = this,
-				buttons = Mouse.buttons,
-				set = function (val, b) {
-					return function (e) {
-						if (b == 'all') {
-							for (var i in buttons) buttons[i] = val
-						} else {
-							b = b || ['left', 'middle'][e.button];
-							if (b) buttons[b] = val;
-						}
-					};
-				};
-			atom.dom().bind({
-				mousedown  : set(true),
-				mouseup    : set(false),
-				blur       : set(false, 'all')
-			});
-		},
-		createOffset : function(elem) {
-			var top = 0, left = 0;
-			if (elem.getBoundingClientRect) {
-				var box = elem.getBoundingClientRect();
-
-				// (2)
-				var body    = document.body;
-				var docElem = document.documentElement;
-
-				// (3)
-				var scrollTop  = window.pageYOffset || docElem.scrollTop  || body.scrollTop;
-				var scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft;
-
-				// (4)
-				var clientTop  = docElem.clientTop  || body.clientTop  || 0;
-				var clientLeft = docElem.clientLeft || body.clientLeft || 0;
-
-				// (5)
-				top  = box.top  + scrollTop  - clientTop;
-				left = box.left + scrollLeft - clientLeft;
-
-				return { top: top.round(), left: left.round() };
-			} else {
-				while(elem) {
-					top  = top  + parseInt(elem.offsetTop);
-					left = left + parseInt(elem.offsetLeft);
-					elem = elem.offsetParent;
-				}
-				return { top: top, left: left };
-			}
-		},
-		expandEvent: function (e) {
-			var from = e.changedTouches ? e.changedTouches[0] : e;
-			if (!('page' in e) || !('offset' in e)) {
-				e.page = from.page || {
-					x: 'pageX' in from ? from.pageX : from.clientX + document.scrollLeft,
-					y: 'pageY' in from ? from.pageY : from.clientY + document.scrollTop
-				};
-				if ('offsetX' in from) {
-					e.offset = new Point(from.offsetX, from.offsetY);
-				} else {
-					var offset = LibCanvas.Mouse.createOffset(from.target);
-					e.offset = new Point({
-						x: e.page.x - offset.left,
-						y: e.page.y - offset.top
-					});
-					e.offsetX = e.offset.x;
-					e.offsetY = e.offset.y;
-				}
-			}
-			return e;
-		},
-		getOffset : function (e) {
-			if (!e.offset) LibCanvas.Mouse.expandEvent(e);
-			return e.offset;
-		}
-	},
-	proto: {
-		initialize : function (elem) {
-			this.inCanvas = false;
-			this.point = new Point(null, null);
-			/** @private */
-			this.prev  = new Point(null, null);
-			/** @private */
-			this.diff  = new Point(null, null);
-
-			this.elem = elem;
-
-			this.events  = new Events(this);
-			this.handler = new MouseEvents(this);
-
-			this.setEvents();
-		},
-		isOver: function (elem) {
-			var translate = elem.mouseTranslate;
-			if (translate) this.point.move( translate, true );
-			var result = this.inCanvas && elem.hasPoint( this.point );
-			if (translate) this.point.move( translate );
-			return result;
-		},
-		button: function (key) {
-			return this.constructor.buttons[key || 'left'];
-		},
-		setCoords : function (point, inCanvas) {
-			this.prev.set( this.point );
-			this.diff = this.prev.diff( point );
-			this.inCanvas = inCanvas;
-			this.point.move( this.diff );
-			this.debugUpdate();
-			return this;
-		},
-		getOffset : function (e) {
-			return LibCanvas.Mouse.getOffset(e);
-		},
-		setEvents : function () {
-
-			// e.previousOffset = prev.clone();
-			// e.deltaOffset    = prev.diff( this.point );
-			var mouse = this,
-			waitEvent = function (event, isOffice) {
-				if (event.match(/^mouse/)) {
-					var shortE = event.substr(5);
-				}
-
-				return function (e) {
-					prepare( e );
-					var wait     = mouse.isEventAdded(event),
-						waitShort = ( shortE && mouse.isEventAdded(shortE) );
-					if (isOffice || wait || waitShort) mouse.getOffset(e);
-
-					if (isOffice ) mouse.handler.event(event, e);
-					if (wait     ) mouse.events.fire(event, [e]);
-					if (waitShort) mouse.events.fire(shortE, [e]);
-					if (isOffice ) e.preventDefault();
-
-					return !isOffice;
-				};
-			},
-			waitWheel = waitEvent('wheel', false),
-			prepare = function (e) {
-				e.previousOffset = mouse.prev;
-				e.deltaOffset = mouse.diff;
-			},
-			wheel = function (e) {
-				e.delta =
-					// IE, Opera, Chrome
-					e.wheelDelta ? e.wheelDelta > 0 ? 1 : -1 :
-					// Fx
-					e.detail     ? e.detail     < 0 ? 1 : -1 : null;
-				e.up   = e.delta > 0;
-				e.down = e.delta < 0;
-				waitWheel(e);
-				mouse.handler.event('wheel', e);
-			},
-			down = waitEvent('mousedown', true),
-			up   = waitEvent('mouseup'  , true),
-			over = waitEvent('mouseover', true),
-			move = function ( e ) {
-				var offset = mouse.getOffset(e);
-				mouse.setCoords(offset, true);
-				prepare( e );
-				mouse.handler.event('mousemove', e);
-				mouse.events.fire('move', [e]);
-				mouse.isOut = false;
-				e.preventDefault();
-				return false;
-			},
-			out = function (e) {
-				var offset = mouse.getOffset(e);
-				mouse.setCoords(offset, false);
-				prepare( e );
-				mouse.handler.event('mouseout', e);
-				mouse.events.fire('mouseout', [e]);
-				mouse.events.fire('out', [e]);
-				mouse.isOut = true;
-				e.preventDefault();
-				return false;
-			};
-
-			atom.dom(mouse.elem).bind({
-				click      : waitEvent('click', false),
-				dblclick   : waitEvent('dblclick', false),
-				contextmenu: waitEvent('contextmenu', false),
-				mouseover  : over,
-				mousedown  : down,
-				mouseup    : up,
-				mousemove  : move,
-				mouseout   : out,
-				selectstart: false,
-				DOMMouseScroll: wheel,
-				mousewheel: wheel
-			});
-			return this;
-		},
-		subscribe : function (elem) {
-			this.handler.subscribe(elem);
-			return this;
-		},
-		unsubscribe : function (elem) {
-			this.handler.unsubscribe(elem);
-			return this;
-		},
-		debugTrace: null,
-		debugUpdate: function () {
-			if (this.debugTrace) {
-				this.debugTrace.trace( 'Mouse' +
-					(this.inCanvas ? ': ' + this.point.x.round() + ',' + this.point.y.round() : ' is out of canvas')
-				);
-			}
-		},
-		debug : function (on) {
-			if (on && !this.debugTrace) {
-				this.debugTrace = new Trace();
-			} else if (on === false) {
-				this.debugTrace = null;
-			}
-			this.debugUpdate();
-			return this;
-		},
-		dump: function () {
-			var p = this.point;
-			return '[Mouse(' + p.x + '*' + p.y + ')]';
-		},
-		toString: Function.lambda('[object LibCanvas.Mouse]')
-	}
-});
-
-LibCanvas.Mouse.listen();
-
-
-/*
----
-
-name: "Behaviors.MouseListener"
-
-description: "Canvas mouse listener"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Mouse
-
-provides: Behaviors.MouseListener
-
-events:
-	- click
-	- wheel
-	- mouseover
-	- mousemove
-	- mouseout
-	- mouseup
-	- mousedown
-	- away:wheel
-	- away:mouseover
-	- away:mousemove
-	- away:mouseout
-	- away:mouseup
-	- away:mousedown
-
-...
-*/
-
-// Should extends LibCanvas.Behaviors.Drawable
-var MouseListener = declare( 'LibCanvas.Behaviors.MouseListener', {
-	'listenMouse.start': function () {
-		this.libcanvas.mouse.subscribe(this);
-	},
-	'listenMouse.stop': function () {
-		this.libcanvas.mouse.unsubscribe(this);
-	},
-
-	listenMouse : function (stopListen) {
-		if (this.scene) {
-			this.scene.mouse[stopListen ? 'unsubscribe' : 'subscribe']( this );
-			return this;
-		}
-
-		var method = this[ 'listenMouse.' + (stopListen ? 'stop' : 'start') ];
-
-		this.libcanvas ? method.call( this ) :
-			this.events.add('libcanvasSet', method );
-		return this;
-	}
-});
-
-/*
----
-
-name: "Behaviors.Clickable"
-
-description: "Provides interface for clickable canvas objects"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Behaviors.MouseListener
-
-provides: Behaviors.Clickable
-
-...
-*/
-
-var Clickable = function () {
-
-var $window = atom.dom(window);
-
-var setValFn = function (object, name, val) {
-	var result = [name, val];
-	return function (event) {
-		if (object[name] != val) {
-			object[name] = val;
-			object.events.fire('statusChanged', result);
-		}
-	};
-};
-
-// Should mixin Drawable & MouseListener
-return declare( 'LibCanvas.Behaviors.Clickable', {
-
-	clickable : function (stop, callback) {
-		if (typeof stop == 'function') {
-			callback = stop;
-			stop = false;
-		}
-
-		if (callback) this.events.add( 'statusChanged', callback );
-
-		var callbacks = this['clickable.callbacks'];
-
-		if (!callbacks) {
-			var deactivate = setValFn(this, 'active', false);
-			callbacks = this['clickable.callbacks'] = {
-				'mouseover': setValFn(this, 'hover' , true),
-				'mouseout' : setValFn(this, 'hover' , false),
-				'mousedown': setValFn(this, 'active', true ),
-				'mouseup'      : deactivate,
-				'away:mouseup' : deactivate
-			};
-		}
-
-		if (stop) {
-			this.events.remove(callbacks);
-		} else {
-			this.events.add(callbacks);
-		}
-		return this;
-	}
-
-});
-
-}();
-
-/*
----
-
-name: "Behaviors.Draggable"
-
-description: "When object implements LibCanvas.Behaviors.Draggable interface dragging made possible"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Behaviors.MouseListener
-
-provides: Behaviors.Draggable
-
-...
-*/
-
-var Draggable = function () {
-
-
-var initDraggable = function () {
-	var draggable = this,
-		mouse = draggable.libcanvas.mouse,
-		dragFn = function ( e ) {
-			draggable.shape.move( e.deltaOffset );
-			draggable.events.fire('moveDrag', [e.deltaOffset, e]);
-		},
-		stopDrag  = ['up', 'out'],
-		onStopDrag = function (e) {
-			if (e.button !== 0) return;
-
-			draggable.events.fire('stopDrag', [ e ]);
-			mouse.events
-				.remove( 'move', dragFn)
-				.remove(stopDrag, onStopDrag);
-		}.bind(this);
-
-	draggable.listenMouse();
-
-	draggable.addEvent( 'mousedown' , function (e) {
-		if (e.button !== 0) return;
-
-		if (!draggable['draggable.isDraggable']) return;
-
-		draggable.events.add('startDrag', [ e ]);
-		mouse.events.add( 'move', dragFn );
-		mouse.events.add( stopDrag, onStopDrag );
-	});
-
-
-	return this;
-};
-
-return declare( 'LibCanvas.Behaviors.Draggable', {
-	draggable : function (stop, callback) {
-		if (typeof stop == 'function') {
-			callback = stop;
-			stop = false;
-		}
-
-		if (callback) this.events.add( 'moveDrag', callback );
-
-		if (! ('draggable.isDraggable' in this) ) {
-			if (this.libcanvas) {
-				initDraggable.call( this );
-			} else {
-				this.events.add('libcanvasSet', initDraggable);
-			}
-		}
-		this['draggable.isDraggable'] = !stop;
-		return this;
-	}
-});
-	
-}();
-
-/*
----
-
-name: "Behaviors.Drawable"
-
-description: "Abstract class for drawable canvas objects"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-
-provides: Behaviors.Drawable
-
-...
-*/
-
-var Drawable = function () {
-	
-var start = function () {
-	this.libcanvas.addElement(this);
-	this.events.remove('libcanvasSet', start);
-};
-var stop = function () {
-	this.libcanvas.rmElement(this);
-	this.events.remove('libcanvasSet', stop);
-};
-var manage = function (first, second) {
-	return function () {
-		this.events.remove('libcanvasSet', first);
-
-		this.libcanvas ?
-			second.call( this ) :
-			this.events.add('libcanvasSet', second);
-		return this;
-	}
-};
-
-return declare( 'LibCanvas.Behaviors.Drawable', {
-	mixin: Events.Mixin,
-	proto: {
-		libcanvasIsReady: false,
-		setLibcanvas : function (libcanvas) {
-			if (this.libcanvas) {
-				this.libcanvas.rmElement(this);
-				this.libcanvas = libcanvas;
-			} else {
-				this.libcanvas = libcanvas;
-				var isReady = this.libcanvas.isReady();
-				if (isReady) {
-					this.libcanvasIsReady = true;
-				} else {
-					this.events.add('libcanvasReady', function () {
-						this.libcanvasIsReady = true;
-					});
-					this.libcanvas.events.add('ready', function () {
-						this.events.ready('libcanvasReady')
-					}.bind(this));
-				}
-				this.events.ready('libcanvasSet');
-				if (isReady) this.events.ready('libcanvasReady');
-			}
-			return this;
-		},
-		isReady : function () {
-			return this.libcanvasIsReady;
-		},
-		// @deprecated
-		getShape : function () {
-			return this.shape;
-		},
-		// @deprecated
-		setShape : function (shape) {
-			this.shape = shape;
-			return this;
-		},
-		// @deprecated
-		getZIndex : function () {
-			return this.zIndex || 0;
-		},
-		hasPoint: function (point) {
-			return this.shape.hasPoint( point );
-		},
-		// @deprecated
-		setZIndex : function (zIndex) {
-			this.zIndex = zIndex;
-			return this;
-		},
-		toLayer: function (name) {
-			if (this.libcanvas) {
-				this.libcanvas
-					.rmElement(this)
-					.layer(name)
-					.addElement(this);
-			}
-			return this;
-		},
-		startDrawing: manage(stop , start),
-		 stopDrawing: manage(start, stop ),
-
-		update : 'abstract',
-		draw   : 'abstract'
-	}
-});
-
-}();
-
-/*
----
-
-name: "Behaviors.DrawableSprite"
-
-description: "Abstract class for drawable canvas sprites"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Behaviors.Drawable
-
-provides: Behaviors.DrawableSprite
-
-...
-*/
-
-var DrawableSprite = declare( 'LibCanvas.Behaviors.DrawableSprite', {
-	parent: Drawable,
-
-	proto: {
-		draw: function () {
-			this.libcanvas.ctx.drawImage( this.sprite, this.shape );
-			return this;
-		}
-	}
-});
-
-/*
----
-
-name: "Behaviors.Droppable"
-
-description: "Abstract class for droppable canvas objects"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Behaviors.MouseListener
-	- Behaviors.Draggable
-
-provides: Behaviors.Droppable
-
-...
-*/
-
-// must be Draggable
-var Droppable = declare( 'LibCanvas.Behaviors.Droppable', {
-	drops : null,
-	drop : function (obj) {
-		if (this.drops === null) {
-			this.drops = [];
-			this.events.add('stopDrag', function () {
-				var dropped = false;
-				var mouse = this.libcanvas.mouse;
-				if (mouse.inCanvas) {
-					this.drops.forEach(function (obj) {
-						if(obj.shape.hasPoint(mouse.point)) {
-							dropped = true;
-							this.events.fire('dropped', [obj]);
-						}
-					}.bind(this));
-				}
-				if (!dropped) this.events.fire('dropped', [null]);
-			});
-		}
-		this.drops.push(obj);
-		return this;
-	},
-	undrop : function (obj) {
-		if (this.drops !== null) this.drops.erase(obj);
-		return this;
-	}
-});
-
-/*
----
-
-name: "Behaviors.Linkable"
-
-description: "Made possible link between two canvas objects"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-
-provides: Behaviors.Linkable
-
-...
-*/
-
-var Linkable = declare( 'LibCanvas.Behaviors.Linkable', {
-	links : null,
-	moveLinks : function (move) {
-		(this.links || []).forEach(function (elem) {
-			elem.shape.move(move);
-		});
-		return this;
-	},
-	// todo : fix recursion while linkin 2 elements between each other
-	link : function (obj) {
-		if (this.links === null) {
-			this.links = [];
-			this.shape.events.add('move',
-				this.moveLinks.bind(this)
-			);
-		}
-		this.links.include(obj);
-		return this;
-	},
-	unlink : function (obj) {
-		if (this.links !== null) {
-			if (obj) this.links.erase(obj);
-			else this.links = [];
-		}
-		return this;
-	}
-});
-
-/*
----
-
-name: "Behaviors.Moveable"
-
-description: "Provides interface for moveable objects"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Behaviors.Animatable
-
-provides: Behaviors.Moveable
-
-...
-*/
-var Moveable = declare( 'LibCanvas.Behaviors.Moveable', {
-	stopMoving : function () {
-		var anim = this['moveTo.animation'];
-		if (anim) anim.stop();
-		return this;
-	},
-	moveTo    : function (point, speed, fn) { // speed == pixels per sec
-		this.stopMoving();
-		point = Point(point);
-		var shape = this.shape, diff = shape.getCoords().diff(point);
-		if (!speed) {
-			shape.move(diff);
-			this.events.fire('stopMove');
-			return this;
-		}
-		var distance = Math.hypotenuse(diff.x, diff.y), prev = 0;
-		var events = this.events;
-
-		var fire = function (event) {
-			return function () {
-				events.fire(event);
-			};
-		};
-
-		this['moveTo.animation'] = new Animatable(function (change) {
-			shape.move({
-				x : diff.x * (change - prev),
-				y : diff.y * (change - prev)
-			});
-			prev = change;
-		}).animate({
-			fn        : fn || 'linear',
-			time      : distance / speed * 1000,
-			onProcess : fire('move'),
-			onAbort   : fire('stopMove'),
-			onFinish  : fire('stopMove')
-		});
-
-		return this;
-	}
-});
-
-/*
----
-
-name: "Inner.FrameRenderer"
-
-description: "Private class for inner usage in LibCanvas.Canvas2D"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Point
-
-provides: Inner.FrameRenderer
-
-...
-*/
-
-var FrameRenderer = declare( 'LibCanvas.Inner.FrameRenderer', {
-	checkAutoDraw : function () {
-		if (!this._freezed && this.updateFrame) {
-			this.updateFrame = false;
-			return true;
-		}
-		return false;
-	},
-	showBuffer : function () {
-		// todo: remove this
-		if (this.elem != this.origElem) {
-			this.origCtx.clearAll().drawImage(this.elem);
-		}
-		return this;
-	},
-	invokeAll : function (method, time) {
-		var elems = this.elems.sortBy('getZIndex');
-		for (var i = elems.length; i--;) {
-			if (elems[i].isReady()) {
-				elems[i][method](time);
-			}
-		}
-		return this;
-	},
-	updateAll : function (time) {
-		if (!this.settings.get('invoke')) return this;
-		return this.invokeAll('update', time);
-	},
-	drawAll : function (time) {
-		return this.invokeAll('draw', time);
-	},
-	processing : function (type) {
-		this.processors[type].forEach(function (processor) {
-			if ('process' in processor) {
-				processor.process(this);
-			} else if ('processCanvas' in processor) {
-				processor.processCanvas(this.elem);
-			} else if ('processPixels' in processor) {
-				this.ctx.putImageData(
-					processor.processCanvas(
-						this.ctx.getImageData()
-					)
-				);
-			}
-		}.bind(this));
-	},
-	innerInvoke : function (type, time) {
-		var f = this.funcs[type].sortBy('priority');
-		for (var i = f.length; i--;) f[i].call(this, time);
-		return this;
-	},
-	renderLayer: function (layer, time) {
-		layer.innerInvoke('plain', time).updateAll(time);
-
-		if (layer.checkAutoDraw()) {
-			layer.processing('pre');
-			if (layer.isReady()) {
-				layer.innerInvoke('render', time);
-				layer.drawAll(time);
-			} else {
-				layer.renderProgress();
-			}
-			layer.processing('post');
-			layer.showBuffer();
-			return true;
-		}
-		return false;
-	},
-	collect: 0,
-	renderFrame : function (time) {
-		for (var n in this._layers) {
-			this.renderLayer(this._layers[n], time);
-		}
-		if (window.opera && ++this.collect > 100) {
-			window.opera.collect();
-			this.collect = 0;
-		}
-		return true;
-	}
-});
-
-/*
----
-
-name: "Inner.FpsMeter"
-
-description: "Constantly calculates frames per seconds rate"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-
-provides: Inner.FpsMeter
-
-...
-*/
-var InnerFpsMeter = declare( 'LibCanvas.Inner.FpsMeter', {
-	fpsMeter : function (frames) {
-		if (typeof FpsMeter == 'undefined') {
-			throw new Error('LibCanvas.Utils.FpsMeter is not loaded');
-		}
-		var fpsMeter = new FpsMeter(frames || (this.fps ? this.fps / 2 : 10));
-		return this.addEvent('frameRenderStarted', function () {
-			fpsMeter.frame();
-		});
-	}
-});
-
-/*
----
-
-name: "Inner.DownloadingProgress"
-
-description: "Counting assets downloading progress"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-
-provides: Inner.DownloadingProgress
-
-...
-*/
-var DownloadingProgress = declare( 'LibCanvas.Inner.DownloadingProgress', {
-	imageExists: function (name) {
-		if (this.parentLayer) return this.parentLayer.imageExists(name);
-
-		return !!(this.images && this.images[name]);
-	},
-	getImage : function (name) {
-		if (this.parentLayer) return this.parentLayer.getImage(name);
-		
-		if (this.images && this.images[name]) {
-			return this.images[name];
-		} else {
-			throw new Error('No image «' + name + '»');
-		}
-	},
-	getAudio: function (name) {
-		if (this.parentLayer) return this.parentLayer.getAudio(name);
-		
-		if (this._audio) {
-			var audio = this._audio.get(name);
-			if (audio) return audio;
-		}
-		throw new Error('No audio «' + name + '»');
-	},
-	renderProgress : function () {
-		if (this.parentLayer) return;
-		
-		if (this.settings.get('progressBarStyle') && !this.progressBar) {
-			if (typeof ProgressBar == 'undefined') {
-				throw new Error('LibCanvas.Utils.ProgressBar is not loaded');
-			}
-			this.progressBar = new ProgressBar()
-				.setStyle(this.settings.get('progressBarStyle'));
-		}
-		if (this.progressBar) {
-			this.progressBar
-				.setLibcanvas(this)
-				.setProgress(this.imagePreloader.getProgress())
-				.draw();
-		}
-	},
-	createPreloader : function () {
-		if (!this.imagePreloader) {
-
-			var settings = this.settings;
-			var events   = this.events;
-			
-			if (this.parentLayer) {
-				this.parentLayer.addEvent('ready', function () {
-					events.ready('ready');
-				});
-				this.imagePreloader = true;
-				return;
-			}
-			
-			if (settings.get('preloadAudio')) {
-				if (typeof AudioContainer == 'undefined') {
-					throw new Error('LibCanvas.Utils.AudioContainer is not loaded');
-				}
-				this._audio = new AudioContainer(settings.get('preloadAudio'));
-			} else {
-				this._audio = null;
-			}
-
-			if (settings.get('preloadImages')) {
-				if (typeof ImagePreloader == 'undefined') {
-					throw new Error('LibCanvas.Utils.ImagePreloader is not loaded');
-				}
-				this.imagePreloader = new ImagePreloader(settings.get('preloadImages'), settings.get('imagesSuffix'))
-					.addEvent('ready', function (preloader) {
-						this.images = preloader.images;
-						console.log(preloader.getInfo());
-						events.ready('ready');
-						this.update();
-					}.bind(this));
-			} else {
-				this.images = {};
-				this.imagePreloader = true;
-				events.ready('ready');
-			}
-		}
-
-	},
-	isReady : function () {
-		this.createPreloader();
-		if (this.parentLayer) return this.parentLayer.isReady();
-
-		var pI = this.settings.get('preloadImages');
-		return !pI || !Object.keys(pI).length
-			|| (this.imagePreloader && this.imagePreloader.isReady());
-	}
-});
-
-/*
----
-
-name: "Canvas2D"
-
-description: "LibCanvas.Canvas2D wraps around native <canvas>."
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Context2d
-	- Inner.FrameRenderer
-	- Inner.FpsMeter
-	- Inner.DownloadingProgress
-
-provides: Canvas2D
-
-...
-*/
-
-var Canvas2D = declare( 'LibCanvas.Canvas2D',
-/**
- * @lends LibCanvas.Canvas2D.prototype
- * @augments LibCanvas.prototype
- * @augments FrameRenderer.prototype
- * @augments InnerFpsMeter.prototype
- * @augments DownloadingProgress.prototype
- * @augments Class.Events.prototype
- * @augments Class.Options.prototype
- */
-{
-	parent: LibCanvas,
-	mixin: [
-		FrameRenderer,
-		InnerFpsMeter,
-		DownloadingProgress,
-		Events.Mixin,
-		Settings.Mixin
-	],
-
-	proto: {
-		/** @deprecated */
-		set fps (f) { this.settings.set({ fps: f }) },
-		/** @deprecated */
-		get fps ( ) { return this.settings.get('fps') },
-
-		/** @private */
-		interval: null,
-		/** @private */
-		name    : null,
-
-		options: {
-			name: 'main',
-			autoStart: true,
-			clear: true,
-			invoke: false, // invoke objects each frame
-			fps: 30
-		},
-
-		/**
-		 * @constructs
-		 * @param {atom.dom} elem
-		 * @param {object} options
-		 * @returns {LibCanvas.Canvas2D}
-		 */
-		initialize : function (elem, options) {
-			if (!this.events) this.events = new Events(this);
-			this.setOptions({});
-
-			this.bindMethods([ 'update' ]);
-
-			this._appSize = { width: 0, height: 0 };
-
-			this._shift = new Point( 0, 0 );
-			this.funcs = {
-				plain : [],
-				render: []
-			};
-			this.elems = [];
-			this.processors = { pre: [], post: [] };
-
-
-			var aElem = atom.dom(elem);
-			elem = aElem.first;
-
-			this.settings.set(options);
-
-			this.origElem = elem;
-			this.origCtx  = elem.getContext('2d-libcanvas');
-			this.origElem.atom = aElem;
-
-			this.createProjectBuffer().addClearer();
-
-			var wrapper = this.wrapper, cover = this.cover;
-
-			this.name = this.settings.get('name');
-			if (this.parentLayer) {
-				this._layers = this.parentLayer._layers;
-				aElem.appendTo(wrapper);
-			} else {
-				this._layers = {};
-				aElem
-					.replaceWith(wrapper.parent)
-					.appendTo(wrapper);
-
-				if (elem.width && elem.height) {
-					this.size(elem.width, elem.height, true);
-				}
-			}
-
-			this._layers[this.name] = this;
-			cover.css('zIndex', this.maxZIndex + 100);
-
-			if (this.settings.get('autoStart')) this.isReady();
-
-			aElem
-				.attr('data-layer-name', this.name)
-				.css('position', 'absolute');
-			this.zIndex = Infinity;
-
-			return this;
-		},
-
-		/** @returns {LibCanvas.Canvas2D} */
-		show: function () {
-			this.origElem.atom.css('display', 'block');
-			return this;
-		},
-
-		/** @returns {LibCanvas.Canvas2D} */
-		hide: function () {
-			this.origElem.atom.css('display', 'none');
-			return this;
-		},
-
-		/**
-		 * @param {number} size
-		 * @param {number} height
-		 * @param {number} wrapper
-		 * @returns {LibCanvas.Canvas2D}
-		 */
-		size: function (size, height, wrapper) {
-
-			if (typeof size == 'object') {
-				wrapper = height;
-				if (size.width == null) {
-					size = { width: size.x, height: size.y };
-				}
-			} else {
-				size = { width: size, height: height };
-			}
-			for (var i in size) {
-				if (this.origElem != this.elem) {
-					this.origElem[i] = size[i];
-				}
-				this.elem[i] = size[i];
-			}
-			if (wrapper) this.appSize(size);
-			return this;
-		},
-
-		/**
-		 * @param {number} size
-		 * @param {number} height
-		 * @returns {LibCanvas.Canvas2D}
-		 */
-		appSize: function (size, height) {
-			if (typeof size != 'object') {
-				size = { width: size, height: height };
-			}
-			for (var i in size) {
-				this.wrapper       .css(i, size[i]);
-				this.wrapper.parent.css(i, size[i]);
-				this._appSize[i] = size[i];
-			}
-			return this;
-		},
-
-		/**
-		 * @returns {object}
-		 */
-		getAppSize: function () {
-			return this._appSize;
-		},
-
-		/**
-		 * @deprecated - use `setShift` or `addShift` instead
-		 * @param {object} shift
-		 * @returns {LibCanvas.Canvas2D}
-		 */
-		shift: function (shift, left) {
-			if (left != null) {
-				shift = { top: shift, left: left };
-			}
-			this.origElem.atom.css({
-				'margin-top' : shift.top,
-				'margin-left': shift.left
-			});
-			return this;
-		},
-
-		/**
-		 * @private
-		 * @property {LibCanvas.Point}
-		 */
-		_shift: null,
-
-		/**
-		 * @param {LibCanvas.Point} shift
-		 * @returns {LibCanvas.Canvas2D}
-		 */
-		translateMouse: function (shift) {
-			shift = Point(shift);
-			var elems = this.elems, e, i = elems.length;
-			while (i--) {
-				e = elems[i];
-				if (e.mouseTranslate) {
-					e.mouseTranslate.move( shift );
-				} else {
-					e.mouseTranslate = shift.clone();
-				}
-			}
-			return this;
-		},
-
-		/**
-		 * @param {LibCanvas.Point} shift
-		 * @returns {LibCanvas.Canvas2D}
-		 */
-		addShift: function ( shift, withElements ) {
-			shift = Point( shift );
-			var newShift = this._shift.move( shift );
-			this.origElem.atom.css({
-				'margin-left': newShift.x,
-				'margin-top' : newShift.y
-			});
-			if (withElements) this.translateMouse( shift );
-			return this;
-		},
-
-		/**
-		 * @param {LibCanvas.Point} shift
-		 * @returns {LibCanvas.Canvas2D}
-		 */
-		setShift: function (shift, withElements) {
-			return this.addShift( this._shift.diff(shift), withElements );
-		},
-
-		/**
-		 * @returns {LibCanvas.Point}
-		 */
-		getShift: function () {
-			return this._shift;
-		},
-
-		/** @private */
-		createProjectBuffer: function () {
-			this.elem = this.origElem;
-			this.ctx  = this.origCtx;
-			return this;
-		},
-
-		/** @private */
-		addClearer: function () {
-			var clear = this.settings.get('clear');
-			if (clear) {
-				this.addProcessor('pre',
-					new Processors.Clearer(
-						typeof clear === 'string' ? clear : null
-					)
-				);
-			}
-			return this;
-		},
-
-		/** @private */
-		updateFrame : false,
-		/** @returns {LibCanvas.Canvas2D} */
-		update : function () {
-			this.updateFrame = true;
-			return this;
-		},
-		/** @private */
-		_freezed: false,
-		/** @returns {LibCanvas.Canvas2D} */
-		freeze: function (unfreeze) {
-			this._freezed = !unfreeze;
-			return this;
-		},
-
-		/** @returns {LibCanvas.Canvas2D} */
-		listenMouse : function (elem) {
-			if (!this._mouse) {
-				this._mouse = LibCanvas.isLibCanvas(elem) ?
-					elem.mouse : new Mouse(this.wrapper);
-			}
-			return this;
-		},
-
-		/**
-		 * @param {string} key
-		 * @returns {boolean}
-		 */
-		getKey : function (key) {
-			return this.keyboard.keyState(key);
-		},
-		/** @returns {LibCanvas.Canvas2D} */
-		listenKeyboard : function (elem) {
-			if (!this._keyboard) {
-				this._keyboard = LibCanvas.isLibCanvas(elem) ? elem.keyboard
-					: new Keyboard(/* preventDefault */elem);
-			}
-			return this;
-		},
-		/** @returns {HTMLCanvasElement} */
-		createBuffer : function (width, height) {
-			return Buffer.apply(LibCanvas,
-				arguments.length ? arguments :
-					Array.collect(this.origElem, ['width', 'height'])
-			);
-		},
-		/** @returns {Shaper} */
-		createShaper : function (options) {
-			var shaper = new Shaper(this, options);
-			this.addElement(shaper);
-			return shaper;
-		},
-
-		// post-/pre- procesing
-		/** @returns {Canvas2D} */
-		addProcessor : function (type, processor) {
-			this.processors[type].push(processor);
-			return this;
-		},
-		/** @returns {LibCanvas.Canvas2D} */
-		rmProcessor : function (type, processor) {
-			this.processors[type].erase(processor);
-			return this;
-		},
-
-		// Element : add, rm
-		/** @returns {LibCanvas.Canvas2D} */
-		addElement : function (elem) {
-			this.elems.include(elem);
-			if (elem.libcanvas != this) {
-				elem.setLibcanvas(this);
-			}
-			return this;
-		},
-		/** @returns {LibCanvas.Canvas2D} */
-		rmElement : function (elem) {
-			this.elems.erase(elem);
-			return this;
-		},
-		/** @returns {LibCanvas.Canvas2D} */
-		rmAllElements: function () {
-			this.elems.empty();
-			return this;
-		},
-
-		// Each frame funcs
-
-		/** @returns {LibCanvas.Canvas2D} */
-		addFunc: function (priority, fn, isRender) {
-			if (fn == null) {
-				fn = priority;
-				priority = fn.priority || 10;
-			}
-			var f = this.funcs;
-			if (!f.plain.contains(fn) && !f.render.contains(fn)) {
-				f[isRender ? 'render' : 'plain'].push(fn);
-			}
-			return this;
-		},
-		/** @returns {LibCanvas.Canvas2D} */
-		addRender: function (priority, fn) {
-			return this.addFunc(priority, fn, true);
-		},
-		/** @returns {Canvas2D} */
-		rmFunc : function (fn) {
-			var f = this.funcs;
-			f.plain.erase(fn);
-			f.render.erase(fn);
-			return this;
-		},
-
-		stopped: true,
-
-		// Start, pause, stop
-		/** @returns {LibCanvas.Canvas2D} */
-		start : function (fn) {
-			if (!this.stopped) return this;
-
-			this.stopped = false;
-			fn && this.addRender(10, fn);
-			if (this.invoker.timeoutId == 0) {
-				this.invoker
-					.addFunction(0, this.renderFrame)
-					.addEvent('beforeInvoke', this.fireEvent.bind(this, 'frameRenderStarted' ))
-					.addEvent( 'afterInvoke', this.fireEvent.bind(this, 'frameRenderFinished'));
-			}
-			this.invoker.invoke();
-			return this;
-		},
-		/** @returns {LibCanvas.Canvas2D} */
-		stop: function () {
-			if (this.stopped) return this;
-
-			this.stopped = true;
-			this.invoker.stop();
-			return this;
-		},
-
-		/** @property {LibCanvas.Canvas2D} */
-		parentLayer: null,
-		/** @returns {LibCanvas.Canvas2D} */
-		layer: function (name) {
-			if (!name) {
-				// gettin master layer
-				return this.parentLayer == null ? this : this.parentLayer.layer();
-			}
-
-			if (this.layerExists(name)) {
-				return this._layers[name];
-			} else {
-				throw new Error('No layer «' + name + '»');
-			}
-		},
-
-		/** @returns {boolean} */
-		layerExists: function (name) {
-			return name in this._layers;
-		},
-
-		/** @returns {LibCanvas.Canvas2D} */
-		createLayer: function (name, z, options) {
-			if (this.layerExists(name)) {
-				throw new Error('Layer «' + name + '» already exists');
-			}
-			if (typeof z == 'object') {
-				options = z;
-				z = null;
-			}
-			options = atom.append({ name: name }, options || {});
-			var layer = this._layers[name] = new Layer(this, this.options, options);
-			layer._layers = this._layers;
-			layer.zIndex  = z;
-			layer.origElem.atom.attr({ 'data-layer-name': name });
-			return layer;
-		},
-
-		/** @returns {LibCanvas.Canvas2D} */
-		get topLayer () {
-			var max = 0, layers = this._layers, nameMax = null, layer = null;
-			for (var name in layers) {
-				if (layers[name].zIndex > max) {
-					layer = layers[name];
-					max   = layer.zIndex;
-				}
-			}
-			return layer;
-		},
-
-		/** @returns {number} */
-		get maxZIndex () {
-			var top = this.topLayer;
-			return top ? top.zIndex : 1;
-		},
-
-		/** @private */
-		_zIndex: null,
-
-		set zIndex (value) {
-			var set = function (layer, z) {
-				layer._zIndex = z;
-				layer.origElem.atom.css('zIndex', z);
-				layer.showBuffer();
-			};
-
-			if (Object.values(this._layers).length == 1) {
-				set(this, 1);
-				return;
-			}
-
-			var current = this._zIndex;
-
-			if (value == null) value = Infinity;
-			value = value.limit(1, this.maxZIndex + (current ? 0 : 1));
-			current = current || Infinity;
-
-			for (var i in this._layers) if (this._layers[i] != this) {
-				var l = this._layers[i], z = l._zIndex;
-				if (current > z && value <= z) set(l, z+1);
-				if (current < z && value >= z) set(l, z-1);
-			}
-			set(this, value);
-		},
-
-		get zIndex () {
-			return this._zIndex;
-		},
-
-		/**
-		 * not clonable
-		 * @returns {LibCanvas.Canvas2D}
-		 */
-		get clone () {
-			return this;
-		},
-		/** @returns {string} */
-		dump: function () {
-			return '[LibCanvas(' + [
-				'"' + this.name + '"',
-				'z=' + this.zIndex,
-				'e=' + this.elems.length
-			].join(',') + ')]';
-		},
-		toString: Function.lambda('[object LibCanvas.Canvas2D]')
-	}
-});
-
-atom.Class.Mutators.Generators.init( Canvas2D, {
-	/** @private */
-	mouse: function () {
-		throw new Error('Mouse is not listened by libcanvas');
-	},
-	/** @private */
-	keyboard: function () {
-		throw new Error('Keyboard is not listened by libcanvas');
-	},
-	/** @private */
-	wrapper: function () {
-		var wrapper = atom.dom.create('div').css({
-			width   : '100%',
-			height  : '100%',
-			overflow: 'hidden',
-			position: 'absolute'
-		});
-		wrapper.parent = atom.dom.create('div').addClass('libcanvas-layers-container');
-		return wrapper.appendTo(wrapper.parent);
-	},
-	// Needs for right mouse behaviour
-	/** @private */
-	cover: function () {
-		if (this.parentLayer) return this.parentLayer.cover;
-		return atom.dom
-			.create('div')
-			.css({
-				position: 'absolute',
-				width : '100%',
-				height: '100%',
-				// 1px transparent gif for IE9
-				backgroundImage : 'url(data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEAAAEALAAAAAABAAEAAAICTAEAOw==)',
-				backgroundRepeat: 'repeat'
-			})
-			.addClass('libcanvas-layers-cover')
-			.appendTo(this.wrapper);
-	},
-	/** @private */
-	invoker: function () {
-		return new Invoker({
-			context: this,
-			defaultPriority: 10,
-			fpsLimit: this.options.fps
-		});
-	}
-});
 
 /*
 ---
@@ -3004,7 +1191,7 @@ provides: Shape
 
 var shapeTestBuffer = function () {
 	if (!shapeTestBuffer.buffer) {
-		return shapeTestBuffer.buffer = Buffer(1, 1, true);
+		return shapeTestBuffer.buffer = LibCanvas.buffer(1, 1, true);
 	}
 	return shapeTestBuffer.buffer;
 };
@@ -3033,38 +1220,30 @@ var Shape = declare( 'LibCanvas.Shape',
 			if (typeof size == 'number') {
 				size = new Point(size/2, size/2);
 			} else {
-				size = new Point(size);
-				size.x /= 2;
-				size.y /= 2;
+				size = new Point(size.x/2, size.y/2);
 			}
 
 			this.from.move(size, true);
 			this. to .move(size);
 			return this;
 		},
-		get x () {
-			return this.getCoords().x;
-		},
-		get y () {
-			return this.getCoords().y;
-		},
+		get x () { return this.from.x },
+		get y () { return this.from.y },
 		set x (x) {
-			return this.move({ x : x - this.x, y : 0 });
+			return this.move(new Point(x - this.x, 0));
 		},
 		set y (y) {
-			return this.move({ x : 0, y : y - this.y });
+			return this.move(new Point(0, y - this.y));
 		},
 		get bottomLeft () {
 			return new Point(this.from.x, this.to.y);
 		},
-		get topRight () {
+		get topRight() {
 			return new Point(this.to.x, this.from.y);
 		},
-		get center () {
-			return new Point(
-				(this.from.x + this.to.x) / 2,
-				(this.from.y + this.to.y) / 2
-			);
+		get center() {
+			var from = this.from, to = this.to;
+			return new Point( (from.x + to.x) / 2, (from.y + to.y) / 2 );
 		},
 		getBoundingRectangle: function () {
 			return new Rectangle( this.from, this.to );
@@ -3073,11 +1252,9 @@ var Shape = declare( 'LibCanvas.Shape',
 			return this.center;
 		},
 		move : function (distance, reverse) {
-			distance = this.invertDirection(distance, reverse);
-			this.events.fire('beforeMove', distance);
-			this.from.move(distance);
-			this. to .move(distance);
-			return Geometry.prototype.move.call(this, distance);
+			this.from.move(distance, reverse);
+			this. to .move(distance, reverse);
+			return this;
 		},
 		equals : function (shape, accuracy) {
 			return shape instanceof this.constructor &&
@@ -3087,15 +1264,13 @@ var Shape = declare( 'LibCanvas.Shape',
 		clone : function () {
 			return new this.constructor(this.from.clone(), this.to.clone());
 		},
-		getPoints : function () {
-			return { from : this.from, to : this.to };
+		dumpPoint: function (point) {
+			return '[' + point.x + ', ' + point.y + ']';
 		},
 		dump: function (shape) {
 			if (!shape) return this.toString();
-			var p = function (p) { return '[' + p.x + ', ' + p.y + ']'; };
-			return '[shape ' + shape + '(from'+p(this.from)+', to'+p(this.to)+')]';
-		},
-		toString: Function.lambda('[object LibCanvas.Shape]')
+			return '[shape '+shape+'(from'+this.dumpPoint(this.from)+', to'+this.dumpPoint(this.to)+')]';
+		}
 	}
 });
 
@@ -3490,7 +1665,7 @@ provides: Utils.Canvas
 ...
 */
 
-atom.extend(HTMLCanvasElement,
+atom.append(HTMLCanvasElement,
 /** @lends HTMLCanvasElement */
 {
 	/** @private */
@@ -3506,7 +1681,7 @@ atom.extend(HTMLCanvasElement,
 	}
 });
 
-atom.implement(HTMLCanvasElement,
+atom.append(HTMLCanvasElement.prototype,
 /** @lends HTMLCanvasElement.prototype */
 {
 	getOriginalContext: HTMLCanvasElement.prototype.getContext,
@@ -3564,7 +1739,7 @@ var office = {
 	all : function (type, style) {
 		this.save();
 		if (style) this.set(type + 'Style', style);
-		this[type + 'Rect'](this.getFullRectangle());
+		this[type + 'Rect'](this.rectangle);
 		this.restore();
 		return this;
 	},
@@ -3594,25 +1769,6 @@ var office = {
 		return this.original(func, [point.x, point.y]);
 	}
 };
-
-var accessors = {};
-[ 'fillStyle','font','globalAlpha','globalCompositeOperation','lineCap',
-  'lineJoin','lineWidth','miterLimit','shadowOffsetX','shadowOffsetY',
-  'shadowBlur','shadowColor','strokeStyle','textAlign','textBaseline'
-].forEach(function (property) {
-	atom.accessors.define(accessors, property, {
-		set: function (value) {
-			try {
-				this.ctx2d[property] = value;
-			} catch (e) {
-				throw TypeError('Exception while setting «' + property + '» to «' + value + '»: ' + e.message);
-			}
-		},
-		get: function () {
-			return this.ctx2d[property];
-		}
-	})
-});
 
 var constants =
 /** @lends LibCanvas.Context2D */
@@ -3687,8 +1843,6 @@ var Context2D = declare( 'LibCanvas.Context2D',
 {
 	own: constants,
 
-	mixin: declare(accessors),
-
 	proto: {
 		initialize : function (canvas) {
 			if (canvas instanceof CanvasRenderingContext2D) {
@@ -3751,7 +1905,7 @@ var Context2D = declare( 'LibCanvas.Context2D',
 			var args = [canvas, 0, 0];
 			if (resize) args.push(width, height);
 
-			var clone = Buffer(width, height, true);
+			var clone = LibCanvas.buffer(width, height, true);
 			clone.ctx.original('drawImage', args);
 			return clone;
 		},
@@ -4408,6 +2562,25 @@ var Context2D = declare( 'LibCanvas.Context2D',
 	}
 });
 
+
+[ 'fillStyle','font','globalAlpha','globalCompositeOperation','lineCap',
+  'lineJoin','lineWidth','miterLimit','shadowOffsetX','shadowOffsetY',
+  'shadowBlur','shadowColor','strokeStyle','textAlign','textBaseline'
+].forEach(function (property) {
+	atom.accessors.define(Context2D.prototype, property, {
+		set: function (value) {
+			try {
+				this.ctx2d[property] = value;
+			} catch (e) {
+				throw TypeError('Exception while setting «' + property + '» to «' + value + '»: ' + e.message);
+			}
+		},
+		get: function () {
+			return this.ctx2d[property];
+		}
+	})
+});
+
 var addColorStop = function () {
 	var orig = document
 		.createElement('canvas')
@@ -4443,192 +2616,9 @@ return Context2D;
 /*
 ---
 
-name: "EC"
+name: "Mouse"
 
-description: "Curves with dynamic width and color"
-
-license: "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-
-authors:
-	- "Artem Smirnov <art543484@ya.ru>"
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Inner.TimingFunctions
-	- Context2D
-
-provides: EC
-
-...
-*/
-
-new function () {
-
-/*
-	The following text contains bad code and due to it's code it should not be readed by ANYONE!
-*/
-
-var Color = LibCanvas.Utils.Color,
-	TimingFunctions = LibCanvas.Inner.TimingFunctions,
-	Point = LibCanvas.Point;
-
-var EC = {};
-EC.getColor = function (color) {
-	return new Color(color || [0,0,0,1]);
-};
-
-EC.getPoints = function (prevPos, pos, width, inverted) {
-	var w    = pos.x-prevPos.x,
-	    h    = pos.y-prevPos.y,
-	    dist = Math.hypotenuse(w, h);
-		
-	var sin = h / dist,
-	    cos = w / dist;
-		
-	var dx = sin * width,
-	    dy = cos * width;
-		
-	return [new Point(pos.x + dx, pos.y + dy*inverted),
-	        new Point(pos.x - dx, pos.y - dy*inverted)];
-};
-
-EC.getGradientFunction = function (attr) {
-	switch (typeof attr.gradient) {
-		case 'undefined' : 
-			return Function.lambda( EC.getColor(attr.color) );
-			break;
-		
-		case 'function' :
-			return attr.gradient;
-			break;
-		
-		default :
-			var gradient = { fn: attr.gradient.fn || 'linear' };
-			
-			if (typeof gradient.fn != 'string') {
-				throw new Error('LibCanvas.Context2D.drawCurve -- unexpected type of gradient function');
-			}
-			
-			gradient.from = EC.getColor(attr.gradient.from);
-			gradient.to   = EC.getColor(attr.gradient.to  );
-			
-			var diff = gradient.from.diff( gradient.to );
-			
-			return function (t) {
-				var factor = TimingFunctions.count(gradient.fn, t);
-				return gradient.from.shift( diff.clone().mul(factor) ).toString();
-			};
-			break;
-	}
-};
-
-EC.getWidthFunction = function (attr) {
-	attr.width = attr.width || 1;
-	switch (typeof attr.width) {
-		case 'number'  : return Function.lambda(attr.width);
-		case 'function': return attr.width;
-		case 'object'  : return EC.getWidthFunction.range( attr.width );
-		default: throw new Error('LibCanvas.Context2D.drawCurve -- unexpected type of width');
-	}
-};
-
-EC.getWidthFunction.range = function (width) {
-	if(!width.from || !width.to){
-		throw new Error('LibCanvas.Context2D.drawCurve -- width.from or width.to undefined');
-	}
-	var diff = width.to - width.from;
-	return function(t){
-		return width.from + diff * TimingFunctions.count(width.fn || 'linear', t);
-	}
-};
-
-EC.curvesFunctions = [
-	function (p, t) { // linear
-		return {
-			x:p[0].x + (p[1].x - p[0].x) * t,
-			y:p[0].y + (p[1].y - p[0].y) * t
-		};
-	},
-	function (p,t) { // quadratic
-		var i = 1-t;
-		return {
-			x:i*i*p[0].x + 2*t*i*p[1].x + t*t*p[2].x,
-			y:i*i*p[0].y + 2*t*i*p[1].y + t*t*p[2].y
-		};
-	},
-	function (p, t) { // qubic
-		var i = 1-t;
-		return {
-			x:i*i*i*p[0].x + 3*t*i*i*p[1].x + 3*t*t*i*p[2].x + t*t*t*p[3].x,
-			y:i*i*i*p[0].y + 3*t*i*i*p[1].y + 3*t*t*i*p[2].y + t*t*t*p[3].y
-		};
-	}
-];
-
-LibCanvas.Context2D.prototype.drawCurve = function (obj) {
-	var points = [Point(obj.from)].append( obj.points.map(Point), [Point(obj.to)] );
-
-	var gradientFunction = EC.getGradientFunction(obj),             //Getting gradient function
-		widthFunction    = EC.getWidthFunction(obj),                //Getting width function
-		curveFunction    = EC.curvesFunctions[ obj.points.length ]; //Getting curve function
-
-	if (!curveFunction) throw new Error('LibCanvas.Context2D.drawCurve -- unexpected number of points');
-
-	var step = obj.step || 0.02;
-
-	var invertedMultipler = obj.inverted ? 1 : -1;
-
-	var controlPoint, prevContorolPoint,
-		drawPoints  , prevDrawPoints   ,
-		width , color, prevColor, style;
-
-	var add = function (a, b) {
-		return a + b;
-	};
-
-	prevContorolPoint = curveFunction(points, -step);
-
-	for (var t=-step ; t<1.02 ; t += step) {
-		controlPoint = curveFunction(points, t);
-		color = gradientFunction(t);
-		width = widthFunction(t) / 2;
-
-		drawPoints = EC.getPoints(prevContorolPoint, controlPoint, width, invertedMultipler);
-
-		if (t >= step) {
-			if ( EC.getColor(prevColor).diff(color).reduce(add) > 150 ) {
-				style = this.createLinearGradient(prevContorolPoint, controlPoint);
-				style.addColorStop(0, prevColor);
-				style.addColorStop(1,     color);
-			} else {
-				style = color;
-			}
-
-				this
-					.set("lineWidth",1)
-					.beginPath(prevDrawPoints[0])
-					.lineTo   (prevDrawPoints[1])
-					.lineTo   (drawPoints[1])
-					.lineTo   (drawPoints[0])
-					.fill  (style)
-					.stroke(style);
-		}
-		prevDrawPoints    = drawPoints;
-		prevContorolPoint = controlPoint;
-		prevColor         = color;
-	}
-	return this;
-};
-
-};
-
-/*
----
-
-name: "Keyboard"
-
-description: "A keyboard control abstraction class"
+description: "A mouse control abstraction class"
 
 license:
 	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
@@ -4639,220 +2629,170 @@ authors:
 
 requires:
 	- LibCanvas
+	- Point
 
-provides: Keyboard
+provides: Mouse
 
 ...
 */
 
-var Keyboard = function () {
 
-var Keyboard = declare( 'LibCanvas.Keyboard',
-/**
- * @lends LibCanvas.Keyboard.prototype
- * @augments Class.Events.prototype
- */
-{
-	mixin: [ Events.Mixin ],
+var Mouse = new function () {
+
+function eventSource (e) {
+	return e.changedTouches ? e.changedTouches[0] : e;
+}
+
+return declare( 'LibCanvas.Mouse', {
 	own: {
-		keyCodes : {
-			// Alphabet
-			a:65, b:66, c:67, d:68, e:69,
-			f:70, g:71, h:72, i:73, j:74,
-			k:75, l:76, m:77, n:78, o:79,
-			p:80, q:81, r:82, s:83, t:84,
-			u:85, v:86, w:87, x:88, y:89, z:90,
-			// Numbers
-			n0:48, n1:49, n2:50, n3:51, n4:52,
-			n5:53, n6:54, n7:55, n8:56, n9:57,
-			// Controls
-			tab:  9, enter:13, shift:16, backspace:8,
-			ctrl:17, alt  :18, esc  :27, space    :32,
-			menu:93, pause:19, cmd  :91,
-			insert  :45, home:36, pageup  :33,
-			'delete':46, end :35, pagedown:34,
-			// F*
-			f1:112, f2:113, f3:114, f4 :115, f5 :116, f6 :117,
-			f7:118, f8:119, f9:120, f10:121, f11:122, f12:123,
-			// numpad
-			np0: 96, np1: 97, np2: 98, np3: 99, np4:100,
-			np5:101, np6:102, np7:103, np8:104, np9:105,
-			npslash:11,npstar:106,nphyphen:109,npplus:107,npdot:110,
-			// Lock
-			capslock:20, numlock:144, scrolllock:145,
+		expandEvent: function (e) {
+			var source = eventSource(e);
 
-			// Symbols
-			equals: 61, hyphen   :109, coma  :188, dot:190,
-			gravis:192, backslash:220, sbopen:219, sbclose:221,
-			slash :191, semicolon: 59, apostrophe: 222,
+			e.pageX = source.pageX != null ? source.pageX : source.clientX + document.scrollLeft;
+			e.pageY = source.pageY != null ? source.pageY : source.clientY + document.scrollTop ;
 
-			// Arrows
-			aleft:37, aup:38, aright:39, adown:40
+			return e;
 		},
-		keyStates: {},
-		keyState: function (keyName) {
-			if (keyName == null) {
-				return !!Object.values( this.keyStates ).length;
-			} else {
-				return this.keyStates[this.keyName(keyName)];
-			}
-		},
-		keyName: function (code) {
-			return typeof code == 'string' && code in this.keyCodes ? 
-				code : this.key(code);
-		},
-		// @deprecated
-		key: function (code) {
-			if ('keyCode' in code) return this.codeNames[code.keyCode];
-			return this[typeof code == 'number' ? 'codeNames' : 'keyCodes'][code] || null;
+		getOffset : function (e, element) {
+			var elementOffset = atom.dom(element || eventSource(e).target).offset();
+
+			this.expandEvent(e);
+
+			return new Point(
+				e.pageX - elementOffset.x,
+				e.pageY - elementOffset.y
+			);
 		}
 	},
-	proto: {
-		initialize : function (preventDefault) {
+
+	prototype: {
+		/** @private */
+		elem: null,
+
+		/** @property {boolean} */
+		inside: false,
+		/** @property {Point} */
+		point: null,
+		/** @property {Point} */
+		previous: null,
+		/** @property {Point} */
+		delta: null,
+		/** @property {Events} */
+		events: null,
+
+		/** @private */
+		mapping: {
+			click      : 'click',
+			dblclick   : 'dblclick',
+			contextmenu: 'contextmenu',
+
+			mouseover : 'over',
+			mouseout  : 'out',
+			mousedown : 'down',
+			mouseup   : 'up',
+			mousemove : 'move',
+
+			DOMMouseScroll: 'wheel',
+			mousewheel    : 'wheel'
+		},
+
+		initialize : function (elem, offsetElem) {
+			this.bindMethods( 'onEvent' );
+
+			this.elem       = atom.dom(elem);
+			this.offsetElem = atom.dom(offsetElem) || this.elem;
+
+			this.point    = new Point(0, 0);
+			this.previous = new Point(0, 0);
+			this.delta    = new Point(0, 0);
 			this.events   = new Events(this);
-			this.preventDefault = preventDefault;
 
-			atom.dom(window).bind({
-				keydown:  this.keyEvent('down'),
-				keyup:    this.keyEvent('up'),
-				keypress: this.keyEvent('press')
+			this.listen(this.onEvent);
+		},
+		/** @private */
+		fire: function (name, e) {
+			this.events.fire(name, [e, this]);
+			return this;
+		},
+		/** @private */
+		onEvent: function (e) {
+			var
+				name = this.mapping[e.type],
+				fn   = this.eventActions[name];
+
+			if (fn) fn.call(this, e);
+
+			this.fire(name, e);
+		},
+		/** @private */
+		getOffset: function (e) {
+			return this.constructor.getOffset(e, this.offsetElem);
+		},
+		/** @private */
+		set: function (e, inside) {
+			var point = this.getOffset(e);
+
+			this.prev .set( this.point );
+			this.delta.set( this.prev.diff( point ) );
+			this.point.set( point );
+			this.inside = inside;
+		},
+		/** @private */
+		eventActions: {
+			wheel: function (e) {
+				e.delta =
+					// IE, Opera, Chrome
+					e.wheelDelta ? e.wheelDelta > 0 ? 1 : -1 :
+					// Fx
+					e.detail     ? e.detail     < 0 ? 1 : -1 : null;
+			},
+
+			move: function (e) {
+				this.set(e, true);
+			},
+
+			over: function (e) {
+				if (this.checkEvent(e)) {
+					this.fire('enter', e);
+				}
+			},
+
+			out: function (e) {
+				if (this.checkEvent(e)) {
+					this.set(e, false);
+					this.fire('leave', e);
+				}
+			}
+		},
+		/** @private */
+		checkEvent: function (e) {
+			var related = e.relatedTarget, elem = this.elem;
+
+			return related == null || (
+				related && related != elem.first && !elem.contains(related)
+			);
+		},
+		/** @private */
+		listen : function (callback) {
+			this.elem.bind({
+				click      : callback,
+				dblclick   : callback,
+				contextmenu: callback,
+
+				mouseover  : callback,
+				mousedown  : callback,
+				mouseup    : callback,
+				mousemove  : callback,
+				mouseout   : callback,
+
+				DOMMouseScroll: callback,
+				mousewheel    : callback
 			});
-		},
-		keyEvent: function (event) {
-			return function (e) {
-				var key = this.constructor.key(e);
-				e.keyName = key;
-				this.events.fire( event, [e] );
-				if (event != 'press') {
-					if (event == 'down') this.events.fire(key, [e]);
-					if (event == 'up')   this.events.fire(key + ':up', [e]);
-					if (event == 'down') {
-						this.constructor.keyStates[key] = true;
-					} else if ( key in this.constructor.keyStates ) {
-						delete this.constructor.keyStates[key];
-					}
-				} else {
-					this.events.fire(key + ':press', [e]);
-				}
-				var prevent = this.prevent(key);
-				if (prevent) e.preventDefault();
-				this.debugUpdate();
-				return !prevent;
-			}.bind(this);
-		},
-		prevent : function (key) {
-			var pD = this.preventDefault;
-			return pD && (!Array.isArray(pD) || pD.contains(key));
-		},
-		keyState : function (keyName) {
-			return this.constructor.keyState(keyName);
-		},
-		_debugTrace: null,
-		debugUpdate: function () {
-			if (this._debugTrace) {
-				var keys = '', states = this.constructor.keyStates;
-				for (var key in states) if (states[key]) {
-					keys += '\n = ' + key;
-				}
-				this._debugTrace.trace( 'Keyboard:' + keys );
-			}
-			return this;
-		},
-		debug : function (on) {
-			if (on && !this._debugTrace) {
-				this._debugTrace = new Trace();
-			} else if (on === false) {
-				this._debugTrace = null;
-			}
-			this.debugUpdate();
-			return this;
-		},
-		toString: Function.lambda('[object LibCanvas.Keyboard]')
+		}
 	}
 });
 
-Keyboard.codeNames = Object.invert(Keyboard.keyCodes);
-
-return Keyboard;
-}();
-
-
-/*
----
-
-name: "Layer"
-
-description: "Layer"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Canvas2D
-
-provides: Layer
-
-...
-*/
-
-var Layer = function () {
-	
-var callParent = function (method) {
-	return function () {
-		this.parentLayer[method].apply(this.parentLayer, arguments);
-		return this;
-	};
 };
-
-return declare( 'LibCanvas.Layer',
-/**
- * @lends LibCanvas.Layer.prototype
- * @augments LibCanvas.Canvas2D.prototype
- */
-{
-	parent: Canvas2D,
-
-	proto: {
-		initialize : function (elem, parentOptions, options) {
-			if (!this.events) this.events = new Events(this);
-			this.setOptions({});
-			this.parentLayer = elem;
-
-			this.settings.set(parentOptions).set(options);
-
-			Canvas2D.prototype.initialize.call(this, elem.createBuffer());
-		},
-
-		listenMouse    : callParent('listenMouse'),
-		listenKeyboard : callParent('listenKeyboard'),
-
-		start : function () {
-			throw new Error('Start can be called only from master layer');
-		},
-		toString: Function.lambda('[object LibCanvas.Layer]')
-	}
-});
-
-}();
-atom.Class.Mutators.Generators.init(Layer, {
-	mouse: function () {
-		return this.parentLayer.mouse;
-	},
-	keyboard: function () {
-		return this.parentLayer.keyboard;
-	},
-	invoker: function () {
-		return this.parentLayer.invoker;
-	},
-	wrapper: function () {
-		return this.parentLayer.wrapper;
-	}
-});
 
 /*
 ---
@@ -4878,11 +2818,11 @@ provides: Point3D
 */
 
 var Point3D = declare( 'LibCanvas.Point3D',
-/** @lends LibCanvas.Point3D# */
+/** @lends Point3D# */
 {
-	own: { invoke: LibCanvas.Geometry.invoke },
+	parent: Geometry,
 
-	proto: {
+	prototype: {
 		x: 0,
 		y: 0,
 		z: 0,
@@ -4891,21 +2831,14 @@ var Point3D = declare( 'LibCanvas.Point3D',
 		coordinatesArray: ['x', 'y', 'z'],
 
 		/**
+		 * @constructs
 		 * @param {Number} x
 		 * @param {Number} y
 		 * @param {Number} z
-		 * @returns {LibCanvas.Point3D}
-		 */
-		initialize: LibCanvas.Geometry.prototype.initialize,
-
-		/**
-		 * @param {Number} x
-		 * @param {Number} y
-		 * @param {Number} z
-		 * @returns {LibCanvas.Point3D}
+		 * @returns {Point3D}
 		 */
 		set: function (x, y, z) {
-			if ( arguments.length === 3 || arguments.length === 2 ) {
+			if ( arguments.length > 1 ) {
 				this.x = Number(x) || 0;
 				this.y = Number(y) || 0;
 				this.z = Number(z) || 0;
@@ -4914,7 +2847,6 @@ var Point3D = declare( 'LibCanvas.Point3D',
 			} else if ( x && typeof x[0] === 'number' ) {
 				this.set( x[0], x[1], x[2] );
 			} else {
-				console.log( 'Wrong arguments in Isometric.Point3D', arguments );
 				throw new Error( 'Wrong arguments in Isometric.Point3D' );
 			}
 			return this;
@@ -4923,20 +2855,20 @@ var Point3D = declare( 'LibCanvas.Point3D',
 		/**
 		 * You can pass callback (function( value, axis, point ){})
 		 * @param {function} fn
-		 * @param {object} bind
-		 * @returns {LibCanvas.Point3D}
+		 * @param {object} context
+		 * @returns {Point3D}
 		 */
-		map: function (fn, bind) {
+		map: function (fn, context) {
 			var point = this;
 			point.coordinatesArray.forEach(function (axis) {
-				point[axis] = fn.call( bind || point, point[axis], axis, point );
+				point[axis] = fn.call( context || point, point[axis], axis, point );
 			});
 			return this;
 		},
 
 		/**
 		 * @param {Number} factor
-		 * @returns {LibCanvas.Point3D}
+		 * @returns {Point3D}
 		 */
 		add: function (factor) {
 			return this.map(function (c) { return c+factor });
@@ -4944,18 +2876,18 @@ var Point3D = declare( 'LibCanvas.Point3D',
 
 		/**
 		 * @param {Number} factor
-		 * @returns {LibCanvas.Point3D}
+		 * @returns {Point3D}
 		 */
 		mul: function (factor) {
 			return this.map(function (c) { return c*factor });
 		},
 
 		/**
-		 * @param {LibCanvas.Point3D} point3d
-		 * @returns {LibCanvas.Point3D}
+		 * @param {Point3D} point3d
+		 * @returns {Point3D}
 		 */
 		diff: function (point3d) {
-			point3d = LibCanvas.Point3D( point3d );
+			point3d = this.cast( point3d );
 			return new this.constructor(
 				point3d.x - this.x,
 				point3d.y - this.y,
@@ -4964,11 +2896,11 @@ var Point3D = declare( 'LibCanvas.Point3D',
 		},
 
 		/**
-		 * @param {LibCanvas.Point3D} point3d
-		 * @returns {LibCanvas.Point3D}
+		 * @param {Point3D} point3d
+		 * @returns {Point3D}
 		 */
 		move: function (point3d) {
-			point3d = LibCanvas.Point3D( arguments );
+			point3d = this.cast( arguments );
 			this.x += point3d.x;
 			this.y += point3d.y;
 			this.z += point3d.z;
@@ -4976,17 +2908,17 @@ var Point3D = declare( 'LibCanvas.Point3D',
 		},
 
 		/**
-		 * @param {LibCanvas.Point3D}p oint3d
+		 * @param {Point3D} point3d
 		 * @param {Number} accuracy
 		 * @returns {boolean}
 		 */
 		equals: function (point3d, accuracy) {
 			return point3d.x.equals( this.x, accuracy ) &&
-					 point3d.y.equals( this.y, accuracy ) &&
-					 point3d.z.equals( this.z, accuracy );
+			       point3d.y.equals( this.y, accuracy ) &&
+			       point3d.z.equals( this.z, accuracy );
 		},
 
-		/** @returns {LibCanvas.Point3D} */
+		/** @returns {Point3D} */
 		clone: function () {
 			return new this.constructor( this );
 		},
@@ -5006,1690 +2938,7 @@ var Point3D = declare( 'LibCanvas.Point3D',
 /*
 ---
 
-name: "HexProjection"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Point
-
-provides: Shapes.Polygon
-
-...
-*/
-
-declare( 'LibCanvas.Engines.HexProjection', {
-	/**
-	 * @param {object} options
-	 * @param {int} options.baseLength  - length of top and bottom lines
-	 * @param {int} options.chordLength - height of left and right triangle
-	 * @param {int} options.hexHeight   - height of the hex (length between top and bottom lines)
-	 */
-	initialize: function (options) {
-		this.settings = new Settings({
-			baseLength : 0,
-			chordLength: 0,
-			hexHeight  : 0,
-			start      : new Point(0, 0)
-		});
-	},
-
-	/**
-	 * @param {int} [padding=0]
-	 * @return LibCanvas.Engines.HexProjection.Sizes
-	 */
-	sizes: function (padding) {
-		return LibCanvas.Engines.HexProjection.Sizes(this, padding);
-	},
-
-	/**
-	 * @param {int[]} coordinates
-	 * @return Point
-	 */
-	rgbToPoint: function (coordinates) {
-		var
-			red      = coordinates[0],
-			green    = coordinates[1],
-			blue     = coordinates[2],
-			settings = this.settings,
-			base     = settings.get('baseLength'),
-			chord    = settings.get('chordLength'),
-			height   = settings.get('hexHeight'),
-			start    = settings.get('start');
-		if (red + green + blue !== 0) {
-			throw new Error( 'Wrong coordinates: ' + red + ' ' + green + ' ' + blue);
-		}
-
-		return new Point(
-			start.x + (base + chord) * red,
-			start.y + (blue - green) * height / 2
-		);
-	},
-
-	/**
-	 * @param {Point} point
-	 * @return int[]
-	 */
-	pointToRgb: function (point) {
-		var
-			settings = this.settings,
-			base     = settings.get('baseLength'),
-			chord    = settings.get('chordLength'),
-			height   = settings.get('hexHeight'),
-			start    = settings.get('start'),
-			// counting coords
-			red   = (point.x - start.x) / (base + chord),
-			blue  = (point.y - start.y - red * height / 2) / height,
-			green = 0 - red - blue;
-
-		var dist = function (c) {
-			return Math.abs(c[0] - red) + Math.abs(c[1] - green) + Math.abs(c[2] - blue);
-		};
-
-		var
-			rF = red  .floor(), rC = red  .ceil(),
-			gF = green.floor(), gC = green.ceil(),
-			bF = blue .floor(), bC = blue .ceil();
-
-		return [
-			// we need to find closest integer coordinates
-			[rF, gF, bF],
-			[rF, gC, bF],
-			[rF, gF, bC],
-			[rF, gC, bC],
-			[rC, gF, bF],
-			[rC, gC, bF],
-			[rC, gF, bC],
-			[rC, gC, bC]
-		].filter(function (v) {
-			// only correct variants - sum must be equals to zero
-			return v.sum() == 0;
-		})
-		.sort(function (left, right) {
-			// we need coordinates with the smallest distance
-			return dist(left) < dist(right) ? -1 : 1;
-		})[0];
-	},
-
-	/**
-	 * @param {Point} center
-	 * @return LibCanvas.Shapes.Polygon
-	 */
-	createPolygon: function (center) {
-		var
-			settings   = this.settings,
-			halfBase   = settings.get('baseLength') / 2,
-			halfHeight = settings.get('hexHeight')  / 2,
-			radius     = halfBase + settings.get('chordLength'),
-
-			right  = center.x + halfBase,
-			left   = center.x - halfBase,
-			top    = center.y - halfHeight,
-			bottom = center.y + halfHeight;
-
-		return new Polygon([
-			new Point(left , top),                  // top-left
-			new Point(right, top),                  // top-right
-			new Point(center.x + radius, center.y), // right
-			new Point(right, bottom),               // bottom-right
-			new Point(left , bottom),               // bottom-left
-			new Point(center.x - radius, center.y)  // left
-		]);
-	}
-});
-
-declare( 'LibCanvas.Engines.HexProjection.Sizes', {
-
-	initialize: function (projection, padding) {
-		this.projection = projection;
-		this.padding    = padding || 0;
-		this.centers    = [];
-	},
-
-	_limits: null,
-
-	/**
-	 * @param {int[]} coordinates
-	 * @return LibCanvas.Engines.HexProjection.Size
-	 */
-	add: function (coordinates) {
-		this._limits = null;
-		this.centers.push(this.projection.rgbToPoint( coordinates ));
-		return this;
-	},
-
-	/** @return object */
-	limits: function () {
-		if (this._limits) return this._limits;
-
-		var min, max, centers = this.centers, i = centers.length, c;
-
-		while (i--) {
-			c = centers[i];
-			if (min == null) {
-				min = c.clone();
-				max = c.clone();
-			} else {
-				min.x = min.x.min( c.x );
-				min.y = min.y.min( c.y );
-				max.x = max.x.max( c.x );
-				max.y = max.y.max( c.y );
-			}
-		}
-
-		return this._limits = { min: min, max: max };
-	},
-
-	/** @return Point */
-	size: function () {
-		var
-			limits   = this.limits(),
-			settings = this.projection.settings,
-			base     = settings.get('baseLength'),
-			chord    = settings.get('chordLength'),
-			height   = settings.get('hexHeight'),
-			padding  = this.padding;
-
-		return new Point(
-			limits.max.x - limits.min.x + base    + 2 * (padding + chord),
-			limits.max.y - limits.min.y + height  + 2 *  padding
-		);
-	},
-
-	/** @return Point */
-	center: function () {
-		var
-			min      = this.limits().min,
-			settings = this.projection.settings,
-			base     = settings.get('baseLength'),
-			chord    = settings.get('chordLength'),
-			height   = settings.get('hexHeight'),
-			padding  = this.padding;
-
-		return new Point(
-			padding + base   /2 + chord - min.x,
-			padding + height /2         - min.y
-		);
-	}
-
-
-});
-
-/*
----
-
-name: "IsometricProjection"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Point3D
-
-provides: Engines.IsometricProjection
-
-...
-*/
-
-declare( 'LibCanvas.Engines.IsometricProjection',
-/** @lends LibCanvas.Engines.IsometricProjection# */
-{
-
-	/**
-	 * factor (and default factor in proto)
-	 * @property {Point3D}
-	 */
-	factor: [0.866, 0.5, 0.866],
-
-	/**
-	 * @constructs
-	 * @param {Point3D} factor
-	 */
-	initialize: function (factor) {
-		this.bindMethods();
-		this.factor = Point3D( factor || this.factor );
-	},
-
-	/**
-	 * @param {Point3D} point3d
-	 * @returns {Point}
-	 */
-	toIsometric: function (point3d) {
-		point3d = Point3D( point3d );
-		return new Point(
-			(point3d.y + point3d.x) * this.factor.x,
-			(point3d.y - point3d.x) * this.factor.y - point3d.z * this.factor.z
-		);
-	},
-
-	/**
-	 * @param {Point} point
-	 * @param {int} [z=0]
-	 * @returns {Point3D}
-	 */
-	to3D: function (point, z) {
-		point = Point(point);
-		z = Number(z) || 0;
-
-		var
-			dXY = (point.y + z * this.factor.z) / this.factor.y,
-			pX  = (point.x / this.factor.x - dXY) / 2;
-
-		return new Point3D( pX, pX + dXY, z );
-	}
-});
-
-/*
----
-
-name: "Engines.Tile"
-
-description: "Helper for building tile maps (e.g. for Tetris or ur's favorite Dune II - http://en.wikipedia.org/wiki/Tile_engine)"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Point
-	- Context2D
-	- Shapes.Rectangle
-	- LibCanvas.Behaviours.Drawable
-
-provides: Engines.Tile
-
-...
-*/
-
-var Tile = declare( 'LibCanvas.Engines.Tile', {
-	mixin: [ Drawable, Events.Mixin ],
-
-	proto: {
-		first : true,
-
-		cellWidth  : 0,
-		cellHeight : 0,
-		margin : 0,
-		initialize : function (canvas) {
-			this.events = new Events( this );
-
-			this.tiles = {};
-			this.rects = {};
-
-			if (canvas instanceof LibCanvas) {
-				this.libcanvas = canvas;
-				canvas.freeze();
-				canvas = canvas.elem;
-			}
-			this.elem = canvas;
-			this.ctx  = canvas.getContext('2d-libcanvas');
-		},
-		checkMatrix : function (matrix) {
-			if (!matrix.length) throw new TypeError('Matrix should have at least one row');
-			var width = matrix[0].length;
-			if (!width) throw new TypeError('Matrix should have at least one cell');
-			for (var i = matrix.length; i--;) if (matrix[i].length != width) {
-				throw new TypeError('Line ' + i + ' width is ' + matrix[i].length + '. Should be ' + width);
-			}
-			return true;
-		},
-		createMatrix : function (width, height, fill) {
-			if (typeof width == 'object') {
-				fill   = 'fill' in width ? width.fill : height;
-				height = width.height;
-				width  = width.width;
-			}
-
-			this.setMatrix( Array.fillMatrix( width, height, fill ) );
-			return this;
-		},
-		createPoints: function () {
-			this.points = new Array(this.height);
-			var y, x, p, ps = this.points, h = this.height, w = this.width;
-
-			for (y = 0, h; y < h; y++) {
-				ps[y] = new Array(w);
-				for (x = 0, w; x < w; x++) {
-					p = ps[y][x] = new Tile.Point(x, y);
-					p.engine = this;
-				}
-			}
-
-			return this;
-		},
-		setMatrix : function (matrix) {
-			var w = this.width, h = this.height;
-			this.first = true;
-			this.checkMatrix(matrix);
-
-			this.matrix    = matrix;
-			this.oldMatrix = matrix.clone();
-			if (w != this.width || h != this.height) this.createPoints();
-			return this;
-		},
-		addTile : function (index, fn) {
-			this.tiles[index] = fn;
-			return this;
-		},
-		addTiles : function (tiles) {
-			for (var i in tiles) this.addTile(i, tiles[i]);
-			return this;
-		},
-		setSize : function (cellWidth, cellHeight, margin) {
-			if (typeof cellWidth === 'object') {
-				margin = 'margin' in cellWidth ? cellWidth.margin : cellHeight;
-				cellHeight = cellWidth.height;
-				cellWidth  = cellWidth.width;
-			}
-			this.cellWidth  = cellWidth;
-			this.cellHeight = cellHeight;
-			this.margin = margin || 0;
-			return this;
-		},
-		countSize: function () {
-			var margin = this.margin;
-			return {
-				width : (this.cellWidth  + margin ) * this.width  - margin,
-				height: (this.cellHeight + margin ) * this.height - margin
-			};
-		},
-		update : function () {
-			var changed = false, old = this.oldMatrix;
-			this.each(function (cell) {
-				if (this.first || old[cell.y][cell.x] != cell.value) {
-					changed = true;
-					this.drawCell(cell);
-					old[cell.y][cell.x] = cell.t;
-				}
-			}.bind(this));
-			this.first = false;
-			if (changed) {
-				this.events.fire('update');
-				this.libcanvas && this.libcanvas.showBuffer();
-			}
-			return this;
-		},
-		getRect : function (cell) {
-			if (!this.rects['0.0']) this.each(function (cell) {
-				var index = cell.x + '.' + cell.y;
-				this.rects[index] = new Rectangle(
-					(this.cellWidth  + this.margin) * cell.x,
-					(this.cellHeight + this.margin) * cell.y,
-					this.cellWidth,
-					this.cellHeight
-				);
-			});
-			return this.rects[cell.x + '.' + cell.y];
-		},
-		getCell : function (point) {
-			point = Point(arguments);
-			if (point.x < 0 || point.y < 0) return null;
-
-			var
-				x = parseInt(point.x / (this.cellWidth  + this.margin)),
-				y = parseInt(point.y / (this.cellHeight + this.margin)),
-				row = this.points[y];
-			return row ? row[x] : null;
-		},
-		drawCell : function (cell /*{t,x,y}*/) {
-			var rect = this.getRect(cell), fn = this.tiles[cell.value];
-			if (!fn && fn !== 0 && 'default' in this.tiles) fn = this.tiles['default'];
-			this.ctx.clearRect(rect);
-			if (atom.dom.isElement(fn)) {
-				this.ctx.drawImage( fn, rect );
-			} else if (typeof fn == 'function') {
-				fn.call( this, this.ctx, rect, cell );
-			} else if (fn != null) {
-				this.ctx.fill( rect, fn );
-			}
-			return this;
-		},
-		each : function (fn) {
-			var p = this.points, height = this.height, width = this.width, x, y;
-			for (y = 0; y < height; y++) for (x = 0; x < width; x++) {
-				fn.call(this, p[y][x]);
-			}
-			return this;
-		},
-		get width () {
-			return (this.matrix && this.matrix[0] && this.matrix[0].length) || 0;
-		},
-		get height () {
-			return this.matrix && this.matrix.length || 0;
-		},
-		draw: function () {
-			this.update();
-		},
-		toString: Function.lambda('[object LibCanvas.Engines.Tile]')
-	}
-});
-
-Tile.Point = declare( 'LibCanvas.Engines.Tile.Point', {
-	parent: Point,
-
-	proto: {
-
-		engine: null,
-
-		get value () {
-			return this.engine.matrix[this.y][this.x];
-		},
-
-		set value (value) {
-			this.engine.matrix[this.y][this.x] = value;
-		},
-
-		get exists() {
-			var row = this.engine.matrix[this.y];
-			return row != null && row[this.x] != null;
-		},
-
-		// @deprecated
-		get t () {
-			return this.value;
-		},
-
-		getNeighbour : function (dir) {
-			var shift = this.constructor.shifts[dir];
-			if (shift) {
-				var row = this.engine.points[this.y + shift.y];
-				if (row) return row[this.x + shift.x] || null;
-			}
-			return null;
-		},
-
-		getNeighbours: function (corners, asObject) {
-			var nb = Point.prototype.getNeighbours.apply( this, arguments );
-
-			if (Array.isArray( nb )) {
-				return nb.clean();
-			} else {
-				for (var i in nb) if (nb[i] == null) delete nb[i];
-			}
-			return nb;
-		},
-
-		clone: function () {
-			var clone = Point.prototype.clone.call(this);
-			clone.engine = this.engine;
-			return clone;
-		}
-	}
-});
-
-
-/*
----
-
-name: "Inner.ProjectiveTexture"
-
-description: "Provides testing projective textures rendering (more info: http://acko.net/files/projective/index.html)"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-
-provides: Inner.ProjectiveTexture
-
-source: "http://acko.net/blog/projective-texturing-with-canvas"
-
-...
-*/
-
-var ProjectiveTexture = function () {
-
-
-var ProjectiveTexture = declare( 'LibCanvas.Inner.ProjectiveTexture', {
-	initialize : function (image) {
-		if (typeof image == 'string') {
-			this.image = new Image;
-			image.src = image
-		} else {
-			this.image = image;
-		}
-		this.patchSize = 64;
-		this.limit = 4;
-	},
-	setQuality : function (patchSize, limit) {
-		this.patchSize = patchSize == null ? 64 : patchSize;
-		this.limit = limit == null ? 4 : limit;
-		return this;
-	},
-	setContext : function (ctx) {
-		this.ctx = ctx;
-		return this;
-	},
-	render : function (polygon) {
-
-		var points = polygon.points;
-		points = [
-			[points[0].x, points[0].y],
-			[points[1].x, points[1].y],
-			[points[3].x, points[3].y],
-			[points[2].x, points[2].y]
-		];
-		
-		var tr = getProjectiveTransform(points);
-
-		// Begin subdivision process.
-		var ptl = tr.transformProjectiveVector([0, 0, 1]);
-		var ptr = tr.transformProjectiveVector([1, 0, 1]);
-		var pbl = tr.transformProjectiveVector([0, 1, 1]);
-		var pbr = tr.transformProjectiveVector([1, 1, 1]);
-
-		this.transform = tr;
-		divide.call(this, 0, 0, 1, 1, ptl, ptr, pbl, pbr, this.limit);
-
-		return this;
-	}
-});
-
-var divide = function (u1, v1, u4, v4, p1, p2, p3, p4, limit) {
-
-	 // See if we can still divide.
-	if (limit) {
-		// Measure patch non-affinity.
-		var d1 = [p2[0] + p3[0] - 2 * p1[0], p2[1] + p3[1] - 2 * p1[1]];
-		var d2 = [p2[0] + p3[0] - 2 * p4[0], p2[1] + p3[1] - 2 * p4[1]];
-		var d3 = [d1[0] + d2[0], d1[1] + d2[1]];
-		var r = Math.abs((d3[0] * d3[0] + d3[1] * d3[1]) / (d1[0] * d2[0] + d1[1] * d2[1]));
-
-		// Measure patch area.
-		d1 = [p2[0] - p1[0] + p4[0] - p3[0], p2[1] - p1[1] + p4[1] - p3[1]];
-		d2 = [p3[0] - p1[0] + p4[0] - p2[0], p3[1] - p1[1] + p4[1] - p2[1]];
-		var area = Math.abs(d1[0] * d2[1] - d1[1] * d2[0]);
-
-		// Check area > patchSize pixels (note factor 4 due to not averaging d1 and d2)
-		// The non-affinity measure is used as a correction factor.
-		if ((u1 == 0 && u4 == 1) || ((.25 + r * 5) * area > (this.patchSize * this.patchSize))) {
-			// Calculate subdivision points (middle, top, bottom, left, right).
-			var umid = (u1 + u4) / 2;
-			var vmid = (v1 + v4) / 2;
-			var tr   = this.transform;
-			var pmid = tr.transformProjectiveVector([umid, vmid, 1]);
-			var pt   = tr.transformProjectiveVector([umid, v1, 1]);
-			var pb   = tr.transformProjectiveVector([umid, v4, 1]);
-			var pl   = tr.transformProjectiveVector([u1, vmid, 1]);
-			var pr   = tr.transformProjectiveVector([u4, vmid, 1]);
-			
-			// Subdivide.
-			limit--;
-			divide.call(this,   u1,   v1, umid, vmid,   p1,   pt,   pl, pmid, limit);
-			divide.call(this, umid,   v1,   u4, vmid,   pt,   p2, pmid,   pr, limit);
-			divide.call(this,  u1,  vmid, umid,   v4,   pl, pmid,   p3,   pb, limit);
-			divide.call(this, umid, vmid,   u4,   v4, pmid,   pr,   pb,   p4, limit);
-
-			return;
-		}
-	}
-	
-	var ctx = this.ctx;
-
-	// Render this patch.
-	ctx.save();
-	// Set clipping path.
-	ctx.beginPath();
-	ctx.moveTo(p1[0], p1[1]);
-	ctx.lineTo(p2[0], p2[1]);
-	ctx.lineTo(p4[0], p4[1]);
-	ctx.lineTo(p3[0], p3[1]);
-	ctx.closePath();
-	//ctx.clip();
-
-	// Get patch edge vectors.
-	var d12 = [p2[0] - p1[0], p2[1] - p1[1]];
-	var d24 = [p4[0] - p2[0], p4[1] - p2[1]];
-	var d43 = [p3[0] - p4[0], p3[1] - p4[1]];
-	var d31 = [p1[0] - p3[0], p1[1] - p3[1]];
-
-	// Find the corner that encloses the most area
-	var a1 = Math.abs(d12[0] * d31[1] - d12[1] * d31[0]);
-	var a2 = Math.abs(d24[0] * d12[1] - d24[1] * d12[0]);
-	var a4 = Math.abs(d43[0] * d24[1] - d43[1] * d24[0]);
-	var a3 = Math.abs(d31[0] * d43[1] - d31[1] * d43[0]);
-	var amax = Math.max(Math.max(a1, a2), Math.max(a3, a4));
-	var dx = 0, dy = 0, padx = 0, pady = 0;
-
-	// Align the transform along this corner.
-	switch (amax) {
-		case a1:
-			ctx.transform(d12[0], d12[1], -d31[0], -d31[1], p1[0], p1[1]);
-			// Calculate 1.05 pixel padding on vector basis.
-			if (u4 != 1) padx = 1.05 / Math.sqrt(d12[0] * d12[0] + d12[1] * d12[1]);
-			if (v4 != 1) pady = 1.05 / Math.sqrt(d31[0] * d31[0] + d31[1] * d31[1]);
-			break;
-		case a2:
-			ctx.transform(d12[0], d12[1],  d24[0],  d24[1], p2[0], p2[1]);
-			// Calculate 1.05 pixel padding on vector basis.
-			if (u4 != 1) padx = 1.05 / Math.sqrt(d12[0] * d12[0] + d12[1] * d12[1]);
-			if (v4 != 1) pady = 1.05 / Math.sqrt(d24[0] * d24[0] + d24[1] * d24[1]);
-			dx = -1;
-			break;
-		case a4:
-			ctx.transform(-d43[0], -d43[1], d24[0], d24[1], p4[0], p4[1]);
-			// Calculate 1.05 pixel padding on vector basis.
-			if (u4 != 1) padx = 1.05 / Math.sqrt(d43[0] * d43[0] + d43[1] * d43[1]);
-			if (v4 != 1) pady = 1.05 / Math.sqrt(d24[0] * d24[0] + d24[1] * d24[1]);
-			dx = -1;
-			dy = -1;
-			break;
-		case a3:
-			// Calculate 1.05 pixel padding on vector basis.
-			ctx.transform(-d43[0], -d43[1], -d31[0], -d31[1], p3[0], p3[1]);
-			if (u4 != 1) padx = 1.05 / Math.sqrt(d43[0] * d43[0] + d43[1] * d43[1]);
-			if (v4 != 1) pady = 1.05 / Math.sqrt(d31[0] * d31[0] + d31[1] * d31[1]);
-			dy = -1;
-			break;
-	}
-
-	// Calculate image padding to match.
-	var du = (u4 - u1);
-	var dv = (v4 - v1);
-	var padu = padx * du;
-	var padv = pady * dv;
-
-
-	var iw = this.image.width;
-	var ih = this.image.height;
-
-	ctx.drawImage(
-		this.image,
-		u1 * iw,
-		v1 * ih,
-		Math.min(u4 - u1 + padu, 1) * iw,
-		Math.min(v4 - v1 + padv, 1) * ih,
-		dx, dy,
-		1 + padx, 1 + pady
-	);
-	ctx.restore();
-}
-
-/**
- * Generic matrix class. Built for readability, not for speed.
- *
- * (c) Steven Wittens 2008
- * http://www.acko.net/
- */
-var Matrix = function (w, h, values) {
-  this.w = w;
-  this.h = h;
-  this.values = values || allocate(h);
-};
-
-var allocate = function (w, h) {
-  var values = [];
-  for (var i = 0; i < h; ++i) {
-    values[i] = [];
-    for (var j = 0; j < w; ++j) {
-      values[i][j] = 0;
-    }
-  }
-  return values;
-}
-
-var cloneValues = function (values) {
-	var clone = [];
-	for (var i = 0; i < values.length; ++i) {
-		clone[i] = [].concat(values[i]);
-	}
-	return clone;
-}
-
-function getProjectiveTransform(points) {
-  var eqMatrix = new Matrix(9, 8, [
-    [ 1, 1, 1,   0, 0, 0, -points[3][0],-points[3][0],-points[3][0] ],
-    [ 0, 1, 1,   0, 0, 0,  0,-points[2][0],-points[2][0] ],
-    [ 1, 0, 1,   0, 0, 0, -points[1][0], 0,-points[1][0] ],
-    [ 0, 0, 1,   0, 0, 0,  0, 0,-points[0][0] ],
-
-    [ 0, 0, 0,  -1,-1,-1,  points[3][1], points[3][1], points[3][1] ],
-    [ 0, 0, 0,   0,-1,-1,  0, points[2][1], points[2][1] ],
-    [ 0, 0, 0,  -1, 0,-1,  points[1][1], 0, points[1][1] ],
-    [ 0, 0, 0,   0, 0,-1,  0, 0, points[0][1] ]
-
-  ]);
-
-  var kernel = eqMatrix.rowEchelon().values;
-  var transform = new Matrix(3, 3, [
-    [-kernel[0][8], -kernel[1][8], -kernel[2][8]],
-    [-kernel[3][8], -kernel[4][8], -kernel[5][8]],
-    [-kernel[6][8], -kernel[7][8],             1]
-  ]);
-  return transform;
-}
-
-Matrix.prototype = {
-	add : function (operand) {
-		if (operand.w != this.w || operand.h != this.h) {
-			throw new Error("Matrix add size mismatch");
-		}
-
-		var values = allocate(this.w, this.h);
-		for (var y = 0; y < this.h; ++y) {
-			for (var x = 0; x < this.w; ++x) {
-			  values[y][x] = this.values[y][x] + operand.values[y][x];
-			}
-		}
-		return new Matrix(this.w, this.h, values);
-	},
-	transformProjectiveVector : function (operand) {
-		var out = [], x, y;
-		for (y = 0; y < this.h; ++y) {
-			out[y] = 0;
-			for (x = 0; x < this.w; ++x) {
-				out[y] += this.values[y][x] * operand[x];
-			}
-		}
-		var iz = 1 / (out[out.length - 1]);
-		for (y = 0; y < this.h; ++y) {
-			out[y] *= iz;
-		}
-		return out;
-	},
-	multiply : function (operand) {
-		var values, x, y;
-		if (+operand !== operand) {
-			// Matrix mult
-			if (operand.h != this.w) {
-				throw new Error("Matrix mult size mismatch");
-			}
-			values = allocate(this.w, this.h);
-			for (y = 0; y < this.h; ++y) {
-				for (x = 0; x < operand.w; ++x) {
-					var accum = 0;
-					for (var s = 0; s < this.w; s++) {
-						accum += this.values[y][s] * operand.values[s][x];
-					}
-					values[y][x] = accum;
-				}
-			}
-			return new Matrix(operand.w, this.h, values);
-		}
-		else {
-			// Scalar mult
-			values = allocate(this.w, this.h);
-			for (y = 0; y < this.h; ++y) {
-				for (x = 0; x < this.w; ++x) {
-					values[y][x] = this.values[y][x] * operand;
-				}
-			}
-			return new Matrix(this.w, this.h, values);
-		}
-	},
-	rowEchelon : function () {
-		if (this.w <= this.h) {
-			throw new Error("Matrix rowEchelon size mismatch");
-		}
-
-		var temp = cloneValues(this.values);
-
-		// Do Gauss-Jordan algorithm.
-		for (var yp = 0; yp < this.h; ++yp) {
-			// Look up pivot value.
-			var pivot = temp[yp][yp];
-			while (pivot == 0) {
-				// If pivot is zero, find non-zero pivot below.
-				for (var ys = yp + 1; ys < this.h; ++ys) {
-					if (temp[ys][yp] != 0) {
-						// Swap rows.
-						var tmpRow = temp[ys];
-						temp[ys] = temp[yp];
-						temp[yp] = tmpRow;
-						break;
-					}
-				}
-				if (ys == this.h) {
-					// No suitable pivot found. Abort.
-					return new Matrix(this.w, this.h, temp);
-				}
-				else {
-					pivot = temp[yp][yp];
-				}
-			}
-			// Normalize this row.
-			var scale = 1 / pivot;
-			for (var x = yp; x < this.w; ++x) {
-				temp[yp][x] *= scale;
-			}
-			// Subtract this row from all other rows (scaled).
-			for (var y = 0; y < this.h; ++y) {
-				if (y == yp) continue;
-				var factor = temp[y][yp];
-				temp[y][yp] = 0;
-				for (x = yp + 1; x < this.w; ++x) {
-					temp[y][x] -= factor * temp[yp][x];
-				}
-			}
-		}
-
-		return new Matrix(this.w, this.h, temp);
-	},
-	invert : function () {
-		var x, y;
-
-		if (this.w != this.h) {
-			throw new Error("Matrix invert size mismatch");
-		}
-
-		var temp = allocate(this.w * 2, this.h);
-
-		// Initialize augmented matrix
-		for (y = 0; y < this.h; ++y) {
-			for (x = 0; x < this.w; ++x) {
-				temp[y][x] = this.values[y][x];
-				temp[y][x + this.w] = (x == y) ? 1 : 0;
-			}
-		}
-
-		temp = new Matrix(this.w * 2, this.h, temp);
-		temp = temp.rowEchelon();
-
-		// Extract right block matrix.
-		var values = allocate(this.w, this.h);
-		for (y = 0; y < this.w; ++y) {
-			// @todo check if "x < this.w;" is mistake
-			for (x = 0; x < this.w; ++x) {
-				values[y][x] = temp.values[y][x + this.w];
-			}
-		}
-		return new Matrix(this.w, this.h, values);
-	}
-};
-
-return ProjectiveTexture;
-}();
-
-/*
----
-
-name: "Processors.Clearer"
-
-description: "Сleans canvas with specified color"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
-
-requires:
-	- LibCanvas
-	- Context2D
-
-provides: Processors.Clearer
-
-...
-*/
-
-declare( 'LibCanvas.Processors.Clearer', {
-	style : null,
-	initialize : function (style) {
-		this.style = style || null;
-	},
-	process : function (libcanvas) {
-		this.style ?
-			libcanvas.ctx.fillAll(this.style) :
-			libcanvas.ctx.clearAll();
-	},
-	toString: Function.lambda('[object LibCanvas.Processors.Clearer]')
-	// processCanvas : function (elem) {}
-	// processPixels : function (elem) {}
-});
-
-/*
----
-
-name: "Processors.Color"
-
-description: "Abstract class for works with color"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
-
-requires:
-	- LibCanvas
-
-provides: Processors.Color
-
-...
-*/
-
-declare( 'LibCanvas.Processors.Color', {
-	rgbToHsb: function(red, green, blue){
-		var hue = 0,
-			max = Math.max(red, green, blue),
-			delta = max - Math.min(red, green, blue),
-			brightness = max / 255,
-			saturation = (max != 0) ? delta / max : 0;
-		if (saturation) {
-			var rr = (max - red)   / delta,
-			    gr = (max - green) / delta,
-			    br = (max - blue)  / delta;
-			     if (red   == max) hue = br - gr;
-			else if (green == max) hue = 2 + rr - br;
-			else                   hue = 4 + gr - rr;
-			hue /= 6;
-			
-			if (hue < 0) hue++;
-		}
-		return [Math.round(hue * 360), Math.round(saturation * 100), Math.round(brightness * 100)];
-	},
-
-	hsbToRgb: function(hue, sat, bri){
-		bri = Math.round(bri / 100 * 255);
-		if (!sat) return [bri, bri, bri];
-		hue = hue % 360;
-		
-		var f = hue % 60,
-			p = Math.round((bri * (100  - sat)) / 10000 * 255),
-			q = Math.round((bri * (6000 - sat * f)) / 600000 * 255),
-			t = Math.round((bri * (6000 - sat * (60 - f))) / 600000 * 255);
-		switch (parseInt(hue / 60)){
-			case 0: return [bri, t, p];
-			case 1: return [q, bri, p];
-			case 2: return [p, bri, t];
-			case 3: return [p, q, bri];
-			case 4: return [t, p, bri];
-			case 5: return [bri, p, q];
-		}
-		return null;
-	},
-	toString: Function.lambda('[object LibCanvas.Processors.Color]')
-});
-
-/*
----
-
-name: "Processors.Grayscale"
-
-description: "Grayscale canvas"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
-
-requires:
-	- LibCanvas
-
-provides: Processors.Grayscale
-
-...
-*/
-
- declare( 'LibCanvas.Processors.Grayscale', {
-	style : null,
-	initialize : function (type) {
-		// sepia, luminance, average, red, green, blue, default
-		this.type = type || 'default';
-	},
-	processPixels : function (data) {
-		var i, l, r, g, b,
-			d = data.data,
-			type = this.type,
-			set = function (i, value) {
-				d[i] = d[i+1] = d[i+2] = value;
-			};
-
-		for (i = 0, l = d.length; i < l; i+=4) {
-			r = d[i];
-			g = d[i+1];
-			b = d[i+2];
-			switch (type) {
-				case 'sepia':
-					d[i]   = (r * .393) + (g *.769) + (b * .189);
-					d[i+1] = (r * .349) + (g *.686) + (b * .168);
-					d[i+2] = (r * .272) + (g *.534) + (b * .131);
-					break;
-				case 'luminance': set(i, 0.2126*r + 0.7152*g + 0.0722*b); break;
-				case 'average'  : set(i, (r + g + b)/3); break;
-				case 'red'      : set(i, r); break;
-				case 'green'    : set(i, g); break;
-				case 'blue'     : set(i, b); break;
-				default : set(i, (3*r + 6*g + b) / 10.); break;
-			}
-		}
-		return data;
-	},
-	toString: Function.lambda('[object LibCanvas.Processors.Grayscale]')
-});
-
-/*
----
-
-name: "Processors.HsbShift"
-
-description: "Shift on of hue|saturation|bright value of all colors"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
-
-requires:
-	- LibCanvas
-	- Processors.Color
-
-provides: Processors.HsbShift
-
-...
-*/
-
-
-declare( 'LibCanvas.Processors.HsbShift', {
-	parent: Processors.Color,
-	proto: {
-		shift : 0,
-		param : 'hue',
-		initialize : function (shift, param) {
-			// hue, sat, bri
-			this.param =    param || this.param;
-			this.shift = 1*(shift || this.shift);
-			if (this.param == 'hue') {
-				this.shift %= 360;
-				if (this.shift < 0) this.shift += 360;
-			} else {
-				this.shift = this.shift.limit(-100, 100);
-			}
-		},
-		processPixels : function (data) {
-			var d = data.data,
-				shift = this.shift,
-				param = this.param,
-				key   = { hue: 0, sat: 1, bri: 2 }[param],
-				i, hsb, rgb;
-			for (i = 0; i < d.length; i+=4) {
-				if ((param == 'hue' || param == 'sat') && d[i] == d[i+1] && d[i] == d[i+2]) continue;
-
-				hsb = this.rgbToHsb(d[i], d[i+1], d[i+2]);
-				param == 'hue' ?
-					(hsb[0  ] = (hsb[0]   + shift) % 360) :
-					(hsb[key] = (hsb[key] + shift).limit(0, 100));
-				rgb = this.hsbToRgb(hsb[0], hsb[1], hsb[2]);
-
-				d[i  ] = rgb[0];
-				d[i+1] = rgb[1];
-				d[i+2] = rgb[2];
-			}
-			return data;
-		},
-		toString: Function.lambda('[object LibCanvas.Processors.HsbShift]')
-	}
-});
-
-/*
----
-
-name: "Processors.Invert"
-
-description: "Invert all canvas colors"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
-
-requires:
-	- LibCanvas
-
-provides: Processors.Invert
-
-...
-*/
-
-declare( 'LibCanvas.Processors.Invert', {
-	processPixels : function (data) {
-		var d = data.data, i = 0, l = d.length;
-		for (;i < l; i++) if (i % 4 != 3) d[i] = 255 - d[i];
-		return data;
-	},
-	toString: Function.lambda('[object LibCanvas.Processors.Invert]')
-});
-
-/*
----
-
-name: "Processors.Mask"
-
-description: "Use canvas as mask for color (black will be transparent, white will be color)"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
-
-requires:
-	- LibCanvas
-
-provides: Processors.Mask
-
-...
-*/
-
-declare( 'LibCanvas.Processors.Mask', {
-	color : null,
-	initialize : function (color) { // [r,g,b]
-		this.color = color || [0,0,0];
-	},
-	processPixels : function (data) {
-		var c = this.color, d = data.data, i = 0, l = d.length;
-		for (;i < l; i+=4) {
-			d[i+3] = d[i];
-			d[i]   = c[0];
-			d[i+1] = c[1];
-			d[i+2] = c[2];
-		}
-		return data;
-	},
-	toString: Function.lambda('[object LibCanvas.Processors.Mask]')
-});
-
-/*
----
-
-name: "Scene.App"
-
-description: "LibCanvas.App"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-
-provides: App
-
-...
-*/
-
-declare( 'LibCanvas.App',
-/**
- * @lends LibCanvas.App#
- */
-{
-	mixin: Settings.Mixin,
-
-	proto: {
-
-		/**
-		 * @constructs
-		 */
-		initialize: function (canvas, options) {
-			var libcanvas, settings, width, height, keyboard, mouse;
-
-			settings = this.settings = new Settings({
-				name     : 'main',
-				autoStart: true,
-				clear    : false,
-				invoke   : true,
-				width    : null,
-				height   : null,
-				keyboard : false,
-				mouse    : false,
-				fpsMeter : false,
-				fps      : 60
-			}).set(options);
-
-			width  = settings.get('width');
-			height = settings.get('height');
-			height = settings.get('height');
-			height = settings.get('height');
-
-			if (canvas instanceof LibCanvas) {
-				libcanvas = this.libcanvas = canvas;
-			} else {
-				libcanvas = this.libcanvas = new LibCanvas( canvas, options );
-			}
-
-			if (width != null && height != null) {
-				libcanvas.size( width, height, true );
-			}
-
-			if (keyboard) libcanvas.listenKeyboard(keyboard);
-			if (mouse) {
-				libcanvas.listenMouse();
-				this.bindMouse(mouse);
-			}
-			if (settings.get('fpsMeter')) libcanvas.fpsMeter();
-
-			this.resources = new LibCanvas.Scene.Resources( this, this.rectangle );
-			this.scenes = [];
-			this.scenesIndexed = {};
-
-			libcanvas.start();
-		},
-
-		/**
-		 * @param {string} [name=null]
-		 * @param {number} [zIndex=Infinity]
-		 * @param {object} [options={}]
-		 * @returns {LibCanvas.Scene.Standard}
-		 */
-		createScene: function (name, zIndex, options) {
-			if (name != null && typeof name != 'string') {
-				options = zIndex;
-				zIndex  = name;
-				name    = null;
-			}
-			if (typeof zIndex == 'object') {
-				options = zIndex;
-				zIndex  = Infinity;
-			}
-
-			var layer = this.libcanvas;
-			if (name) {
-				if (layer.layerExists(name)) {
-					layer = layer.layer(name);
-				} else {
-					layer = layer.createLayer(name, zIndex);
-				}
-			} else {
-				name = layer.settings.get('name');
-			}
-
-			var scene = new LibCanvas.Scene.Standard( layer, options );
-
-			this.scenes.push( scene );
-			this.scenesIndexed[name] = scene;
-
-			return scene;
-		},
-
-		/**
-		 * @param {string} name
-		 * @returns {boolean}
-		 */
-		sceneExists: function (name) {
-			return name in this.scenesIndexed;
-		},
-
-		/**
-		 * @param {string} name
-		 * @throws {Error}
-		 * @returns {LibCanvas.Scene.Standard}
-		 */
-		scene: function (name) {
-			if (this.sceneExists(name)) {
-				return this.scenesIndexed[name];
-			} else {
-				throw new Error('No scene with name «' + name + '»');
-			}
-		},
-
-		/** @private */
-		sortScenes: function () {
-			this.scenes.sort( function (left, right) {
-				return left.libcanvas.zIndex < right.libcanvas.zIndex ? -1 : 1;
-			});
-			return this.scenes;
-		},
-
-		/**
-		 * @param {function} callback
-		 * @returns {LibCanvas.App}
-		 */
-		ready: function (callback) {
-			this.libcanvas.addEvent( 'ready', callback.bind(this) );
-			return this;
-		},
-
-		/** @private */
-		mouseEvents: [ 'down', 'up', 'move', 'out', 'dblclick', 'contextmenu', 'wheel' ],
-
-		/** @private */
-		bindMouse: function (mouse) {
-			var app = this;
-			app.mouseEvents.forEach(function (type) {
-				mouse.addEvent( type, function (e) {
-					var
-						scenes = app.sortScenes(),
-						stopped = false;
-					for (var i = scenes.length; i--;) {
-						stopped = scenes[i].mouse.event( type, e, stopped );
-					}
-				});
-			});
-		},
-
-		/** @property {LibCanvas.Shapes.Rectangle} rectangle */
-		get rectangle () {
-			var size = this.libcanvas.getAppSize();
-			return new Rectangle( 0, 0, size.width, size.height );
-		}
-	}
-});
-
-/*
----
-
-name: "Scene.Standard"
-
-description: "LibCanvas.Scene"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- LibCanvas.Canvas2D
-	- Behaviors.Drawable
-
-provides: Scene.Standard
-
-...
-*/
-
-declare( 'LibCanvas.Scene.Standard',
-/**
- * @lends Scene.Standard#
- * @augments Drawable
- */
-{
-	parent: Drawable,
-
-	mixin: Settings.Mixin,
-
-	proto: {
-		/**
-		 * @param {Canvas2D} libcanvas
-		 * @returns {Scene.Standard}
-		 */
-		initialize: function (libcanvas, options) {
-			Class.bindAll( this, 'redrawElement' );
-
-			this.setOptions({
-				intersection: 'auto' // 'auto'|'manual'
-			}, options );
-
-			libcanvas.addElement( this );
-			this.resources = new Scene.Resources( this );
-			this.elements       = [];
-			this.redrawElements = [];
-			this.shift = new Point(0, 0);
-			this.elementsShift = new Point(0, 0);
-		},
-
-		/** @private */
-		stopped: false,
-
-		/** @returns {Scene.Standard} */
-		start: function () {
-			if (this.stopped) {
-				this.libcanvas.update();
-				this.stopped = false;
-			}
-			return this;
-		},
-
-		/** @returns {Scene.Standard} */
-		stop: function () {
-			this.stopped = true;
-			return this;
-		},
-
-		_mouse: null,
-
-		get mouse () {
-			if (this._mouse == null) {
-				this._mouse = new Scene.Mouse( this.resources.mouse );
-			}
-			return this._mouse;
-		},
-
-		/** @private */
-		elements: null,
-
-		/** @private */
-		redrawElements: null,
-
-		/**
-		 * @deprecated
-		 * @param {atom.Class} Class
-		 * @returns {function}
-		 */
-		createFactory: function (Class) {
-			var scene = this;
-			return function () {
-				var element = Class.factory( [ scene ].append( arguments ) );
-				scene.addElement( element );
-				return element;
-			};
-		},
-
-		/**
-		 * @private
-		 * @property {Point}
-		 */
-		shift: null,
-
-		/**
-		 * @private
-		 * @property {Point}
-		 */
-		elementsShift: null,
-
-		/**
-		 * @param {LibCanvas.Point} shift
-		 * @returns {Scene.Standard}
-		 */
-		addElementsShift: function (shift) {
-			if (!shift) {
-				shift = this.elementsShift.diff(this.shift);
-			} else {
-				shift = Point(shift);
-			}
-			var e = this.elements, i = e.length;
-			while (i--) e[i].addShift(shift);
-			this.elementsShift.move(shift);
-			return this;
-		},
-
-		/**
-		 * @private
-		 * @property {LibCanvas.Shapes.Rectangle}
-		 */
-		limitShift: null,
-
-		/**
-		 * @param {LibCanvas.Shapes.Rectangle} limitShift
-		 * @returns {Scene.Standard}
-		 */
-		setLimitShift: function (limitShift) {
-			this.limitShift = limitShift ? Rectangle(limitShift) : null;
-			return this;
-		},
-
-		/**
-		 * @param {Point} shift
-		 * @returns {Scene.Standard}
-		 */
-		addShift: function ( shift, withElements ) {
-			shift = new Point( shift );
-
-			var limit = this.limitShift, current = this.shift;
-			if (limit) {
-				shift.x = shift.x.limit(limit.from.x - current.x, limit.to.x - current.x);
-				shift.y = shift.y.limit(limit.from.y - current.y, limit.to.y - current.y);
-			}
-
-			current.move( shift );
-			this.libcanvas.addShift( shift );
-			this.libcanvas.ctx.translate( shift, true );
-			if (withElements) this.addElementsShift( shift );
-			return this;
-		},
-
-		/**
-		 * @param {Point} shift
-		 * @returns {Scene.Standard}
-		 */
-		setShift: function (shift, withElements) {
-			return this.addShift( this.shift.diff(shift), withElements );
-		},
-
-		/**
-		 * @returns {Point}
-		 */
-		getShift: function () {
-			return this.shift;
-		},
-
-		/**
-		 * @param {Drawable} element
-		 * @returns {Scene.Standard}
-		 */
-		addElement: function (element, force) {
-			if (force || !this.elements.contains(element)) {
-				this.elements.push( element );
-				this.redrawElement( element, true );
-			}
-			return this;
-		},
-
-		/**
-		 * @private
-		 * @param {Drawable} element
-		 * @returns {Scene.Standard}
-		 */
-		redrawElement: function (element, force) {
-			if (force || this.elements.contains( element )) {
-				if (force || !this.redrawElements.contains( element )) {
-					this.redrawElements.push( element );
-					this.libcanvas.update();
-				}
-			}
-			return this;
-		},
-
-		/**
-		 * @param {Drawable} element
-		 * @returns {Scene.Standard}
-		 */
-		rmElement: function (element) {
-			this.redrawElement ( element );
-			this.elements.erase( element );
-			return this;
-		},
-
-		/** @private */
-		update: function (time) {
-			if (this.stopped) return this;
-
-			this.elements.sortBy( 'zIndex' ).invoke( 'onUpdate', time, this.resources );
-
-			return this.fireEvent( 'update', [ time, this.resources ]);
-		},
-
-		/** @private */
-		findIntersections: function (shape, elem) {
-			var i, e, elems = [];
-			for (i = this.elements.length; i--;) {
-				e = this.elements[i];
-				if (e != elem && !e.settings.get('hidden') && e.currentBoundingShape.intersect( shape )) {
-					elems.push( e );
-				}
-			}
-			return elems;
-		},
-
-		/** @private */
-		autoIntersectionsSearch: function () {
-			return this.settings.get('intersection') !== 'manual';
-		},
-
-		/** @private */
-		draw: function () {
-			if (this.stopped) return this;
-
-			var i, l, elem,
-				clear     = [],
-				elements  = this.elements,
-				resources = this.resources,
-				ctx       = this.libcanvas.ctx,
-				redraw    = this.redrawElements;
-
-			for (i = 0; i < redraw.length; i++) {
-				elem = redraw[i];
-				clear.push( elem );
-
-				if (this.autoIntersectionsSearch()) {
-					this.findIntersections(elem.previousBoundingShape, elem)
-						.forEach(function (e) {
-							redraw.include( e );
-						});
-					this.findIntersections(elem.currentBoundingShape, elem)
-						.forEach(function (e) {
-							// we need to redraw it, only if it is over our element
-							if (e.zIndex > elem.zIndex) redraw.include( e );
-						});
-				}
-			}
-
-			for (i = clear.length; i--;) {
-				clear[i].clearPrevious( ctx, resources );
-			}
-
-			redraw.sortBy( 'zIndex', true );
-			for (i = 0, l = redraw.length; i < l; i++) {
-				elem = redraw[i];
-				if (!elem.settings.get('hidden') && elements.indexOf( elem ) >= 0) {
-					elem.renderTo( ctx, resources );
-					elem.saveCurrentBoundingShape();
-				}
-			}
-			redraw.empty();
-
-			return this.events.fire( 'render', [ ctx, resources ]);
-		}
-	}
-});
-
-/*
----
-
-name: "Scene.Dragger"
+name: "Size"
 
 description: ""
 
@@ -6702,581 +2951,35 @@ authors:
 
 requires:
 	- LibCanvas
-	- Scene.Standard
+	- Point
 
-provides: Scene.Dragger
-
-...
-*/
-
-declare( 'LibCanvas.Scene.Dragger', {
-
-	mixin: Events.Mixin,
-
-	proto: {
-		initialize: function (mouse) {
-			this.bindMethods([ 'dragStart', 'dragStop', 'dragMove' ]);
-			this.events = new Events(this);
-
-			this.mouse  = mouse;
-			this.scenes = [];
-
-			this._events = {
-				down: this.dragStart,
-				up  : this.dragStop,
-				out : this.dragStop,
-				move: this.dragMove
-			};
-		},
-
-		addScene: function (scene) {
-			this.scenes.push( scene );
-			return this;
-		},
-
-		started: false,
-
-		start: function (callback) {
-			if (callback !== undefined) {
-				this.callback = callback;
-			}
-			this.started = true;
-			this.mouse.events.add( this._events );
-			return this;
-		},
-
-		stop: function () {
-			this.started = false;
-			this.mouse.events.remove( this._events );
-			return this;
-		},
-
-		/** @private */
-		dragStart: function (e) {
-			if (!this.shouldStartDrag(e)) return;
-
-			for (var i = this.scenes.length; i--;) {
-				var scene = this.scenes[i];
-				scene.mouse.stop();
-				scene.stop();
-			}
-			this.drag = true;
-			this.events.fire( 'start', [ e ]);
-		},
-		/** @private */
-		dragStop: function (e) {
-			if (!this.drag) return;
-
-			for (var i = this.scenes.length; i--;) {
-				var scene = this.scenes[i];
-				scene.mouse.start();
-				scene.addElementsShift();
-				scene.start();
-			}
-
-			this.drag = false;
-			this.events.fire( 'stop', [ e ]);
-		},
-		/** @private */
-		dragMove: function (e) {
-			if (!this.drag) return;
-			for (var i = this.scenes.length; i--;) {
-				this.scenes[i].addShift(e.deltaOffset);
-			}
-		},
-		/** @private */
-		shouldStartDrag: function (e) {
-			if (!this.started) return false;
-
-			return this.callback ? this.callback(e) : true;
-		}
-	}
-});
-
-/*
----
-
-name: "Scene.Element"
-
-description: "LibCanvas.Scene"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Scene
-	- Behaviors.Drawable
-
-provides: Scene.Element
+provides: Size
 
 ...
 */
+var Size = declare( 'LibCanvas.Size', {
+	parent: Point,
 
-declare( 'LibCanvas.Scene.Element',
-/**
- * @lends LibCanvas.Scene.Element#
- * @augments Drawable
- */
-{
-	parent: Drawable,
+	prototype: {
+		set: function (size) {
+			if (typeof size == 'object' && size.width != null) {
+				this.x = Number(size.width);
+				this.y = Number(size.height);
 
-	mixin: Settings.Mixin,
-
-	proto: {
-		/** @constructs */
-		initialize: function (scene, options) {
-			this.settings = new Settings({ hidden: false }).set(options);
-
-			scene.libcanvas.addElement( this );
-			this.stopDrawing();
-
-			this.scene = scene;
-			scene.addElement( this, true );
-
-			this.setOptions( options );
-
-			var ownShape = this.shape && this.shape != this.constructor.prototype.shape;
-
-			if (ownShape || this.options.shape) {
-				if (!ownShape) this.shape = this.options.shape;
-				this.saveCurrentBoundingShape();
+				return this;
 			}
-			if (this.options.zIndex != null) {
-				this.zIndex = Number( this.options.zIndex );
-			}
-
-			this.childrenElements = [];
-			this.childFactory     = Scene.Element;
+			return Point.prototype.set.apply( this, arguments );
 		},
 
-		previousBoundingShape: null,
+		get width  ( ) { return this.x },
+		get height ( ) { return this.y },
+		set width  (w) { this.x = w },
+		set height (h) { this.y = h },
 
-		get currentBoundingShape () {
-			return this.shape;
-		},
-
-		destroy: function () {
-			this.scene.rmElement( this );
-			return this;
-		},
-
-		hasPoint: function (point) {
-			return this.shape.hasPoint( point );
-		},
-
-		addShift: function (shift) {
-			this.shape.move( shift );
-			this.previousBoundingShape.move( shift );
-			return this;
-		},
-
-		redraw: function () {
-			this.scene.redrawElement( this );
-			return this;
-		},
-
-		onUpdate: function (time) {
-			return this;
-		},
-
-		clearPrevious: function ( ctx ) {
-			ctx.clear( this.previousBoundingShape );
-			return this;
-		},
-
-		saveCurrentBoundingShape: function () {
-			var shape = this.currentBoundingShape;
-			this.previousBoundingShape = shape.fillToPixel ?
-				shape.fillToPixel() : shape.clone().grow( 2 );
-			return this;
-		},
-		renderTo: function (ctx, resources) {
-			return this;
-		},
-
-		// Children
-		setChildrenFactory: function (Class) {
-			this.childFactory = Class;
-			return this;
-		},
-		createChild: function (options) {
-			var child = this.childFactory.factory( [this.scene].append(arguments) );
-			this.addChildFast(child);
-			return child;
-		},
-		/** @private */
-		addChildFast: function (child) {
-			this.childrenElements.push(child);
-			return this;
-		},
-		addChild: function (child) {
-			this.childrenElements.include(child);
-			return this;
-		},
-		removeChild: function (child) {
-			this.childrenElements.erase(child);
-			return this;
-		},
-		invokeChildren: function (method, args) {
-			var children = this.childrenElements;
-			if (!args) args = [];
-			for (var i = 0, l = children.length; i < l; i++) {
-				children[i][method].apply( children[i], args );
-			}
-			return this;
-		},
-		setChildrenProperty: function (property, value) {
-			var children = this.childrenElements;
-			for (var i = 0, l = children.length; i < l; i++) {
-				children[i][property] = value;
-			}
-			return this;
+		/** @returns {object} */
+		toObject: function () {
+			return { width: this.x, height: this.y };
 		}
-	}
-});
-
-/*
----
-
-name: "Scene.Mouse.Event"
-
-description: "LibCanvas.Scene.Mouse"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Scene
-
-provides: Scene.MouseEvent
-
-...
-*/
-
-declare( 'LibCanvas.Scene.MouseEvent',
-/**
- * @lends LibCanvas.Scene.MouseEvent#
- */
-{
-	/** @property {LibCanvas.Point} */
-	offset: null,
-	/** @property {LibCanvas.Point} */
-	deltaOffset: null,
-	/** @property {number} */
-	delta: 0,
-
-	/** @private */
-	falling: false,
-
-	/** @constructs */
-	initialize: function (type, original) {
-		this.type     = type;
-		this.original = original;
-		this.extend([ 'offset', 'deltaOffset', 'delta', 'button' ]);
-	},
-
-	/** @returns {Scene.MouseEvent} */
-	prevent: function () {
-		this.original.preventDefault();
-		return this;
-	},
-
-	/** @private */
-	extend: function (props) {
-		for (var i = props.length; i--;) {
-			var prop = props[i];
-			if ( this.original[prop] != null ) {
-				this[prop] = this.original[prop];
-			}
-		}
-		return this;
-	},
-
-	/** @private */
-	checkFalling: function () {
-		var value = this.falling;
-		this.falling = false;
-		return value;
-	},
-
-	/** @returns {LibCanvas.Scene.MouseEvent} */
-	fall: function () {
-		this.falling = true;
-		return this;
-	},
-
-	/** @deprecated */
-	stop: function () {
-		//console.error('deprecated');
-		return this;
-	}
-});
-
-/*
----
-
-name: "Scene.Mouse"
-
-description: "LibCanvas.Scene.Mouse"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Scene
-	- Scene.MouseEvent
-
-provides: Scene.Mouse
-
-...
-*/
-
-declare( 'LibCanvas.Scene.Mouse',
-/**
- * @lends LibCanvas.Scene.Mouse#
- */
-{
-
-	/** @private */
-	mouse: null,
-
-	/** @constructs */
-	initialize: function (globalMouse) {
-		var mouse = this;
-
-		mouse.lastMouseMove = [];
-		mouse.lastMouseDown = [];
-
-		mouse.subscribers = [];
-
-		mouse.mouse = globalMouse;
-		mouse.point = mouse.mouse.point;
-	},
-
-	/** @private */
-	stopped: false,
-
-	/** @returns {LibCanvas.Scene.Mouse} */
-	stop: function () {
-		this.stopped = true;
-		return this;
-	},
-
-	/** @returns {LibCanvas.Scene.Mouse} */
-	start: function () {
-		this.stopped = false;
-		return this;
-	},
-
-	/** @returns {LibCanvas.Scene.Mouse} */
-	subscribe : function (elem) {
-		this.subscribers.include(elem);
-		return this;
-	},
-
-	/** @returns {LibCanvas.Scene.Mouse} */
-	unsubscribe : function (elem) {
-		this.subscribers.erase(elem);
-		return this;
-	},
-
-	/** @private */
-	event: function (type, e, stopped) {
-		if (this.stopped) return;
-
-		var
-			event = new Scene.MouseEvent( type, e ),
-			method = 'parseEvent';
-
-		if (['dblclick', 'contextmenu', 'wheel'].contains( type )) {
-			if (type == 'mousewheel') type = 'mousewheel';
-			method = 'forceEvent';
-		}
-		return this[method]( type, event, stopped, this.subscribers, 0 );
-	},
-
-	isOver: function (element) {
-		return this.mouse.inCanvas && element.hasPoint( this.point );
-	},
-
-	/** @private */
-	parseEvent: function (type, event, stopped, elements, deep) {
-		if (type == 'down') this.lastMouseDown.empty();
-
-		var i,
-			elem,
-			mouse    = this,
-			lastDown = mouse.lastMouseDown,
-			lastMove = mouse.lastMouseMove,
-			lastOut  = [],
-			eventArgs = [event];
-
-		var fire = function (eventName) {
-			var children = this.childrenElements;
-			if (children.length) {
-				mouse.parseEvent(type, event, stopped, children, deep+1);
-			}
-			this.events.fire( eventName, eventArgs );
-		};
-
-		elements.sortBy( 'zIndex', true );
-
-		// В первую очередь - обрабатываем реальный mouseout с элементов
-		if (type == 'move' || type == 'out') {
-			for (i = lastMove.length; i--;) {
-				elem = lastMove[i];
-				if (elements.contains(elem) && !mouse.isOver(elem)) {
-					fire.call( elem, 'mouseout' );
-					lastMove.erase(elem);
-					lastOut.push(elem);
-				}
-			}
-		}
-
-		for (i = elements.length; i--;) {
-			elem = elements[i];
-			// проваливание события остановлено элементом
-			// необходимо сообщить остальным элементам о mouseout
-			if (stopped) {
-				if (type == 'move' || type == 'out') {
-					if (elements.contains(elem) && lastMove.contains(elem)) {
-						fire.call( elem, 'mouseout' );
-						lastMove.erase(elem);
-					}
-				} else if (type == 'up') {
-					if (mouse.isOver(elem)) {
-						fire.call( elem, 'mouseup' );
-						if (elements.contains(elem) && lastDown.contains(elem)) {
-							fire.call( elem, 'click' );
-						}
-					}
-				}
-			// мышь над элементом, сообщаем о mousemove
-			// о mouseover, mousedown, click, если необходимо
-			} else if (mouse.isOver(elem)) {
-				if (type == 'move') {
-					if (!lastMove.contains(elem)) {
-						fire.call( elem, 'mouseover' );
-						lastMove.push( elem );
-					}
-				} else if (type == 'down') {
-					lastDown.push(elem);
-				// If mouseup on this elem and last mousedown was on this elem - click
-				} else if (type == 'up' && elements.contains(elem) && lastDown.contains(elem)) {
-					fire.call( elem, 'click' );
-				}
-				fire.call( elem, 'mouse' + type );
-
-				if (!event.checkFalling()) {
-					stopped = true;
-				}
-			// мышь не над элементом, событие проваливается,
-			// сообщаем элементу, что где-то произошло событие
-			} else if (!lastOut.contains(elem)) {
-				// fast version
-				elem.events.fire( 'away:mouse' + type, eventArgs );
-			}
-		}
-
-		return stopped;
-	},
-
-	/** @private */
-	forceEvent: function (type, event, stopped, elements) {
-		elements.sortBy( 'zIndex', true );
-		var children, i = elements.length;
-		while (i--) {
-			var elem = elements[i];
-			if (!this.isOver(elem)) continue;
-			
-			elem.events.fire( type, event );
-			children = elem.childrenElements;
-			if (children.length) {
-				this.forceEvent(type, event, stopped, children);
-			}
-			if (!event.checkFalling()) {
-				stopped = true;
-				break;
-			}
-		}
-		return stopped;
-	}
-
-});
-
-/*
----
-
-name: "Scene.Resources"
-
-description: "LibCanvas.Scene"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Scene
-
-provides: Scene.Resources
-
-...
-*/
-
-declare( 'LibCanvas.Scene.Resources',
-/**
- * @lends LibCanvas.Scene.Resources#
- */
-{
-
-	/** @constructs */
-	initialize: function (scene, rectangle) {
-		this.scene = scene;
-		this.lc    = scene.libcanvas;
-		this._rectangle = rectangle;
-	},
-
-	getAudio: function (name) {
-		return this.lc.getAudio( name );
-	},
-
-	getImage: function (name) {
-		return this.lc.getImage( name );
-	},
-
-	imageExists: function (name) {
-		return this.lc.imageExists( name );
-	},
-
-	get mouse () {
-		return this.lc.mouse;
-	},
-
-	get keyboard () {
-		return this.lc.keyboard;
-	},
-
-	get rectangle () {
-		return this._rectangle || this.lc.ctx.rectangle;
 	}
 });
 
@@ -8053,642 +3756,6 @@ var RoundedRectangle = declare( 'LibCanvas.Shapes.RoundedRectangle',
 /*
 ---
 
-name: "Ui.Shaper"
-
-description: "Provides base ui object"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Behaviors.Drawable
-	- Behaviors.Animatable
-	- Behaviors.Clickable
-	- Behaviors.Draggable
-	- Behaviors.Droppable
-	- Behaviors.Linkable
-	- Behaviors.MouseListener
-	- Behaviors.Moveable
-
-provides: Ui.Shaper
-
-...
-*/
-
-var Shaper = declare( 'LibCanvas.Ui.Shaper', {
-	parent: Drawable,
-
-	mixin: [
-		Settings.Mixin,
-		Animatable,
-		Clickable,
-		MouseListener,
-		Linkable,
-		Draggable,
-		Droppable,
-		Moveable
-	],
-
-	proto: {
-		active: false,
-		hover : false,
-
-		initialize : function (libcanvas, options) {
-			this.update = libcanvas.update;
-
-			this.events   = new Events(this);
-			this.settings = new Settings(options).addEvents(this.events);
-			this.shape    = this.settings.get('shape');
-
-			this.shape.addEvent('move', libcanvas.update);
-			this.events.add(['moveDrag', 'statusChanged'], libcanvas.update);
-		},
-		setOptions : function (options) {
-			this.update();
-			// todo: bind to events
-			return Settings.Mixin.prototype.setOptions.call(this, options);
-		},
-		getStyle : function (type) {
-			var s = this.settings;
-			return (this.active && s.get('active')) ? s.get('active')[type] :
-				   (this.hover  && s.get('hover'))  ? s.get('hover') [type] :
-								  (s.get(type)  || null);
-		},
-
-		drawTo : function (ctx) {
-			var fill    = this.getStyle('fill'),
-				stroke  = this.getStyle('stroke'),
-				lineW   = this.getStyle('lineWidth'),
-				opacity = this.getStyle('opacity');
-
-			ctx.save();
-			if (lineW  ) ctx.set('lineWidth', lineW);
-			if (opacity) ctx.set('globalOpacity', opacity);
-			if (fill   ) ctx.fill  (this.shape, fill  );
-			if (stroke ) ctx.stroke(this.shape, stroke);
-			ctx.restore();
-			return this;
-		},
-		draw : function () {
-			return this.drawTo(this.libcanvas.ctx);
-		},
-
-		// accessors
-
-
-		get fill () {
-			return this.settings.get('fill');
-		},
-		set fill (value) {
-			this.settings.set({ fill: value });
-			this.update();
-		},
-
-		get stroke () {
-			return this.settings.get('stroke');
-		},
-		set stroke (value) {
-			this.settings.set({ stroke: value });
-			this.update();
-		},
-
-		get lineWidth () {
-			return this.settings.get('lineWidth');
-		},
-		set lineWidth (value) {
-			this.settings.set({ lineWidth: value });
-			this.update();
-		},
-
-		get radius () {
-			if (this.shape instanceof Circle) {
-				return this.shape.radius;
-			} else {
-				throw new TypeError('Shape is not circle');
-			}
-		},
-		set radius (value) {
-			if (this.shape instanceof Circle) {
-			this.shape.radius = value;
-			this.update();
-			} else {
-				throw new TypeError('Shape is not circle');
-			}
-			if (!Circle.isInstance(this.shape)) {
-				throw new TypeError('Shape is not circle');
-			}
-			this.shape.radius = value;
-			this.update();
-		},
-		dump: function () {
-			return '[Shaper ' + this.shape.dump() + ']';
-		},
-		toString: Function.lambda('[object LibCanvas.Ui.Shaper]')
-	}
-});
-
-/*
----
-
-name: "Utils.AudioContainer"
-
-description: "Provides audio preloader"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-
-provides: Utils.AudioContainer
-
-...
-*/
-
-var AudioContainer = declare( 'LibCanvas.Utils.AudioContainer', {
-	support : false,
-	initialize: function (files) {
-		this.allAudios = [];
-		this.checkSupport();
-		var audio = {};
-		for (var i in files) {
-			audio[i] = new AudioElement(this, files[i]);
-		}
-		this.audio = audio;
-	},
-	checkSupport : function () {
-		var elem = document.createElement('audio');
-		if (elem.canPlayType) {
-			var cpt = elem.canPlayType.bind(elem);
-			this.support = {
-				// codecs
-				ogg : cpt('audio/ogg; codecs="vorbis"'),
-				mp3 : cpt('audio/mpeg;'),
-				wav : cpt('audio/wav; codecs="1"'),
-				m4a : cpt('audio/x-m4a;') || cpt('audio/aac;'),
-				// diff
-				loop : 'loop' in elem
-			};
-		}
-		return this;
-	},
-	get : function (index) {
-		return this.audio[index];
-	},
-	mute : function (muted) {
-		this.allAudios.forEach(function (audio) {
-			audio.muted = muted;
-		})
-	},
-	toString: Function.lambda('[object LibCanvas.Utils.AudioContainer]')
-});
-
-/*
----
-
-name: "Utils.AudioElement"
-
-description: "Provides audio container"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Utils.AudioContainer
-	- Behaviors.Animatable
-
-provides: Utils.AudioElement
-
-...
-*/
-
-var AudioElement = declare( 'LibCanvas.Utils.AudioElement', {
-	stub   : true,
-	initialize : function (container, file) {
-		this.events = [];
-		if (container.support) {
-			this.stub = false;
-			this.container = container;
-			this.support = container.support;
-			this.audio = document.createElement("audio");
-			this.audio.preload = true;
-			this.src(file);
-			container.allAudios.push(this.audio);
-		}
-	},
-	src : function (file) {
-		if (this.stub) return this;
-		var gatling = file.match(/:(\d+)$/);
-		if (gatling) {
-			file = file.replace(/:\d+$/, '');
-			gatling = gatling[1];
-		}
-		this.audio.src = file.replace(/\*/g, this.getExtension());
-		this.audio.load();
-		if (gatling) this.gatling(gatling);
-		return this;
-	},
-	getExtension : function () {
-		if (this.stub) return null;
-		return this.support.ogg ? 'ogg' :
-		       this.support.mp3 ? 'mp3' : 'wav';
-	},
-	cloneAudio : function () {
-		if (this.stub) return null;
-		// opera 10.6 bug & IE 9 bug
-		// audioClone = this.audio.cloneNode(true);
-		var audioClone = document.createElement('audio');
-		audioClone.src = this.audio.src;
-		this.events.forEach(function (e) {
-			audioClone.addEventListener(e[0], e[1].bind(this), false);
-		}.bind(this));
-		this.container.allAudios.push(audioClone);
-		audioClone.load();
-		return audioClone;
-	},
-	play : function (elem) {
-		if (this.stub) return this;
-		(elem || this.getCurrent()).play();
-		return this;
-	},
-	pause : function (elem) {
-		if (this.stub) return this;
-		(elem || this.getCurrent()).pause();
-		return this;
-	},
-	stop : function (elem) {
-		if (this.stub) return this;
-		elem = elem || this.getCurrent();
-		try {
-			elem.currentTime = 0.025;
-			elem.pause();
-		} catch (ignored) { }
-		return this;
-	},
-	restart: function (elem) {
-		elem = elem || this.getCurrent();
-		this.stop( elem );
-		if (elem.ended || elem.paused) {
-			elem.play();
-		}
-		return this;
-	},
-	event : function (event, fn) {
-		if (this.stub) return this;
-		this.events.push([event, fn]);
-		this.audio.addEventListener(event, fn.bind(this), false);
-		return this;
-	},
-	set: function (params) {
-		var elem = this.getCurrent();
-
-		if (elem && params) for (var i in params) if (params.hasOwnProperty(i)) {
-			elem[i] = params[i];
-		}
-
-		return this;
-	},
-
-	// Gatling
-	gatling : function (count) {
-		if (this.stub) return this;
-		this.barrels = [];
-		this.gatIndex =  0;
-		while (count--) this.barrels.push(this.cloneAudio());
-		return this;
-	},
-	getNext : function () {
-		if (this.stub) return null;
-		++this.gatIndex >= this.barrels.length && (this.gatIndex = 0);
-		return this.getCurrent();
-	},
-	getCurrent : function () {
-		if (this.stub) return null;
-		return this.barrels ? this.barrels[this.gatIndex] : this.audio;
-	},
-	playNext : function () {
-		if (this.stub) return this;
-		this.getNext();
-		this.restart();
-		return this;
-	},
-
-	// Loop (using gatling in browsers, that doesn't support loop, e.g. in fx)
-	loopBinded : false,
-	loop : function () {
-		if (this.stub) return this;
-		if (this.support.loop) {
-			this.audio.loop = 'loop';
-			this.stop().play();
-		} else {
-			if (!this.loopBinded) {
-				this.event('ended', this.playNext.bind(this) ).gatling(2);
-				atom.dom(window).bind('unload', this.pause.bind(this));
-				this.loopBinded = true;
-			}
-			this.stop().playNext();
-		}
-		return this;
-	},
-
-	fade: function (time, volume, out) {
-		if (this.stub) return this;
-
-		var elem = this.getCurrent();
-
-		if (!out) this.play();
-
-		new Animatable(elem).animate({
-			props: { volume : volume },
-			fn: out ? 'expo-out' : 'sine-out',
-			time : time || 500,
-			onFinish   : function () {
-				if (out) this.stop();
-			}.bind(this)
-		});
-		return this;
-	},
-
-	fadeOut : function (time, volume) {
-		return this.fade( time, volume || 0.0, true);
-	},
-
-	fadeIn : function (time, volume) {
-		return this.fade( time, volume || 1.0, false);
-	},
-
-	fadeToggle: function (time, volumeUp, volumeDown) {
-		if (volumeUp.equals( this.getCurrent().volume, 3 )) {
-			this.fadeOut( time, volumeDown );
-		} else {
-			this.fadeIn( time, volumeUp );
-		}
-		return this;
-	},
-
-	toString: Function.lambda('[object LibCanvas.Utils.AudioElement]')
-});
-
-/*
----
-
-name: "Utils.Trace"
-
-description: "Useful tool which provides windows with user-defined debug information"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-
-provides: Utils.Trace
-
-...
-*/
-
-var Trace = declare( 'LibCanvas.Utils.Trace', {
-	own: {
-		dumpRec : function (obj, level, plain) {
-			level  = parseInt(level) || 0;
-			
-			var escape = function (v) {
-				return plain ? v : v.safeHtml();
-			};
-
-			if (level > 5) return '*TOO_DEEP*';
-
-			if (obj && typeof obj == 'object' && typeof(obj.dump) == 'function') return obj.dump();
-
-			var subDump = function (elem, index) {
-					return tabs + '\t' + index + ': ' + this.dumpRec(elem, level+1, plain) + '\n';
-				}.bind(this),
-				type = atom.typeOf(obj),
-				tabs = '\t'.repeat(level);
-
-			switch (type) {
-				case 'array':
-					return '[\n' + obj.map(subDump).join('') + tabs + ']';
-					break;
-				case 'object':
-					var html = '';
-					for (var index in obj) html += subDump(obj[index], index);
-					return '{\n' + html + tabs + '}';
-				case 'element':
-					var prop = (obj.width && obj.height) ? '('+obj.width+'×'+obj.height+')' : '';
-					return '[DOM ' + obj.tagName.toLowerCase() + prop + ']';
-				case 'textnode':
-				case 'whitespace':
-					return '[DOM ' + type + ']';
-				case 'null':
-					return 'null';
-				case 'boolean':
-					return obj ? 'true' : 'false';
-				case 'string':
-					return escape('"' + obj + '"');
-				default:
-					return escape('' + obj);
-			}
-		},
-		dumpPlain: function (object) {
-			return (this.dumpRec(object, 0, true));
-		},
-		dump : function (object) {
-			return (this.dumpRec(object, 0));
-		}
-	},
-
-	proto: {
-		initialize : function (object) {
-			if (arguments.length) this.trace(object);
-			this.stopped = false;
-			return this;
-		},
-		stop  : function () {
-			this.stopped = true;
-			return this;
-		},
-		set value (value) {
-			if (!this.stopped && !this.blocked) {
-				var html = this.constructor.dump(value)
-					.replaceAll({
-						'\t': '&nbsp;'.repeat(3),
-						'\n': '<br />'
-					});
-				this.createNode().html(html);
-			}
-		},
-		trace : function (value) {
-			this.value = value;
-			return this;
-		},
-		getContainer : function () {
-			var cont = atom.dom('#traceContainer');
-			return cont.length ? cont :
-				atom.dom.create('div', { 'id' : 'traceContainer'})
-					.css({
-						'zIndex'   : '87223',
-						'position' : 'fixed',
-						'top'      : '3px',
-						'right'    : '6px',
-						'maxWidth' : '70%',
-						'maxHeight': '100%',
-						'overflowY': 'auto',
-						'background': 'rgba(0,192,0,0.2)'
-					})
-					.appendTo('body');
-		},
-		bindEvents : function (remove) {
-			var trace = this;
-			// add events unbind
-			!remove || this.node.bind({
-				mouseover : function () {
-					this.css('background', '#222');
-				},
-				mouseout  : function () {
-					this.css('background', '#000');
-				},
-				mousedown : function () {
-					trace.blocked = true;
-				},
-				mouseup : function () {
-					trace.blocked = false;
-				}
-			});
-			return this.node;
-		},
-		destroy : function () {
-			this.node.css('background', '#300');
-			this.timeout = (function () {
-				if (this.node) {
-					this.node.destroy();
-					this.node = null;
-				}
-			}.delay(500, this));
-			return this;
-		},
-		createNode : function () {
-			if (this.node) {
-				if (this.timeout) {
-					this.timeout.stop();
-					this.bindEvents(this.node);
-					this.node.css('background', '#000');
-				}
-				return this.node;
-			}
-
-			this.node = atom.dom
-				.create('div')
-				.css({
-					background : '#000',
-					border     : '1px dashed #0c0',
-					color      : '#0c0',
-					cursor     : 'pointer',
-					fontFamily : 'monospace',
-					margin     : '1px',
-					minWidth   : '200px',
-					overflow   : 'auto',
-					padding    : '3px 12px',
-					whiteSpace : 'pre'
-				})
-				.appendTo(this.getContainer())
-				.bind({
-					click    : this.destroy.bind(this),
-					dblclick : function () { this.stop().destroy(); }.bind(this)
-				});
-			return this.bindEvents();
-		},
-		toString: Function.lambda('[object LibCanvas.Utils.Trace]')
-	}
-});
-
-try {
-	window.trace = function (msg) {
-		var L = arguments.length;
-		if (L > 0) {
-			if (L > 1) msg = atom.toArray(arguments);
-			return new Trace(msg);
-		} else {
-			return new Trace();
-		}
-	};
-} catch (ignored) {}
-
-/*
----
-
-name: "Utils.FpsMeter"
-
-description: "Provides FPS indicator"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Utils.Trace
-
-provides: Utils.FpsMeter
-
-...
-*/
-
-var FpsMeter = declare( 'LibCanvas.Utils.FpsMeter', {
-	initialize : function (framesMax) {
-		this.trace = new Trace();
-		this.genTime   = [];
-		this.prevTime  = null;
-		this.framesMax = framesMax;
-	},
-	frame : function () {
-		if (this.prevTime) {
-			this.genTime.push(Date.now() - this.prevTime);
-			if (this.genTime.length > this.framesMax) {
-				this.genTime.shift();
-			}
-		}
-		this.output();
-		this.prevTime = Date.now();
-		return this;
-	},
-	output : function () {
-		if (this.genTime.length) {
-			var fps = 1000 / this.genTime.average();
-			fps = fps.round(fps > 2 ? 0 : fps > 1 ? 1 : 2);
-			this.trace.trace('FPS: ' + fps);
-		} else {
-			this.trace.trace('FPS: counting');
-		}
-		return this;
-	},
-	toString: Function.lambda('[object LibCanvas.Utils.FpsMeter]')
-});
-
-/*
----
-
 name: "Utils.Image"
 
 description: "Provides some Image extensions"
@@ -8709,7 +3776,7 @@ provides: Utils.Image
 ...
 */
 // <image> tag
-atom.implement(HTMLImageElement, {
+atom.append(HTMLImageElement.prototype, {
 	// наверное, лучше использовать createPattern
 	createSprite: function (rect) {
 		if (rect.width <= 0 || rect.height <= 0) {
@@ -8794,409 +3861,11 @@ atom.implement(HTMLImageElement, {
 	}
 });
 	// mixin from image
-atom.implement(HTMLCanvasElement, {
+atom.append(HTMLCanvasElement.prototype, {
 	createSprite : HTMLImageElement.prototype.createSprite,
 	sprite   : HTMLImageElement.prototype.sprite,
 	isLoaded : function () { return true; },
 	toCanvas : function () { return this; }
-});
-
-/*
----
-
-name: "Utils.ImagePreloader"
-
-description: "Provides images preloader"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Shapes.Rectangle
-
-provides: Utils.ImagePreloader
-
-...
-*/
-
-var ImagePreloader = declare( 'LibCanvas.Utils.ImagePreloader', {
-	mixin: Events.Mixin,
-
-	proto: {
-		processed : 0,
-		number: 0,
-		initialize: function (images, suffix) {
-			this.events = new Events(this);
-			this.count = {
-				errors : 0,
-				aborts : 0,
-				loaded : 0
-			};
-
-			if (Array.isArray(images)) images = Object.map(images[1], function (src) {
-				if(src.begins('http://') || src.begins('https://') ) {
-					return src;
-				}
-				return images[0] + src;
-			});
-			this.suffix    = suffix;
-			this.usrImages = images;
-			this.domImages = this.createDomImages(images);
-			this.images    = {};
-		},
-		cutImages: function () {
-			var i, parts, img;
-			for (i in this.usrImages) {
-				parts = this.splitUrl( this.usrImages[i] );
-				img   = this.domImages[ parts.url ];
-				if (parts.coords) img = img.sprite(Rectangle( parts.coords ));
-				this.images[i] = img;
-			}
-			return this;
-		},
-		onProcessed : function (type, img) {
-			if (type == 'loaded' && window.opera) {
-				// opera fullscreen bug workaround
-				img.width  = img.width;
-				img.height = img.height;
-				img.naturalWidth  = img.naturalWidth;
-				img.naturalHeight = img.naturalHeight;
-			}
-			this.count[type]++;
-			this.processed++;
-			if (this.isReady()) this.cutImages().events.ready('ready', [this]);
-			return this;
-		},
-		get info () {
-			var stat = "Images loaded: {loaded}; Errors: {errors}; Aborts: {aborts}"
-				.substitute(this.count);
-			var ready = this.isReady() ? "Image preloading has completed;\n" : '';
-			return ready + stat;
-		},
-		getInfo : function () {
-			return this.info
-		},
-		get progress () {
-			return this.isReady() ? 1 : (this.processed / this.number).round(3);
-		},
-		getProgress : function () {
-			return this.progress;
-		},
-		isReady : function () {
-			return (this.number == this.processed);
-		},
-		createDomImage : function (src) {
-			this.number++;
-			var img = new Image();
-			img.src = src;
-			if (window.opera && img.complete) {
-				this.onProcessed.delay(10, this, ['loaded', img]);
-			} else {
-				img.addEventListener( 'load' , this.onProcessed.bind(this, 'loaded', img), false );
-				img.addEventListener( 'error', this.onProcessed.bind(this, 'errors', img), false );
-				img.addEventListener( 'abort', this.onProcessed.bind(this, 'aborts', img), false );
-			}
-			return img;
-		},
-		splitUrl: function (str) {
-			var url = str, size, cell, match, coords = null;
-
-					// searching for pattern 'url [x:y:w:y]'
-			if (match = str.match(/ \[(\d+)\:(\d+)\:(\d+)\:(\d+)\]$/)) {
-				coords = match.slice( 1 );
-					// searching for pattern 'url [w:y]{x:y}'
-			} else if (match = str.match(/ \[(\d+)\:(\d+)\]\{(\d+)\:(\d+)\}$/)) {
-				coords = match.slice( 1 ).map( Number );
-				size = coords.slice( 0, 2 );
-				cell = coords.slice( 2, 4 );
-				coords = [ cell[0] * size[0], cell[1] * size[1], size[0], size[1] ];
-			}
-			if (match) {
-				url = str.substr(0, str.lastIndexOf(match[0]));
-				coords = coords.map( Number );
-			}
-			if (this.suffix) {
-				if (typeof this.suffix == 'function') {
-					url = this.suffix( url );
-				} else {
-					url += this.suffix;
-				}
-			}
-
-			return { url: url, coords: coords };
-		},
-		createDomImages: function (images) {
-			var i, result = {}, url;
-			for (i in images) {
-				url = this.splitUrl( images[i] ).url;
-				if (!result[url]) result[url] = this.createDomImage( url );
-			}
-			return result;
-		},
-		ready : function (fn) {
-			this.events.add('ready', fn);
-			return this;
-		},
-		toString: Function.lambda('[object LibCanvas.Utils.ImagePreloader]')
-	}
-});
-
-/*
----
-
-name: "Utils.ProgressBar"
-
-description: "Easy way to draw progress bar"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Point
-	- Shapes.Rectangle
-	- Shapes.Polygon
-	- Shapes.Polygon
-	- Behaviors.Animatable
-
-provides: Utils.ProgressBar
-
-...
-*/
-
-var ProgressBar = declare( 'LibCanvas.Utils.ProgressBar', {
-	mixin: Animatable,
-	proto: {
-		initialize : function () {
-			this.coord = new Point(0,0);
-			this.progress = 0;
-		},
-		preRender : function () {
-			if (this.libcanvas && this.style) {
-				var htmlElem = this.libcanvas.ctx.canvas;
-				this.coord.set(
-					(htmlElem.width -this.style['width'] )/2,
-					(htmlElem.height-this.style['height'])/2
-				);
-				this.line = this.renderLine();
-			}
-			return this;
-		},
-		setLibcanvas : function (libcanvas) {
-			this.libcanvas = libcanvas;
-			return this.preRender();
-		},
-		getBuffer : function () {
-			if (!this.buffer) this.buffer = Buffer(this.style.width, this.style.height, true).ctx;
-			return this.buffer;
-		},
-		drawBorder : function () {
-			var s = this.style;
-
-			var pbRect = new Rectangle({
-				from : this.coord,
-				size : Object.collect(s, ['width', 'height'])
-			}).snapToPixel();
-
-			this.libcanvas.ctx
-				.fillAll(s['bgColor'])
-				.fill   (pbRect, s['barBgColor'])
-				.stroke (pbRect, s['borderColor']);
-			return this;
-		},
-		drawLine : function () {
-			if (this.progress > 0) {
-				var line = this.line;
-				var prog   = this.progress;
-				var width  = ((line.width  - 2) * prog).round();
-				if (width > 1) {
-					var height = line.height - 2;
-					var c = this.coord;
-
-					this.libcanvas.ctx.drawImage({
-						image : line,
-						crop  : [    0,    0 , width-1, height-1],
-						draw  : [c.x+1, c.y+1, width-1, height-1]
-					});
-				}
-			}
-			return this;
-		},
-		renderLine : function () {
-			var b = this.getBuffer(), s = this.style;
-
-			// Закрашиваем фон
-			b.save().fillAll(s['barColor']);
-
-			// Если нужны полоски - рисуем
-			if (s['strips']) {
-				b.set('fillStyle', s['stripColor']);
-				// Смещение верхней части полоски относительно нижней
-				var shift = 1 * s['stripShift'] || 0, stripW = 1*s['stripWidth'];
-				var w = b.canvas.width, h = b.canvas.height;
-				// Рисуем их по очереди , пока на холсте есть место
-				for(var mv = 1; mv < w; mv += s['stripStep']) {
-					b.fill(new Polygon([
-						[mv + shift         , 0 ],
-						[mv + shift + stripW, 0 ],
-						[mv         + stripW, h ],
-						[mv                 , h ]
-					]));
-				}
-			}
-
-			// Добавляем поверх линию, если необходимо
-			if (s['blend']) {
-				b.set({
-					globalAlpha: s['blendOpacity'] < 1 ? s['blendOpacity'] : 0.3,
-					fillStyle  : s['blendColor']
-				})
-				.fillRect({
-					from : [ 0             , s['blendVAlign'] ],
-					size : [ b.canvas.width, s['blendHeight'] ]
-				});
-			}
-			return b.restore().canvas;
-		},
-		setProgress : function (progress) {
-			this.update().animate({
-				props: {progress: progress},
-				fn: 'circ-in',
-				onProccess: this.update.bind(this),
-				time: 200
-			});
-			return this;
-		},
-		setStyle : function (newStyle) {
-			this.update().style = newStyle;
-			return this.preRender();
-		},
-		update: function () {
-			if (this.libcanvas) this.libcanvas.update();
-			return this;
-		},
-		draw : function () {
-			this.libcanvas.ctx.save();
-			this.drawBorder().drawLine();
-			this.libcanvas.ctx.restore();
-			return this;
-		},
-		toString: Function.lambda('[object LibCanvas.Utils.ProgressBar]')
-	}
-});
-
-/*
----
-
-name: "Utils.StopWatch"
-
-description: "StopWatch"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-
-provides: Utils.StopWatch
-
-...
-*/
-
-var StopWatch = declare( 'LibCanvas.Utils.StopWatch', {
-	startTime : 0,
-	initialize : function (autoStart) {
-		autoStart && this.start();
-	},
-	start : function () {
-		this.startTime = Date.now();
-		return this;
-	},
-	stop : function () {
-		this.startTime = 0;
-		return this;
-	},
-	getTime : function (format) {
-		var d2 = function (num) { return num < 10 ? '0' + num : num; };
-
-		var t = Date.now() - this.startTime;
-
-		if (format === true) return t;
-
-		var s = (t / 1000).round(), m = (s / 60).round(), h = (m / 60).round();
-		if (typeof format === 'string') {
-			return format.substitute({
-				S: s, M: m, H: h,
-				S2: d2(s), M2: d2(s), H2: d2(s),
-				s: d2(s % 60), m: d2(m % 60), h: h
-			});
-		} else {
-			return (s < 60) ?
-				d2((t / 1000).toFixed(1)) :
-				h + ':' + d2(m % 60) + ':' + d2(s % 60);
-		}
-	},
-	toString: Function.lambda('[object LibCanvas.Utils.StopWatch]')
-});
-
-/*
----
-
-name: "Utils.TimeLogger"
-
-description: "TimeLogger"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Utils.StopWatch
-	- Utils.Trace
-
-provides: Utils.TimeLogger
-
-...
-*/
-
-var TimeLogger = declare( 'LibCanvas.Utils.TimeLogger', {
-	last : 10,
-	sw   : null,
-	trace: null,
-	initialize : function (last) {
-		this.time = [];
-		if (last) this.last = last;
-		this.sw    = new StopWatch();
-		this.trace = new Trace();
-	},
-	from : function () {
-		this.sw.start();
-		return this;
-	},
-	to : function (msg) {
-		this.time.push(this.sw.getTime(1));
-		this.sw.stop();
-		if (this.time.length > 25) this.time.shift();
-		this.trace.trace(msg + this.time.average().toFixed(2));
-	},
-	toString: Function.lambda('[object LibCanvas.Utils.TimeLogger]')
 });
 
 }).call(typeof window == 'undefined' ? exports : window, atom, Math);

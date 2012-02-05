@@ -21,7 +21,7 @@ provides: Utils.Image
 ...
 */
 // <image> tag
-atom.implement(HTMLImageElement, {
+atom.append(HTMLImageElement.prototype, {
 	// наверное, лучше использовать createPattern
 	createSprite: function (rect) {
 		if (rect.width <= 0 || rect.height <= 0) {
@@ -106,7 +106,7 @@ atom.implement(HTMLImageElement, {
 	}
 });
 	// mixin from image
-atom.implement(HTMLCanvasElement, {
+atom.append(HTMLCanvasElement.prototype, {
 	createSprite : HTMLImageElement.prototype.createSprite,
 	sprite   : HTMLImageElement.prototype.sprite,
 	isLoaded : function () { return true; },

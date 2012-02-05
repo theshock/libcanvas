@@ -17,89 +17,36 @@ provides: LibCanvas
 ...
 */
 
-var LibCanvas = this.LibCanvas = declare(
-/** @lends LibCanvas.prototype */
-{
+var LibCanvas = this.LibCanvas = declare({
+	name: 'LibCanvas',
+
 	own: {
-		Buffer: function (width, height, withCtx) {
-			var a = Array.pickFrom(arguments), zero = (width == null || width === true);
-			if (zero || width.width == null || width.height == null) {
-				width   = zero ? 0 : a[0];
-				height  = zero ? 0 : a[1];
-				withCtx = zero ? a[0] : a[2];
-			} else {
-				withCtx = !!height;
-				height  = width.height;
-				width   = width.width
-			}
+		Buffer: function () {
+			return LibCanvas.buffer.apply( LibCanvas, arguments );
+		},
+		buffer: function (width, height, withCtx) {
+			var size, a = slice.call(arguments), last = a[a.length-1];
+
+			withCtx = (typeof last === 'boolean' ? a.pop() : false);
+
+			size = Size(a.length == 1 ? a[0] : a);
 			
-			var canvas = atom.dom
-				.create("canvas", {
-					width  : width,
-					height : height
-				}).get();
+			var canvas = atom.dom.create("canvas", {
+				width  : size.width,
+				height : size.height
+			}).first;
 			
 			if (withCtx) canvas.ctx = canvas.getContext('2d-libcanvas');
 			return canvas;
 		},
-		isLibCanvas: function (elem) {
-			return elem && elem instanceof Canvas2D;
-		},
-		namespace: function (namespace) {
-			var current;
-			Array.from(arguments).forEach(function (namespace) {
-				current = LibCanvas;
-				namespace.split('.').forEach(function(part){
-					if (current[part] == null) current[part] = {};
-					current = current[part];
-				});
-			});
-			return current;
-		},
 		extract: function (to) {
-			to = to || atom.global;
-
-			for (var i in {Shapes: 1, Behaviors: 1, Utils: 1}) {
-				for (var k in LibCanvas[i]) {
-					to[k] = LibCanvas[i][k];
-				}
+			to = to || global;
+			for (var k in LibCanvas.Shapes) {
+				to[k] = LibCanvas.Shapes[k];
 			}
-			for (i in {Point: 1, Animation: 1, Processors: 1, Context2D: 1}) {
-				to[i] = LibCanvas[i];
-			}
+			to.Point = LibCanvas.Point;
+			to.Size  = LibCanvas.Size;
 			return to;
-		},
-
-		get invoker () {
-			if (this._invoker == null) {
-				this._invoker = new Invoker().invoke();
-			}
-			return this._invoker;
-		}
-	},
-	proto: {
-		/**
-		 * @constructs
-		 * @returns {LibCanvas.Canvas2D}
-		 */
-		initialize: function() {
-			return Canvas2D.factory(arguments);
 		}
 	}
 });
-
-LibCanvas.Animation  = {};
-LibCanvas.Behaviors  = {};
-LibCanvas.Engines    = {};
-LibCanvas.Inner      = {};
-LibCanvas.Processors = {};
-LibCanvas.Scene      = {};
-LibCanvas.Shapes     = {};
-LibCanvas.Ui         = {};
-LibCanvas.Utils      = {};
-
-var
-	Inner      = LibCanvas.Inner,
-	Processors = LibCanvas.Processors,
-	Buffer     = LibCanvas.Buffer,
-	Scene      = LibCanvas.Scene;

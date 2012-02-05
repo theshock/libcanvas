@@ -22,7 +22,7 @@ provides: Utils.Math
 
 	var degreesCache = {}, d360;
 
-	atom.implement(Number, {
+	atom.core.append(Number.prototype, {
 		/**
 		 * Cast degrees to radians
 		 * (90).degree() == Math.PI/2
@@ -82,7 +82,7 @@ provides: Utils.Math
 
 })();
 
-atom.extend(Math, {
+atom.core.append(Math, {
 	hypotenuse: function (cathetus1, cathetus2)  {
 		return (cathetus1*cathetus1 + cathetus2*cathetus2).sqrt();
 	},
