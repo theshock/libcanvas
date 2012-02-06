@@ -50,8 +50,6 @@ declare( 'LibCanvas.App',
 
 			width  = settings.get('width');
 			height = settings.get('height');
-			height = settings.get('height');
-			height = settings.get('height');
 
 			if (canvas instanceof LibCanvas) {
 				libcanvas = this.libcanvas = canvas;

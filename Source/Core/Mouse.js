@@ -85,7 +85,7 @@ return declare( 'LibCanvas.Mouse', {
 			this.bindMethods( 'onEvent' );
 
 			this.elem       = atom.dom(elem);
-			this.offsetElem = atom.dom(offsetElem) || this.elem;
+			this.offsetElem = offsetElem ? atom.dom(offsetElem) : this.elem;
 
 			this.point    = new Point(0, 0);
 			this.previous = new Point(0, 0);
@@ -117,9 +117,9 @@ return declare( 'LibCanvas.Mouse', {
 		set: function (e, inside) {
 			var point = this.getOffset(e);
 
-			this.prev .set( this.point );
-			this.delta.set( this.prev.diff( point ) );
-			this.point.set( point );
+			this.previous.set( this.point );
+			this.delta   .set( this.previous.diff( point ) );
+			this.point   .set( point );
 			this.inside = inside;
 		},
 		/** @private */
@@ -171,7 +171,8 @@ return declare( 'LibCanvas.Mouse', {
 				mouseout   : callback,
 
 				DOMMouseScroll: callback,
-				mousewheel    : callback
+				mousewheel    : callback,
+				selectstart   : false
 			});
 		}
 	}

@@ -209,11 +209,11 @@ var Rectangle = declare( 'LibCanvas.Shapes.Rectangle',
 		/** @returns {LibCanvas.Shapes.Rectangle} */
 		fillToPixel: function () {
 			var from = this.from, to = this.to,
-				point = function (method, invoke) {
+				point = function (side, round) {
 					return new Point(
-						Math[method](from.x, to.x),
-						Math[method](from.y, to.y)
-					).invoke( invoke );
+						Math[round](Math[side](from.x, to.x)),
+						Math[round](Math[side](from.y, to.y))
+					);
 				};
 
 			return new Rectangle(

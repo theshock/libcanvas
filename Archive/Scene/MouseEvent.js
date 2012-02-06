@@ -71,11 +71,5 @@ declare( 'LibCanvas.Scene.MouseEvent',
 	fall: function () {
 		this.falling = true;
 		return this;
-	},
-
-	/** @deprecated */
-	stop: function () {
-		//console.error('deprecated');
-		return this;
 	}
 });

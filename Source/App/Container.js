@@ -38,9 +38,10 @@ App.Container = declare( 'LibCanvas.App.Container', {
 	},
 
 	set size(size) {
-		size = this.currentSize.set(size);
+		size = this.currentSize.set(size).toObject();
 
-		this.wrapper.css({ width: size.width, height: size.height });
+		this.wrapper.css(size);
+		this.bounds .css(size);
 	},
 
 	get size() {
@@ -61,11 +62,10 @@ App.Container = declare( 'LibCanvas.App.Container', {
 	/** @private */
 	createWrappers: function () {
 		this.bounds = atom.dom.create('div').css({
-			width   : '100%',
-			height  : '100%',
 			overflow: 'hidden',
 			position: 'absolute'
-		});
+		})
+		.css(this.currentSize.toObject());
 		
 		this.wrapper = atom.dom.create('div')
 			.css(this.currentSize.toObject())

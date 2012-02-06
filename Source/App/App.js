@@ -35,6 +35,34 @@ var App = declare( 'LibCanvas.App', {
 		atom.frame.add( this.tick );
 	},
 
+	/**
+	 * return "-1" if left is higher, "+1" if right is higher & 0 is they are equals
+	 * @param {App.Element} left
+	 * @param {App.Element} right
+	 * @returns {number}
+	 */
+	zIndexCompare: function (left, right, inverted) {
+		var leftZ, rightZ, factor = inverted ? -1 : +1;
+
+		if (!left  || !left.scene ) throw new TypeError( 'Wrong left element'  );
+		if (!right || !right.scene) throw new TypeError( 'Wrong right element' );
+
+
+		 leftZ =  left.scene.layer.zIndex;
+		rightZ = right.scene.layer.zIndex;
+
+		if (leftZ > rightZ) return -1 * factor;
+		if (leftZ < rightZ) return +1 * factor;
+
+		 leftZ =  left.zIndex;
+		rightZ = right.zIndex;
+
+		if (leftZ > rightZ) return -1 * factor;
+		if (leftZ < rightZ) return +1 * factor;
+
+		return 0;
+	},
+
 	createScene: function (settings) {
 		var scene = new App.Scene(this, settings);
 		this.scenes.push(scene);

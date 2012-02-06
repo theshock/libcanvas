@@ -82,9 +82,7 @@ var Circle = declare( 'LibCanvas.Shapes.Circle',
 			}
 		},
 		move : function (distance, reverse) {
-			distance = this.invertDirection(distance, reverse);
-			this.center.move(distance);
-			this.events.fire('move', [distance]);
+			this.center.move(distance, reverse);
 			return this;
 		},
 		processPath : function (ctx, noWrap) {

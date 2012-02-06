@@ -64,22 +64,22 @@ var Point = declare( 'LibCanvas.Point', {
 			return this;
 		},
 		/** @returns {Point} */
-		moveTo : function (newCoord) {
-			return this.move(this.diff(this.cast(arguments)));
+		moveTo : function (point) {
+			return this.move(this.diff(this.cast(point)));
 		},
 		/** @returns {Number} */
 		angleTo : function (point) {
-			var diff = this.cast(arguments).diff(this);
+			var diff = this.cast(point).diff(this);
 			return Math.atan2(diff.y, diff.x).normalizeAngle();
 		},
 		/** @returns {Number} */
 		distanceTo : function (point) {
-			var diff = this.cast(arguments).diff(this);
+			var diff = this.cast(point).diff(this);
 			return Math.hypotenuse(diff.x, diff.y);
 		},
 		/** @returns {Point} */
 		diff : function (point) {
-			return new this.constructor(arguments).move(this, true);
+			return new this.constructor(point).move(this, true);
 		},
 		/** @returns {Point} */
 		rotate : function (angle, pivot) {

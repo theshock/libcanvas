@@ -34,6 +34,9 @@ declare( 'LibCanvas.Behaviors.Draggable', {
 			this.bindMethods([ 'onStop', 'onDrag', 'onStart' ]);
 
 			this.element = behaviors.element;
+			if (!atom.core.isFunction(this.element.move)) {
+				throw new TypeError( 'Element ' + this.element + ' must has «move» method' );
+			}
 			this.events  = behaviors.element.events;
 			this.eventArgs(args, 'moveDrag');
 		},
@@ -71,8 +74,9 @@ declare( 'LibCanvas.Behaviors.Draggable', {
 
 		/** @private */
 		onDrag: function (e) {
-			this.element.move( e.deltaOffset );
-			this.events.fire('moveDrag', [e.deltaOffset, e]);
+			var delta = this.element.mouse.delta;
+			this.element.move( delta );
+			this.events.fire('moveDrag', [delta, e]);
 		},
 
 		/** @private */

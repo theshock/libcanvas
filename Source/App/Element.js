@@ -21,10 +21,16 @@ provides: App.Element
 ...
 */
 
-declare( 'LibCanvas.App.Element', {
+App.Element = declare( 'LibCanvas.App.Element', {
+
+	zIndex: 0,
+
 	/** @constructs */
 	initialize: function (scene, settings) {
-		this.settings = new Settings({ hidden: false }).set(settings);
+		this.events = new Events(this);
+		this.settings = new Settings({ hidden: false })
+			.set(settings)
+			.addEvents(this.events);
 		scene.addElement( this );
 
 		var ownShape = this.shape && this.shape != this.constructor.prototype.shape;
@@ -36,12 +42,18 @@ declare( 'LibCanvas.App.Element', {
 		if (this.settings.get('zIndex') != null) {
 			this.zIndex = Number( this.settings.get('zIndex') );
 		}
+
+		this.configure(settings);
+	},
+
+	configure: function (settings) {
+		return this;
 	},
 
 	previousBoundingShape: null,
 
 	get currentBoundingShape () {
-		return this.shape;
+		return this.shape.getBoundingRectangle();
 	},
 
 	destroy: function () {
@@ -51,6 +63,10 @@ declare( 'LibCanvas.App.Element', {
 
 	hasPoint: function (point) {
 		return this.shape.hasPoint( point );
+	},
+
+	hasMousePoint: function (point) {
+		return this.hasPoint(point);
 	},
 
 	addShift: function (shift) {

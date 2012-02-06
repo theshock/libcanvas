@@ -58,7 +58,7 @@ App.Scene = declare( 'LibCanvas.App.Scene', {
 			resources = this.app.resources,
 			redraw    = this.redraw;
 
-		if (this.settings.get('intersection') !== 'manual') {
+		if (this.settings.get('intersection') === 'auto') {
 			this.addIntersections();
 		}
 
@@ -126,43 +126,37 @@ App.Scene = declare( 'LibCanvas.App.Scene', {
 		if (element.scene == this && !element.redrawRequested) {
 			this.redraw.push( element );
 			this.needUpdate = true;
+			element.redrawRequested = true;
 		}
 		return this;
 	},
 
 	/** @private */
 	addIntersections: function () {
-		var i, elem,
-			redraw = this.redraw,
-			scene  = this;
+		var i, elem, scene  = this;
 
-		for (i = 0; i < redraw.length; i++) {
-			elem = redraw[i];
+		for (i = 0; i < this.redraw.length; i++) {
+			elem = this.redraw[i];
 
-			this.findIntersections(elem.previousBoundingShape, elem)
-				.forEach(function (e) {
+			this.findIntersections(elem.previousBoundingShape, elem, this.redrawElement);
+			this.findIntersections(elem. currentBoundingShape, elem, function (e) {
+				// we need to redraw it, only if it will be over our element
+				if (e.zIndex > elem.zIndex) {
 					scene.redrawElement( e );
-				});
-			this.findIntersections(elem.currentBoundingShape, elem)
-				.forEach(function (e) {
-					// we need to redraw it, only if it is over our element
-					if (e.zIndex > elem.zIndex) {
-						scene.redrawElement( e );
-					}
-				});
+				}
+			});
 		}
 	},
 
 	/** @private */
-	findIntersections: function (shape, elem) {
-		var i, e, elems = [];
-		for (i = this.elements.length; i--;) {
+	findIntersections: function (shape, elem, fn) {
+		var i = this.elements.length, e;
+		while (i--) {
 			e = this.elements[i];
 			if (e != elem && e.isVisible() && e.currentBoundingShape.intersect( shape )) {
-				elems.push( e );
+				fn.call( this, e );
 			}
 		}
-		return elems;
 	}
 
 });

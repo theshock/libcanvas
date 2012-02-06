@@ -124,6 +124,34 @@ var App = declare( 'LibCanvas.App', {
 		atom.frame.add( this.tick );
 	},
 
+	/**
+	 * return "-1" if left is higher, "+1" if right is higher & 0 is they are equals
+	 * @param {App.Element} left
+	 * @param {App.Element} right
+	 * @returns {number}
+	 */
+	zIndexCompare: function (left, right, inverted) {
+		var leftZ, rightZ, factor = inverted ? -1 : +1;
+
+		if (!left  || !left.scene ) throw new TypeError( 'Wrong left element'  );
+		if (!right || !right.scene) throw new TypeError( 'Wrong right element' );
+
+
+		 leftZ =  left.scene.layer.zIndex;
+		rightZ = right.scene.layer.zIndex;
+
+		if (leftZ > rightZ) return -1 * factor;
+		if (leftZ < rightZ) return +1 * factor;
+
+		 leftZ =  left.zIndex;
+		rightZ = right.zIndex;
+
+		if (leftZ > rightZ) return -1 * factor;
+		if (leftZ < rightZ) return +1 * factor;
+
+		return 0;
+	},
+
 	createScene: function (settings) {
 		var scene = new App.Scene(this, settings);
 		this.scenes.push(scene);
@@ -175,9 +203,10 @@ App.Container = declare( 'LibCanvas.App.Container', {
 	},
 
 	set size(size) {
-		size = this.currentSize.set(size);
+		size = this.currentSize.set(size).toObject();
 
-		this.wrapper.css({ width: size.width, height: size.height });
+		this.wrapper.css(size);
+		this.bounds .css(size);
 	},
 
 	get size() {
@@ -198,11 +227,10 @@ App.Container = declare( 'LibCanvas.App.Container', {
 	/** @private */
 	createWrappers: function () {
 		this.bounds = atom.dom.create('div').css({
-			width   : '100%',
-			height  : '100%',
 			overflow: 'hidden',
 			position: 'absolute'
-		});
+		})
+		.css(this.currentSize.toObject());
 		
 		this.wrapper = atom.dom.create('div')
 			.css(this.currentSize.toObject())
@@ -236,10 +264,16 @@ provides: App.Element
 ...
 */
 
-declare( 'LibCanvas.App.Element', {
+App.Element = declare( 'LibCanvas.App.Element', {
+
+	zIndex: 0,
+
 	/** @constructs */
 	initialize: function (scene, settings) {
-		this.settings = new Settings({ hidden: false }).set(settings);
+		this.events = new Events(this);
+		this.settings = new Settings({ hidden: false })
+			.set(settings)
+			.addEvents(this.events);
 		scene.addElement( this );
 
 		var ownShape = this.shape && this.shape != this.constructor.prototype.shape;
@@ -251,12 +285,18 @@ declare( 'LibCanvas.App.Element', {
 		if (this.settings.get('zIndex') != null) {
 			this.zIndex = Number( this.settings.get('zIndex') );
 		}
+
+		this.configure(settings);
+	},
+
+	configure: function (settings) {
+		return this;
 	},
 
 	previousBoundingShape: null,
 
 	get currentBoundingShape () {
-		return this.shape;
+		return this.shape.getBoundingRectangle();
 	},
 
 	destroy: function () {
@@ -266,6 +306,10 @@ declare( 'LibCanvas.App.Element', {
 
 	hasPoint: function (point) {
 		return this.shape.hasPoint( point );
+	},
+
+	hasMousePoint: function (point) {
+		return this.hasPoint(point);
 	},
 
 	addShift: function (shift) {
@@ -418,6 +462,216 @@ App.Layer = declare( 'LibCanvas.App.Layer', {
 /*
 ---
 
+name: "App.MouseHandler"
+
+description: "LibCanvas.App.MouseHandler"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- App
+
+provides: App.MouseHandler
+
+...
+*/
+
+App.MouseHandler = declare( 'LibCanvas.App.MouseHandler', {
+
+	/** @private */
+	mouse: null,
+
+	/** @constructs */
+	initialize: function (settings) {
+		var handler = this;
+
+		handler.settings = new Settings(settings);
+		handler.lastMouseMove = [];
+		handler.lastMouseDown = [];
+		handler.subscribers   = [];
+
+		handler.app   = handler.settings.get('app');
+		handler.mouse = handler.settings.get('mouse');
+		handler.compareFunction = function (left, right) {
+			return handler.app.zIndexCompare(left, right, true);
+		};
+
+
+		[ 'down', 'up', 'move', 'out', 'dblclick', 'contextmenu', 'wheel' ].forEach(function (type) {
+			handler.mouse.events.add( type, function (e) {
+				handler.event(type, e, false);
+			});
+		});
+	},
+
+	stop: function () {
+		this.stopped = true;
+		return this;
+	},
+
+	start: function () {
+		this.stopped = false;
+		return this;
+	},
+
+	subscribe : function (elem) {
+		atom.array.include(this.subscribers, elem);
+		return this;
+	},
+
+	unsubscribe : function (elem) {
+		atom.array.erase(this.subscribers, elem);
+		return this;
+	},
+
+	fall: function () {
+		var value = this.falling;
+		this.falling = false;
+		return value;
+	},
+
+	isOver: function (elem) {
+		return this.mouse.inside && elem.hasMousePoint( this.mouse.point );
+	},
+
+	/** @private */
+	stopped: false,
+
+	/** @private */
+	falling: false,
+
+	/** @private */
+	checkFalling: function () {
+		var value = this.falling;
+		this.falling = false;
+		return value;
+	},
+
+	/** @private */
+	event: function (type, e, stopped) {
+		if (this.stopped) return;
+
+		var method = ['dblclick', 'contextmenu', 'wheel'].indexOf( type ) >= 0
+			? 'forceEvent' : 'parseEvent';
+		
+		return this[method]( type, e, stopped, this.subscribers );
+	},
+
+	/** @private */
+	parseEvent: function (type, event, stopped, elements) {
+		if (type == 'down') this.lastMouseDown.length = 0;
+
+		var i, elem,
+			handler  = this,
+			lastDown = handler.lastMouseDown,
+			lastMove = handler.lastMouseMove,
+			lastOut  = [],
+			eventArgs = [event];
+
+		var fire = function (eventName) {
+			var children = this.childrenElements;
+			if (children && children.length) {
+				handler.parseEvent(type, event, stopped, children);
+			}
+			this.events.fire( eventName, eventArgs );
+		};
+
+		elements.sort( this.compareFunction );
+
+		// В первую очередь - обрабатываем реальный mouseout с элементов
+		if (type == 'move' || type == 'out') {
+			for (i = lastMove.length; i--;) {
+				elem = lastMove[i];
+				if (elements.contains(elem) && !handler.isOver(elem)) {
+					fire.call( elem, 'mouseout' );
+					lastMove.erase(elem);
+					lastOut.push(elem);
+				}
+			}
+		}
+
+		for (i = elements.length; i--;) {
+			elem = elements[i];
+			// предыдущий элемент принял "удар" на себя
+			// необходимо сообщить остальным элементам о mouseout
+			if (stopped) {
+				if (type == 'move' || type == 'out') {
+					if (elements.contains(elem) && lastMove.contains(elem)) {
+						fire.call( elem, 'mouseout' );
+						lastMove.erase(elem);
+					}
+				} else if (type == 'up') {
+					if (handler.isOver(elem)) {
+						fire.call( elem, 'mouseup' );
+						if (elements.contains(elem) && lastDown.contains(elem)) {
+							fire.call( elem, 'click' );
+						}
+					}
+				}
+			// мышь над элементом, сообщаем о mousemove
+			// о mouseover, mousedown, click, если необходимо
+			} else if (handler.isOver(elem)) {
+				if (type == 'move') {
+					if (!lastMove.contains(elem)) {
+						fire.call( elem, 'mouseover' );
+						lastMove.push( elem );
+					}
+				} else if (type == 'down') {
+					lastDown.push(elem);
+				// If mouseup on this elem and last mousedown was on this elem - click
+				} else if (type == 'up' && elements.contains(elem) && lastDown.contains(elem)) {
+					fire.call( elem, 'click' );
+				}
+				fire.call( elem, 'mouse' + type );
+
+				if (!this.checkFalling()) {
+					stopped = true;
+				}
+			// мышь не над элементом, событие проваливается,
+			// сообщаем элементу, что где-то произошло событие
+			} else if (!lastOut.contains(elem)) {
+				// fast version
+				elem.events.fire( 'away:mouse' + type, eventArgs );
+			}
+		}
+
+		return stopped;
+	},
+
+	/** @private */
+	forceEvent: function (type, event, stopped, elements) {
+		var
+			children,
+			elem,
+			i = elements.sort( this.compareFunction ).length;
+		while (i--) {
+			elem = elements[i];
+			if (!this.isOver(elem)) continue;
+
+			elem.events.fire( type, [ event ]);
+			children = elem.childrenElements;
+			if (children && children.length) {
+				this.forceEvent(type, event, stopped, children);
+			}
+			if (!this.checkFalling()) {
+				stopped = true;
+				break;
+			}
+		}
+		return stopped;
+	}
+
+});
+
+/*
+---
+
 name: "App.Scene"
 
 description: ""
@@ -475,7 +729,7 @@ App.Scene = declare( 'LibCanvas.App.Scene', {
 			resources = this.app.resources,
 			redraw    = this.redraw;
 
-		if (this.settings.get('intersection') !== 'manual') {
+		if (this.settings.get('intersection') === 'auto') {
 			this.addIntersections();
 		}
 
@@ -543,43 +797,37 @@ App.Scene = declare( 'LibCanvas.App.Scene', {
 		if (element.scene == this && !element.redrawRequested) {
 			this.redraw.push( element );
 			this.needUpdate = true;
+			element.redrawRequested = true;
 		}
 		return this;
 	},
 
 	/** @private */
 	addIntersections: function () {
-		var i, elem,
-			redraw = this.redraw,
-			scene  = this;
+		var i, elem, scene  = this;
 
-		for (i = 0; i < redraw.length; i++) {
-			elem = redraw[i];
+		for (i = 0; i < this.redraw.length; i++) {
+			elem = this.redraw[i];
 
-			this.findIntersections(elem.previousBoundingShape, elem)
-				.forEach(function (e) {
+			this.findIntersections(elem.previousBoundingShape, elem, this.redrawElement);
+			this.findIntersections(elem. currentBoundingShape, elem, function (e) {
+				// we need to redraw it, only if it will be over our element
+				if (e.zIndex > elem.zIndex) {
 					scene.redrawElement( e );
-				});
-			this.findIntersections(elem.currentBoundingShape, elem)
-				.forEach(function (e) {
-					// we need to redraw it, only if it is over our element
-					if (e.zIndex > elem.zIndex) {
-						scene.redrawElement( e );
-					}
-				});
+				}
+			});
 		}
 	},
 
 	/** @private */
-	findIntersections: function (shape, elem) {
-		var i, e, elems = [];
-		for (i = this.elements.length; i--;) {
+	findIntersections: function (shape, elem, fn) {
+		var i = this.elements.length, e;
+		while (i--) {
 			e = this.elements[i];
 			if (e != elem && e.isVisible() && e.currentBoundingShape.intersect( shape )) {
-				elems.push( e );
+				fn.call( this, e );
 			}
 		}
-		return elems;
 	}
 
 });
@@ -757,6 +1005,9 @@ declare( 'LibCanvas.Behaviors.Draggable', {
 			this.bindMethods([ 'onStop', 'onDrag', 'onStart' ]);
 
 			this.element = behaviors.element;
+			if (!atom.core.isFunction(this.element.move)) {
+				throw new TypeError( 'Element ' + this.element + ' must has «move» method' );
+			}
 			this.events  = behaviors.element.events;
 			this.eventArgs(args, 'moveDrag');
 		},
@@ -794,8 +1045,9 @@ declare( 'LibCanvas.Behaviors.Draggable', {
 
 		/** @private */
 		onDrag: function (e) {
-			this.element.move( e.deltaOffset );
-			this.events.fire('moveDrag', [e.deltaOffset, e]);
+			var delta = this.element.mouse.delta;
+			this.element.move( delta );
+			this.events.fire('moveDrag', [delta, e]);
 		},
 
 		/** @private */
@@ -1010,22 +1262,22 @@ var Point = declare( 'LibCanvas.Point', {
 			return this;
 		},
 		/** @returns {Point} */
-		moveTo : function (newCoord) {
-			return this.move(this.diff(this.cast(arguments)));
+		moveTo : function (point) {
+			return this.move(this.diff(this.cast(point)));
 		},
 		/** @returns {Number} */
 		angleTo : function (point) {
-			var diff = this.cast(arguments).diff(this);
+			var diff = this.cast(point).diff(this);
 			return Math.atan2(diff.y, diff.x).normalizeAngle();
 		},
 		/** @returns {Number} */
 		distanceTo : function (point) {
-			var diff = this.cast(arguments).diff(this);
+			var diff = this.cast(point).diff(this);
 			return Math.hypotenuse(diff.x, diff.y);
 		},
 		/** @returns {Point} */
 		diff : function (point) {
-			return new this.constructor(arguments).move(this, true);
+			return new this.constructor(point).move(this, true);
 		},
 		/** @returns {Point} */
 		rotate : function (angle, pivot) {
@@ -1485,11 +1737,11 @@ var Rectangle = declare( 'LibCanvas.Shapes.Rectangle',
 		/** @returns {LibCanvas.Shapes.Rectangle} */
 		fillToPixel: function () {
 			var from = this.from, to = this.to,
-				point = function (method, invoke) {
+				point = function (side, round) {
 					return new Point(
-						Math[method](from.x, to.x),
-						Math[method](from.y, to.y)
-					).invoke( invoke );
+						Math[round](Math[side](from.x, to.x)),
+						Math[round](Math[side](from.y, to.y))
+					);
 				};
 
 			return new Rectangle(
@@ -1602,9 +1854,7 @@ var Circle = declare( 'LibCanvas.Shapes.Circle',
 			}
 		},
 		move : function (distance, reverse) {
-			distance = this.invertDirection(distance, reverse);
-			this.center.move(distance);
-			this.events.fire('move', [distance]);
+			this.center.move(distance, reverse);
 			return this;
 		},
 		processPath : function (ctx, noWrap) {
@@ -1958,7 +2208,7 @@ var Context2D = declare( 'LibCanvas.Context2D',
 		},
 		/** @returns {Context2D} */
 		clear: function (shape) {
-			return shape instanceof Shape && shape.prototype != Rectangle ?
+			return shape instanceof Shape && shape.constructor != Rectangle ?
 				this
 					.save()
 					.set({ globalCompositeOperation: Context2D.COMPOSITE.DESTINATION_OUT })
@@ -2700,7 +2950,7 @@ return declare( 'LibCanvas.Mouse', {
 			this.bindMethods( 'onEvent' );
 
 			this.elem       = atom.dom(elem);
-			this.offsetElem = atom.dom(offsetElem) || this.elem;
+			this.offsetElem = offsetElem ? atom.dom(offsetElem) : this.elem;
 
 			this.point    = new Point(0, 0);
 			this.previous = new Point(0, 0);
@@ -2732,9 +2982,9 @@ return declare( 'LibCanvas.Mouse', {
 		set: function (e, inside) {
 			var point = this.getOffset(e);
 
-			this.prev .set( this.point );
-			this.delta.set( this.prev.diff( point ) );
-			this.point.set( point );
+			this.previous.set( this.point );
+			this.delta   .set( this.previous.diff( point ) );
+			this.point   .set( point );
 			this.inside = inside;
 		},
 		/** @private */
@@ -2786,7 +3036,8 @@ return declare( 'LibCanvas.Mouse', {
 				mouseout   : callback,
 
 				DOMMouseScroll: callback,
-				mousewheel    : callback
+				mousewheel    : callback,
+				selectstart   : false
 			});
 		}
 	}

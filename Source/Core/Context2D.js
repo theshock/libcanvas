@@ -249,7 +249,7 @@ var Context2D = declare( 'LibCanvas.Context2D',
 		},
 		/** @returns {Context2D} */
 		clear: function (shape) {
-			return shape instanceof Shape && shape.prototype != Rectangle ?
+			return shape instanceof Shape && shape.constructor != Rectangle ?
 				this
 					.save()
 					.set({ globalCompositeOperation: Context2D.COMPOSITE.DESTINATION_OUT })
