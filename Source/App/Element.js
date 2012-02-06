@@ -43,7 +43,7 @@ App.Element = declare( 'LibCanvas.App.Element', {
 			this.zIndex = Number( this.settings.get('zIndex') );
 		}
 
-		this.configure(settings);
+		this.configure();
 	},
 
 	configure: function (settings) {

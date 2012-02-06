@@ -20,7 +20,7 @@ provides: Behaviors
 ...
 */
 
-declare( 'LibCanvas.Behaviors', {
+var Behaviors = declare( 'LibCanvas.Behaviors', {
 	initialize: function (element) {
 		this.element   = element;
 		this.behaviors = {};
@@ -41,7 +41,7 @@ declare( 'LibCanvas.Behaviors', {
 });
 
 
-var Behavior = declare( 'LibCanvas.Behavior',
+var Behavior = declare( 'LibCanvas.Behaviors.Behavior',
 {
 
 	started: false,

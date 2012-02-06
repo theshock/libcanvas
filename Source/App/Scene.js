@@ -25,7 +25,7 @@ App.Scene = declare( 'LibCanvas.App.Scene', {
 
 	initialize: function (app, settings) {
 		this.settings = new Settings({
-			invoke      : false,
+			invoke      : app.settings.get('invoke'),
 			intersection: 'auto' // 'auto'|'manual'
 		}).set(settings);
 

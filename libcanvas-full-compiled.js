@@ -117,7 +117,7 @@ var App = declare( 'LibCanvas.App', {
 		this.scenes    = [];
 		this.settings  = new Settings(settings);
 		this.container = new App.Container(
-			this.settings.get(['size', 'appendTo', 'invoke'])
+			this.settings.get(['size', 'appendTo'])
 		);
 		this.resources = new Registry();
 
@@ -286,7 +286,7 @@ App.Element = declare( 'LibCanvas.App.Element', {
 			this.zIndex = Number( this.settings.get('zIndex') );
 		}
 
-		this.configure(settings);
+		this.configure();
 	},
 
 	configure: function (settings) {
@@ -457,6 +457,51 @@ App.Layer = declare( 'LibCanvas.App.Layer', {
 			.css ({ 'position' : 'absolute' })
 			.appendTo( this.container.bounds );
 	}
+});
+
+/*
+---
+
+name: "App.Light"
+
+description: "LibCanvas.App.Light"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- App
+
+provides: App.Light
+
+...
+*/
+
+App.Light = declare( 'LibCanvas.App.Light', {
+
+	initialize: function (settings) {
+		var mouse, mouseHandler;
+
+		this.settings = new Settings({ name: 'main' }).set(settings);
+		this.app   = new App( this.settings.get(['size', 'appendTo']) );
+		this.scene = this.app.createScene(this.settings.get(['name','invoke']));
+		if (this.settings.get('mouse') === true) {
+			mouse = new Mouse(this.app.container.bounds);
+			mouseHandler = new App.MouseHandler({ mouse: mouse, app: this.app });
+
+			this.app.resources.set({ mouse: mouse, mouseHandler: mouseHandler });
+		}
+	},
+
+	createVector: function (settings) {
+		return new App.Vector(this.scene, settings);
+	}
+
 });
 
 /*
@@ -696,7 +741,7 @@ App.Scene = declare( 'LibCanvas.App.Scene', {
 
 	initialize: function (app, settings) {
 		this.settings = new Settings({
-			invoke      : false,
+			invoke      : app.settings.get('invoke'),
 			intersection: 'auto' // 'auto'|'manual'
 		}).set(settings);
 
@@ -835,6 +880,84 @@ App.Scene = declare( 'LibCanvas.App.Scene', {
 /*
 ---
 
+name: "App.Vector"
+
+description: "LibCanvas.App.Vector"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- App
+
+provides: App.Vector
+
+...
+*/
+
+
+App.Vector = atom.declare( 'LibCanvas.App.Vector', {
+	parent: App.Element,
+
+	prototype: {
+		configure: function () {
+			var
+				behaviors = this.settings.get('behaviors'),
+				i = behaviors && behaviors.length;
+
+			if (i) {
+				this.behaviors = new Behaviors(this);
+				while (i--) {
+					this.behaviors.add(behaviors[i], this.redraw);
+				}
+			}
+		},
+
+		get mouse () {
+			return this.scene.app.resources.get( 'mouse' );
+		},
+
+		move: function (point) {
+			this.shape.move(point);
+			this.redraw();
+		},
+
+		getStyle: function (type) {
+			var s = this.settings;
+			return (this.active && s.get('active') && s.get('active')[type]) ||
+			       (this.hover  && s.get('hover')) && s.get('hover') [type]  ||
+								  s.get(type)  || null;
+		},
+
+		listenMouse: function () {
+			return this.scene.app.resources.get('mouseHandler').subscribe(this);
+		},
+
+		renderTo: function (ctx) {
+			var fill    = this.getStyle('fill'),
+			    stroke  = this.getStyle('stroke'),
+			    lineW   = this.getStyle('lineWidth'),
+			    opacity = this.getStyle('opacity');
+
+			ctx.save();
+			if (lineW  ) ctx.lineWidth   = lineW;
+			if (opacity) ctx.globalAlpha = opacity;
+			if (fill   ) ctx.fill  (this.shape, fill  );
+			if (stroke ) ctx.stroke(this.shape, stroke);
+			ctx.restore();
+			return this;
+		}
+	}
+});
+
+/*
+---
+
 name: "Behaviors"
 
 description: ""
@@ -854,7 +977,7 @@ provides: Behaviors
 ...
 */
 
-declare( 'LibCanvas.Behaviors', {
+var Behaviors = declare( 'LibCanvas.Behaviors', {
 	initialize: function (element) {
 		this.element   = element;
 		this.behaviors = {};
@@ -875,7 +998,7 @@ declare( 'LibCanvas.Behaviors', {
 });
 
 
-var Behavior = declare( 'LibCanvas.Behavior',
+var Behavior = declare( 'LibCanvas.Behaviors.Behavior',
 {
 
 	started: false,

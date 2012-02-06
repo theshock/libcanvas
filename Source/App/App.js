@@ -28,7 +28,7 @@ var App = declare( 'LibCanvas.App', {
 		this.scenes    = [];
 		this.settings  = new Settings(settings);
 		this.container = new App.Container(
-			this.settings.get(['size', 'appendTo', 'invoke'])
+			this.settings.get(['size', 'appendTo'])
 		);
 		this.resources = new Registry();
 
