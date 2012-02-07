@@ -1,9 +1,9 @@
 /*
 ---
 
-name: "App.Vector"
+name: "App.Light.Vector"
 
-description: "LibCanvas.App.Vector"
+description: ""
 
 license:
 	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
@@ -15,14 +15,15 @@ authors:
 requires:
 	- LibCanvas
 	- App
+	- App.Light
 
-provides: App.Vector
+provides: App.Light.Vector
 
 ...
 */
 
 
-App.Vector = atom.declare( 'LibCanvas.App.Vector', {
+App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', {
 	parent: App.Element,
 
 	prototype: {

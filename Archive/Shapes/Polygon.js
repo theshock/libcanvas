@@ -23,7 +23,9 @@ provides: Shapes.Polygon
 ...
 */
 
-var Polygon = declare( 'LibCanvas.Shapes.Polygon', {
+var Polygon = declare( 'LibCanvas.Shapes.Polygon',
+/** @lends {LibCanvas.Shapes.Polygon.prototype} */
+{
 	parent: Shape,
 	proto: {
 		initialize: function () {
@@ -87,7 +89,9 @@ var Polygon = declare( 'LibCanvas.Shapes.Polygon', {
 			return ctx;
 		},
 		move : function (distance, reverse) {
-			this.points.invoke('move', distance, reverse);
+			distance = this.invertDirection(distance, reverse);
+			this.points.invoke('move', distance);
+			this.events.fire('move', [distance]);
 			return this;
 		},
 		grow: function () {
@@ -134,6 +138,7 @@ var Polygon = declare( 'LibCanvas.Shapes.Polygon', {
 		},
 		clone: function () {
 			return new this.constructor(this.points.invoke('clone'));
-		}
+		},
+		toString: Function.lambda('[object LibCanvas.Shapes.Polygon]')
 	}
 });

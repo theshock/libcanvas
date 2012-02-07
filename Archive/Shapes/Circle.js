@@ -82,7 +82,9 @@ var Circle = declare( 'LibCanvas.Shapes.Circle',
 			}
 		},
 		move : function (distance, reverse) {
-			this.center.move(distance, reverse);
+			distance = this.invertDirection(distance, reverse);
+			this.center.move(distance);
+			this.events.fire('move', [distance]);
 			return this;
 		},
 		processPath : function (ctx, noWrap) {
@@ -97,10 +99,10 @@ var Circle = declare( 'LibCanvas.Shapes.Circle',
 			return ctx;
 		},
 		getBoundingRectangle: function () {
-			var r = this.radius, center = this.center;
+			var shift = new Point( this.radius, this.radius ), center = this.center;
 			return new Rectangle(
-				new Point(center.x - r, center.y - r),
-				new Point(center.x + r, center.y + r)
+				new Point(center.x - shift.x, center.y - shift.y),
+				new Point(center.x + shift.x, center.y + shift.y)
 			);
 		},
 		clone : function () {
@@ -116,6 +118,7 @@ var Circle = declare( 'LibCanvas.Shapes.Circle',
 		},
 		dump: function () {
 			return '[shape Circle(center['+this.center.x+', '+this.center.y+'], '+this.radius+')]';
-		}
+		},
+		toString: Function.lambda('[object LibCanvas.Shapes.Circle]')
 	}
 });

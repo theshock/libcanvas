@@ -38,7 +38,11 @@ App.Light = declare( 'LibCanvas.App.Light', {
 	},
 
 	createVector: function (settings) {
-		return new App.Vector(this.scene, settings);
+		return new App.Light.Vector(this.scene, settings);
+	},
+
+	createText: function (settings) {
+		return new App.Light.Text  (this.scene, settings);
 	}
 
 });

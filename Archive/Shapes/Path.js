@@ -123,7 +123,8 @@ var Path = declare( 'LibCanvas.Shapes.Path',
 			var builder = new Path.Builder;
 			builder.parts.append( this.builder.parts.clone() );
 			return builder.build();
-		}
+		},
+		toString: Function.lambda('[object LibCanvas.Shapes.Path]')
 	}
 });
 
@@ -154,9 +155,11 @@ Path.Builder = declare( 'LibCanvas.Shapes.Path.Builder', {
 		});
 		return this;
 	},
-	/** @deprecated */
 	listenPoint: function (p) {
-		return Point( p );
+		return Point( p ).events
+			// todo: use unique
+			.remove( 'move', this.update )
+			.add   ( 'move', this.update );
 	},
 
 	// queue/stack
@@ -273,5 +276,7 @@ Path.Builder = declare( 'LibCanvas.Shapes.Path.Builder', {
 		}.bind(this));
 
 		return this;
-	}
+	},
+
+	toString: Function.lambda('[object LibCanvas.Shapes.Path]')
 });

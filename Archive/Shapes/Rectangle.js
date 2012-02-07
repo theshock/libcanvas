@@ -22,9 +22,23 @@ provides: Shapes.Rectangle
 ...
 */
 
-var Rectangle = declare( 'LibCanvas.Shapes.Rectangle', {
+/** @name Rectangle */
+var Rectangle = declare( 'LibCanvas.Shapes.Rectangle',
+/**
+ * @lends LibCanvas.Shapes.Rectangle.prototype
+ * @augments LibCanvas.Shape.prototype
+ */
+{
 	parent: Shape,
 	proto: {
+		/**
+		 * @constructs
+		 * @param {number} fromX
+		 * @param {number} fromY
+		 * @param {number} width
+		 * @param {number} height
+		 * @returns {LibCanvas.Shapes.Rectangle}
+		 */
 		set : function () {
 			var a = Array.pickFrom(arguments);
 
@@ -111,6 +125,7 @@ var Rectangle = declare( 'LibCanvas.Shapes.Rectangle', {
 				&& point.x.between(Math.min(this.from.x, this.to.x) + padding, Math.max(this.from.x, this.to.x) - padding, 1)
 				&& point.y.between(Math.min(this.from.y, this.to.y) + padding, Math.max(this.from.y, this.to.y) - padding, 1);
 		},
+		/** @returns {LibCanvas.Shapes.Rectangle} */
 		align: function (rect, sides) {
 			if (sides == null) sides = 'center middle';
 
@@ -194,11 +209,11 @@ var Rectangle = declare( 'LibCanvas.Shapes.Rectangle', {
 		/** @returns {LibCanvas.Shapes.Rectangle} */
 		fillToPixel: function () {
 			var from = this.from, to = this.to,
-				point = function (side, round) {
+				point = function (method, invoke) {
 					return new Point(
-						Math[round](Math[side](from.x, to.x)),
-						Math[round](Math[side](from.y, to.y))
-					);
+						Math[method](from.x, to.x),
+						Math[method](from.y, to.y)
+					).invoke( invoke );
 				};
 
 			return new Rectangle(
@@ -221,6 +236,8 @@ var Rectangle = declare( 'LibCanvas.Shapes.Rectangle', {
 			return new Polygon(
 				this.from.clone(), this.topRight, this.to.clone(), this.bottomLeft
 			);
-		}
+		},
+		/** @returns {string} */
+		toString: Function.lambda('[object LibCanvas.Shapes.Rectangle]')
 	}
 });

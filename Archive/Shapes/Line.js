@@ -28,7 +28,9 @@ var between = function (x, a, b, accuracy) {
 	return x.equals(a, accuracy) || x.equals(b, accuracy) || (a < x && x < b) || (b < x && x < a);
 };
 
-return declare( 'LibCanvas.Shapes.Line', {
+return declare( 'LibCanvas.Shapes.Line',
+/** @lends {LibCanvas.Shapes.Line.prototype} */
+{
 	parent: Shape,
 	proto: {
 		set : function (from, to) {
@@ -53,14 +55,11 @@ return declare( 'LibCanvas.Shapes.Line', {
 				py = point.y;
 
 			if (!( point.x.between(Math.min(fx, tx), Math.max(fx, tx))
-			    && point.y.between(Math.min(fy, ty), Math.max(fy, ty))
+				&& point.y.between(Math.min(fy, ty), Math.max(fy, ty))
 			)) return false;
 
 			// if triangle square is zero - points are on one line
 			return ((fx-px)*(ty-py)-(tx-px)*(fy-py)).round(6) == 0;
-		},
-		getBoundingRectangle: function () {
-			return new Rectangle(this.from, this.to).fillToPixel().grow(2);
 		},
 		intersect: function (line, point, accuracy) {
 			if (line.constructor != this.constructor) {
@@ -152,7 +151,8 @@ return declare( 'LibCanvas.Shapes.Line', {
 		},
 		dump: function () {
 			return Shape.prototype.dump.call(this, 'Line');
-		}
+		},
+		toString: Function.lambda('[object LibCanvas.Shapes.Line]')
 	}
 });
 

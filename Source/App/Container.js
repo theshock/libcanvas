@@ -37,6 +37,11 @@ App.Container = declare( 'LibCanvas.App.Container', {
 		this.createWrappers();
 	},
 
+	get rectangle () {
+		var size = this.size;
+		return new Rectangle(0, 0, size.width, size.height);
+	},
+
 	set size(size) {
 		size = this.currentSize.set(size).toObject();
 

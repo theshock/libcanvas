@@ -21,7 +21,12 @@ provides: Shapes.RoundedRectangle
 ...
 */
 
-var RoundedRectangle = declare( 'LibCanvas.Shapes.RoundedRectangle', {
+var RoundedRectangle = declare( 'LibCanvas.Shapes.RoundedRectangle',
+/**
+ * @lends {LibCanvas.Shapes.RoundedRectangle.prototype}
+ * @augments {LibCanvas.Shapes.Rectangle.prototype}
+ */
+{
 	parent: Rectangle,
 
 	proto: {
@@ -56,6 +61,7 @@ var RoundedRectangle = declare( 'LibCanvas.Shapes.RoundedRectangle', {
 		dump: function () {
 			var p = function (p) { return '[' + p.x + ', ' + p.y + ']'; };
 			return '[shape RoundedRectangle(from'+p(this.from)+', to'+p(this.to)+', radius='+this.radius+')]';
-		}
+		},
+		toString: Function.lambda('[object LibCanvas.Shapes.RoundedRectangle]')
 	}
 });

@@ -202,6 +202,11 @@ App.Container = declare( 'LibCanvas.App.Container', {
 		this.createWrappers();
 	},
 
+	get rectangle () {
+		var size = this.size;
+		return new Rectangle(0, 0, size.width, size.height);
+	},
+
 	set size(size) {
 		size = this.currentSize.set(size).toObject();
 
@@ -457,51 +462,6 @@ App.Layer = declare( 'LibCanvas.App.Layer', {
 			.css ({ 'position' : 'absolute' })
 			.appendTo( this.container.bounds );
 	}
-});
-
-/*
----
-
-name: "App.Light"
-
-description: "LibCanvas.App.Light"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- App
-
-provides: App.Light
-
-...
-*/
-
-App.Light = declare( 'LibCanvas.App.Light', {
-
-	initialize: function (settings) {
-		var mouse, mouseHandler;
-
-		this.settings = new Settings({ name: 'main' }).set(settings);
-		this.app   = new App( this.settings.get(['size', 'appendTo']) );
-		this.scene = this.app.createScene(this.settings.get(['name','invoke']));
-		if (this.settings.get('mouse') === true) {
-			mouse = new Mouse(this.app.container.bounds);
-			mouseHandler = new App.MouseHandler({ mouse: mouse, app: this.app });
-
-			this.app.resources.set({ mouse: mouse, mouseHandler: mouseHandler });
-		}
-	},
-
-	createVector: function (settings) {
-		return new App.Vector(this.scene, settings);
-	}
-
 });
 
 /*
@@ -875,84 +835,6 @@ App.Scene = declare( 'LibCanvas.App.Scene', {
 		}
 	}
 
-});
-
-/*
----
-
-name: "App.Vector"
-
-description: "LibCanvas.App.Vector"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- App
-
-provides: App.Vector
-
-...
-*/
-
-
-App.Vector = atom.declare( 'LibCanvas.App.Vector', {
-	parent: App.Element,
-
-	prototype: {
-		configure: function () {
-			var
-				behaviors = this.settings.get('behaviors'),
-				i = behaviors && behaviors.length;
-
-			if (i) {
-				this.behaviors = new Behaviors(this);
-				while (i--) {
-					this.behaviors.add(behaviors[i], this.redraw);
-				}
-			}
-		},
-
-		get mouse () {
-			return this.scene.app.resources.get( 'mouse' );
-		},
-
-		move: function (point) {
-			this.shape.move(point);
-			this.redraw();
-		},
-
-		getStyle: function (type) {
-			var s = this.settings;
-			return (this.active && s.get('active') && s.get('active')[type]) ||
-			       (this.hover  && s.get('hover')) && s.get('hover') [type]  ||
-								  s.get(type)  || null;
-		},
-
-		listenMouse: function () {
-			return this.scene.app.resources.get('mouseHandler').subscribe(this);
-		},
-
-		renderTo: function (ctx) {
-			var fill    = this.getStyle('fill'),
-			    stroke  = this.getStyle('stroke'),
-			    lineW   = this.getStyle('lineWidth'),
-			    opacity = this.getStyle('opacity');
-
-			ctx.save();
-			if (lineW  ) ctx.lineWidth   = lineW;
-			if (opacity) ctx.globalAlpha = opacity;
-			if (fill   ) ctx.fill  (this.shape, fill  );
-			if (stroke ) ctx.stroke(this.shape, stroke);
-			ctx.restore();
-			return this;
-		}
-	}
 });
 
 /*
@@ -1673,23 +1555,9 @@ provides: Shapes.Rectangle
 ...
 */
 
-/** @name Rectangle */
-var Rectangle = declare( 'LibCanvas.Shapes.Rectangle',
-/**
- * @lends LibCanvas.Shapes.Rectangle.prototype
- * @augments LibCanvas.Shape.prototype
- */
-{
+var Rectangle = declare( 'LibCanvas.Shapes.Rectangle', {
 	parent: Shape,
 	proto: {
-		/**
-		 * @constructs
-		 * @param {number} fromX
-		 * @param {number} fromY
-		 * @param {number} width
-		 * @param {number} height
-		 * @returns {LibCanvas.Shapes.Rectangle}
-		 */
 		set : function () {
 			var a = Array.pickFrom(arguments);
 
@@ -1776,7 +1644,6 @@ var Rectangle = declare( 'LibCanvas.Shapes.Rectangle',
 				&& point.x.between(Math.min(this.from.x, this.to.x) + padding, Math.max(this.from.x, this.to.x) - padding, 1)
 				&& point.y.between(Math.min(this.from.y, this.to.y) + padding, Math.max(this.from.y, this.to.y) - padding, 1);
 		},
-		/** @returns {LibCanvas.Shapes.Rectangle} */
 		align: function (rect, sides) {
 			if (sides == null) sides = 'center middle';
 
@@ -1887,9 +1754,7 @@ var Rectangle = declare( 'LibCanvas.Shapes.Rectangle',
 			return new Polygon(
 				this.from.clone(), this.topRight, this.to.clone(), this.bottomLeft
 			);
-		},
-		/** @returns {string} */
-		toString: Function.lambda('[object LibCanvas.Shapes.Rectangle]')
+		}
 	}
 });
 
@@ -1992,10 +1857,10 @@ var Circle = declare( 'LibCanvas.Shapes.Circle',
 			return ctx;
 		},
 		getBoundingRectangle: function () {
-			var shift = new Point( this.radius, this.radius ), center = this.center;
+			var r = this.radius, center = this.center;
 			return new Rectangle(
-				new Point(center.x - shift.x, center.y - shift.y),
-				new Point(center.x + shift.x, center.y + shift.y)
+				new Point(center.x - r, center.y - r),
+				new Point(center.x + r, center.y + r)
 			);
 		},
 		clone : function () {
@@ -2011,8 +1876,7 @@ var Circle = declare( 'LibCanvas.Shapes.Circle',
 		},
 		dump: function () {
 			return '[shape Circle(center['+this.center.x+', '+this.center.y+'], '+this.radius+')]';
-		},
-		toString: Function.lambda('[object LibCanvas.Shapes.Circle]')
+		}
 	}
 });
 
@@ -3381,18 +3245,12 @@ provides: Shapes.Ellipse
 ...
 */
 
-var Ellipse = declare( 'LibCanvas.Shapes.Ellipse',
-/** @lends {LibCanvas.Shapes.Ellipse.prototype} */
-{
+var Ellipse = declare( 'LibCanvas.Shapes.Ellipse', {
 	parent: Rectangle,
 	proto: {
 		set : function () {
+			this.bindMethods( 'update' );
 			Rectangle.prototype.set.apply(this, arguments);
-			var update = function () {
-				this.updateCache = true;
-			}.bind(this);
-			this.from.events.add('move', update);
-			this. to .events.add('move', update);
 		},
 		_angle : 0,
 		get angle () {
@@ -3401,6 +3259,9 @@ var Ellipse = declare( 'LibCanvas.Shapes.Ellipse',
 		set angle (a) {
 			if (this._angle == a) return;
 			this._angle = a.normalizeAngle();
+			this.updateCache = true;
+		},
+		update: function () {
 			this.updateCache = true;
 		},
 		rotate : function (degree) {
@@ -3465,8 +3326,7 @@ var Ellipse = declare( 'LibCanvas.Shapes.Ellipse',
 		},
 		dump: function (name) {
 			return Rectangle.prototype.dump.call(this, name || 'Ellipse');
-		},
-		toString: Function.lambda('[object LibCanvas.Shapes.Ellipse]')
+		}
 	}
 });
 
@@ -3500,9 +3360,7 @@ var between = function (x, a, b, accuracy) {
 	return x.equals(a, accuracy) || x.equals(b, accuracy) || (a < x && x < b) || (b < x && x < a);
 };
 
-return declare( 'LibCanvas.Shapes.Line',
-/** @lends {LibCanvas.Shapes.Line.prototype} */
-{
+return declare( 'LibCanvas.Shapes.Line', {
 	parent: Shape,
 	proto: {
 		set : function (from, to) {
@@ -3527,11 +3385,14 @@ return declare( 'LibCanvas.Shapes.Line',
 				py = point.y;
 
 			if (!( point.x.between(Math.min(fx, tx), Math.max(fx, tx))
-				&& point.y.between(Math.min(fy, ty), Math.max(fy, ty))
+			    && point.y.between(Math.min(fy, ty), Math.max(fy, ty))
 			)) return false;
 
 			// if triangle square is zero - points are on one line
 			return ((fx-px)*(ty-py)-(tx-px)*(fy-py)).round(6) == 0;
+		},
+		getBoundingRectangle: function () {
+			return new Rectangle(this.from, this.to).fillToPixel().grow(2);
 		},
 		intersect: function (line, point, accuracy) {
 			if (line.constructor != this.constructor) {
@@ -3623,8 +3484,7 @@ return declare( 'LibCanvas.Shapes.Line',
 		},
 		dump: function () {
 			return Shape.prototype.dump.call(this, 'Line');
-		},
-		toString: Function.lambda('[object LibCanvas.Shapes.Line]')
+		}
 	}
 });
 
@@ -3756,8 +3616,7 @@ var Path = declare( 'LibCanvas.Shapes.Path',
 			var builder = new Path.Builder;
 			builder.parts.append( this.builder.parts.clone() );
 			return builder.build();
-		},
-		toString: Function.lambda('[object LibCanvas.Shapes.Path]')
+		}
 	}
 });
 
@@ -3788,11 +3647,9 @@ Path.Builder = declare( 'LibCanvas.Shapes.Path.Builder', {
 		});
 		return this;
 	},
+	/** @deprecated */
 	listenPoint: function (p) {
-		return Point( p ).events
-			// todo: use unique
-			.remove( 'move', this.update )
-			.add   ( 'move', this.update );
+		return Point( p );
 	},
 
 	// queue/stack
@@ -3909,9 +3766,7 @@ Path.Builder = declare( 'LibCanvas.Shapes.Path.Builder', {
 		}.bind(this));
 
 		return this;
-	},
-
-	toString: Function.lambda('[object LibCanvas.Shapes.Path]')
+	}
 });
 
 /*
@@ -3939,9 +3794,7 @@ provides: Shapes.Polygon
 ...
 */
 
-var Polygon = declare( 'LibCanvas.Shapes.Polygon',
-/** @lends {LibCanvas.Shapes.Polygon.prototype} */
-{
+var Polygon = declare( 'LibCanvas.Shapes.Polygon', {
 	parent: Shape,
 	proto: {
 		initialize: function () {
@@ -4005,9 +3858,7 @@ var Polygon = declare( 'LibCanvas.Shapes.Polygon',
 			return ctx;
 		},
 		move : function (distance, reverse) {
-			distance = this.invertDirection(distance, reverse);
-			this.points.invoke('move', distance);
-			this.events.fire('move', [distance]);
+			this.points.invoke('move', distance, reverse);
 			return this;
 		},
 		grow: function () {
@@ -4054,8 +3905,7 @@ var Polygon = declare( 'LibCanvas.Shapes.Polygon',
 		},
 		clone: function () {
 			return new this.constructor(this.points.invoke('clone'));
-		},
-		toString: Function.lambda('[object LibCanvas.Shapes.Polygon]')
+		}
 	}
 });
 
@@ -4082,12 +3932,7 @@ provides: Shapes.RoundedRectangle
 ...
 */
 
-var RoundedRectangle = declare( 'LibCanvas.Shapes.RoundedRectangle',
-/**
- * @lends {LibCanvas.Shapes.RoundedRectangle.prototype}
- * @augments {LibCanvas.Shapes.Rectangle.prototype}
- */
-{
+var RoundedRectangle = declare( 'LibCanvas.Shapes.RoundedRectangle', {
 	parent: Rectangle,
 
 	proto: {
@@ -4122,8 +3967,7 @@ var RoundedRectangle = declare( 'LibCanvas.Shapes.RoundedRectangle',
 		dump: function () {
 			var p = function (p) { return '[' + p.x + ', ' + p.y + ']'; };
 			return '[shape RoundedRectangle(from'+p(this.from)+', to'+p(this.to)+', radius='+this.radius+')]';
-		},
-		toString: Function.lambda('[object LibCanvas.Shapes.RoundedRectangle]')
+		}
 	}
 });
 
@@ -4240,6 +4084,189 @@ atom.append(HTMLCanvasElement.prototype, {
 	sprite   : HTMLImageElement.prototype.sprite,
 	isLoaded : function () { return true; },
 	toCanvas : function () { return this; }
+});
+
+/*
+---
+
+name: "App.Light"
+
+description: "LibCanvas.App.Light"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- App
+
+provides: App.Light
+
+...
+*/
+
+App.Light = declare( 'LibCanvas.App.Light', {
+
+	initialize: function (settings) {
+		var mouse, mouseHandler;
+
+		this.settings = new Settings({ name: 'main' }).set(settings);
+		this.app   = new App( this.settings.get(['size', 'appendTo']) );
+		this.scene = this.app.createScene(this.settings.get(['name','invoke']));
+		if (this.settings.get('mouse') === true) {
+			mouse = new Mouse(this.app.container.bounds);
+			mouseHandler = new App.MouseHandler({ mouse: mouse, app: this.app });
+
+			this.app.resources.set({ mouse: mouse, mouseHandler: mouseHandler });
+		}
+	},
+
+	createVector: function (settings) {
+		return new App.Light.Vector(this.scene, settings);
+	},
+
+	createText: function (settings) {
+		return new App.Light.Text  (this.scene, settings);
+	}
+
+});
+
+/*
+---
+
+name: "App.Light.Text"
+
+description: ""
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- App
+	- App.Light
+
+provides: App.Light.Text
+
+...
+*/
+
+
+App.Light.Text = atom.declare( 'LibCanvas.App.Light.Text', {
+	parent: App.Element,
+
+	prototype: {
+		get content () {
+			return this.settings.get('content') || '';
+		},
+
+		set content (c) {
+			if (c != this.content) {
+				this.redraw();
+				this.settings.set('content', String(c) || '');
+			}
+		},
+
+		renderTo: function (ctx) {
+			var
+				style = this.settings.get('style') || {},
+				bg    = this.settings.get('background');
+			ctx.save();
+			if (bg) ctx.fill( this.shape, bg );
+			ctx.text(atom.core.append({
+				text: this.content,
+				to  : this.shape
+			}, style));
+			ctx.restore();
+		}
+	}
+});
+
+/*
+---
+
+name: "App.Light.Vector"
+
+description: ""
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- App
+	- App.Light
+
+provides: App.Light.Vector
+
+...
+*/
+
+
+App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', {
+	parent: App.Element,
+
+	prototype: {
+		configure: function () {
+			var
+				behaviors = this.settings.get('behaviors'),
+				i = behaviors && behaviors.length;
+
+			if (i) {
+				this.behaviors = new Behaviors(this);
+				while (i--) {
+					this.behaviors.add(behaviors[i], this.redraw);
+				}
+			}
+		},
+
+		get mouse () {
+			return this.scene.app.resources.get( 'mouse' );
+		},
+
+		move: function (point) {
+			this.shape.move(point);
+			this.redraw();
+		},
+
+		getStyle: function (type) {
+			var s = this.settings;
+			return (this.active && s.get('active') && s.get('active')[type]) ||
+			       (this.hover  && s.get('hover')) && s.get('hover') [type]  ||
+								  s.get(type)  || null;
+		},
+
+		listenMouse: function () {
+			return this.scene.app.resources.get('mouseHandler').subscribe(this);
+		},
+
+		renderTo: function (ctx) {
+			var fill    = this.getStyle('fill'),
+			    stroke  = this.getStyle('stroke'),
+			    lineW   = this.getStyle('lineWidth'),
+			    opacity = this.getStyle('opacity');
+
+			ctx.save();
+			if (lineW  ) ctx.lineWidth   = lineW;
+			if (opacity) ctx.globalAlpha = opacity;
+			if (fill   ) ctx.fill  (this.shape, fill  );
+			if (stroke ) ctx.stroke(this.shape, stroke);
+			ctx.restore();
+			return this;
+		}
+	}
 });
 
 }).call(typeof window == 'undefined' ? exports : window, atom, Math);

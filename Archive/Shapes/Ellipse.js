@@ -22,12 +22,18 @@ provides: Shapes.Ellipse
 ...
 */
 
-var Ellipse = declare( 'LibCanvas.Shapes.Ellipse', {
+var Ellipse = declare( 'LibCanvas.Shapes.Ellipse',
+/** @lends {LibCanvas.Shapes.Ellipse.prototype} */
+{
 	parent: Rectangle,
 	proto: {
 		set : function () {
-			this.bindMethods( 'update' );
 			Rectangle.prototype.set.apply(this, arguments);
+			var update = function () {
+				this.updateCache = true;
+			}.bind(this);
+			this.from.events.add('move', update);
+			this. to .events.add('move', update);
 		},
 		_angle : 0,
 		get angle () {
@@ -36,9 +42,6 @@ var Ellipse = declare( 'LibCanvas.Shapes.Ellipse', {
 		set angle (a) {
 			if (this._angle == a) return;
 			this._angle = a.normalizeAngle();
-			this.updateCache = true;
-		},
-		update: function () {
 			this.updateCache = true;
 		},
 		rotate : function (degree) {
@@ -103,6 +106,7 @@ var Ellipse = declare( 'LibCanvas.Shapes.Ellipse', {
 		},
 		dump: function (name) {
 			return Rectangle.prototype.dump.call(this, name || 'Ellipse');
-		}
+		},
+		toString: Function.lambda('[object LibCanvas.Shapes.Ellipse]')
 	}
 });
