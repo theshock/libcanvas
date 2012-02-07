@@ -32,7 +32,7 @@ var Color = LibCanvas.Utils.Color = Class({
 			if (typeof string != 'string') return false;
 			return string in this.colorNames ||
 			       string.match(/^#\w{3,6}$/) ||
-			       string.match(/^rgba?\([\d, ]+\)$/);
+			       string.match(/^rgba?\([\d\., ]+\)$/);
 		},
 		colorNames: {
 			white:  '#ffffff',
@@ -127,8 +127,8 @@ var Color = LibCanvas.Utils.Color = Class({
 		];
 		if ((color.a != null) || (this.a != null)) {
 			result.push(
-				color.a == null ? 1 : color.a -
-				this .a == null ? 1 : this .a
+				(color.a == null ? 1 : color.a) -
+				(this .a == null ? 1 : this .a)
 			);
 		}
 		return result;
