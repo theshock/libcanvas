@@ -744,8 +744,6 @@ return Class({
 			time  : 500
 		}, args);
 
-		if (window.opera) args.time = (args.time / 1.4).round();
-
 		if (typeof args.props == 'function') {
 			elem = args.props;
 			isFn = true;
