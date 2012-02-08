@@ -593,7 +593,11 @@ App.MouseHandler = declare( 'LibCanvas.App.MouseHandler', {
 			this.events.fire( eventName, eventArgs );
 		};
 
-		elements.sort( this.compareFunction );
+		try {
+			elements.sort( this.compareFunction );
+		} catch (e) {
+			throw new Error('Element binded to mouse, but without scene, check elements');
+		}
 
 		// В первую очередь - обрабатываем реальный mouseout с элементов
 		if (type == 'move' || type == 'out') {
@@ -2894,8 +2898,10 @@ return declare( 'LibCanvas.Mouse', {
 		expandEvent: function (e) {
 			var source = eventSource(e);
 
-			e.pageX = source.pageX != null ? source.pageX : source.clientX + document.scrollLeft;
-			e.pageY = source.pageY != null ? source.pageY : source.clientY + document.scrollTop ;
+			if (e.pageX == null) {
+				e.pageX = source.pageX != null ? source.pageX : source.clientX + document.scrollLeft;
+				e.pageY = source.pageY != null ? source.pageY : source.clientY + document.scrollTop ;
+			}
 
 			return e;
 		},
@@ -4297,8 +4303,14 @@ App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', {
 		 */
 		animate: function(){},
 
-		listenMouse: function () {
-			return this.scene.app.resources.get('mouseHandler').subscribe(this);
+		listenMouse: function (unsubscribe) {
+			var method = unsubscribe ? 'unsubscribe' : 'subscribe';
+			return this.scene.app.resources.get('mouseHandler')[method](this);
+		},
+
+		destroy: function () {
+			this.listenMouse(true);
+			return App.Element.prototype.destroy.call(this);
 		},
 
 		get currentBoundingShape () {
