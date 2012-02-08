@@ -121,7 +121,11 @@ App.MouseHandler = declare( 'LibCanvas.App.MouseHandler', {
 			this.events.fire( eventName, eventArgs );
 		};
 
-		elements.sort( this.compareFunction );
+		try {
+			elements.sort( this.compareFunction );
+		} catch (e) {
+			throw new Error('Element binded to mouse, but without scene, check elements');
+		}
 
 		// В первую очередь - обрабатываем реальный mouseout с элементов
 		if (type == 'move' || type == 'out') {
