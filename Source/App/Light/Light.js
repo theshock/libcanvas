@@ -23,10 +23,16 @@ provides: App.Light
 
 App.Light = declare( 'LibCanvas.App.Light', {
 
-	initialize: function (settings) {
+	initialize: function (size, settings) {
 		var mouse, mouseHandler;
 
-		this.settings = new Settings({ name: 'main' }).set(settings);
+		this.settings = new Settings({
+			size    : Size(size),
+			name    : 'main',
+			mouse   : true,
+			invoke  : false,
+			appendTo: 'body'
+		}).set(settings || {});
 		this.app   = new App( this.settings.get(['size', 'appendTo']) );
 		this.scene = this.app.createScene(this.settings.get(['name','invoke']));
 		if (this.settings.get('mouse') === true) {
@@ -43,6 +49,10 @@ App.Light = declare( 'LibCanvas.App.Light', {
 
 	createText: function (settings) {
 		return new App.Light.Text  (this.scene, settings);
+	},
+
+	get mouse () {
+		return this.app.resources.get( 'mouse' );
 	}
 
 });

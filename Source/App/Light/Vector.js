@@ -32,12 +32,9 @@ App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', {
 				behaviors = this.settings.get('behaviors'),
 				i = behaviors && behaviors.length;
 
-			if (i) {
-				this.behaviors = new Behaviors(this);
-				while (i--) {
-					this.behaviors.add(behaviors[i], this.redraw);
-				}
-			}
+			this.animate = new atom.Animatable(this).animate;
+			this.behaviors = new Behaviors(this);
+			while (i--) this.behaviors.add(behaviors[i], this.redraw);
 		},
 
 		get mouse () {
@@ -55,6 +52,11 @@ App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', {
 			       (this.hover  && s.get('hover')) && s.get('hover') [type]  ||
 								  s.get(type)  || null;
 		},
+
+		/**
+		 * Override by Animatable method
+		 */
+		animate: function(){},
 
 		listenMouse: function () {
 			return this.scene.app.resources.get('mouseHandler').subscribe(this);

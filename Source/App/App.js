@@ -35,6 +35,10 @@ var App = declare( 'LibCanvas.App', {
 		atom.frame.add( this.tick );
 	},
 
+	get rectangle () {
+		return this.container.rectangle;
+	},
+
 	/**
 	 * return "-1" if left is higher, "+1" if right is higher & 0 is they are equals
 	 * @param {App.Element} left
