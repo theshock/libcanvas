@@ -38,6 +38,9 @@ App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', {
 			this.behaviors = new Behaviors(this);
 			this.behaviors.add('Draggable', this.redraw);
 			this.behaviors.add('Clickable', this.redraw);
+			if (this.settings.get('mouse') !== false) {
+				this.listenMouse();
+			}
 		},
 
 		get mouse () {
@@ -63,9 +66,14 @@ App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', {
 		getStyle: function (type) {
 			if (!this.style) return null;
 
-			return (this.active && this.styleActive[type]) ||
-			       (this.hover  && this.styleHover [type]) ||
-			            this.style[type] || null;
+			var
+				active = (this.active || null) && this.styleActive[type],
+				hover  = (this.hover || null)  && this.styleHover [type],
+				plain  = this.style[type];
+
+			return active != null ? active :
+			       hover  != null ? hover  :
+			       plain  != null ? plain  : null;
 		},
 
 		/**
@@ -80,7 +88,7 @@ App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', {
 		get currentBoundingShape () {
 			var
 				br = this.shape.getBoundingRectangle(),
-				lw = this.getStyle('stroke') && this.getStyle('lineWidth');
+				lw = this.getStyle('stroke') && (this.getStyle('lineWidth') || 1);
 
 			return lw ? br.fillToPixel().grow(2 * Math.ceil(lw)) : br;
 		},
@@ -97,7 +105,7 @@ App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', {
 			if (opacity) ctx.globalAlpha = atom.number.round(opacity, 3);
 			if (fill) ctx.fill(this.shape, fill);
 			if (stroke ) {
-				if (lineW) ctx.lineWidth = lineW;
+				ctx.lineWidth = lineW || 1;
 				ctx.stroke(this.shape, stroke);
 			}
 			ctx.restore();

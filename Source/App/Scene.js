@@ -153,7 +153,8 @@ App.Scene = declare( 'LibCanvas.App.Scene', {
 		var i = this.elements.length, e;
 		while (i--) {
 			e = this.elements[i];
-			if (e != elem && e.isVisible() && e.currentBoundingShape.intersect( shape )) {
+			// check if we need also `e.currentBoundingShape.intersect( shape )`
+			if (e != elem && e.isVisible() && e.previousBoundingShape.intersect( shape )) {
 				fn.call( this, e );
 			}
 		}
