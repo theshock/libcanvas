@@ -81,8 +81,14 @@ App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', {
 		 */
 		animate: function(){},
 
-		listenMouse: function () {
-			return this.scene.app.resources.get('mouseHandler').subscribe(this);
+		listenMouse: function (unsubscribe) {
+			var method = unsubscribe ? 'unsubscribe' : 'subscribe';
+			return this.scene.app.resources.get('mouseHandler')[method](this);
+		},
+
+		destroy: function () {
+			this.listenMouse(true);
+			return App.Element.prototype.destroy.call(this);
 		},
 
 		get currentBoundingShape () {
