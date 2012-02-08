@@ -32,6 +32,8 @@ App.Light.Text = atom.declare( 'LibCanvas.App.Light.Text', {
 		},
 
 		set content (c) {
+			if (Array.isArray(c)) c = c.join('\n');
+			
 			if (c != this.content) {
 				this.redraw();
 				this.settings.set('content', String(c) || '');

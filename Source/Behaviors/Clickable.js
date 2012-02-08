@@ -56,6 +56,7 @@ return declare( 'LibCanvas.Behaviors.Clickable', {
 		start: function () {
 			if (!this.changeStatus(true)) return this;
 
+			this.eventArgs(arguments, 'statusChange');
 			this.events.add(this.callbacks);
 		},
 

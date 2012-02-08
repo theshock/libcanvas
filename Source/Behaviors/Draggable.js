@@ -55,6 +55,7 @@ declare( 'LibCanvas.Behaviors.Draggable', {
 		start: function () {
 			if (!this.changeStatus(true)) return this;
 
+			this.eventArgs(arguments, 'moveDrag');
 			this.events.add( 'mousedown', this.onStart );
 		},
 

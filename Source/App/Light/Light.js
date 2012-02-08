@@ -43,12 +43,15 @@ App.Light = declare( 'LibCanvas.App.Light', {
 		}
 	},
 
-	createVector: function (settings) {
+	createVector: function (shape, settings) {
+		settings = atom.append({ shape:shape }, settings || {});
+
 		return new App.Light.Vector(this.scene, settings);
 	},
 
-	createText: function (settings) {
-		return new App.Light.Text  (this.scene, settings);
+	createText: function (shape, style, settings) {
+		settings = atom.append({ shape: shape, style: style }, settings);
+		return new App.Light.Text(this.scene, settings);
 	},
 
 	get mouse () {

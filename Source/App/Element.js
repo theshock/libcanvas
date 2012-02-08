@@ -27,6 +27,8 @@ App.Element = declare( 'LibCanvas.App.Element', {
 
 	/** @constructs */
 	initialize: function (scene, settings) {
+		this.bindMethods( 'redraw' );
+
 		this.events = new Events(this);
 		this.settings = new Settings({ hidden: false })
 			.set(settings)
