@@ -33,8 +33,10 @@ return declare( 'LibCanvas.Mouse', {
 		expandEvent: function (e) {
 			var source = eventSource(e);
 
-			e.pageX = source.pageX != null ? source.pageX : source.clientX + document.scrollLeft;
-			e.pageY = source.pageY != null ? source.pageY : source.clientY + document.scrollTop ;
+			if (e.pageX == null) {
+				e.pageX = source.pageX != null ? source.pageX : source.clientX + document.scrollLeft;
+				e.pageY = source.pageY != null ? source.pageY : source.clientY + document.scrollTop ;
+			}
 
 			return e;
 		},
