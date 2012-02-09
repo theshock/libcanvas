@@ -61,12 +61,14 @@ var Shaper = LibCanvas.Ui.Shaper = Class({
 	drawTo : function (ctx) {
 		var fill    = this.getStyle('fill'),
 			stroke  = this.getStyle('stroke'),
+			shadow  = this.getStyle('shadow'),
 			lineW   = this.getStyle('lineWidth'),
 			opacity = this.getStyle('opacity');
 
 		ctx.save();
 		if (lineW  ) ctx.set('lineWidth', lineW);
 		if (opacity) ctx.set('globalOpacity', opacity);
+		if (shadow ) ctx.set('shadow', shadow);
 		if (fill   ) ctx.fill  (this.getShape(), fill  );
 		if (stroke ) ctx.stroke(this.getShape(), stroke);
 		ctx.restore();
