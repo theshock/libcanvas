@@ -48,7 +48,7 @@ App.Element = declare( 'LibCanvas.App.Element', {
 		this.configure();
 	},
 
-	configure: function (settings) {
+	configure: function () {
 		return this;
 	},
 
@@ -101,6 +101,7 @@ App.Element = declare( 'LibCanvas.App.Element', {
 			shape.fillToPixel() : shape.clone().grow( 2 );
 		return this;
 	},
+
 	renderTo: function (ctx, resources) {
 		return this;
 	}

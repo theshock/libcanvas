@@ -31,8 +31,7 @@ var Behaviors = declare( 'LibCanvas.Behaviors', {
 			Behaviour = this.constructor[Behaviour];
 		}
 
-		this.behaviors[Behaviour.index] = new Behaviour(this, slice.call( arguments, 1 ));
-		return this;
+		return this.behaviors[Behaviour.index] = new Behaviour(this, slice.call( arguments, 1 ));
 	},
 
 	get: function (name) {

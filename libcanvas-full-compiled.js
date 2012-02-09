@@ -300,7 +300,7 @@ App.Element = declare( 'LibCanvas.App.Element', {
 		this.configure();
 	},
 
-	configure: function (settings) {
+	configure: function () {
 		return this;
 	},
 
@@ -353,6 +353,7 @@ App.Element = declare( 'LibCanvas.App.Element', {
 			shape.fillToPixel() : shape.clone().grow( 2 );
 		return this;
 	},
+
 	renderTo: function (ctx, resources) {
 		return this;
 	}
@@ -881,8 +882,7 @@ var Behaviors = declare( 'LibCanvas.Behaviors', {
 			Behaviour = this.constructor[Behaviour];
 		}
 
-		this.behaviors[Behaviour.index] = new Behaviour(this, slice.call( arguments, 1 ));
-		return this;
+		return this.behaviors[Behaviour.index] = new Behaviour(this, slice.call( arguments, 1 ));
 	},
 
 	get: function (name) {
