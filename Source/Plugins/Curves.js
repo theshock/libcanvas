@@ -1,7 +1,7 @@
 /*
 ---
 
-name: "Utils.ExtendedCurves"
+name: "Plugins.ExtendedCurves"
 
 description: "Curves with dynamic width and color"
 
@@ -13,10 +13,9 @@ authors:
 
 requires:
 	- LibCanvas
-	- Inner.TimingFunctions
 	- Context2D
 
-provides: Utils.ExtendedCurves
+provides: Plugins.ExtendedCurves
 
 ...
 */
@@ -27,11 +26,11 @@ new function () {
 	The following text contains bad code and due to it's code it should not be readed by ANYONE!
 */
 
-var Transition = atom.Transition,
+var
+	Transition = atom.Transition,
 	Color = atom.Color,
-	Point = LibCanvas.Point;
-
-var EC = {};
+	Point = LibCanvas.Point,
+	EC    = {};
 
 /** @returns {atom.Color} */
 EC.getColor = function (color) {
@@ -39,15 +38,16 @@ EC.getColor = function (color) {
 };
 
 EC.getPoints = function (prevPos, pos, width, inverted) {
-	var w    = pos.x-prevPos.x,
-	    h    = pos.y-prevPos.y,
-	    dist = Math.hypotenuse(w, h),
+	var
+		w    = pos.x-prevPos.x,
+		h    = pos.y-prevPos.y,
+		dist = Math.hypotenuse(w, h),
 
 		sin = h / dist,
-	    cos = w / dist,
+		cos = w / dist,
 
 		dx = sin * width,
-	    dy = cos * width;
+		dy = cos * width;
 		
 	return [
 		new Point(pos.x + dx, pos.y + dy*inverted),
@@ -125,7 +125,7 @@ EC.curvesFunctions = [
 	}
 ];
 
-LibCanvas.Context2D.prototype.drawCurve = function (obj) {
+Context2D.prototype.drawCurve = function (obj) {
 	var points = [Point(obj.from)].append( obj.points.map(Point), [Point(obj.to)] );
 
 	var gradientFunction = EC.getGradientFunction(obj),             //Getting gradient function
@@ -142,8 +142,6 @@ LibCanvas.Context2D.prototype.drawCurve = function (obj) {
 		drawPoints  , prevDrawPoints   ,
 		width , color, prevColor, style;
 
-	var add = function (a, b) { return a + b };
-
 	prevContorolPoint = curveFunction(points, -step);
 
 	for (var t=-step ; t<1.02 ; t += step) {
@@ -155,7 +153,9 @@ LibCanvas.Context2D.prototype.drawCurve = function (obj) {
 
 		if (t >= step) {
 			// #todo: reduce is part of array, not color
-			if ( EC.getColor(prevColor).diff(color).reduce(add) > 150 ) {
+			var diff = EC.getColor(prevColor).diff(color);
+
+			if ( (diff.red + diff.green + diff.blue) > 150 ) {
 				style = this.createLinearGradient(prevContorolPoint, controlPoint);
 				style.addColorStop(0, prevColor);
 				style.addColorStop(1,     color);

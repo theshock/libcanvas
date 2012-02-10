@@ -172,10 +172,6 @@ var Context2D = declare( 'LibCanvas.Context2D',
 			}
 			return rect;
 		},
-		/** @deprecated */
-		getFullRectangle : function () {
-			return this.rectangle;
-		},
 		/** @returns {Context2D} */
 		original : function (method, args, returnResult) {
 			try {
@@ -653,16 +649,6 @@ var Context2D = declare( 'LibCanvas.Context2D',
 				throw new TypeError('Wrong Args in Context.drawImage');
 			}
 			return this.restore();
-		},
-
-		/** @returns {Context2D} */
-		projectiveImage : function (arg) {
-			// test
-			new ProjectiveTexture(arg.image)
-				.setContext(this.ctx2d)
-				.setQuality(arg.patchSize, arg.limit)
-				.render( arg.to );
-			return this;
 		},
 
 		// image data

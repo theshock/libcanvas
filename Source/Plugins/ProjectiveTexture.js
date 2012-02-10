@@ -1,7 +1,7 @@
 /*
 ---
 
-name: "Inner.ProjectiveTexture"
+name: "Plugins.ProjectiveTexture"
 
 description: "Provides testing projective textures rendering (more info: http://acko.net/files/projective/index.html)"
 
@@ -14,8 +14,9 @@ authors:
 
 requires:
 	- LibCanvas
+	- Context2D
 
-provides: Inner.ProjectiveTexture
+provides: Plugins.ProjectiveTexture
 
 source: "http://acko.net/blog/projective-texturing-with-canvas"
 
@@ -24,8 +25,16 @@ source: "http://acko.net/blog/projective-texturing-with-canvas"
 
 var ProjectiveTexture = function () {
 
+Context2D.prototype.projectiveImage = function (arg) {
+	// test
+	new ProjectiveTexture(arg.image)
+		.setContext(this.ctx2d)
+		.setQuality(arg.patchSize, arg.limit)
+		.render( arg.to );
+	return this;
+};
 
-var ProjectiveTexture = declare( 'LibCanvas.Inner.ProjectiveTexture', {
+var ProjectiveTexture = declare( 'LibCanvas.Plugins.ProjectiveTexture', {
 	initialize : function (image) {
 		if (typeof image == 'string') {
 			this.image = new Image;
