@@ -21,18 +21,18 @@ provides: Shapes.Polygon
 
 declare( 'LibCanvas.Engines.HexProjection', {
 	/**
-	 * @param {object} options
-	 * @param {int} options.baseLength  - length of top and bottom lines
-	 * @param {int} options.chordLength - height of left and right triangle
-	 * @param {int} options.hexHeight   - height of the hex (length between top and bottom lines)
+	 * @param {object} settings
+	 * @param {int} settings.baseLength  - length of top and bottom lines
+	 * @param {int} settings.chordLength - height of left and right triangle
+	 * @param {int} settings.hexHeight   - height of the hex (length between top and bottom lines)
 	 */
-	initialize: function (options) {
+	initialize: function (settings) {
 		this.settings = new Settings({
 			baseLength : 0,
 			chordLength: 0,
 			hexHeight  : 0,
 			start      : new Point(0, 0)
-		});
+		}).set(settings);
 	},
 
 	/**
@@ -88,9 +88,9 @@ declare( 'LibCanvas.Engines.HexProjection', {
 		};
 
 		var
-			rF = red  .floor(), rC = red  .ceil(),
-			gF = green.floor(), gC = green.ceil(),
-			bF = blue .floor(), bC = blue .ceil();
+			rF = Math.floor(red  ), rC = Math.ceil(red  ),
+			gF = Math.floor(green), gC = Math.ceil(green),
+			bF = Math.floor(blue ), bC = Math.ceil(blue );
 
 		return [
 			// we need to find closest integer coordinates
@@ -104,7 +104,7 @@ declare( 'LibCanvas.Engines.HexProjection', {
 			[rC, gC, bC]
 		].filter(function (v) {
 			// only correct variants - sum must be equals to zero
-			return v.sum() == 0;
+			return atom.array.sum(v) == 0;
 		})
 		.sort(function (left, right) {
 			// we need coordinates with the smallest distance
@@ -171,10 +171,10 @@ declare( 'LibCanvas.Engines.HexProjection.Sizes', {
 				min = c.clone();
 				max = c.clone();
 			} else {
-				min.x = min.x.min( c.x );
-				min.y = min.y.min( c.y );
-				max.x = max.x.max( c.x );
-				max.y = max.y.max( c.y );
+				min.x = Math.min( min.x, c.x );
+				min.y = Math.min( min.y, c.y );
+				max.x = Math.max( max.x, c.x );
+				max.y = Math.max( max.y, c.y );
 			}
 		}
 
