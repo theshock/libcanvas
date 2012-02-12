@@ -35,18 +35,22 @@ App.MouseHandler = declare( 'LibCanvas.App.MouseHandler', {
 		handler.lastMouseDown = [];
 		handler.subscribers   = [];
 
-		handler.app   = handler.settings.get('app');
-		handler.mouse = handler.settings.get('mouse');
+		handler.app    = handler.settings.get('app');
+		handler.mouse  = handler.settings.get('mouse');
 		handler.compareFunction = function (left, right) {
 			return handler.app.zIndexCompare(left, right, true);
 		};
+		handler.search =
+			handler.settings.get('search') ||
+			new App.ElementsMouseSearch(handler.subscribers);
 
 
-		[ 'down', 'up', 'move', 'out', 'dblclick', 'contextmenu', 'wheel' ].forEach(function (type) {
-			handler.mouse.events.add( type, function (e) {
-				handler.event(type, e, false);
+		[ 'down', 'up', 'move', 'out', 'dblclick', 'contextmenu', 'wheel' ]
+			.forEach(function (type) {
+				handler.mouse.events.add( type, function (e) {
+					handler.event(type, e);
+				});
 			});
-		});
 	},
 
 	stop: function () {
@@ -60,12 +64,19 @@ App.MouseHandler = declare( 'LibCanvas.App.MouseHandler', {
 	},
 
 	subscribe : function (elem) {
-		atom.array.include(this.subscribers, elem);
+		if (this.subscribers.indexOf(elem) == -1) {
+			this.subscribers.push(elem);
+			this.search.add(elem);
+		}
 		return this;
 	},
 
 	unsubscribe : function (elem) {
-		atom.array.erase(this.subscribers, elem);
+		var index = this.subscribers.indexOf(elem);
+		if (index != -1) {
+			this.subscribers.splice(index, 1);
+			this.search.remove(elem);
+		}
 		return this;
 	},
 
@@ -75,8 +86,16 @@ App.MouseHandler = declare( 'LibCanvas.App.MouseHandler', {
 		return value;
 	},
 
-	isOver: function (elem) {
-		return this.mouse.inside && elem.hasMousePoint( this.mouse.point );
+	getOverElements: function () {
+		if (!this.mouse.inside) return [];
+
+		var elements = this.search.findByPoint( this.mouse.point );
+
+		try {
+			return elements.sort( this.compareFunction );
+		} catch (e) {
+			throw new Error('Element binded to mouse, but without scene, check elements');
+		}
 	},
 
 	/** @private */
@@ -93,94 +112,44 @@ App.MouseHandler = declare( 'LibCanvas.App.MouseHandler', {
 	},
 
 	/** @private */
-	event: function (type, e, stopped) {
+	event: function (type, e) {
 		if (this.stopped) return;
 
 		var method = ['dblclick', 'contextmenu', 'wheel'].indexOf( type ) >= 0
 			? 'forceEvent' : 'parseEvent';
 		
-		return this[method]( type, e, stopped, this.subscribers );
+		return this[method]( type, e );
 	},
 
 	/** @private */
-	parseEvent: function (type, event, stopped, elements) {
+	parseEvent: function (type, event) {
 		if (type == 'down') this.lastMouseDown.length = 0;
 
 		var i, elem,
-			handler  = this,
-			lastDown = handler.lastMouseDown,
-			lastMove = handler.lastMouseMove,
-			lastOut  = [],
-			eventArgs = [event];
-
-		var fire = function (eventName) {
-			var children = this.childrenElements;
-			if (children && children.length) {
-				handler.parseEvent(type, event, stopped, children);
-			}
-			this.events.fire( eventName, eventArgs );
-		};
-
-		try {
-			elements.sort( this.compareFunction );
-		} catch (e) {
-			throw new Error('Element binded to mouse, but without scene, check elements');
-		}
+			elements = this.getOverElements(),
+			stopped  = false,
+			eventArgs = [event],
+			isChangeCoordEvent = (type == 'move' || type == 'out');
 
 		// В первую очередь - обрабатываем реальный mouseout с элементов
-		if (type == 'move' || type == 'out') {
-			for (i = lastMove.length; i--;) {
-				elem = lastMove[i];
-				if (elements.contains(elem) && !handler.isOver(elem)) {
-					fire.call( elem, 'mouseout' );
-					lastMove.erase(elem);
-					lastOut.push(elem);
-				}
-			}
+		if (isChangeCoordEvent) {
+			this.informOut(eventArgs, elements);
 		}
 
 		for (i = elements.length; i--;) {
 			elem = elements[i];
-			// предыдущий элемент принял "удар" на себя
-			// необходимо сообщить остальным элементам о mouseout
-			if (stopped) {
-				if (type == 'move' || type == 'out') {
-					if (elements.contains(elem) && lastMove.contains(elem)) {
-						fire.call( elem, 'mouseout' );
-						lastMove.erase(elem);
-					}
-				} else if (type == 'up') {
-					if (handler.isOver(elem)) {
-						fire.call( elem, 'mouseup' );
-						if (elements.contains(elem) && lastDown.contains(elem)) {
-							fire.call( elem, 'click' );
-						}
-					}
-				}
 			// мышь над элементом, сообщаем о mousemove
 			// о mouseover, mousedown, click, если необходимо
-			} else if (handler.isOver(elem)) {
-				if (type == 'move') {
-					if (!lastMove.contains(elem)) {
-						fire.call( elem, 'mouseover' );
-						lastMove.push( elem );
-					}
-				} else if (type == 'down') {
-					lastDown.push(elem);
-				// If mouseup on this elem and last mousedown was on this elem - click
-				} else if (type == 'up' && elements.contains(elem) && lastDown.contains(elem)) {
-					fire.call( elem, 'click' );
+			if (!stopped) {
+				if (this.fireElem( type, elem, eventArgs )) {
+					if (!isChangeCoordEvent) break;
 				}
-				fire.call( elem, 'mouse' + type );
-
-				if (!this.checkFalling()) {
-					stopped = true;
-				}
-			// мышь не над элементом, событие проваливается,
-			// сообщаем элементу, что где-то произошло событие
-			} else if (!lastOut.contains(elem)) {
-				// fast version
-				elem.events.fire( 'away:mouse' + type, eventArgs );
+			// предыдущий элемент принял событие на себя
+			// необходимо сообщить остальным элементам под ним о mouseout
+			// Но только если это событие передвижения или выхода за границы холста
+			// а не активационные, как маусдаун или маусап
+			} else {
+				this.stoppedElem(elem, eventArgs);
 			}
 		}
 
@@ -188,26 +157,64 @@ App.MouseHandler = declare( 'LibCanvas.App.MouseHandler', {
 	},
 
 	/** @private */
-	forceEvent: function (type, event, stopped, elements) {
+	informOut: function (eventArgs, elements) {
 		var
-			children,
 			elem,
-			i = elements.sort( this.compareFunction ).length;
+			lastMove = this.lastMouseMove,
+			i = lastMove.length;
 		while (i--) {
-			elem = elements[i];
-			if (!this.isOver(elem)) continue;
-
-			elem.events.fire( type, [ event ]);
-			children = elem.childrenElements;
-			if (children && children.length) {
-				this.forceEvent(type, event, stopped, children);
+			elem = lastMove[i];
+			if (!elements.contains(elem)) {
+				elem.events.fire( 'mouseout', eventArgs );
+				lastMove.splice(i, 1);
 			}
+		}
+	},
+
+	/** @private */
+	stoppedElem: function (elem, eventArgs) {
+		var
+			lastMove = this.lastMouseMove,
+			index    = lastMove.indexOf(elem);
+		if (index > -1) {
+			elem.events.fire( 'mouseout', eventArgs );
+			lastMove.splice(index, 1);
+		}
+	},
+
+	/** @private */
+	fireElem: function (type, elem, eventArgs) {
+		var
+			lastDown = this.lastMouseDown,
+			lastMove = this.lastMouseMove;
+
+		if (type == 'move') {
+			if (lastMove.indexOf(elem) < 0) {
+				elem.events.fire( 'mouseover', eventArgs );
+				lastMove.push( elem );
+			}
+		} else if (type == 'down') {
+			lastDown.push(elem);
+		// If mouseup on this elem and last mousedown was on this elem - click
+		} else if (type == 'up' && lastDown.indexOf(elem) > -1) {
+			elem.events.fire( 'click', eventArgs );
+		}
+		elem.events.fire( 'mouse' + type, eventArgs );
+
+		return !this.checkFalling();
+	},
+
+	/** @private */
+	forceEvent: function (type, event) {
+		var
+			elements = this.getOverElements(),
+			i = elements.length;
+		while (i--) {
+			elements[i].events.fire( type, [ event ]);
 			if (!this.checkFalling()) {
-				stopped = true;
 				break;
 			}
 		}
-		return stopped;
 	}
 
 });
