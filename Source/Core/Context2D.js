@@ -119,7 +119,9 @@ var constants =
 
 /* In some Mobile browsers shadowY should be inverted (bug) */
 var shadowBug = function () {
-	var ctx = atom.dom('canvas').first.getContext( '2d' );
+	var ctx = atom.dom
+		.create('canvas', { width: 15, height: 15 })
+		.first.getContext( '2d' );
 
 	ctx.shadowBlur    = 1;
 	ctx.shadowOffsetX = 0;
