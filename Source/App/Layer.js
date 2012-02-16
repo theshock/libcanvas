@@ -102,7 +102,7 @@ App.Layer = declare( 'LibCanvas.App.Layer', {
 
 	/** @private */
 	createElement: function () {
-		this.canvas  = new LibCanvas.Buffer(this.size,true);
+		this.canvas  = new LibCanvas.Buffer(this.size, true);
 		this.element = atom.dom(this.canvas)
 			.attr({ 'data-name': this.name  })
 			.css ({ 'position' : 'absolute' })

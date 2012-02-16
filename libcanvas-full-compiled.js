@@ -80,8 +80,14 @@ var LibCanvas = this.LibCanvas = declare({
 			for (var k in LibCanvas.Shapes) {
 				to[k] = LibCanvas.Shapes[k];
 			}
-			to.Point = LibCanvas.Point;
-			to.Size  = LibCanvas.Size;
+			if (typeof ImagePreloader != 'undefined') {
+				to.ImagePreloader = ImagePreloader;
+			}
+			if (typeof App != 'undefined') {
+				to.App = App;
+			}
+			to.Point = Point;
+			to.Size  = Size;
 			return to;
 		}
 	}
@@ -512,7 +518,7 @@ App.Layer = declare( 'LibCanvas.App.Layer', {
 
 	/** @private */
 	createElement: function () {
-		this.canvas  = new LibCanvas.Buffer(this.size,true);
+		this.canvas  = new LibCanvas.Buffer(this.size, true);
 		this.element = atom.dom(this.canvas)
 			.attr({ 'data-name': this.name  })
 			.css ({ 'position' : 'absolute' })
@@ -903,6 +909,112 @@ App.Scene = declare( 'LibCanvas.App.Scene', {
 		}
 	}
 
+});
+
+/*
+---
+
+name: "App.SceneShift"
+
+description: ""
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- App
+
+provides: App.SceneShift
+
+...
+*/
+
+App.SceneShift = declare( 'LibCanvas.App.SceneShift', {
+
+	initialize: function (scene) {
+		this.scene    = scene;
+		this.shift    = new Point(0, 0);
+		this.elementsShift = new Point(0, 0);
+	},
+
+	/**
+	 * @private
+	 * @property {Point}
+	 */
+	shift: null,
+
+	/**
+	 * @private
+	 * @property {Point}
+	 */
+	elementsShift: null,
+
+	/**
+	 * @param {Point} shift
+	 */
+	addElementsShift: function (shift) {
+		if (!shift) {
+			shift = this.elementsShift.diff(this.shift);
+		} else {
+			shift = Point(shift);
+		}
+		var e = this.scene.elements, i = e.length;
+		while (i--) e[i].addShift(shift);
+		this.elementsShift.move(shift);
+		return this;
+	},
+
+	/**
+	 * @private
+	 * @property {LibCanvas.Shapes.Rectangle}
+	 */
+	limitShift: null,
+
+	/**
+	 * @param {Rectangle} limitShift
+	 */
+	setLimitShift: function (limitShift) {
+		this.limitShift = limitShift ? Rectangle(limitShift) : null;
+		return this;
+	},
+
+	/**
+	 * @param {Point} shift
+	 */
+	addShift: function ( shift, withElements ) {
+		shift = new Point( shift );
+
+		var limit = this.limitShift, current = this.shift;
+		if (limit) {
+			shift.x = shift.x.limit(limit.from.x - current.x, limit.to.x - current.x);
+			shift.y = shift.y.limit(limit.from.y - current.y, limit.to.y - current.y);
+		}
+
+		current.move( shift );
+		this.scene.layer.addShift( shift );
+		this.scene.layer.canvas.ctx.translate( shift, true );
+		if (withElements) this.addElementsShift( shift );
+		return this;
+	},
+
+	/**
+	 * @param {Point} shift
+	 */
+	setShift: function (shift, withElements) {
+		return this.addShift( this.shift.diff(shift), withElements );
+	},
+
+	/**
+	 * @returns {Point}
+	 */
+	getShift: function () {
+		return this.shift;
+	}
 });
 
 /*
@@ -3507,7 +3619,7 @@ declare( 'LibCanvas.Engines.HexProjection.Sizes', {
 		return this._limits = { min: min, max: max };
 	},
 
-	/** @return Point */
+	/** @return Size */
 	size: function () {
 		var
 			limits   = this.limits(),
@@ -3517,7 +3629,7 @@ declare( 'LibCanvas.Engines.HexProjection.Sizes', {
 			height   = settings.get('hexHeight'),
 			padding  = this.padding;
 
-		return new Point(
+		return new Size(
 			limits.max.x - limits.min.x + base    + 2 * (padding + chord),
 			limits.max.y - limits.min.y + height  + 2 *  padding
 		);
@@ -4996,7 +5108,7 @@ atom.append(HTMLImageElement.prototype, {
 			throw new TypeError('Wrong rectangle size');
 		}
 
-		var buf = new Buffer(rect.width, rect.height, true),
+		var buf = LibCanvas.buffer(rect.width, rect.height, true),
 			xShift, yShift, x, y, xMax, yMax, crop, size;
 
 		// если координаты выходят за левый/верхний край картинки
@@ -5079,6 +5191,164 @@ atom.append(HTMLCanvasElement.prototype, {
 	sprite   : HTMLImageElement.prototype.sprite,
 	isLoaded : function () { return true; },
 	toCanvas : function () { return this; }
+});
+
+/*
+---
+
+name: "Utils.ImagePreloader"
+
+description: "Provides images preloader"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- Shapes.Rectangle
+
+provides: Utils.ImagePreloader
+
+...
+*/
+
+var ImagePreloader = declare( 'LibCanvas.Utils.ImagePreloader', {
+	processed : 0,
+	number    : 0,
+	
+	initialize: function (settings) {
+		this.events   = new Events(this);
+		this.settings = new Settings(settings).addEvents(this.events);
+
+		this.count = {
+			error: 0,
+			abort: 0,
+			load : 0
+		};
+		
+		this.suffix    = this.settings.get('suffix') || '';
+		this.usrImages = this.prefixImages(this.settings.get('images'));
+		this.domImages = this.createDomImages();
+		this.images    = {};
+	},
+	get isReady () {
+		return this.number == this.processed;
+	},
+	get info () {
+		var stat = atom.string.substitute(
+			"Images loaded: {load}; Errors: {error}; Aborts: {abort}",
+			this.count
+		);
+		if (this.isReady) stat = "Image preloading has completed;\n" + stat;
+		return stat;
+	},
+	get progress () {
+		return this.isReady ? 1 : atom.number.round(this.processed / this.number, 4);
+	},
+	exists: function (name) {
+		return !!this.images[name];
+	},
+	get: function (name) {
+		var image = this.images[name];
+		if (image) {
+			return image;
+		} else {
+			throw new Error('No image «' + name + '»');
+		}
+	},
+
+	/** @private */
+	prefixImages: function (images) {
+		var prefix = this.settings.get('prefix');
+		if (!prefix) return images;
+
+		return Object.map(images, function (src) {
+			if(src.begins('http://') || src.begins('https://') ) {
+				return src;
+			}
+			return prefix + src;
+		});
+	},
+	/** @private */
+	cutImages: function () {
+		var i, parts, img;
+		for (i in this.usrImages) {
+			parts = this.splitUrl( this.usrImages[i] );
+			img   = this.domImages[ parts.url ];
+			if (parts.coords) img = img.sprite(new Rectangle( parts.coords ));
+			this.images[i] = img;
+		}
+		return this;
+	},
+	/** @private */
+	splitUrl: function (str) {
+		var url = str, size, cell, match, coords = null;
+
+				// searching for pattern 'url [x:y:w:y]'
+		if (match = str.match(/ \[(\d+)\:(\d+)\:(\d+)\:(\d+)\]$/)) {
+			coords = match.slice( 1 );
+				// searching for pattern 'url [w:y]{x:y}'
+		} else if (match = str.match(/ \[(\d+)\:(\d+)\]\{(\d+)\:(\d+)\}$/)) {
+			coords = match.slice( 1 ).map( Number );
+			size = coords.slice( 0, 2 );
+			cell = coords.slice( 2, 4 );
+			coords = [ cell[0] * size[0], cell[1] * size[1], size[0], size[1] ];
+		}
+		if (match) {
+			url = str.substr(0, str.lastIndexOf(match[0]));
+			coords = coords.map( Number );
+		}
+		if (this.suffix) {
+			if (typeof this.suffix == 'function') {
+				url = this.suffix( url );
+			} else {
+				url += this.suffix;
+			}
+		}
+
+		return { url: url, coords: coords };
+	},
+	/** @private */
+	createDomImages: function () {
+		var i, result = {}, url, images = this.usrImages;
+		for (i in images) {
+			url = this.splitUrl( images[i] ).url;
+			if (!result[url]) result[url] = this.createDomImage( url );
+		}
+		return result;
+	},
+	/** @private */
+	createDomImage : function (src) {
+		var img = new Image();
+		img.src = src;
+		if (window.opera && img.complete) {
+			setTimeout(this.onProcessed.bind(this, 'load', img), 10);
+		} else {
+			['load', 'error', 'abort'].forEach(function (event) {
+				img.addEventListener( event, this.onProcessed.bind(this, event, img), false );
+			}.bind(this));
+		}
+		this.number++;
+		return img;
+	},
+	/** @private */
+	onProcessed : function (type, img) {
+		if (type == 'load' && window.opera) {
+			// opera fullscreen bug workaround
+			img.width  = img.width;
+			img.height = img.height;
+			img.naturalWidth  = img.naturalWidth;
+			img.naturalHeight = img.naturalHeight;
+		}
+		this.count[type]++;
+		this.processed++;
+		if (this.isReady) this.cutImages().events.ready('ready', [this]);
+		return this;
+	}
 });
 
 /*
