@@ -44,8 +44,14 @@ var LibCanvas = this.LibCanvas = declare({
 			for (var k in LibCanvas.Shapes) {
 				to[k] = LibCanvas.Shapes[k];
 			}
-			to.Point = LibCanvas.Point;
-			to.Size  = LibCanvas.Size;
+			if (typeof ImagePreloader != 'undefined') {
+				to.ImagePreloader = ImagePreloader;
+			}
+			if (typeof App != 'undefined') {
+				to.App = App;
+			}
+			to.Point = Point;
+			to.Size  = Size;
 			return to;
 		}
 	}
