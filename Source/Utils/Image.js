@@ -28,7 +28,7 @@ atom.append(HTMLImageElement.prototype, {
 			throw new TypeError('Wrong rectangle size');
 		}
 
-		var buf = new Buffer(rect.width, rect.height, true),
+		var buf = LibCanvas.buffer(rect.width, rect.height, true),
 			xShift, yShift, x, y, xMax, yMax, crop, size;
 
 		// если координаты выходят за левый/верхний край картинки
