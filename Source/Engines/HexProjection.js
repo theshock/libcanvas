@@ -181,7 +181,7 @@ declare( 'LibCanvas.Engines.HexProjection.Sizes', {
 		return this._limits = { min: min, max: max };
 	},
 
-	/** @return Point */
+	/** @return Size */
 	size: function () {
 		var
 			limits   = this.limits(),
@@ -191,7 +191,7 @@ declare( 'LibCanvas.Engines.HexProjection.Sizes', {
 			height   = settings.get('hexHeight'),
 			padding  = this.padding;
 
-		return new Point(
+		return new Size(
 			limits.max.x - limits.min.x + base    + 2 * (padding + chord),
 			limits.max.y - limits.min.y + height  + 2 *  padding
 		);
