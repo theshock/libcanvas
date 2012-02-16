@@ -1494,6 +1494,54 @@ return Point;
 /*
 ---
 
+name: "Size"
+
+description: ""
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- Point
+
+provides: Size
+
+...
+*/
+var Size = declare( 'LibCanvas.Size', {
+	parent: Point,
+
+	prototype: {
+		set: function (size) {
+			if (typeof size == 'object' && size.width != null) {
+				this.x = Number(size.width);
+				this.y = Number(size.height);
+
+				return this;
+			}
+			return Point.prototype.set.apply( this, arguments );
+		},
+
+		get width  ( ) { return this.x },
+		get height ( ) { return this.y },
+		set width  (w) { this.x = w },
+		set height (h) { this.y = h },
+
+		/** @returns {object} */
+		toObject: function () {
+			return { width: this.x, height: this.y };
+		}
+	}
+});
+
+/*
+---
+
 name: "Shape"
 
 description: "Abstract class LibCanvas.Shape defines interface for drawable canvas objects"
@@ -2030,6 +2078,7 @@ authors:
 requires:
 	- LibCanvas
 	- Point
+	- Size
 	- Shapes.Rectangle
 	- Shapes.Circle
 	- Utils.Canvas
@@ -2075,6 +2124,8 @@ var office = {
 		return this.original(func, [point.x, point.y]);
 	}
 };
+
+var size1 = new Size(1,1);
 
 var constants =
 /** @lends LibCanvas.Context2D */
@@ -2123,9 +2174,27 @@ var constants =
 		ALPHABETIC : 'alphabetic',
 		IDEOGRAPHIC: 'ideographic',
 		BOTTOM     : 'bottom'
-	}
+	},
+
+	SHADOW_BUG: shadowBug
 
 };
+
+/* In some Mobile browsers shadowY should be inverted (bug) */
+var shadowBug = function () {
+	var ctx = atom.dom('canvas').first.getContext( '2d' );
+
+	ctx.shadowBlur    = 1;
+	ctx.shadowOffsetX = 0;
+	ctx.shadowOffsetY = -5;
+	ctx.shadowColor   = 'green';
+
+	ctx.fillRect( 0, 5, 5, 5 );
+
+	// Color should contains green component to be correct (128 is correct value)
+	return ctx.getImageData(0, 0, 1, 1).data[1] < 64;
+
+}();
 
 var Context2D = declare( 'LibCanvas.Context2D',
 /**
@@ -2174,6 +2243,33 @@ var Context2D = declare( 'LibCanvas.Context2D',
 			this.shadowOffsetY = value[1];
 			this.shadowBlur    = value[2];
 			this.shadowColor   = value[3];
+		},
+
+		/** @private */
+		safeSet: function (property, value) {
+			try {
+				this.ctx2d[property] = value;
+			} catch (e) {
+				throw TypeError('Exception while setting «' + property + '» to «' + value + '»: ' + e.message);
+			}
+		},
+
+		set shadowOffsetY (value) {
+			if (shadowBug) value *= -1;
+			this.safeSet('shadowOffsetY', value);
+		},
+
+		set shadowBlur (value) {
+			if (shadowBug && value < 1) value = 1;
+			this.safeSet('shadowBlur', value);
+		},
+
+		get shadowOffsetY () {
+			return this.ctx2d.shadowOffsetY;
+		},
+
+		get shadowBlur () {
+			return this.ctx2d.shadowBlur;
 		},
 
 		_rectangle: null,
@@ -2765,16 +2861,14 @@ var Context2D = declare( 'LibCanvas.Context2D',
 			}
 			return result;
 		},
+		
 		getPixel: function (point) {
-			point = Point( arguments );
-			var data = this.getImageData(new Rectangle({ from: point, size: [1,1] })).data;
+			var
+				rect = new Rectangle(Point( arguments ), size1),
+				data = slice.call(this.getImageData(rect).data);
+			data[3] /= 255;
 
-			return {
-				r: data[0],
-				g: data[1],
-				b: data[2],
-				a: data[3] / 255
-			};
+			return new atom.Color(data);
 		},
 
 
@@ -2856,16 +2950,14 @@ var Context2D = declare( 'LibCanvas.Context2D',
 
 
 [ 'fillStyle','font','globalAlpha','globalCompositeOperation','lineCap',
-  'lineJoin','lineWidth','miterLimit','shadowOffsetX','shadowOffsetY',
-  'shadowBlur','shadowColor','strokeStyle','textAlign','textBaseline'
+  'lineJoin','lineWidth','miterLimit','shadowOffsetX','shadowColor',
+	'strokeStyle','textAlign','textBaseline'
+	// we'll set this values manually because of bug in Mobile Phones
+	// 'shadowOffsetY','shadowBlur'
 ].forEach(function (property) {
 	atom.accessors.define(Context2D.prototype, property, {
 		set: function (value) {
-			try {
-				this.ctx2d[property] = value;
-			} catch (e) {
-				throw TypeError('Exception while setting «' + property + '» to «' + value + '»: ' + e.message);
-			}
+			this.safeSet(property, value);
 		},
 		get: function () {
 			return this.ctx2d[property];
@@ -3226,54 +3318,6 @@ var Point3D = declare( 'LibCanvas.Point3D',
 		/** @returns String */
 		dump: function () {
 			return '[LibCanvas.Point3D(' + this.toArray() + ')]';
-		}
-	}
-});
-
-/*
----
-
-name: "Size"
-
-description: ""
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Point
-
-provides: Size
-
-...
-*/
-var Size = declare( 'LibCanvas.Size', {
-	parent: Point,
-
-	prototype: {
-		set: function (size) {
-			if (typeof size == 'object' && size.width != null) {
-				this.x = Number(size.width);
-				this.y = Number(size.height);
-
-				return this;
-			}
-			return Point.prototype.set.apply( this, arguments );
-		},
-
-		get width  ( ) { return this.x },
-		get height ( ) { return this.y },
-		set width  (w) { this.x = w },
-		set height (h) { this.y = h },
-
-		/** @returns {object} */
-		toObject: function () {
-			return { width: this.x, height: this.y };
 		}
 	}
 });
