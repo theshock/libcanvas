@@ -28,10 +28,16 @@ declare( 'LibCanvas.Engines.IsometricProjection', {
 	factor: [0.866, 0.5, 0.866],
 
 	/**
-	 * center (and default center in proto)
+	 * size (and default size in proto)
+	 * @property int
+	 */
+	size: 1,
+
+	/**
+	 * start (and default start in proto)
 	 * @property {Point}
 	 */
-	center: [0, 0],
+	start: [0, 0],
 
 	/**
 	 * @constructs
@@ -41,16 +47,17 @@ declare( 'LibCanvas.Engines.IsometricProjection', {
 	/**
 	 * @constructs
 	 * @param {object} settings
-	 * @param {Point3D} settings.factor - length of top and bottom lines
-	 * @param {Point} settings.center - position of [0,0] coordinate
-	 * @param {int} settings.chordLength - height of left and right triangle
-	 * @param {int} settings.hexHeight   - height of the hex (length between top and bottom lines)
+	 * @param {Point3D} settings.factor
+	 * @param {Point3D} settings.size
+	 * @param {Point} settings.start - position of [0,0] coordinate
 	 */
 	initialize: function (settings) {
-		this.bindMethods();
+		this.bindMethods([ 'toIsometric', 'to3D' ]);
 		this.settings = new Settings(settings);
+
 		this.factor = Point3D( this.settings.get('factor') || this.factor );
-		this.center = Point  ( this.settings.get('center') || this.center )
+		this.size   = Number ( this.settings.get('size')   || this.size   );
+		this.start  = Point  ( this.settings.get('start')  || this.start  );
 	},
 
 	/**
@@ -62,7 +69,9 @@ declare( 'LibCanvas.Engines.IsometricProjection', {
 		return new Point(
 			(point3d.y + point3d.x) * this.factor.x,
 			(point3d.y - point3d.x) * this.factor.y - point3d.z * this.factor.z
-		).move(this.center);
+		)
+		.mul(this.size)
+		.move(this.start);
 	},
 
 	/**
@@ -75,9 +84,10 @@ declare( 'LibCanvas.Engines.IsometricProjection', {
 		z = Number(z) || 0;
 
 		var
-			center = this.center,
-			dXY = ((point.y - center.y) + z * this.factor.z) / this.factor.y,
-			pX  = ((point.x - center.x) / this.factor.x - dXY) / 2;
+			size  = this.size,
+			start = this.start,
+			dXY = ((point.y - start.y) / size + z * this.factor.z) / this.factor.y,
+			pX  = ((point.x - start.x) / size / this.factor.x - dXY) / 2;
 
 		return new Point3D( pX, pX + dXY, z );
 	}
