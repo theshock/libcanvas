@@ -36,7 +36,22 @@ App.Scene = declare( 'LibCanvas.App.Scene', {
 	},
 
 	/** @private */
+	stopped: false,
+
+	start: function () {
+		this.stopped = false;
+		return this;
+	},
+
+	stop: function () {
+		this.stopped = true;
+		return this;
+	},
+
+	/** @private */
 	tick: function (time) {
+		if (this.stopped) return this;
+
 		if (this.settings.get( 'invoke' )) {
 			this.sortElements();
 			this.updateAll(time);
