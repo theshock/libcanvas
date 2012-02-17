@@ -934,10 +934,12 @@ App.Scene = declare( 'LibCanvas.App.Scene', {
 
 		for (i = redraw.length; i--;) {
 			elem = redraw[i];
-			if (elem.scene == this && elem.isVisible()) {
-				elem.renderTo( ctx, resources );
+			if (elem.scene == this) {
 				elem.redrawRequested = false;
-				elem.saveCurrentBoundingShape();
+				if (elem.isVisible()) {
+					elem.renderTo( ctx, resources );
+					elem.saveCurrentBoundingShape();
+				}
 			}
 		}
 
