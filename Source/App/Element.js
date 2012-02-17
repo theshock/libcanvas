@@ -91,7 +91,7 @@ App.Element = declare( 'LibCanvas.App.Element', {
 	},
 
 	clearPrevious: function ( ctx ) {
-		ctx.clear( this.previousBoundingShape );
+		if (this.previousBoundingShape) ctx.clear( this.previousBoundingShape );
 		return this;
 	},
 
