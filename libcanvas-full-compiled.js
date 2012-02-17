@@ -448,7 +448,7 @@ App.Element = declare( 'LibCanvas.App.Element', {
 	},
 
 	clearPrevious: function ( ctx ) {
-		ctx.clear( this.previousBoundingShape );
+		if (this.previousBoundingShape) ctx.clear( this.previousBoundingShape );
 		return this;
 	},
 
@@ -2500,6 +2500,14 @@ var Context2D = declare( 'LibCanvas.Context2D',
 			return this.ctx2d.shadowBlur;
 		},
 
+		get opacity () {
+			return this.globalAlpha;
+		},
+
+		set opacity (value) {
+			this.globalAlpha = value;
+		},
+
 		_rectangle: null,
 		/** @returns {Rectangle} */
 		get rectangle () {
@@ -2583,12 +2591,12 @@ var Context2D = declare( 'LibCanvas.Context2D',
 			return office.fillStroke.call(this, 'stroke', arguments);
 		},
 		/** @returns {Context2D} */
-		clear: function (shape) {
+		clear: function (shape, stroke) {
 			return shape instanceof Shape && shape.constructor != Rectangle ?
 				this
 					.save()
 					.set({ globalCompositeOperation: Context2D.COMPOSITE.DESTINATION_OUT })
-					.fill( shape )
+					[stroke ? 'stroke' : 'fill']( shape )
 					.restore() :
 				this.clearRect( Rectangle(arguments) );
 		},
