@@ -35,6 +35,10 @@ App.Scene = declare( 'LibCanvas.App.Scene', {
 		this.createLayer();
 	},
 
+	get ctx () {
+		return this.layer.canvas.ctx;
+	},
+
 	/** @private */
 	stopped: false,
 
