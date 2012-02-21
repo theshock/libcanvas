@@ -135,7 +135,7 @@ var shadowBug = function () {
 
 }();
 
-var Context2D = declare( 'LibCanvas.Context2D',
+var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 /**
  * @lends LibCanvas.Context2D.prototype
  * @property {string} fillStyle

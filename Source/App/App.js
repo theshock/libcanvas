@@ -21,7 +21,7 @@ provides: App
 */
 
 
-var App = declare( 'LibCanvas.App', {
+var App = LibCanvas.declare( 'LibCanvas.App', 'App', {
 	initialize: function (settings) {
 		this.bindMethods( 'tick' );
 

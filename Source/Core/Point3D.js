@@ -21,7 +21,7 @@ provides: Point3D
 ...
 */
 
-var Point3D = declare( 'LibCanvas.Point3D',
+var Point3D = LibCanvas.declare( 'LibCanvas.Point3D', 'Point3D',
 /** @lends Point3D# */
 {
 	parent: Geometry,

@@ -22,7 +22,7 @@ provides: Shapes.Circle
 ...
 */
 
-var Circle = declare( 'LibCanvas.Shapes.Circle',
+var Circle = LibCanvas.declare( 'LibCanvas.Shapes.Circle', 'Circle',
 /** @lends {Circle#} */
 {
 	parent: Shape,

@@ -39,19 +39,26 @@ var LibCanvas = this.LibCanvas = declare({
 			if (withCtx) canvas.ctx = canvas.getContext('2d-libcanvas');
 			return canvas;
 		},
+		'declare.classes': {},
+		declare: function (declareName, shortName, object) {
+			if (typeof shortName == 'object') {
+				object = shortName;
+				shortName = null;
+			}
+			var Class = declare( declareName, object );
+			if (shortName) {
+				if (shortName in this['declare.classes']) {
+					throw new Error( 'Duplicate declaration: ' + shortName );
+				}
+				this['declare.classes'][shortName] = Class;
+			}
+			return Class;
+		},
 		extract: function (to) {
 			to = to || global;
-			for (var k in LibCanvas.Shapes) {
-				to[k] = LibCanvas.Shapes[k];
+			for (var k in this['declare.classes']) {
+				to[k] = this['declare.classes'][k];
 			}
-			if (typeof ImagePreloader != 'undefined') {
-				to.ImagePreloader = ImagePreloader;
-			}
-			if (typeof App != 'undefined') {
-				to.App = App;
-			}
-			to.Point = Point;
-			to.Size  = Size;
 			return to;
 		}
 	}

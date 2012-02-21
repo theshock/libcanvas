@@ -20,7 +20,7 @@ provides: Size
 
 ...
 */
-var Size = declare( 'LibCanvas.Size', {
+var Size = LibCanvas.declare( 'LibCanvas.Size', 'Size', {
 	parent: Point,
 
 	prototype: {

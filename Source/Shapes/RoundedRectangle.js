@@ -21,7 +21,7 @@ provides: Shapes.RoundedRectangle
 ...
 */
 
-var RoundedRectangle = declare( 'LibCanvas.Shapes.RoundedRectangle', {
+var RoundedRectangle = LibCanvas.declare( 'LibCanvas.Shapes.RoundedRectangle', 'RoundedRectangle', {
 	parent: Rectangle,
 
 	proto: {

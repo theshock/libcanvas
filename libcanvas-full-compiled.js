@@ -75,19 +75,26 @@ var LibCanvas = this.LibCanvas = declare({
 			if (withCtx) canvas.ctx = canvas.getContext('2d-libcanvas');
 			return canvas;
 		},
+		'declare.classes': {},
+		declare: function (declareName, shortName, object) {
+			if (typeof shortName == 'object') {
+				object = shortName;
+				shortName = null;
+			}
+			var Class = declare( declareName, object );
+			if (shortName) {
+				if (shortName in this['declare.classes']) {
+					throw new Error( 'Duplicate declaration: ' + shortName );
+				}
+				this['declare.classes'][shortName] = Class;
+			}
+			return Class;
+		},
 		extract: function (to) {
 			to = to || global;
-			for (var k in LibCanvas.Shapes) {
-				to[k] = LibCanvas.Shapes[k];
+			for (var k in this['declare.classes']) {
+				to[k] = this['declare.classes'][k];
 			}
-			if (typeof ImagePreloader != 'undefined') {
-				to.ImagePreloader = ImagePreloader;
-			}
-			if (typeof App != 'undefined') {
-				to.App = App;
-			}
-			to.Point = Point;
-			to.Size  = Size;
 			return to;
 		}
 	}
@@ -116,7 +123,7 @@ provides: App
 */
 
 
-var App = declare( 'LibCanvas.App', {
+var App = LibCanvas.declare( 'LibCanvas.App', 'App', {
 	initialize: function (settings) {
 		this.bindMethods( 'tick' );
 
@@ -1155,7 +1162,7 @@ provides: Behaviors
 ...
 */
 
-var Behaviors = declare( 'LibCanvas.Behaviors', {
+var Behaviors = LibCanvas.declare( 'LibCanvas.Behaviors', 'Behaviors', {
 	initialize: function (element) {
 		this.element   = element;
 		this.behaviors = {};
@@ -1522,9 +1529,7 @@ provides: Point
 ...
 */
 
-var Point = function () {
-
-var Point = declare( 'LibCanvas.Point', {
+var Point = LibCanvas.declare( 'LibCanvas.Point', 'Point', {
 	parent: Geometry,
 
 	prototype: {
@@ -1715,10 +1720,6 @@ Point.shifts = atom.object.map({
 	br     : [ 1,  1]
 }, Point);
 
-return Point;
-
-}();
-
 /*
 ---
 
@@ -1741,7 +1742,7 @@ provides: Size
 
 ...
 */
-var Size = declare( 'LibCanvas.Size', {
+var Size = LibCanvas.declare( 'LibCanvas.Size', 'Size', {
 	parent: Point,
 
 	prototype: {
@@ -1900,7 +1901,7 @@ provides: Shapes.Rectangle
 ...
 */
 
-var Rectangle = declare( 'LibCanvas.Shapes.Rectangle', {
+var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', {
 	parent: Shape,
 	proto: {
 		set : function () {
@@ -2127,7 +2128,7 @@ provides: Shapes.Circle
 ...
 */
 
-var Circle = declare( 'LibCanvas.Shapes.Circle',
+var Circle = LibCanvas.declare( 'LibCanvas.Shapes.Circle', 'Circle',
 /** @lends {Circle#} */
 {
 	parent: Shape,
@@ -2426,7 +2427,7 @@ var shadowBug = function () {
 
 }();
 
-var Context2D = declare( 'LibCanvas.Context2D',
+var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 /**
  * @lends LibCanvas.Context2D.prototype
  * @property {string} fillStyle
@@ -3265,7 +3266,7 @@ function eventSource (e) {
 	return e.changedTouches ? e.changedTouches[0] : e;
 }
 
-return declare( 'LibCanvas.Mouse', {
+return LibCanvas.declare( 'LibCanvas.Mouse', 'Mouse', {
 	own: {
 		expandEvent: function (e) {
 			var source = eventSource(e);
@@ -3442,7 +3443,7 @@ provides: Point3D
 ...
 */
 
-var Point3D = declare( 'LibCanvas.Point3D',
+var Point3D = LibCanvas.declare( 'LibCanvas.Point3D', 'Point3D',
 /** @lends Point3D# */
 {
 	parent: Geometry,
@@ -3581,7 +3582,7 @@ provides: Shapes.Polygon
 ...
 */
 
-declare( 'LibCanvas.Engines.HexProjection', {
+LibCanvas.declare( 'LibCanvas.Engines.HexProjection', 'HexProjection', {
 	/**
 	 * @param {object} settings
 	 * @param {int} settings.baseLength  - length of top and bottom lines
@@ -3799,7 +3800,7 @@ provides: Engines.IsometricProjection
 ...
 */
 
-declare( 'LibCanvas.Engines.IsometricProjection', {
+LibCanvas.declare( 'LibCanvas.Engines.IsometricProjection', 'IsometricProjection', {
 
 	/**
 	 * factor (and default factor in proto)
@@ -4476,7 +4477,7 @@ provides: Shapes.Ellipse
 ...
 */
 
-var Ellipse = declare( 'LibCanvas.Shapes.Ellipse', {
+var Ellipse = LibCanvas.declare( 'LibCanvas.Shapes.Ellipse', 'Ellipse', {
 	parent: Rectangle,
 	proto: {
 		set : function () {
@@ -4591,7 +4592,7 @@ var between = function (x, a, b, accuracy) {
 	return x.equals(a, accuracy) || x.equals(b, accuracy) || (a < x && x < b) || (b < x && x < a);
 };
 
-return declare( 'LibCanvas.Shapes.Line', {
+return LibCanvas.declare( 'LibCanvas.Shapes.Line', 'Line', {
 	parent: Shape,
 	proto: {
 		set : function (from, to) {
@@ -4745,7 +4746,7 @@ provides: Shapes.Path
 
 ...
 */
-var Path = declare( 'LibCanvas.Shapes.Path',
+var Path = LibCanvas.declare( 'LibCanvas.Shapes.Path', 'Path',
 /** @lends {LibCanvas.Shapes.Path.prototype} */
 {
 	parent: Shape,
@@ -5025,7 +5026,7 @@ provides: Shapes.Polygon
 ...
 */
 
-var Polygon = declare( 'LibCanvas.Shapes.Polygon', {
+var Polygon = LibCanvas.declare( 'LibCanvas.Shapes.Polygon', 'Polygon', {
 	parent: Shape,
 	proto: {
 		initialize: function () {
@@ -5163,7 +5164,7 @@ provides: Shapes.RoundedRectangle
 ...
 */
 
-var RoundedRectangle = declare( 'LibCanvas.Shapes.RoundedRectangle', {
+var RoundedRectangle = LibCanvas.declare( 'LibCanvas.Shapes.RoundedRectangle', 'RoundedRectangle', {
 	parent: Rectangle,
 
 	proto: {
@@ -5340,7 +5341,7 @@ provides: Utils.ImagePreloader
 ...
 */
 
-var ImagePreloader = declare( 'LibCanvas.Utils.ImagePreloader', {
+var ImagePreloader = LibCanvas.declare( 'LibCanvas.Utils.ImagePreloader', 'ImagePreloader', {
 	processed : 0,
 	number    : 0,
 	

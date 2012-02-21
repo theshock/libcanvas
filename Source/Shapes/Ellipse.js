@@ -22,7 +22,7 @@ provides: Shapes.Ellipse
 ...
 */
 
-var Ellipse = declare( 'LibCanvas.Shapes.Ellipse', {
+var Ellipse = LibCanvas.declare( 'LibCanvas.Shapes.Ellipse', 'Ellipse', {
 	parent: Rectangle,
 	proto: {
 		set : function () {

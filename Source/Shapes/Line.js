@@ -28,7 +28,7 @@ var between = function (x, a, b, accuracy) {
 	return x.equals(a, accuracy) || x.equals(b, accuracy) || (a < x && x < b) || (b < x && x < a);
 };
 
-return declare( 'LibCanvas.Shapes.Line', {
+return LibCanvas.declare( 'LibCanvas.Shapes.Line', 'Line', {
 	parent: Shape,
 	proto: {
 		set : function (from, to) {

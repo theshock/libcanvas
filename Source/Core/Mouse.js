@@ -28,7 +28,7 @@ function eventSource (e) {
 	return e.changedTouches ? e.changedTouches[0] : e;
 }
 
-return declare( 'LibCanvas.Mouse', {
+return LibCanvas.declare( 'LibCanvas.Mouse', 'Mouse', {
 	own: {
 		expandEvent: function (e) {
 			var source = eventSource(e);

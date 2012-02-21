@@ -19,7 +19,7 @@ provides: Engines.IsometricProjection
 ...
 */
 
-declare( 'LibCanvas.Engines.IsometricProjection', {
+LibCanvas.declare( 'LibCanvas.Engines.IsometricProjection', 'IsometricProjection', {
 
 	/**
 	 * factor (and default factor in proto)

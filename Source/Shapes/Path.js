@@ -21,7 +21,7 @@ provides: Shapes.Path
 
 ...
 */
-var Path = declare( 'LibCanvas.Shapes.Path',
+var Path = LibCanvas.declare( 'LibCanvas.Shapes.Path', 'Path',
 /** @lends {LibCanvas.Shapes.Path.prototype} */
 {
 	parent: Shape,

@@ -19,7 +19,7 @@ provides: Shapes.Polygon
 ...
 */
 
-declare( 'LibCanvas.Engines.HexProjection', {
+LibCanvas.declare( 'LibCanvas.Engines.HexProjection', 'HexProjection', {
 	/**
 	 * @param {object} settings
 	 * @param {int} settings.baseLength  - length of top and bottom lines

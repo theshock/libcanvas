@@ -22,9 +22,7 @@ provides: Point
 ...
 */
 
-var Point = function () {
-
-var Point = declare( 'LibCanvas.Point', {
+var Point = LibCanvas.declare( 'LibCanvas.Point', 'Point', {
 	parent: Geometry,
 
 	prototype: {
@@ -214,7 +212,3 @@ Point.shifts = atom.object.map({
 	bl     : [-1,  1],
 	br     : [ 1,  1]
 }, Point);
-
-return Point;
-
-}();

@@ -22,7 +22,7 @@ provides: Shapes.Rectangle
 ...
 */
 
-var Rectangle = declare( 'LibCanvas.Shapes.Rectangle', {
+var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', {
 	parent: Shape,
 	proto: {
 		set : function () {
