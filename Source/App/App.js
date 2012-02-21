@@ -26,7 +26,7 @@ var App = declare( 'LibCanvas.App', {
 		this.bindMethods( 'tick' );
 
 		this.scenes    = [];
-		this.settings  = new Settings(settings);
+		this.settings  = new Settings({ appendTo: 'body' }).set(settings);
 		this.container = new App.Container(
 			this.settings.get(['size', 'appendTo'])
 		);
