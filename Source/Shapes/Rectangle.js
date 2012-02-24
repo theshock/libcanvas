@@ -69,39 +69,18 @@ var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', {
 			return this.to.y - this.from.y;
 		},
 		set width (width) {
-			this.to.moveTo({ x : this.from.x + width, y : this.to.y });
+			this.to.x = this.from.x + width;
 		},
 		set height (height) {
-			this.to.moveTo({ x : this.to.x, y : this.from.y + height });
+			this.to.y = this.from.y + height;
 		},
 		get size () {
-			return {
-				width : this.width,
-				height: this.height
-			};
+			return new Size( this.width, this.height );
 		},
 		set size (size) {
 			if (size.width != this.width || size.height != this.height) {
-				this.to.moveTo([ this.from.x + size.width, this.from.y + size.height ]);
+				this.to.set(this.from.x + size.width, this.from.y + size.height);
 			}
-		},
-		// @deprecated
-		getWidth : function () {
-			return this.width;
-		},
-		// @deprecated
-		getHeight : function () {
-			return this.height;
-		},
-		// @deprecated
-		setWidth : function (width) {
-			this.width = width;
-			return this;
-		},
-		// @deprecated
-		setHeight : function (height) {
-			this.height = height;
-			return this;
 		},
 		/** @returns {boolean} */
 		hasPoint : function (point, padding) {
