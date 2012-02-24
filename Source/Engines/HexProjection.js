@@ -13,8 +13,9 @@ authors:
 requires:
 	- LibCanvas
 	- Point
+	- Polygon
 
-provides: Shapes.Polygon
+provides: Engines.HexProjection
 
 ...
 */
