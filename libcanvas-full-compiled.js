@@ -1955,39 +1955,18 @@ var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', {
 			return this.to.y - this.from.y;
 		},
 		set width (width) {
-			this.to.moveTo({ x : this.from.x + width, y : this.to.y });
+			this.to.x = this.from.x + width;
 		},
 		set height (height) {
-			this.to.moveTo({ x : this.to.x, y : this.from.y + height });
+			this.to.y = this.from.y + height;
 		},
 		get size () {
-			return {
-				width : this.width,
-				height: this.height
-			};
+			return new Size( this.width, this.height );
 		},
 		set size (size) {
 			if (size.width != this.width || size.height != this.height) {
-				this.to.moveTo([ this.from.x + size.width, this.from.y + size.height ]);
+				this.to.set(this.from.x + size.width, this.from.y + size.height);
 			}
-		},
-		// @deprecated
-		getWidth : function () {
-			return this.width;
-		},
-		// @deprecated
-		getHeight : function () {
-			return this.height;
-		},
-		// @deprecated
-		setWidth : function (width) {
-			this.width = width;
-			return this;
-		},
-		// @deprecated
-		setHeight : function (height) {
-			this.height = height;
-			return this;
 		},
 		/** @returns {boolean} */
 		hasPoint : function (point, padding) {
@@ -3583,8 +3562,9 @@ authors:
 requires:
 	- LibCanvas
 	- Point
+	- Polygon
 
-provides: Shapes.Polygon
+provides: Engines.HexProjection
 
 ...
 */
@@ -5720,6 +5700,365 @@ App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', {
 			}
 			ctx.restore();
 			return this;
+		}
+	}
+});
+
+/*
+---
+
+name: "Tile Engine"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- Point
+	- Size
+	- Rectangle
+
+provides: Engines.Tile
+
+...
+*/
+
+LibCanvas.declare( 'LibCanvas.Engines.Tile', 'TileEngine', {
+
+	/**
+	 * @param {Object} settings
+	 * @param {*} settings.defaultValue
+	 * @param {Size} settings.size
+	 * @param {Size} settings.cellSize
+	 * @param {Size} settings.cellMargin
+	 */
+	initialize: function (settings) {
+		this.cells    = [];
+		this.methods  = {};
+		this.cellsUpdate = [];
+
+		this.events   = new Events(this);
+		this.settings = new Settings(settings).addEvents(this.events);
+
+		this.createMatrix();
+	},
+
+	setMethod: atom.core.overloadSetter(function (name, method) {
+		var type = typeof method;
+
+		if (type != 'function' && type != 'string' && !atom.dom.isElement(method)) {
+			throw new TypeError( 'Unknown method: «' + method + '»' );
+		}
+
+		this.methods[ name ] = method;
+	}),
+
+	countSize: function () {
+		var
+			settings   = this.settings,
+			cellSize   = settings.get('cellSize'),
+			cellMargin = settings.get('cellMargin');
+
+		return new Size(
+			(cellSize.x + cellMargin.x) * this.width  - cellMargin.x,
+			(cellSize.y + cellMargin.y) * this.height - cellMargin.y
+		);
+	},
+
+	getCellByIndex: function (point) {
+		return this.isIndexOutOfBounds(point) ? null:
+			this.cells[ this.width * point.y + point.x ];
+	},
+
+	getCellByPoint: function (point) {
+		var
+			settings   = this.settings,
+			cellSize   = settings.get('cellSize'),
+			cellMargin = settings.get('cellMargin');
+
+		return this.getCellByIndex(new Point(
+			parseInt(point.x / (cellSize.width  + cellMargin.x)),
+			parseInt(point.y / (cellSize.height + cellMargin.y))
+		));
+	},
+
+	refresh: function (ctx, translate) {
+		if (this.requireUpdate) {
+			ctx.save();
+			if (translate) ctx.translate(translate);
+			atom.array.invoke( this.cellsUpdate, 'renderTo', ctx );
+			ctx.restore();
+			this.cellsUpdate.length = 0;
+		}
+		return this;
+	},
+
+	get width () {
+		return this.settings.get('size').width;
+	},
+
+	get height () {
+		return this.settings.get('size').height;
+	},
+
+	get requireUpdate () {
+		return !!this.cellsUpdate.length;
+	},
+
+	/** @private */
+	createMatrix : function () {
+		var x, y, cell, point, shape,
+			settings   = this.settings,
+			size       = settings.get('size'),
+			value      = settings.get('defaultValue'),
+			cellSize   = settings.get('cellSize'),
+			cellMargin = settings.get('cellMargin');
+
+		for (y = 0; y < size.height; y++) for (x = 0; x < size.width; x++) {
+			point = new Point(x, y);
+			shape = this.createCellRectangle(point, cellSize, cellMargin);
+			cell  = new LibCanvas.Engines.Tile.Cell( this, point, shape, value );
+
+			this.cells.push( cell );
+		}
+		return this;
+	},
+
+	/** @private */
+	createCellRectangle: function (point, cellSize, cellMargin) {
+		return new Rectangle({
+			from: new Point(
+				(cellSize.x + cellMargin.x) * point.x,
+				(cellSize.y + cellMargin.y) * point.y
+			),
+			size: cellSize
+		});
+	},
+
+	/** @private */
+	isIndexOutOfBounds: function (point) {
+		return point.x < 0 || point.y < 0 || point.x >= this.width || point.y >= this.height;
+	},
+
+	/** @private */
+	updateCell: function (cell) {
+		if (!this.requireUpdate) {
+			this.events.fire('update', [ this ]);
+		}
+		atom.array.include( this.cellsUpdate, cell );
+		return this;
+	}
+
+});
+
+/*
+---
+
+name: "Tile Engine Cell"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- Engines.Tile
+
+provides: Engines.Tile.Cell
+
+...
+*/
+/**
+ * @class
+ * @name LibCanvas.Engines.Tile.Cell
+ */
+declare( 'LibCanvas.Engines.Tile.Cell', {
+
+	initialize: function (engine, point, rectangle, value) {
+		this.engine = engine;
+		this.point  = point;
+		this.value  = value;
+		this.rectangle = rectangle;
+	},
+
+	/** @private */
+	_value: null,
+
+	get value () {
+		return this._value;
+	},
+
+	set value (value) {
+		this._value = value;
+		this.engine.updateCell(this);
+	},
+
+	renderTo: function (ctx) {
+		var method, value = this.value, rectangle = this.rectangle;
+
+		ctx.clear( rectangle );
+
+		if (value == null) return this;
+
+		method = this.engine.methods[ value ];
+
+		if (method == null) {
+			throw new Error( 'No method in tile engine: «' + this.value + '»')
+		}
+
+		if (atom.dom.isElement(method)) {
+			ctx.drawImage( method, rectangle );
+		} else if (typeof method == 'function') {
+			method.call( this, ctx, this );
+		} else {
+			ctx.fill( rectangle, method );
+		}
+		return this;
+	}
+
+});
+
+/*
+---
+
+name: "Tile Engine App Element"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- Engines.Tile
+	- App.Element
+
+provides: Engines.Tile.Element
+
+...
+*/
+/**
+ * @class
+ * @name LibCanvas.Engines.Tile.Element
+ */
+declare( 'LibCanvas.Engines.Tile.Element', {
+	parent: App.Element,
+
+	own: {
+		app: function (app, engine, from) {
+			return new this( app.createScene({
+				intersection: 'manual',
+				invoke: false
+			}), {
+				engine: engine,
+				from: from || new Point(0, 0)
+			});
+		}
+	},
+
+	prototype: {
+		configure: function () {
+			this.shape = new Rectangle(
+				this.settings.get('from'),
+				this.engine.countSize()
+			);
+			this.engine.events.add( 'update', this.redraw );
+		},
+
+		get engine () {
+			return this.settings.get('engine');
+		},
+
+		clearPrevious: function () {},
+
+		renderTo: function (ctx) {
+			this.engine.refresh(ctx, this.shape.from);
+		}
+	}
+});
+
+/*
+---
+
+name: "Tile Engine App Element Mouse Handler"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- Engines.Tile.Element
+
+provides: Engines.Tile.Mouse
+
+...
+*/
+/**
+ * @class
+ * @name LibCanvas.Engines.Tile.Mouse
+ */
+declare( 'LibCanvas.Engines.Tile.Mouse', {
+	initialize: function (element, mouse) {
+		var handler = this;
+
+		handler.mouse    = mouse;
+		handler.element  = element;
+		handler.events   = new Events(handler);
+		handler.previous = null;
+		handler.lastDown = null;
+
+		element.events
+			.add( 'mousemove', function () {
+				var cell = handler.get();
+				if (handler.previous != cell) {
+					handler.outCell();
+					handler.fire( 'over', cell );
+					handler.previous = cell;
+				}
+			})
+			.add( 'mouseout', function () {
+				handler.outCell();
+			})
+			.add( 'mousedown', function () {
+				var cell = handler.get();
+				handler.fire( 'down', cell );
+				handler.lastDown = cell;
+			})
+			.add( 'mouseup', function () {
+				var cell = handler.get();
+				handler.fire( 'up', cell );
+				if (cell != null && cell == handler.lastDown) {
+					handler.fire( 'click', cell );
+				}
+				handler.lastDown = null;
+			});
+	},
+
+	/** @private */
+	get: function () {
+		return this.element.engine.getCellByPoint( this.mouse.point );
+	},
+
+	/** @private */
+	fire: function (event, cell) {
+		return this.events.fire( event, [ cell, this ]);
+	},
+
+	/** @private */
+	outCell: function () {
+		if (this.previous) {
+			this.fire( 'out', this.previous );
+			this.previous = null;
 		}
 	}
 });
