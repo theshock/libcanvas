@@ -6017,31 +6017,38 @@ declare( 'LibCanvas.Engines.Tile.Mouse', {
 		handler.previous = null;
 		handler.lastDown = null;
 
-		element.events
-			.add( 'mousemove', function () {
+		element.events.add({
+			mousemove: function () {
 				var cell = handler.get();
 				if (handler.previous != cell) {
 					handler.outCell();
 					handler.fire( 'over', cell );
 					handler.previous = cell;
 				}
-			})
-			.add( 'mouseout', function () {
+			},
+			mouseout: function () {
 				handler.outCell();
-			})
-			.add( 'mousedown', function () {
+			},
+			mousedown: function () {
 				var cell = handler.get();
 				handler.fire( 'down', cell );
 				handler.lastDown = cell;
-			})
-			.add( 'mouseup', function () {
+			},
+			mouseup: function () {
 				var cell = handler.get();
 				handler.fire( 'up', cell );
 				if (cell != null && cell == handler.lastDown) {
 					handler.fire( 'click', cell );
 				}
 				handler.lastDown = null;
-			});
+			},
+			contextmenu: function () {
+				var cell = handler.get();
+				if (cell != null) {
+					handler.fire( 'contextmenu', cell );
+				}
+			}
+		});
 	},
 
 	/** @private */
