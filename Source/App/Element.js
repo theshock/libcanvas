@@ -58,7 +58,7 @@ App.Element = declare( 'LibCanvas.App.Element', {
 	previousBoundingShape: null,
 
 	get currentBoundingShape () {
-		return this.shape.getBoundingRectangle();
+		return this.shape.getBoundingRectangle().fillToPixel();
 	},
 
 	destroy: function () {
@@ -101,7 +101,7 @@ App.Element = declare( 'LibCanvas.App.Element', {
 	saveCurrentBoundingShape: function () {
 		var shape = this.currentBoundingShape;
 		this.previousBoundingShape = shape.fillToPixel ?
-			shape.fillToPixel() : shape.clone().grow( 2 );
+			shape.clone().fillToPixel() : shape.clone().grow( 2 );
 		return this;
 	},
 
