@@ -506,7 +506,7 @@ var Context2D = Class(
 			to     : null,
 			align  : 'left', /* center|left|right */
 			size   : 16,
-			weigth : 'normal', /* bold|normal */
+			weight : 'normal', /* bold|normal */
 			style  : 'normal', /* italic|normal */
 			family : 'arial,sans-serif', /* @fontFamily */
 			lineHeight : null,
