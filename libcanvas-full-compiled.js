@@ -1685,6 +1685,9 @@ var setValFn = function (object, name, val) {
 // Should extends drawable, implements mouseListener
 return Class({
 	Extends: MouseListener,
+	
+	hover : false,
+	active: false,
 
 	clickable : function (stop, callback) {
 		if (typeof stop == 'function') {
