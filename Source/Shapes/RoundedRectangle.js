@@ -21,6 +21,11 @@ provides: Shapes.RoundedRectangle
 ...
 */
 
+/**
+ * @class
+ * @name RoundedRectangle
+ * @name LibCanvas.Shapes.RoundedRectangle
+ */
 var RoundedRectangle = LibCanvas.declare( 'LibCanvas.Shapes.RoundedRectangle', 'RoundedRectangle', {
 	parent: Rectangle,
 

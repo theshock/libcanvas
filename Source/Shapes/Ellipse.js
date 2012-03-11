@@ -22,6 +22,11 @@ provides: Shapes.Ellipse
 ...
 */
 
+/**
+ * @class
+ * @name Ellipse
+ * @name LibCanvas.Shapes.Ellipse
+ */
 var Ellipse = LibCanvas.declare( 'LibCanvas.Shapes.Ellipse', 'Ellipse', {
 	parent: Rectangle,
 	proto: {

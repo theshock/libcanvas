@@ -22,6 +22,11 @@ provides: Shapes.Rectangle
 ...
 */
 
+/**
+ * @class
+ * @name Rectangle
+ * @name LibCanvas.Shapes.Rectangle
+ */
 var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', {
 	parent: Shape,
 	proto: {

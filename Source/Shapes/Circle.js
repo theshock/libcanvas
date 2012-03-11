@@ -22,6 +22,11 @@ provides: Shapes.Circle
 ...
 */
 
+/**
+ * @class
+ * @name Circle
+ * @name LibCanvas.Shapes.Circle
+ */
 var Circle = LibCanvas.declare( 'LibCanvas.Shapes.Circle', 'Circle',
 /** @lends {Circle#} */
 {

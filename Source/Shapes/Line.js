@@ -22,6 +22,11 @@ provides: Shapes.Line
 ...
 */
 
+/**
+ * @class
+ * @name Line
+ * @name LibCanvas.Shapes.Line
+ */
 var Line = function () {
 
 var between = function (x, a, b, accuracy) {

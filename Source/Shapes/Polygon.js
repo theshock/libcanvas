@@ -23,6 +23,11 @@ provides: Shapes.Polygon
 ...
 */
 
+/**
+ * @class
+ * @name Polygon
+ * @name LibCanvas.Shapes.Polygon
+ */
 var Polygon = LibCanvas.declare( 'LibCanvas.Shapes.Polygon', 'Polygon', {
 	parent: Shape,
 	proto: {

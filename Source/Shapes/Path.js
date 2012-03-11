@@ -21,6 +21,12 @@ provides: Shapes.Path
 
 ...
 */
+
+/**
+ * @class
+ * @name Path
+ * @name LibCanvas.Shapes.Path
+ */
 var Path = LibCanvas.declare( 'LibCanvas.Shapes.Path', 'Path',
 /** @lends {LibCanvas.Shapes.Path.prototype} */
 {
