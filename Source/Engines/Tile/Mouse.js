@@ -19,6 +19,7 @@ provides: Engines.Tile.Mouse
 */
 /**
  * @class
+ * @name TileEngine.Mouse
  * @name LibCanvas.Engines.Tile.Mouse
  */
 declare( 'LibCanvas.Engines.Tile.Mouse', {

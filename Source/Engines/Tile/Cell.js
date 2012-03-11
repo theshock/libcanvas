@@ -19,6 +19,7 @@ provides: Engines.Tile.Cell
 */
 /**
  * @class
+ * @name TileEngine.Cell
  * @name LibCanvas.Engines.Tile.Cell
  */
 declare( 'LibCanvas.Engines.Tile.Cell', {

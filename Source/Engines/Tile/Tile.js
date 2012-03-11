@@ -21,6 +21,11 @@ provides: Engines.Tile
 ...
 */
 
+/**
+ * @class
+ * @name TileEngine
+ * @name LibCanvas.Engines.Tile
+ */
 LibCanvas.declare( 'LibCanvas.Engines.Tile', 'TileEngine', {
 
 	/**

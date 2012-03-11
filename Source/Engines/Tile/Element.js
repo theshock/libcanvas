@@ -20,6 +20,7 @@ provides: Engines.Tile.Element
 */
 /**
  * @class
+ * @name TileEngine.Element
  * @name LibCanvas.Engines.Tile.Element
  */
 declare( 'LibCanvas.Engines.Tile.Element', {
