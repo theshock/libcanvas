@@ -20,6 +20,12 @@ provides: Size
 
 ...
 */
+
+/**
+ * @class
+ * @name Size
+ * @name LibCanvas.Size
+ */
 var Size = LibCanvas.declare( 'LibCanvas.Size', 'Size', {
 	parent: Point,
 

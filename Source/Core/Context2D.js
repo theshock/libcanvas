@@ -25,6 +25,11 @@ provides: Context2D
 ...
 */
 
+/**
+ * @class
+ * @name Context2D
+ * @name LibCanvas.Context2D
+ */
 var Context2D = function () {
 
 var office = {

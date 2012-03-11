@@ -29,6 +29,11 @@ var shapeTestBuffer = function () {
 	return shapeTestBuffer.buffer;
 };
 
+/**
+ * @class
+ * @name Shape
+ * @name LibCanvas.Shape
+ */
 var Shape = declare( 'LibCanvas.Shape',
 /**
  * @lends LibCanvas.Shape.prototype

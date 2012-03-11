@@ -20,6 +20,11 @@ provides: Geometry
 ...
 */
 
+/**
+ * @class
+ * @name Geometry
+ * @name LibCanvas.Geometry
+ */
 var Geometry = declare( 'LibCanvas.Geometry',
 /**
  * @lends LibCanvas.Geometry.prototype

@@ -21,6 +21,11 @@ provides: Point3D
 ...
 */
 
+/**
+ * @class
+ * @name Point3D
+ * @name LibCanvas.Point3D
+ */
 var Point3D = LibCanvas.declare( 'LibCanvas.Point3D', 'Point3D',
 /** @lends Point3D# */
 {

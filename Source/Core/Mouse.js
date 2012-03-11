@@ -22,6 +22,11 @@ provides: Mouse
 */
 
 
+/**
+ * @class
+ * @name Mouse
+ * @name LibCanvas.Mouse
+ */
 var Mouse = new function () {
 
 function eventSource (e) {

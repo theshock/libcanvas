@@ -22,6 +22,11 @@ provides: Point
 ...
 */
 
+/**
+ * @class
+ * @name Point
+ * @name LibCanvas.Point
+ */
 var Point = LibCanvas.declare( 'LibCanvas.Point', 'Point', {
 	parent: Geometry,
 
