@@ -21,6 +21,11 @@ provides: Utils.ImagePreloader
 ...
 */
 
+/**
+ * @class
+ * @name ImagePreloader
+ * @name LibCanvas.Utils.ImagePreloader
+ */
 var ImagePreloader = LibCanvas.declare( 'LibCanvas.Utils.ImagePreloader', 'ImagePreloader', {
 	processed : 0,
 	number    : 0,

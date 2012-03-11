@@ -20,6 +20,11 @@ provides: Behaviors
 ...
 */
 
+/**
+ * @class
+ * @name Behaviors
+ * @name LibCanvas.Behaviors
+ */
 var Behaviors = LibCanvas.declare( 'LibCanvas.Behaviors', 'Behaviors', {
 	initialize: function (element) {
 		this.element   = element;
