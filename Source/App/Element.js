@@ -21,6 +21,11 @@ provides: App.Element
 ...
 */
 
+/**
+ * @class
+ * @name App.Element
+ * @name LibCanvas.App.Element
+ */
 App.Element = declare( 'LibCanvas.App.Element', {
 
 	zIndex: 0,

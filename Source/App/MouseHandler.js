@@ -21,6 +21,11 @@ provides: App.MouseHandler
 ...
 */
 
+/**
+ * @class
+ * @name App.MouseHandler
+ * @name LibCanvas.App.MouseHandler
+ */
 App.MouseHandler = declare( 'LibCanvas.App.MouseHandler', {
 
 	/** @private */

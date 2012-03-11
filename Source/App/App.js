@@ -20,7 +20,11 @@ provides: App
 ...
 */
 
-
+/**
+ * @class
+ * @name App
+ * @name LibCanvas.App
+ */
 var App = LibCanvas.declare( 'LibCanvas.App', 'App', {
 	initialize: function (settings) {
 		this.bindMethods( 'tick' );

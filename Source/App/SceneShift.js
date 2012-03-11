@@ -21,6 +21,11 @@ provides: App.SceneShift
 ...
 */
 
+/**
+ * @class
+ * @name App.SceneShift
+ * @name LibCanvas.App.SceneShift
+ */
 App.SceneShift = declare( 'LibCanvas.App.SceneShift', {
 
 	initialize: function (scene) {

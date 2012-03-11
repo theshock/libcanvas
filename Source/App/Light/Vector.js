@@ -22,7 +22,11 @@ provides: App.Light.Vector
 ...
 */
 
-
+/**
+ * @class
+ * @name App.Light.Vector
+ * @name LibCanvas.App.Light.Vector
+ */
 App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', {
 	parent: App.Element,
 

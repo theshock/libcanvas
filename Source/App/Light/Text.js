@@ -22,7 +22,11 @@ provides: App.Light.Text
 ...
 */
 
-
+/**
+ * @class
+ * @name App.Light.Text
+ * @name LibCanvas.App.Light.Text
+ */
 App.Light.Text = atom.declare( 'LibCanvas.App.Light.Text', {
 	parent: App.Element,
 

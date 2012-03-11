@@ -22,6 +22,11 @@ provides: App.Layer
 */
 
 
+/**
+ * @class
+ * @name App.Layer
+ * @name LibCanvas.App.Layer
+ */
 App.Layer = declare( 'LibCanvas.App.Layer', {
 	/** @private
 	 *  @property {Size} */

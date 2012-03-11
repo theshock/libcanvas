@@ -21,6 +21,11 @@ provides: App.ElementsMouseSearch
 ...
 */
 
+/**
+ * @class
+ * @name App.ElementsMouseSearch
+ * @name LibCanvas.App.ElementsMouseSearch
+ */
 App.ElementsMouseSearch = declare( 'LibCanvas.App.ElementsMouseSearch', {
 
 	initialize: function () {
