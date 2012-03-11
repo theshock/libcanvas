@@ -122,7 +122,11 @@ provides: App
 ...
 */
 
-
+/**
+ * @class
+ * @name App
+ * @name LibCanvas.App
+ */
 var App = LibCanvas.declare( 'LibCanvas.App', 'App', {
 	initialize: function (settings) {
 		this.bindMethods( 'tick' );
@@ -285,7 +289,11 @@ provides: App.Dragger
 
 ...
 */
-
+/**
+ * @class
+ * @name App.Dragger
+ * @name LibCanvas.App.Dragger
+ */
 declare( 'LibCanvas.App.Dragger', {
 	initialize: function (mouse) {
 		this.bindMethods([ 'dragStart', 'dragStop', 'dragMove' ]);
@@ -385,6 +393,11 @@ provides: App.Element
 ...
 */
 
+/**
+ * @class
+ * @name App.Element
+ * @name LibCanvas.App.Element
+ */
 App.Element = declare( 'LibCanvas.App.Element', {
 
 	zIndex: 0,
@@ -497,6 +510,11 @@ provides: App.ElementsMouseSearch
 ...
 */
 
+/**
+ * @class
+ * @name App.ElementsMouseSearch
+ * @name LibCanvas.App.ElementsMouseSearch
+ */
 App.ElementsMouseSearch = declare( 'LibCanvas.App.ElementsMouseSearch', {
 
 	initialize: function () {
@@ -547,6 +565,11 @@ provides: App.Layer
 */
 
 
+/**
+ * @class
+ * @name App.Layer
+ * @name LibCanvas.App.Layer
+ */
 App.Layer = declare( 'LibCanvas.App.Layer', {
 	/** @private
 	 *  @property {Size} */
@@ -658,6 +681,11 @@ provides: App.MouseHandler
 ...
 */
 
+/**
+ * @class
+ * @name App.MouseHandler
+ * @name LibCanvas.App.MouseHandler
+ */
 App.MouseHandler = declare( 'LibCanvas.App.MouseHandler', {
 
 	/** @private */
@@ -879,6 +907,11 @@ provides: App.Scene
 ...
 */
 
+/**
+ * @class
+ * @name App.Scene
+ * @name LibCanvas.App.Scene
+ */
 App.Scene = declare( 'LibCanvas.App.Scene', {
 
 	initialize: function (app, settings) {
@@ -1067,6 +1100,11 @@ provides: App.SceneShift
 ...
 */
 
+/**
+ * @class
+ * @name App.SceneShift
+ * @name LibCanvas.App.SceneShift
+ */
 App.SceneShift = declare( 'LibCanvas.App.SceneShift', {
 
 	initialize: function (scene) {
@@ -1172,6 +1210,11 @@ provides: Behaviors
 ...
 */
 
+/**
+ * @class
+ * @name Behaviors
+ * @name LibCanvas.Behaviors
+ */
 var Behaviors = LibCanvas.declare( 'LibCanvas.Behaviors', 'Behaviors', {
 	initialize: function (element) {
 		this.element   = element;
@@ -1400,6 +1443,11 @@ provides: Geometry
 ...
 */
 
+/**
+ * @class
+ * @name Geometry
+ * @name LibCanvas.Geometry
+ */
 var Geometry = declare( 'LibCanvas.Geometry',
 /**
  * @lends LibCanvas.Geometry.prototype
@@ -1539,6 +1587,11 @@ provides: Point
 ...
 */
 
+/**
+ * @class
+ * @name Point
+ * @name LibCanvas.Point
+ */
 var Point = LibCanvas.declare( 'LibCanvas.Point', 'Point', {
 	parent: Geometry,
 
@@ -1752,6 +1805,12 @@ provides: Size
 
 ...
 */
+
+/**
+ * @class
+ * @name Size
+ * @name LibCanvas.Size
+ */
 var Size = LibCanvas.declare( 'LibCanvas.Size', 'Size', {
 	parent: Point,
 
@@ -1809,6 +1868,11 @@ var shapeTestBuffer = function () {
 	return shapeTestBuffer.buffer;
 };
 
+/**
+ * @class
+ * @name Shape
+ * @name LibCanvas.Shape
+ */
 var Shape = declare( 'LibCanvas.Shape',
 /**
  * @lends LibCanvas.Shape.prototype
@@ -1911,6 +1975,11 @@ provides: Shapes.Rectangle
 ...
 */
 
+/**
+ * @class
+ * @name Rectangle
+ * @name LibCanvas.Shapes.Rectangle
+ */
 var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', {
 	parent: Shape,
 	proto: {
@@ -2117,6 +2186,11 @@ provides: Shapes.Circle
 ...
 */
 
+/**
+ * @class
+ * @name Circle
+ * @name LibCanvas.Shapes.Circle
+ */
 var Circle = LibCanvas.declare( 'LibCanvas.Shapes.Circle', 'Circle',
 /** @lends {Circle#} */
 {
@@ -2306,6 +2380,11 @@ provides: Context2D
 ...
 */
 
+/**
+ * @class
+ * @name Context2D
+ * @name LibCanvas.Context2D
+ */
 var Context2D = function () {
 
 var office = {
@@ -3249,6 +3328,11 @@ provides: Mouse
 */
 
 
+/**
+ * @class
+ * @name Mouse
+ * @name LibCanvas.Mouse
+ */
 var Mouse = new function () {
 
 function eventSource (e) {
@@ -3432,6 +3516,11 @@ provides: Point3D
 ...
 */
 
+/**
+ * @class
+ * @name Point3D
+ * @name LibCanvas.Point3D
+ */
 var Point3D = LibCanvas.declare( 'LibCanvas.Point3D', 'Point3D',
 /** @lends Point3D# */
 {
@@ -3572,6 +3661,11 @@ provides: Engines.HexProjection
 ...
 */
 
+/**
+ * @class
+ * @name HexProjection
+ * @name LibCanvas.Engines.HexProjection
+ */
 LibCanvas.declare( 'LibCanvas.Engines.HexProjection', 'HexProjection', {
 	/**
 	 * @param {object} settings
@@ -3790,6 +3884,11 @@ provides: Engines.IsometricProjection
 ...
 */
 
+/**
+ * @class
+ * @name IsometricProjection
+ * @name LibCanvas.Engines.IsometricProjection
+ */
 LibCanvas.declare( 'LibCanvas.Engines.IsometricProjection', 'IsometricProjection', {
 
 	/**
@@ -4046,6 +4145,269 @@ Context2D.prototype.drawCurve = function (obj) {
 };
 
 };
+
+/*
+ ---
+
+ name: "ImageBuilder"
+
+ description: "Plugin, that compile image from parts"
+
+ license:
+ - "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+ - "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+ authors:
+ - Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+
+ provides: Plugins.ImageBuilder
+
+ requires:
+ - LibCanvas
+ - Point
+ - Rectangle
+
+ ...
+ */
+
+/**
+ * @class
+ * @name ImageBuilder
+ * @name LibCanvas.Plugins.ImageBuilder
+ */
+var ImageBuilder = LibCanvas.declare(
+	'LibCanvas.Plugins.ImageBuilder', 'ImageBuilder',
+	{
+		ctx     : null,
+		shape   : null,
+		images  : [
+			0, 1, 2,
+			3, 4, 5,
+			6, 7, 8
+		],
+
+		/**
+		 * @param data
+		 * @param data.source  - image
+		 * @param data.widths  - [ left, center, right ]
+		 * @param data.heights - [ top, middle, bottom ]
+		 */
+		initialize: function (data) {
+			this.cropImage( data );
+		},
+
+		/** @private */
+		renderSingle: function (image, xDir, yDir) {
+			if (image != null) this.ctx.drawImage({
+				image: image,
+				from: this.countShape( xDir, yDir ).from
+			});
+
+			return this;
+		},
+		/** @private */
+		renderRepeated: function (image, xDir, yDir) {
+			if (image != null) {
+				var pattern = this.ctx.createPattern( image, 'repeat' );
+
+				var shape = this.countShape(xDir, yDir);
+				this.ctx
+					.translate(shape.from)
+					.fill( new Rectangle(new Point(0,0), shape.size), pattern)
+					.translate(shape.from, true);
+			}
+			return this;
+		},
+		/** @private */
+		countShape: function (xDir, yDir) {
+			var w, h,
+				size = this.shape.size,
+				from = new Point(0,0),
+				to   = new Point(0,0);
+
+			from.x = xDir == 'left'   ? 0 :
+				this.countBasis( xDir == 'center' ? 'left' : 'right' );
+
+			from.y = yDir == 'top'    ? 0 :
+				this.countBasis( yDir == 'middle' ? 'top' : 'bottom' );
+
+			to.x   = xDir == 'right'  ? size.width  :
+				this.countBasis( xDir == 'center' ? 'right' : 'left' );
+
+			to.y   = yDir == 'bottom' ? size.height :
+				this.countBasis( yDir == 'middle' ? 'bottom' : 'top' );
+
+			return new Rectangle( from, to ).move( this.shape );
+		},
+		/** @private */
+		countBasis: function (basis) {
+			var images = this.images, size = this.shape.size;
+
+			switch (basis) {
+				case 'left'  : return               images[0].width;
+				case 'right' : return size.width  - images[2].width;
+				case 'top'   : return               images[0].height;
+				case 'bottom': return size.height - images[6].height;
+				default: throw new TypeError('Wrong basis: ' + basis);
+			}
+		},
+		/** @private */
+		renderParts: function () {
+			var images = this.images;
+			this
+				.renderRepeated( images[1], 'center', 'top'    )
+				.renderRepeated( images[3], 'left'  , 'middle' )
+				.renderRepeated( images[4], 'center', 'middle' )
+				.renderRepeated( images[5], 'right' , 'middle' )
+				.renderRepeated( images[7], 'center', 'bottom' )
+				.renderSingle  ( images[0], 'left'  , 'top'    )
+				.renderSingle  ( images[2], 'right' , 'top'    )
+				.renderSingle  ( images[6], 'left'  , 'bottom' )
+				.renderSingle  ( images[8], 'right' , 'bottom' );
+		},
+		/** @private */
+		cropImage: function (data) {
+			var w, h, x, y, width, height,
+				images  = [],
+				widths  = data.widths,
+				heights = data.heights;
+
+			for (y = 0, h = 0; h < heights.length; h++) {
+				height = heights[h];
+				for (x = 0, w = 0; w < widths.length; w++) {
+					width = widths[w];
+
+					images.push(this.createCroppedImage( data.source,
+						new Rectangle(x,y,width,height)
+					));
+
+					x += width;
+				}
+				y += height;
+			}
+
+			this.images = images;
+		},
+		/** @private */
+		createCroppedImage: function (source, shape) {
+			var buffer = LibCanvas.buffer( shape.size, true );
+
+			buffer.ctx.drawImage({
+				image: source,
+				draw : buffer.ctx.rectangle,
+				crop : shape
+			});
+
+			return buffer;
+		},
+
+		renderTo: function (ctx, shape) {
+			this.ctx   = ctx;
+			this.shape = shape;
+			this.renderParts();
+		}
+	}
+);
+
+/**
+ * @class
+ * @name ImageBuilder.Horisontal
+ * @name LibCanvas.Plugins.ImageBuilder.Horisontal
+ */
+atom.declare( 'LibCanvas.Plugins.ImageBuilder.Horisontal', {
+	parent: ImageBuilder,
+	prototype: {
+		images: [ 0, 1, 2 ],
+		/** @private */
+		countBasis: function (basis) {
+			var images = this.images, size = this.shape.size;
+
+			switch (basis) {
+				case 'left'  : return images[0].width;
+				case 'right' : return size.width  - images[2].width;
+				case 'top'   : return 0;
+				case 'bottom': return size.height;
+				default: throw new TypeError('Wrong basis: ' + basis);
+			}
+		},
+		/** @private */
+		renderParts: function () {
+			var images = this.images;
+			this
+				.renderRepeated( images[1], 'center', 'middle' )
+				.renderSingle  ( images[0], 'left'  , 'middle' )
+				.renderSingle  ( images[2], 'right' , 'middle' );
+		},
+		/** @private */
+		cropImage: function (data) {
+			var w, x, width,
+				images  = [],
+				widths  = data.widths;
+
+			for (x = 0, w = 0; w < widths.length; w++) {
+				width = widths[w];
+
+				images.push(this.createCroppedImage( data.source,
+					new Rectangle(x,0,width,data.source.height)
+				));
+
+				x += width;
+			}
+
+			this.images = images;
+		}
+	}
+});
+
+/**
+ * @class
+ * @name ImageBuilder.Vertical
+ * @name LibCanvas.Plugins.ImageBuilder.Vertical
+ */
+atom.declare( 'LibCanvas.Plugins.ImageBuilder.Vertical', {
+	parent: ImageBuilder,
+	prototype: {
+		images: [ 0, 1, 2 ],
+		/** @private */
+		countBasis: function (basis) {
+			var images = this.images, size = this.shape.size;
+
+			switch (basis) {
+				case 'left'  : return 0;
+				case 'right' : return size.width;
+				case 'top'   : return images[0].height;
+				case 'bottom': return size.height - images[2].height;
+				default: throw new TypeError('Wrong basis: ' + basis);
+			}
+		},
+		/** @private */
+		renderParts: function () {
+			var images = this.images;
+			this
+				.renderRepeated( images[1], 'center', 'middle' )
+				.renderSingle  ( images[0], 'center', 'top'    )
+				.renderSingle  ( images[2], 'center', 'bottom' );
+		},
+		/** @private */
+		cropImage: function (data) {
+			var h, y, height,
+				images  = [],
+				heights = data.heights;
+
+			for (y = 0, h = 0; h < heights.length; h++) {
+				height = heights[h];
+
+				images.push(this.createCroppedImage( data.source,
+					new Rectangle(0,y,data.source.width,height)
+				));
+
+				y += height;
+			}
+
+			this.images = images;
+		}
+	}
+});
 
 /*
 ---
@@ -4467,6 +4829,11 @@ provides: Shapes.Ellipse
 ...
 */
 
+/**
+ * @class
+ * @name Ellipse
+ * @name LibCanvas.Shapes.Ellipse
+ */
 var Ellipse = LibCanvas.declare( 'LibCanvas.Shapes.Ellipse', 'Ellipse', {
 	parent: Rectangle,
 	proto: {
@@ -4576,6 +4943,11 @@ provides: Shapes.Line
 ...
 */
 
+/**
+ * @class
+ * @name Line
+ * @name LibCanvas.Shapes.Line
+ */
 var Line = function () {
 
 var between = function (x, a, b, accuracy) {
@@ -4736,6 +5108,12 @@ provides: Shapes.Path
 
 ...
 */
+
+/**
+ * @class
+ * @name Path
+ * @name LibCanvas.Shapes.Path
+ */
 var Path = LibCanvas.declare( 'LibCanvas.Shapes.Path', 'Path',
 /** @lends {LibCanvas.Shapes.Path.prototype} */
 {
@@ -5016,6 +5394,11 @@ provides: Shapes.Polygon
 ...
 */
 
+/**
+ * @class
+ * @name Polygon
+ * @name LibCanvas.Shapes.Polygon
+ */
 var Polygon = LibCanvas.declare( 'LibCanvas.Shapes.Polygon', 'Polygon', {
 	parent: Shape,
 	proto: {
@@ -5154,6 +5537,11 @@ provides: Shapes.RoundedRectangle
 ...
 */
 
+/**
+ * @class
+ * @name RoundedRectangle
+ * @name LibCanvas.Shapes.RoundedRectangle
+ */
 var RoundedRectangle = LibCanvas.declare( 'LibCanvas.Shapes.RoundedRectangle', 'RoundedRectangle', {
 	parent: Rectangle,
 
@@ -5331,6 +5719,11 @@ provides: Utils.ImagePreloader
 ...
 */
 
+/**
+ * @class
+ * @name ImagePreloader
+ * @name LibCanvas.Utils.ImagePreloader
+ */
 var ImagePreloader = LibCanvas.declare( 'LibCanvas.Utils.ImagePreloader', 'ImagePreloader', {
 	processed : 0,
 	number    : 0,
@@ -5489,6 +5882,11 @@ provides: App.Light
 ...
 */
 
+/**
+ * @class
+ * @name App.Light
+ * @name LibCanvas.App.Light
+ */
 App.Light = declare( 'LibCanvas.App.Light', {
 
 	initialize: function (size, settings) {
@@ -5552,7 +5950,11 @@ provides: App.Light.Text
 ...
 */
 
-
+/**
+ * @class
+ * @name App.Light.Text
+ * @name LibCanvas.App.Light.Text
+ */
 App.Light.Text = atom.declare( 'LibCanvas.App.Light.Text', {
 	parent: App.Element,
 
@@ -5609,7 +6011,11 @@ provides: App.Light.Vector
 ...
 */
 
-
+/**
+ * @class
+ * @name App.Light.Vector
+ * @name LibCanvas.App.Light.Vector
+ */
 App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', {
 	parent: App.Element,
 
@@ -5730,6 +6136,11 @@ provides: Engines.Tile
 ...
 */
 
+/**
+ * @class
+ * @name TileEngine
+ * @name LibCanvas.Engines.Tile
+ */
 LibCanvas.declare( 'LibCanvas.Engines.Tile', 'TileEngine', {
 
 	/**
@@ -5879,6 +6290,7 @@ provides: Engines.Tile.Cell
 */
 /**
  * @class
+ * @name TileEngine.Cell
  * @name LibCanvas.Engines.Tile.Cell
  */
 declare( 'LibCanvas.Engines.Tile.Cell', {
@@ -5949,6 +6361,7 @@ provides: Engines.Tile.Element
 */
 /**
  * @class
+ * @name TileEngine.Element
  * @name LibCanvas.Engines.Tile.Element
  */
 declare( 'LibCanvas.Engines.Tile.Element', {
@@ -6008,6 +6421,7 @@ provides: Engines.Tile.Mouse
 */
 /**
  * @class
+ * @name TileEngine.Mouse
  * @name LibCanvas.Engines.Tile.Mouse
  */
 declare( 'LibCanvas.Engines.Tile.Mouse', {
