@@ -318,7 +318,7 @@ LibCanvas.Context2D
 
 `size`       (*int, по-умолчанию = 16*)
 
-`weigth`     (*string*) bold|normal
+`weight`     (*string*) bold|normal
 
 `style`      (*string*) italic|normal
 
