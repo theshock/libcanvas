@@ -92,7 +92,7 @@ LibCanvas.App
 
 	boolean sceneExists(string name)
 
-Создаёт новую сцену, привязанную к слою `name`, `options` - настройки для сцены. (см. `LibCanvas.Scene.Standard`)
+Проверяет существует ли сцена с именем `name`
 
 #### Пример:
 
