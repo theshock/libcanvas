@@ -160,3 +160,8 @@ var ImagePreloader = LibCanvas.declare( 'LibCanvas.Utils.ImagePreloader', 'Image
 		return this;
 	}
 });
+
+LibCanvas.Utils.ImagePreloader.run = function (images, callback, context) {
+	return new ImagePreloader({ images: images }).events
+		.add( 'ready', context ? callback.bind(context) : callback );
+};
