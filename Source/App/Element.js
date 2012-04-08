@@ -28,13 +28,13 @@ provides: App.Element
  */
 App.Element = declare( 'LibCanvas.App.Element', {
 
-	zIndex: 0,
-
+	zIndex  : 0,
+	renderer: null,
 	settings: {},
 
 	/** @constructs */
 	initialize: function (scene, settings) {
-		this.bindMethods( 'redraw' );
+		this.bindMethods([ 'redraw', 'destroy' ]);
 
 		this.events = new Events(this);
 		this.settings = new Settings({ hidden: false })
@@ -111,6 +111,9 @@ App.Element = declare( 'LibCanvas.App.Element', {
 	},
 
 	renderTo: function (ctx, resources) {
+		if (this.renderer) {
+			this.renderer.renderTo(ctx, resources);
+		}
 		return this;
 	}
 });
