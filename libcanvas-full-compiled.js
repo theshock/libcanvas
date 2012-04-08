@@ -400,13 +400,13 @@ provides: App.Element
  */
 App.Element = declare( 'LibCanvas.App.Element', {
 
-	zIndex: 0,
-
+	zIndex  : 0,
+	renderer: null,
 	settings: {},
 
 	/** @constructs */
 	initialize: function (scene, settings) {
-		this.bindMethods( 'redraw' );
+		this.bindMethods([ 'redraw', 'destroy' ]);
 
 		this.events = new Events(this);
 		this.settings = new Settings({ hidden: false })
@@ -483,6 +483,9 @@ App.Element = declare( 'LibCanvas.App.Element', {
 	},
 
 	renderTo: function (ctx, resources) {
+		if (this.renderer) {
+			this.renderer.renderTo(ctx, resources);
+		}
 		return this;
 	}
 });
@@ -6600,10 +6603,10 @@ var ImagePreloader = LibCanvas.declare( 'LibCanvas.Utils.ImagePreloader', 'Image
 		var url = str, size, cell, match, coords = null;
 
 				// searching for pattern 'url [x:y:w:y]'
-		if (match = str.match(/ \[(\d+)\:(\d+)\:(\d+)\:(\d+)\]$/)) {
+		if (match = str.match(/ \[(\d+):(\d+):(\d+):(\d+)\]$/)) {
 			coords = match.slice( 1 );
 				// searching for pattern 'url [w:y]{x:y}'
-		} else if (match = str.match(/ \[(\d+)\:(\d+)\]\{(\d+)\:(\d+)\}$/)) {
+		} else if (match = str.match(/ \[(\d+):(\d+)\]\{(\d+):(\d+)\}$/)) {
 			coords = match.slice( 1 ).map( Number );
 			size = coords.slice( 0, 2 );
 			cell = coords.slice( 2, 4 );
@@ -6661,6 +6664,11 @@ var ImagePreloader = LibCanvas.declare( 'LibCanvas.Utils.ImagePreloader', 'Image
 		return this;
 	}
 });
+
+LibCanvas.Utils.ImagePreloader.run = function (images, callback, context) {
+	return new ImagePreloader({ images: images }).events
+		.add( 'ready', context ? callback.bind(context) : callback );
+};
 
 /*
 ---
