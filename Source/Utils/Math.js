@@ -74,10 +74,9 @@ provides: Utils.Math
 
 	});
 
-	degreesCache = [0, 45, 90, 135, 180, 225, 270, 315, 360]
-		.associate(function (num) {
-			return num.degree();
-		});
+	degreesCache = atom.array.associate([0, 45, 90, 135, 180, 225, 270, 315, 360], function (num) {
+		return num.degree();
+	});
 	d360 = degreesCache[360];
 
 })();

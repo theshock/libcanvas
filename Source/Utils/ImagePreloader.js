@@ -21,11 +21,7 @@ provides: Utils.ImagePreloader
 ...
 */
 
-/**
- * @class
- * @name ImagePreloader
- * @name LibCanvas.Utils.ImagePreloader
- */
+/** @class ImagePreloader */
 var ImagePreloader = LibCanvas.declare( 'LibCanvas.Utils.ImagePreloader', 'ImagePreloader', {
 	processed : 0,
 	number    : 0,
@@ -161,7 +157,7 @@ var ImagePreloader = LibCanvas.declare( 'LibCanvas.Utils.ImagePreloader', 'Image
 	}
 });
 
-LibCanvas.Utils.ImagePreloader.run = function (images, callback, context) {
+ImagePreloader.run = function (images, callback, context) {
 	return new ImagePreloader({ images: images }).events
 		.add( 'ready', context ? callback.bind(context) : callback );
 };

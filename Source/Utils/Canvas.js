@@ -20,7 +20,7 @@ provides: Utils.Canvas
 ...
 */
 
-atom.append(HTMLCanvasElement,
+atom.core.append(HTMLCanvasElement,
 /** @lends HTMLCanvasElement */
 {
 	/** @private */
@@ -36,7 +36,7 @@ atom.append(HTMLCanvasElement,
 	}
 });
 
-atom.append(HTMLCanvasElement.prototype,
+atom.core.append(HTMLCanvasElement.prototype,
 /** @lends HTMLCanvasElement.prototype */
 {
 	getOriginalContext: HTMLCanvasElement.prototype.getContext,
