@@ -21,12 +21,8 @@ provides: App.Scene
 ...
 */
 
-/**
- * @class
- * @name App.Scene
- * @name LibCanvas.App.Scene
- */
-App.Scene = declare( 'LibCanvas.App.Scene', {
+/** @class App.Scene */
+declare( 'LibCanvas.App.Scene', {
 
 	initialize: function (app, settings) {
 		this.settings = new Settings({

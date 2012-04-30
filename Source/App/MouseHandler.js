@@ -21,12 +21,10 @@ provides: App.MouseHandler
 ...
 */
 
-/**
- * @class
- * @name App.MouseHandler
- * @name LibCanvas.App.MouseHandler
- */
-App.MouseHandler = declare( 'LibCanvas.App.MouseHandler', {
+/** @class App.MouseHandler */
+declare( 'LibCanvas.App.MouseHandler', {
+
+	events: [ 'down', 'up', 'move', 'out', 'dblclick', 'contextmenu', 'wheel' ],
 
 	/** @private */
 	mouse: null,
@@ -50,12 +48,11 @@ App.MouseHandler = declare( 'LibCanvas.App.MouseHandler', {
 			new App.ElementsMouseSearch(handler.subscribers);
 
 
-		[ 'down', 'up', 'move', 'out', 'dblclick', 'contextmenu', 'wheel' ]
-			.forEach(function (type) {
-				handler.mouse.events.add( type, function (e) {
-					handler.event(type, e);
-				});
+		this.events.forEach(function (type) {
+			handler.mouse.events.add( type, function (e) {
+				handler.event(type, e);
 			});
+		});
 	},
 
 	stop: function () {

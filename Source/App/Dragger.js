@@ -20,11 +20,7 @@ provides: App.Dragger
 
 ...
 */
-/**
- * @class
- * @name App.Dragger
- * @name LibCanvas.App.Dragger
- */
+/** @class App.Dragger */
 declare( 'LibCanvas.App.Dragger', {
 	initialize: function (mouse) {
 		this.bindMethods([ 'dragStart', 'dragStop', 'dragMove' ]);
@@ -98,5 +94,5 @@ declare( 'LibCanvas.App.Dragger', {
 		if (!this.started) return false;
 
 		return this.callback ? this.callback(e) : true;
-}
+	}
 });

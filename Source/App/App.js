@@ -20,12 +20,8 @@ provides: App
 ...
 */
 
-/**
- * @class
- * @name App
- * @name LibCanvas.App
- */
-var App = LibCanvas.declare( 'LibCanvas.App', 'App', {
+/** @class App */
+LibCanvas.declare( 'LibCanvas.App', 'App', {
 	initialize: function (settings) {
 		this.bindMethods( 'tick' );
 
@@ -81,3 +77,5 @@ var App = LibCanvas.declare( 'LibCanvas.App', 'App', {
 		atom.array.invoke(this.scenes, 'tick', time);
 	}
 });
+
+var App = LibCanvas.App;

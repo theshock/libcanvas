@@ -21,12 +21,8 @@ provides: App.Light
 ...
 */
 
-/**
- * @class
- * @name App.Light
- * @name LibCanvas.App.Light
- */
-App.Light = declare( 'LibCanvas.App.Light', {
+/** @class App.Light */
+declare( 'LibCanvas.App.Light', {
 
 	initialize: function (size, settings) {
 		var mouse, mouseHandler;

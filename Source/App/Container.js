@@ -21,8 +21,10 @@ provides: App.Container
 ...
 */
 
-/** @private */
-App.Container = declare( 'LibCanvas.App.Container', {
+/**
+ * @class App.Container
+ * @private */
+declare( 'LibCanvas.App.Container', {
 	/** @private
 	 *  @property {Size} */
 	currentSize: null,
