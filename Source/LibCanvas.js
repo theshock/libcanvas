@@ -17,21 +17,19 @@ provides: LibCanvas
 ...
 */
 
-var LibCanvas = this.LibCanvas = declare({
-	name: 'LibCanvas',
-
-	own: {
+var LibCanvas = this.LibCanvas = declare({ name: 'LibCanvas' })
+	.own({
 		Buffer: function () {
 			return LibCanvas.buffer.apply( LibCanvas, arguments );
 		},
 		buffer: function (width, height, withCtx) {
-			var size, a = slice.call(arguments), last = a[a.length-1];
+			var canvas, size, a = slice.call(arguments), last = a[a.length-1];
 
 			withCtx = (typeof last === 'boolean' ? a.pop() : false);
 
 			size = Size(a.length == 1 ? a[0] : a);
 			
-			var canvas = atom.dom.create("canvas", {
+			canvas = atom.dom.create("canvas", {
 				width  : size.width,
 				height : size.height
 			}).first;
@@ -40,12 +38,17 @@ var LibCanvas = this.LibCanvas = declare({
 			return canvas;
 		},
 		'declare.classes': {},
-		declare: function (declareName, shortName, object) {
+		declare: function (declareName, shortName, Parent, object) {
 			if (typeof shortName == 'object') {
-				object = shortName;
+				object = Parent;
+				Parent = shortName;
 				shortName = null;
 			}
-			var Class = declare( declareName, object );
+			if (object == null) {
+				object = Parent;
+				Parent = null;
+			}
+			var Class = declare( declareName, Parent, object );
 			if (shortName) {
 				if (shortName in this['declare.classes']) {
 					throw new Error( 'Duplicate declaration: ' + shortName );
@@ -61,5 +64,4 @@ var LibCanvas = this.LibCanvas = declare({
 			}
 			return to;
 		}
-	}
-});
+	});

@@ -20,11 +20,7 @@ provides: Behaviors
 ...
 */
 
-/**
- * @class
- * @name Behaviors
- * @name LibCanvas.Behaviors
- */
+/** @class Behaviors */
 var Behaviors = LibCanvas.declare( 'LibCanvas.Behaviors', 'Behaviors', {
 	initialize: function (element) {
 		this.element   = element;
@@ -45,9 +41,7 @@ var Behaviors = LibCanvas.declare( 'LibCanvas.Behaviors', 'Behaviors', {
 });
 
 
-var Behavior = declare( 'LibCanvas.Behaviors.Behavior',
-{
-
+var Behavior = declare( 'LibCanvas.Behaviors.Behavior', {
 	started: false,
 
 	/** @private */

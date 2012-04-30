@@ -53,21 +53,19 @@ provides: LibCanvas
 ...
 */
 
-var LibCanvas = this.LibCanvas = declare({
-	name: 'LibCanvas',
-
-	own: {
+var LibCanvas = this.LibCanvas = declare({ name: 'LibCanvas' })
+	.own({
 		Buffer: function () {
 			return LibCanvas.buffer.apply( LibCanvas, arguments );
 		},
 		buffer: function (width, height, withCtx) {
-			var size, a = slice.call(arguments), last = a[a.length-1];
+			var canvas, size, a = slice.call(arguments), last = a[a.length-1];
 
 			withCtx = (typeof last === 'boolean' ? a.pop() : false);
 
 			size = Size(a.length == 1 ? a[0] : a);
 			
-			var canvas = atom.dom.create("canvas", {
+			canvas = atom.dom.create("canvas", {
 				width  : size.width,
 				height : size.height
 			}).first;
@@ -76,12 +74,17 @@ var LibCanvas = this.LibCanvas = declare({
 			return canvas;
 		},
 		'declare.classes': {},
-		declare: function (declareName, shortName, object) {
+		declare: function (declareName, shortName, Parent, object) {
 			if (typeof shortName == 'object') {
-				object = shortName;
+				object = Parent;
+				Parent = shortName;
 				shortName = null;
 			}
-			var Class = declare( declareName, object );
+			if (object == null) {
+				object = Parent;
+				Parent = null;
+			}
+			var Class = declare( declareName, Parent, object );
 			if (shortName) {
 				if (shortName in this['declare.classes']) {
 					throw new Error( 'Duplicate declaration: ' + shortName );
@@ -97,8 +100,7 @@ var LibCanvas = this.LibCanvas = declare({
 			}
 			return to;
 		}
-	}
-});
+	});
 
 /*
 ---
@@ -122,12 +124,8 @@ provides: App
 ...
 */
 
-/**
- * @class
- * @name App
- * @name LibCanvas.App
- */
-var App = LibCanvas.declare( 'LibCanvas.App', 'App', {
+/** @class App */
+LibCanvas.declare( 'LibCanvas.App', 'App', {
 	initialize: function (settings) {
 		this.bindMethods( 'tick' );
 
@@ -184,6 +182,8 @@ var App = LibCanvas.declare( 'LibCanvas.App', 'App', {
 	}
 });
 
+var App = LibCanvas.App;
+
 /*
 ---
 
@@ -207,8 +207,10 @@ provides: App.Container
 ...
 */
 
-/** @private */
-App.Container = declare( 'LibCanvas.App.Container', {
+/**
+ * @class App.Container
+ * @private */
+declare( 'LibCanvas.App.Container', {
 	/** @private
 	 *  @property {Size} */
 	currentSize: null,
@@ -289,11 +291,7 @@ provides: App.Dragger
 
 ...
 */
-/**
- * @class
- * @name App.Dragger
- * @name LibCanvas.App.Dragger
- */
+/** @class App.Dragger */
 declare( 'LibCanvas.App.Dragger', {
 	initialize: function (mouse) {
 		this.bindMethods([ 'dragStart', 'dragStop', 'dragMove' ]);
@@ -367,7 +365,7 @@ declare( 'LibCanvas.App.Dragger', {
 		if (!this.started) return false;
 
 		return this.callback ? this.callback(e) : true;
-}
+	}
 });
 
 /*
@@ -393,12 +391,8 @@ provides: App.Element
 ...
 */
 
-/**
- * @class
- * @name App.Element
- * @name LibCanvas.App.Element
- */
-App.Element = declare( 'LibCanvas.App.Element', {
+/** @class App.Element */
+declare( 'LibCanvas.App.Element', {
 
 	zIndex  : 0,
 	renderer: null,
@@ -513,12 +507,8 @@ provides: App.ElementsMouseSearch
 ...
 */
 
-/**
- * @class
- * @name App.ElementsMouseSearch
- * @name LibCanvas.App.ElementsMouseSearch
- */
-App.ElementsMouseSearch = declare( 'LibCanvas.App.ElementsMouseSearch', {
+/** @class App.ElementsMouseSearch */
+declare( 'LibCanvas.App.ElementsMouseSearch', {
 
 	initialize: function () {
 		this.elements = [];
@@ -568,12 +558,8 @@ provides: App.Layer
 */
 
 
-/**
- * @class
- * @name App.Layer
- * @name LibCanvas.App.Layer
- */
-App.Layer = declare( 'LibCanvas.App.Layer', {
+/** @class App.Layer */
+declare( 'LibCanvas.App.Layer', {
 	/** @private
 	 *  @property {Size} */
 	currentSize: null,
@@ -684,12 +670,10 @@ provides: App.MouseHandler
 ...
 */
 
-/**
- * @class
- * @name App.MouseHandler
- * @name LibCanvas.App.MouseHandler
- */
-App.MouseHandler = declare( 'LibCanvas.App.MouseHandler', {
+/** @class App.MouseHandler */
+declare( 'LibCanvas.App.MouseHandler', {
+
+	events: [ 'down', 'up', 'move', 'out', 'dblclick', 'contextmenu', 'wheel' ],
 
 	/** @private */
 	mouse: null,
@@ -713,12 +697,11 @@ App.MouseHandler = declare( 'LibCanvas.App.MouseHandler', {
 			new App.ElementsMouseSearch(handler.subscribers);
 
 
-		[ 'down', 'up', 'move', 'out', 'dblclick', 'contextmenu', 'wheel' ]
-			.forEach(function (type) {
-				handler.mouse.events.add( type, function (e) {
-					handler.event(type, e);
-				});
+		this.events.forEach(function (type) {
+			handler.mouse.events.add( type, function (e) {
+				handler.event(type, e);
 			});
+		});
 	},
 
 	stop: function () {
@@ -910,12 +893,8 @@ provides: App.Scene
 ...
 */
 
-/**
- * @class
- * @name App.Scene
- * @name LibCanvas.App.Scene
- */
-App.Scene = declare( 'LibCanvas.App.Scene', {
+/** @class App.Scene */
+declare( 'LibCanvas.App.Scene', {
 
 	initialize: function (app, settings) {
 		this.settings = new Settings({
@@ -1103,12 +1082,8 @@ provides: App.SceneShift
 ...
 */
 
-/**
- * @class
- * @name App.SceneShift
- * @name LibCanvas.App.SceneShift
- */
-App.SceneShift = declare( 'LibCanvas.App.SceneShift', {
+/** @class App.SceneShift */
+declare( 'LibCanvas.App.SceneShift', {
 
 	initialize: function (scene) {
 		this.scene    = scene;
@@ -1213,11 +1188,7 @@ provides: Behaviors
 ...
 */
 
-/**
- * @class
- * @name Behaviors
- * @name LibCanvas.Behaviors
- */
+/** @class Behaviors */
 var Behaviors = LibCanvas.declare( 'LibCanvas.Behaviors', 'Behaviors', {
 	initialize: function (element) {
 		this.element   = element;
@@ -1238,9 +1209,7 @@ var Behaviors = LibCanvas.declare( 'LibCanvas.Behaviors', 'Behaviors', {
 });
 
 
-var Behavior = declare( 'LibCanvas.Behaviors.Behavior',
-{
-
+var Behavior = declare( 'LibCanvas.Behaviors.Behavior', {
 	started: false,
 
 	/** @private */
@@ -1296,40 +1265,35 @@ function setValueFn (name, val) {
 	};
 }
 
-return declare( 'LibCanvas.Behaviors.Clickable', {
+return declare( 'LibCanvas.Behaviors.Clickable', Behavior, {
 
-	parent: Behavior,
+	callbacks: {
+		'mouseover'   : setValueFn('hover' , true ),
+		'mouseout'    : setValueFn('hover' , false),
+		'mousedown'   : setValueFn('active', true ),
+		'mouseup'     : setValueFn('active', false),
+		'away:mouseup': setValueFn('active', false)
+	},
 
-	own: { index: 'clickable' },
+	initialize: function (behaviors, args) {
+		this.events = behaviors.element.events;
+		this.eventArgs(args, 'statusChange');
+	},
 
-	prototype: {
-		callbacks: {
-			'mouseover'   : setValueFn('hover' , true ),
-			'mouseout'    : setValueFn('hover' , false),
-			'mousedown'   : setValueFn('active', true ),
-			'mouseup'     : setValueFn('active', false),
-			'away:mouseup': setValueFn('active', false)
-		},
+	start: function () {
+		if (!this.changeStatus(true)) return this;
 
-		initialize: function (behaviors, args) {
-			this.events = behaviors.element.events;
-			this.eventArgs(args, 'statusChange');
-		},
+		this.eventArgs(arguments, 'statusChange');
+		this.events.add(this.callbacks);
+	},
 
-		start: function () {
-			if (!this.changeStatus(true)) return this;
+	stop: function () {
+		if (!this.changeStatus(false)) return this;
 
-			this.eventArgs(arguments, 'statusChange');
-			this.events.add(this.callbacks);
-		},
-
-		stop: function () {
-			if (!this.changeStatus(false)) return this;
-
-			this.events.remove(this.callbacks);
-		}
+		this.events.remove(this.callbacks);
 	}
-});
+
+}).own({ index: 'clickable' });
 
 };
 
@@ -1356,73 +1320,66 @@ provides: Behaviors.Draggable
 ...
 */
 
-declare( 'LibCanvas.Behaviors.Draggable', {
+declare( 'LibCanvas.Behaviors.Draggable', Behavior, {
+	stopDrag: [ 'up', 'out' ],
 
-	parent: Behavior,
+	initialize: function (behaviors, args) {
+		this.bindMethods([ 'onStop', 'onDrag', 'onStart' ]);
 
-	own: { index: 'draggable' },
-
-	prototype: {
-		stopDrag: [ 'up', 'out' ],
-
-		initialize: function (behaviors, args) {
-			this.bindMethods([ 'onStop', 'onDrag', 'onStart' ]);
-
-			this.element = behaviors.element;
-			if (!atom.core.isFunction(this.element.move)) {
-				throw new TypeError( 'Element ' + this.element + ' must has «move» method' );
-			}
-			this.events  = behaviors.element.events;
-			this.eventArgs(args, 'moveDrag');
-		},
-
-		bindMouse: function (method) {
-			var mouse = this.element.mouse, stop = this.stopDrag;
-			if (!mouse) throw new Error('No mouse in element');
-
-			mouse.events
-				[method]( 'move', this.onDrag )
-				[method](  stop , this.onStop );
-
-			return mouse;
-		},
-
-		start: function () {
-			if (!this.changeStatus(true)) return this;
-
-			this.eventArgs(arguments, 'moveDrag');
-			this.events.add( 'mousedown', this.onStart );
-		},
-
-		stop: function () {
-			if (!this.changeStatus(false)) return this;
-
-			this.events.remove( 'mousedown', this.onStart );
-		},
-
-		/** @private */
-		onStart: function (e) {
-			if (e.button !== 0) return;
-
-			this.bindMouse('add');
-			this.events.fire('startDrag', [ e ]);
-		},
-
-		/** @private */
-		onDrag: function (e) {
-			var delta = this.element.mouse.delta;
-			this.element.move( delta );
-			this.events.fire('moveDrag', [delta, e]);
-		},
-
-		/** @private */
-		onStop: function (e) {
-			if (e.button !== 0) return;
-			this.bindMouse('remove');
-			this.events.fire('stopDrag', [ e ]);
+		this.element = behaviors.element;
+		if (!atom.core.isFunction(this.element.move)) {
+			throw new TypeError( 'Element ' + this.element + ' must has «move» method' );
 		}
+		this.events  = behaviors.element.events;
+		this.eventArgs(args, 'moveDrag');
+	},
+
+	bindMouse: function (method) {
+		var mouse = this.element.mouse, stop = this.stopDrag;
+		if (!mouse) throw new Error('No mouse in element');
+
+		mouse.events
+			[method]( 'move', this.onDrag )
+			[method](  stop , this.onStop );
+
+		return mouse;
+	},
+
+	start: function () {
+		if (!this.changeStatus(true)) return this;
+
+		this.eventArgs(arguments, 'moveDrag');
+		this.events.add( 'mousedown', this.onStart );
+	},
+
+	stop: function () {
+		if (!this.changeStatus(false)) return this;
+
+		this.events.remove( 'mousedown', this.onStart );
+	},
+
+	/** @private */
+	onStart: function (e) {
+		if (e.button !== 0) return;
+
+		this.bindMouse('add');
+		this.events.fire('startDrag', [ e ]);
+	},
+
+	/** @private */
+	onDrag: function (e) {
+		var delta = this.element.mouse.delta;
+		this.element.move( delta );
+		this.events.fire('moveDrag', [delta, e]);
+	},
+
+	/** @private */
+	onStop: function (e) {
+		if (e.button !== 0) return;
+		this.bindMouse('remove');
+		this.events.fire('stopDrag', [ e ]);
 	}
-});
+}).own({ index: 'draggable' });
 
 /*
 ---
@@ -1446,30 +1403,18 @@ provides: Geometry
 ...
 */
 
-/**
- * @class
- * @name Geometry
- * @name LibCanvas.Geometry
- */
-var Geometry = declare( 'LibCanvas.Geometry',
-/**
- * @lends LibCanvas.Geometry.prototype
- * @augments Class.Events.prototype
- */
-{
-	own: {
-		invoke: declare.castArguments,
-		from : function (obj) {
-			return this(obj);
-		}
+/** @class Geometry */
+var Geometry = declare( 'LibCanvas.Geometry', {
+	initialize : function () {
+		if (arguments.length) this.set.apply(this, arguments);
 	},
-	proto: {
-		initialize : function () {
-			if (arguments.length) this.set.apply(this, arguments);
-		},
-		cast: function (args) {
-			return this.constructor.castArguments(args);
-		}
+	cast: function (args) {
+		return this.constructor.castArguments(args);
+	}
+}).own({
+	invoke: declare.castArguments,
+	from : function (obj) {
+		return this(obj);
 	}
 });
 
@@ -1883,7 +1828,7 @@ var Shape = declare( 'LibCanvas.Shape',
  */
 {
 	parent : Geometry,
-	proto  : {
+	prototype  : {
 		set        : 'abstract',
 		hasPoint   : 'abstract',
 		processPath: 'abstract',
@@ -1985,7 +1930,7 @@ provides: Shapes.Rectangle
  */
 var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', {
 	parent: Shape,
-	proto: {
+	prototype: {
 		set : function () {
 			var a = Array.pickFrom(arguments);
 
@@ -2198,7 +2143,7 @@ var Circle = LibCanvas.declare( 'LibCanvas.Shapes.Circle', 'Circle',
 /** @lends {Circle#} */
 {
 	parent: Shape,
-	proto: {
+	prototype: {
 		set : function () {
 			var a = Array.pickFrom(arguments);
 
@@ -2427,6 +2372,25 @@ var office = {
 
 var size1 = new Size(1,1);
 
+/* In some Mobile browsers shadowY should be inverted (bug) */
+var shadowBug = function () {
+	// todo: use LibCanvas.buffer
+	var ctx = atom.dom
+		.create('canvas', { width: 15, height: 15 })
+		.first.getContext( '2d' );
+
+	ctx.shadowBlur    = 1;
+	ctx.shadowOffsetX = 0;
+	ctx.shadowOffsetY = -5;
+	ctx.shadowColor   = 'green';
+
+	ctx.fillRect( 0, 5, 5, 5 );
+
+	// Color should contains green component to be correct (128 is correct value)
+	return ctx.getImageData(0, 0, 1, 1).data[1] < 64;
+
+}();
+
 var constants =
 /** @lends LibCanvas.Context2D */
 {
@@ -2480,24 +2444,6 @@ var constants =
 
 };
 
-/* In some Mobile browsers shadowY should be inverted (bug) */
-var shadowBug = function () {
-	var ctx = atom.dom
-		.create('canvas', { width: 15, height: 15 })
-		.first.getContext( '2d' );
-
-	ctx.shadowBlur    = 1;
-	ctx.shadowOffsetX = 0;
-	ctx.shadowOffsetY = -5;
-	ctx.shadowColor   = 'green';
-
-	ctx.fillRect( 0, 5, 5, 5 );
-
-	// Color should contains green component to be correct (128 is correct value)
-	return ctx.getImageData(0, 0, 1, 1).data[1] < 64;
-
-}();
-
 var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 /**
  * @lends LibCanvas.Context2D.prototype
@@ -2520,7 +2466,7 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 {
 	own: constants,
 
-	proto: {
+	prototype: {
 		initialize : function (canvas) {
 			if (canvas instanceof CanvasRenderingContext2D) {
 				this.ctx2d  = canvas;
@@ -3330,171 +3276,157 @@ provides: Mouse
 ...
 */
 
+/** @class Mouse */
+LibCanvas.declare( 'LibCanvas.Mouse', 'Mouse', {
+	/** @private */
+	elem: null,
 
-/**
- * @class
- * @name Mouse
- * @name LibCanvas.Mouse
- */
-var Mouse = new function () {
+	/** @property {boolean} */
+	inside: false,
+	/** @property {Point} */
+	point: null,
+	/** @property {Point} */
+	previous: null,
+	/** @property {Point} */
+	delta: null,
+	/** @property {Events} */
+	events: null,
 
-function eventSource (e) {
-	return e.changedTouches ? e.changedTouches[0] : e;
-}
+	/** @private */
+	mapping: {
+		click      : 'click',
+		dblclick   : 'dblclick',
+		contextmenu: 'contextmenu',
 
-return LibCanvas.declare( 'LibCanvas.Mouse', 'Mouse', {
-	own: {
-		expandEvent: function (e) {
-			var source = eventSource(e);
+		mouseover : 'over',
+		mouseout  : 'out',
+		mousedown : 'down',
+		mouseup   : 'up',
+		mousemove : 'move',
 
-			if (e.pageX == null) {
-				e.pageX = source.pageX != null ? source.pageX : source.clientX + document.scrollLeft;
-				e.pageY = source.pageY != null ? source.pageY : source.clientY + document.scrollTop ;
-			}
-
-			return e;
-		},
-		getOffset : function (e, element) {
-			var elementOffset = atom.dom(element || eventSource(e).target).offset();
-
-			this.expandEvent(e);
-
-			return new Point(
-				e.pageX - elementOffset.x,
-				e.pageY - elementOffset.y
-			);
-		}
+		DOMMouseScroll: 'wheel',
+		mousewheel    : 'wheel'
 	},
 
-	prototype: {
-		/** @private */
-		elem: null,
+	initialize : function (elem, offsetElem) {
+		this.bindMethods( 'onEvent' );
 
-		/** @property {boolean} */
-		inside: false,
-		/** @property {Point} */
-		point: null,
-		/** @property {Point} */
-		previous: null,
-		/** @property {Point} */
-		delta: null,
-		/** @property {Events} */
-		events: null,
+		this.elem       = atom.dom(elem);
+		this.offsetElem = offsetElem ? atom.dom(offsetElem) : this.elem;
 
-		/** @private */
-		mapping: {
-			click      : 'click',
-			dblclick   : 'dblclick',
-			contextmenu: 'contextmenu',
+		this.point    = new Point(0, 0);
+		this.previous = new Point(0, 0);
+		this.delta    = new Point(0, 0);
+		this.events   = new Events(this);
 
-			mouseover : 'over',
-			mouseout  : 'out',
-			mousedown : 'down',
-			mouseup   : 'up',
-			mousemove : 'move',
+		this.listen(this.onEvent);
+	},
+	/** @private */
+	fire: function (name, e) {
+		this.events.fire(name, [e, this]);
+		return this;
+	},
+	/** @private */
+	onEvent: function (e) {
+		var
+			name = this.mapping[e.type],
+			fn   = this.eventActions[name];
 
-			DOMMouseScroll: 'wheel',
-			mousewheel    : 'wheel'
+		if (fn) fn.call(this, e);
+
+		this.fire(name, e);
+	},
+	/** @private */
+	getOffset: function (e) {
+		return this.constructor.getOffset(e, this.offsetElem);
+	},
+	/** @private */
+	set: function (e, inside) {
+		var point = this.getOffset(e);
+
+		this.previous.set( this.point );
+		this.delta   .set( this.previous.diff( point ) );
+		this.point   .set( point );
+		this.inside = inside;
+	},
+	/** @private */
+	eventActions: {
+		wheel: function (e) {
+			e.delta =
+				// IE, Opera, Chrome
+				e.wheelDelta ? e.wheelDelta > 0 ? 1 : -1 :
+				// Fx
+				e.detail     ? e.detail     < 0 ? 1 : -1 : null;
 		},
 
-		initialize : function (elem, offsetElem) {
-			this.bindMethods( 'onEvent' );
-
-			this.elem       = atom.dom(elem);
-			this.offsetElem = offsetElem ? atom.dom(offsetElem) : this.elem;
-
-			this.point    = new Point(0, 0);
-			this.previous = new Point(0, 0);
-			this.delta    = new Point(0, 0);
-			this.events   = new Events(this);
-
-			this.listen(this.onEvent);
+		move: function (e) {
+			this.set(e, true);
 		},
-		/** @private */
-		fire: function (name, e) {
-			this.events.fire(name, [e, this]);
-			return this;
-		},
-		/** @private */
-		onEvent: function (e) {
-			var
-				name = this.mapping[e.type],
-				fn   = this.eventActions[name];
 
-			if (fn) fn.call(this, e);
-
-			this.fire(name, e);
-		},
-		/** @private */
-		getOffset: function (e) {
-			return this.constructor.getOffset(e, this.offsetElem);
-		},
-		/** @private */
-		set: function (e, inside) {
-			var point = this.getOffset(e);
-
-			this.previous.set( this.point );
-			this.delta   .set( this.previous.diff( point ) );
-			this.point   .set( point );
-			this.inside = inside;
-		},
-		/** @private */
-		eventActions: {
-			wheel: function (e) {
-				e.delta =
-					// IE, Opera, Chrome
-					e.wheelDelta ? e.wheelDelta > 0 ? 1 : -1 :
-					// Fx
-					e.detail     ? e.detail     < 0 ? 1 : -1 : null;
-			},
-
-			move: function (e) {
-				this.set(e, true);
-			},
-
-			over: function (e) {
-				if (this.checkEvent(e)) {
-					this.fire('enter', e);
-				}
-			},
-
-			out: function (e) {
-				if (this.checkEvent(e)) {
-					this.set(e, false);
-					this.fire('leave', e);
-				}
+		over: function (e) {
+			if (this.checkEvent(e)) {
+				this.fire('enter', e);
 			}
 		},
-		/** @private */
-		checkEvent: function (e) {
-			var related = e.relatedTarget, elem = this.elem;
 
-			return related == null || (
-				related && related != elem.first && !elem.contains(related)
-			);
-		},
-		/** @private */
-		listen : function (callback) {
-			this.elem.bind({
-				click      : callback,
-				dblclick   : callback,
-				contextmenu: callback,
-
-				mouseover  : callback,
-				mousedown  : callback,
-				mouseup    : callback,
-				mousemove  : callback,
-				mouseout   : callback,
-
-				DOMMouseScroll: callback,
-				mousewheel    : callback,
-				selectstart   : false
-			});
+		out: function (e) {
+			if (this.checkEvent(e)) {
+				this.set(e, false);
+				this.fire('leave', e);
+			}
 		}
+	},
+	/** @private */
+	checkEvent: function (e) {
+		var related = e.relatedTarget, elem = this.elem;
+
+		return related == null || (
+			related && related != elem.first && !elem.contains(related)
+		);
+	},
+	/** @private */
+	listen : function (callback) {
+		this.elem.bind({
+			click      : callback,
+			dblclick   : callback,
+			contextmenu: callback,
+
+			mouseover  : callback,
+			mousedown  : callback,
+			mouseup    : callback,
+			mousemove  : callback,
+			mouseout   : callback,
+
+			DOMMouseScroll: callback,
+			mousewheel    : callback,
+			selectstart   : false
+		});
+	}
+}).own({
+	eventSource: function (e) {
+		return e.changedTouches ? e.changedTouches[0] : e;
+	},
+	expandEvent: function (e) {
+		var source = this.eventSource(e);
+
+		if (e.pageX == null) {
+			e.pageX = source.pageX != null ? source.pageX : source.clientX + document.scrollLeft;
+			e.pageY = source.pageY != null ? source.pageY : source.clientY + document.scrollTop ;
+		}
+
+		return e;
+	},
+	getOffset : function (e, element) {
+		var elementOffset = atom.dom(element || this.eventSource(e).target).offset();
+
+		this.expandEvent(e);
+
+		return new Point(
+			e.pageX - elementOffset.x,
+			e.pageY - elementOffset.y
+		);
 	}
 });
-
-};
 
 /*
 ---
@@ -5642,7 +5574,7 @@ provides: Shapes.Ellipse
  */
 var Ellipse = LibCanvas.declare( 'LibCanvas.Shapes.Ellipse', 'Ellipse', {
 	parent: Rectangle,
-	proto: {
+	prototype: {
 		set : function () {
 			this.bindMethods( 'update' );
 			Rectangle.prototype.set.apply(this, arguments);
@@ -5762,7 +5694,7 @@ var between = function (x, a, b, accuracy) {
 
 return LibCanvas.declare( 'LibCanvas.Shapes.Line', 'Line', {
 	parent: Shape,
-	proto: {
+	prototype: {
 		set : function (from, to) {
 			var a = Array.pickFrom(arguments);
 
@@ -5925,7 +5857,7 @@ var Path = LibCanvas.declare( 'LibCanvas.Shapes.Path', 'Path',
 {
 	parent: Shape,
 
-	proto: {
+	prototype: {
 		getCoords: null,
 		set : function (builder) {
 			this.builder = builder;
@@ -6207,7 +6139,7 @@ provides: Shapes.Polygon
  */
 var Polygon = LibCanvas.declare( 'LibCanvas.Shapes.Polygon', 'Polygon', {
 	parent: Shape,
-	proto: {
+	prototype: {
 		initialize: function () {
 			this.points = [];
 			this._lines = [];
@@ -6351,7 +6283,7 @@ provides: Shapes.RoundedRectangle
 var RoundedRectangle = LibCanvas.declare( 'LibCanvas.Shapes.RoundedRectangle', 'RoundedRectangle', {
 	parent: Rectangle,
 
-	proto: {
+	prototype: {
 		radius: 0,
 
 		setRadius: function (value) {
@@ -6693,12 +6625,8 @@ provides: App.Light
 ...
 */
 
-/**
- * @class
- * @name App.Light
- * @name LibCanvas.App.Light
- */
-App.Light = declare( 'LibCanvas.App.Light', {
+/** @class App.Light */
+declare( 'LibCanvas.App.Light', {
 
 	initialize: function (size, settings) {
 		var mouse, mouseHandler;
@@ -6761,12 +6689,8 @@ provides: App.Light.Text
 ...
 */
 
-/**
- * @class
- * @name App.Light.Text
- * @name LibCanvas.App.Light.Text
- */
-App.Light.Text = atom.declare( 'LibCanvas.App.Light.Text', {
+/** @class App.Light.Text */
+atom.declare( 'LibCanvas.App.Light.Text', {
 	parent: App.Element,
 
 	prototype: {
@@ -6822,11 +6746,7 @@ provides: App.Light.Vector
 ...
 */
 
-/**
- * @class
- * @name App.Light.Vector
- * @name LibCanvas.App.Light.Vector
- */
+/** @class App.Light.Vector */
 App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', {
 	parent: App.Element,
 

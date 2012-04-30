@@ -32,7 +32,7 @@ var Path = LibCanvas.declare( 'LibCanvas.Shapes.Path', 'Path',
 {
 	parent: Shape,
 
-	proto: {
+	prototype: {
 		getCoords: null,
 		set : function (builder) {
 			this.builder = builder;

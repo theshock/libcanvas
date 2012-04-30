@@ -35,7 +35,7 @@ var between = function (x, a, b, accuracy) {
 
 return LibCanvas.declare( 'LibCanvas.Shapes.Line', 'Line', {
 	parent: Shape,
-	proto: {
+	prototype: {
 		set : function (from, to) {
 			var a = Array.pickFrom(arguments);
 

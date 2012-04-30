@@ -21,168 +21,154 @@ provides: Mouse
 ...
 */
 
+/** @class Mouse */
+LibCanvas.declare( 'LibCanvas.Mouse', 'Mouse', {
+	/** @private */
+	elem: null,
 
-/**
- * @class
- * @name Mouse
- * @name LibCanvas.Mouse
- */
-var Mouse = new function () {
+	/** @property {boolean} */
+	inside: false,
+	/** @property {Point} */
+	point: null,
+	/** @property {Point} */
+	previous: null,
+	/** @property {Point} */
+	delta: null,
+	/** @property {Events} */
+	events: null,
 
-function eventSource (e) {
-	return e.changedTouches ? e.changedTouches[0] : e;
-}
+	/** @private */
+	mapping: {
+		click      : 'click',
+		dblclick   : 'dblclick',
+		contextmenu: 'contextmenu',
 
-return LibCanvas.declare( 'LibCanvas.Mouse', 'Mouse', {
-	own: {
-		expandEvent: function (e) {
-			var source = eventSource(e);
+		mouseover : 'over',
+		mouseout  : 'out',
+		mousedown : 'down',
+		mouseup   : 'up',
+		mousemove : 'move',
 
-			if (e.pageX == null) {
-				e.pageX = source.pageX != null ? source.pageX : source.clientX + document.scrollLeft;
-				e.pageY = source.pageY != null ? source.pageY : source.clientY + document.scrollTop ;
-			}
-
-			return e;
-		},
-		getOffset : function (e, element) {
-			var elementOffset = atom.dom(element || eventSource(e).target).offset();
-
-			this.expandEvent(e);
-
-			return new Point(
-				e.pageX - elementOffset.x,
-				e.pageY - elementOffset.y
-			);
-		}
+		DOMMouseScroll: 'wheel',
+		mousewheel    : 'wheel'
 	},
 
-	prototype: {
-		/** @private */
-		elem: null,
+	initialize : function (elem, offsetElem) {
+		this.bindMethods( 'onEvent' );
 
-		/** @property {boolean} */
-		inside: false,
-		/** @property {Point} */
-		point: null,
-		/** @property {Point} */
-		previous: null,
-		/** @property {Point} */
-		delta: null,
-		/** @property {Events} */
-		events: null,
+		this.elem       = atom.dom(elem);
+		this.offsetElem = offsetElem ? atom.dom(offsetElem) : this.elem;
 
-		/** @private */
-		mapping: {
-			click      : 'click',
-			dblclick   : 'dblclick',
-			contextmenu: 'contextmenu',
+		this.point    = new Point(0, 0);
+		this.previous = new Point(0, 0);
+		this.delta    = new Point(0, 0);
+		this.events   = new Events(this);
 
-			mouseover : 'over',
-			mouseout  : 'out',
-			mousedown : 'down',
-			mouseup   : 'up',
-			mousemove : 'move',
+		this.listen(this.onEvent);
+	},
+	/** @private */
+	fire: function (name, e) {
+		this.events.fire(name, [e, this]);
+		return this;
+	},
+	/** @private */
+	onEvent: function (e) {
+		var
+			name = this.mapping[e.type],
+			fn   = this.eventActions[name];
 
-			DOMMouseScroll: 'wheel',
-			mousewheel    : 'wheel'
+		if (fn) fn.call(this, e);
+
+		this.fire(name, e);
+	},
+	/** @private */
+	getOffset: function (e) {
+		return this.constructor.getOffset(e, this.offsetElem);
+	},
+	/** @private */
+	set: function (e, inside) {
+		var point = this.getOffset(e);
+
+		this.previous.set( this.point );
+		this.delta   .set( this.previous.diff( point ) );
+		this.point   .set( point );
+		this.inside = inside;
+	},
+	/** @private */
+	eventActions: {
+		wheel: function (e) {
+			e.delta =
+				// IE, Opera, Chrome
+				e.wheelDelta ? e.wheelDelta > 0 ? 1 : -1 :
+				// Fx
+				e.detail     ? e.detail     < 0 ? 1 : -1 : null;
 		},
 
-		initialize : function (elem, offsetElem) {
-			this.bindMethods( 'onEvent' );
-
-			this.elem       = atom.dom(elem);
-			this.offsetElem = offsetElem ? atom.dom(offsetElem) : this.elem;
-
-			this.point    = new Point(0, 0);
-			this.previous = new Point(0, 0);
-			this.delta    = new Point(0, 0);
-			this.events   = new Events(this);
-
-			this.listen(this.onEvent);
+		move: function (e) {
+			this.set(e, true);
 		},
-		/** @private */
-		fire: function (name, e) {
-			this.events.fire(name, [e, this]);
-			return this;
-		},
-		/** @private */
-		onEvent: function (e) {
-			var
-				name = this.mapping[e.type],
-				fn   = this.eventActions[name];
 
-			if (fn) fn.call(this, e);
-
-			this.fire(name, e);
-		},
-		/** @private */
-		getOffset: function (e) {
-			return this.constructor.getOffset(e, this.offsetElem);
-		},
-		/** @private */
-		set: function (e, inside) {
-			var point = this.getOffset(e);
-
-			this.previous.set( this.point );
-			this.delta   .set( this.previous.diff( point ) );
-			this.point   .set( point );
-			this.inside = inside;
-		},
-		/** @private */
-		eventActions: {
-			wheel: function (e) {
-				e.delta =
-					// IE, Opera, Chrome
-					e.wheelDelta ? e.wheelDelta > 0 ? 1 : -1 :
-					// Fx
-					e.detail     ? e.detail     < 0 ? 1 : -1 : null;
-			},
-
-			move: function (e) {
-				this.set(e, true);
-			},
-
-			over: function (e) {
-				if (this.checkEvent(e)) {
-					this.fire('enter', e);
-				}
-			},
-
-			out: function (e) {
-				if (this.checkEvent(e)) {
-					this.set(e, false);
-					this.fire('leave', e);
-				}
+		over: function (e) {
+			if (this.checkEvent(e)) {
+				this.fire('enter', e);
 			}
 		},
-		/** @private */
-		checkEvent: function (e) {
-			var related = e.relatedTarget, elem = this.elem;
 
-			return related == null || (
-				related && related != elem.first && !elem.contains(related)
-			);
-		},
-		/** @private */
-		listen : function (callback) {
-			this.elem.bind({
-				click      : callback,
-				dblclick   : callback,
-				contextmenu: callback,
-
-				mouseover  : callback,
-				mousedown  : callback,
-				mouseup    : callback,
-				mousemove  : callback,
-				mouseout   : callback,
-
-				DOMMouseScroll: callback,
-				mousewheel    : callback,
-				selectstart   : false
-			});
+		out: function (e) {
+			if (this.checkEvent(e)) {
+				this.set(e, false);
+				this.fire('leave', e);
+			}
 		}
+	},
+	/** @private */
+	checkEvent: function (e) {
+		var related = e.relatedTarget, elem = this.elem;
+
+		return related == null || (
+			related && related != elem.first && !elem.contains(related)
+		);
+	},
+	/** @private */
+	listen : function (callback) {
+		this.elem.bind({
+			click      : callback,
+			dblclick   : callback,
+			contextmenu: callback,
+
+			mouseover  : callback,
+			mousedown  : callback,
+			mouseup    : callback,
+			mousemove  : callback,
+			mouseout   : callback,
+
+			DOMMouseScroll: callback,
+			mousewheel    : callback,
+			selectstart   : false
+		});
+	}
+}).own({
+	eventSource: function (e) {
+		return e.changedTouches ? e.changedTouches[0] : e;
+	},
+	expandEvent: function (e) {
+		var source = this.eventSource(e);
+
+		if (e.pageX == null) {
+			e.pageX = source.pageX != null ? source.pageX : source.clientX + document.scrollLeft;
+			e.pageY = source.pageY != null ? source.pageY : source.clientY + document.scrollTop ;
+		}
+
+		return e;
+	},
+	getOffset : function (e, element) {
+		var elementOffset = atom.dom(element || this.eventSource(e).target).offset();
+
+		this.expandEvent(e);
+
+		return new Point(
+			e.pageX - elementOffset.x,
+			e.pageY - elementOffset.y
+		);
 	}
 });
-
-};

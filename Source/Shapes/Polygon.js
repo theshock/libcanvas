@@ -30,7 +30,7 @@ provides: Shapes.Polygon
  */
 var Polygon = LibCanvas.declare( 'LibCanvas.Shapes.Polygon', 'Polygon', {
 	parent: Shape,
-	proto: {
+	prototype: {
 		initialize: function () {
 			this.points = [];
 			this._lines = [];

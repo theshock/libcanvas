@@ -29,7 +29,7 @@ provides: Shapes.RoundedRectangle
 var RoundedRectangle = LibCanvas.declare( 'LibCanvas.Shapes.RoundedRectangle', 'RoundedRectangle', {
 	parent: Rectangle,
 
-	proto: {
+	prototype: {
 		radius: 0,
 
 		setRadius: function (value) {

@@ -31,7 +31,7 @@ var Circle = LibCanvas.declare( 'LibCanvas.Shapes.Circle', 'Circle',
 /** @lends {Circle#} */
 {
 	parent: Shape,
-	proto: {
+	prototype: {
 		set : function () {
 			var a = Array.pickFrom(arguments);
 

@@ -33,39 +33,34 @@ function setValueFn (name, val) {
 	};
 }
 
-return declare( 'LibCanvas.Behaviors.Clickable', {
+return declare( 'LibCanvas.Behaviors.Clickable', Behavior, {
 
-	parent: Behavior,
+	callbacks: {
+		'mouseover'   : setValueFn('hover' , true ),
+		'mouseout'    : setValueFn('hover' , false),
+		'mousedown'   : setValueFn('active', true ),
+		'mouseup'     : setValueFn('active', false),
+		'away:mouseup': setValueFn('active', false)
+	},
 
-	own: { index: 'clickable' },
+	initialize: function (behaviors, args) {
+		this.events = behaviors.element.events;
+		this.eventArgs(args, 'statusChange');
+	},
 
-	prototype: {
-		callbacks: {
-			'mouseover'   : setValueFn('hover' , true ),
-			'mouseout'    : setValueFn('hover' , false),
-			'mousedown'   : setValueFn('active', true ),
-			'mouseup'     : setValueFn('active', false),
-			'away:mouseup': setValueFn('active', false)
-		},
+	start: function () {
+		if (!this.changeStatus(true)) return this;
 
-		initialize: function (behaviors, args) {
-			this.events = behaviors.element.events;
-			this.eventArgs(args, 'statusChange');
-		},
+		this.eventArgs(arguments, 'statusChange');
+		this.events.add(this.callbacks);
+	},
 
-		start: function () {
-			if (!this.changeStatus(true)) return this;
+	stop: function () {
+		if (!this.changeStatus(false)) return this;
 
-			this.eventArgs(arguments, 'statusChange');
-			this.events.add(this.callbacks);
-		},
-
-		stop: function () {
-			if (!this.changeStatus(false)) return this;
-
-			this.events.remove(this.callbacks);
-		}
+		this.events.remove(this.callbacks);
 	}
-});
+
+}).own({ index: 'clickable' });
 
 };

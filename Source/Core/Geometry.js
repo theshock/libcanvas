@@ -20,29 +20,17 @@ provides: Geometry
 ...
 */
 
-/**
- * @class
- * @name Geometry
- * @name LibCanvas.Geometry
- */
-var Geometry = declare( 'LibCanvas.Geometry',
-/**
- * @lends LibCanvas.Geometry.prototype
- * @augments Class.Events.prototype
- */
-{
-	own: {
-		invoke: declare.castArguments,
-		from : function (obj) {
-			return this(obj);
-		}
+/** @class Geometry */
+var Geometry = declare( 'LibCanvas.Geometry', {
+	initialize : function () {
+		if (arguments.length) this.set.apply(this, arguments);
 	},
-	proto: {
-		initialize : function () {
-			if (arguments.length) this.set.apply(this, arguments);
-		},
-		cast: function (args) {
-			return this.constructor.castArguments(args);
-		}
+	cast: function (args) {
+		return this.constructor.castArguments(args);
+	}
+}).own({
+	invoke: declare.castArguments,
+	from : function (obj) {
+		return this(obj);
 	}
 });

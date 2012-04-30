@@ -29,7 +29,7 @@ provides: Shapes.Ellipse
  */
 var Ellipse = LibCanvas.declare( 'LibCanvas.Shapes.Ellipse', 'Ellipse', {
 	parent: Rectangle,
-	proto: {
+	prototype: {
 		set : function () {
 			this.bindMethods( 'update' );
 			Rectangle.prototype.set.apply(this, arguments);

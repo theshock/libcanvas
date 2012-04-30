@@ -41,7 +41,7 @@ var Shape = declare( 'LibCanvas.Shape',
  */
 {
 	parent : Geometry,
-	proto  : {
+	prototype  : {
 		set        : 'abstract',
 		hasPoint   : 'abstract',
 		processPath: 'abstract',

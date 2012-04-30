@@ -69,6 +69,25 @@ var office = {
 
 var size1 = new Size(1,1);
 
+/* In some Mobile browsers shadowY should be inverted (bug) */
+var shadowBug = function () {
+	// todo: use LibCanvas.buffer
+	var ctx = atom.dom
+		.create('canvas', { width: 15, height: 15 })
+		.first.getContext( '2d' );
+
+	ctx.shadowBlur    = 1;
+	ctx.shadowOffsetX = 0;
+	ctx.shadowOffsetY = -5;
+	ctx.shadowColor   = 'green';
+
+	ctx.fillRect( 0, 5, 5, 5 );
+
+	// Color should contains green component to be correct (128 is correct value)
+	return ctx.getImageData(0, 0, 1, 1).data[1] < 64;
+
+}();
+
 var constants =
 /** @lends LibCanvas.Context2D */
 {
@@ -122,24 +141,6 @@ var constants =
 
 };
 
-/* In some Mobile browsers shadowY should be inverted (bug) */
-var shadowBug = function () {
-	var ctx = atom.dom
-		.create('canvas', { width: 15, height: 15 })
-		.first.getContext( '2d' );
-
-	ctx.shadowBlur    = 1;
-	ctx.shadowOffsetX = 0;
-	ctx.shadowOffsetY = -5;
-	ctx.shadowColor   = 'green';
-
-	ctx.fillRect( 0, 5, 5, 5 );
-
-	// Color should contains green component to be correct (128 is correct value)
-	return ctx.getImageData(0, 0, 1, 1).data[1] < 64;
-
-}();
-
 var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 /**
  * @lends LibCanvas.Context2D.prototype
@@ -162,7 +163,7 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 {
 	own: constants,
 
-	proto: {
+	prototype: {
 		initialize : function (canvas) {
 			if (canvas instanceof CanvasRenderingContext2D) {
 				this.ctx2d  = canvas;
