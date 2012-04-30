@@ -21,15 +21,9 @@ provides: Shapes.RoundedRectangle
 ...
 */
 
-/**
- * @class
- * @name RoundedRectangle
- * @name LibCanvas.Shapes.RoundedRectangle
- */
-var RoundedRectangle = LibCanvas.declare( 'LibCanvas.Shapes.RoundedRectangle', 'RoundedRectangle', {
-	parent: Rectangle,
-
-	prototype: {
+/** @class RoundedRectangle */
+var RoundedRectangle = LibCanvas.declare(
+	'LibCanvas.Shapes.RoundedRectangle', 'RoundedRectangle', Rectangle, {
 		radius: 0,
 
 		setRadius: function (value) {
@@ -62,5 +56,4 @@ var RoundedRectangle = LibCanvas.declare( 'LibCanvas.Shapes.RoundedRectangle', '
 			var p = function (p) { return '[' + p.x + ', ' + p.y + ']'; };
 			return '[shape RoundedRectangle(from'+p(this.from)+', to'+p(this.to)+', radius='+this.radius+')]';
 		}
-	}
 });

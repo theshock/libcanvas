@@ -22,118 +22,110 @@ provides: Shapes.Path
 ...
 */
 
-/**
- * @class
- * @name Path
- * @name LibCanvas.Shapes.Path
- */
-var Path = LibCanvas.declare( 'LibCanvas.Shapes.Path', 'Path',
-/** @lends {LibCanvas.Shapes.Path.prototype} */
-{
-	parent: Shape,
-
-	prototype: {
-		getCoords: null,
-		set : function (builder) {
-			this.builder = builder;
-			builder.path = this;
-			return this;
-		},
-		processPath : function (ctx, noWrap) {
-			if (!noWrap) ctx.beginPath();
-			this.each(function (method, args) {
-				ctx[method].apply(ctx, args);
-			});
-			if (!noWrap) ctx.closePath();
-			return ctx;
-		},
-		intersect: function (obj) {
-			return this.getBoundingRectangle( obj ).intersect( this.getBoundingRectangle() );
-		},
-		each: function (fn) {
-			this.builder.parts.forEach(function (part) {
-				fn.call( this, part.method, part.args );
-			}.bind(this));
-			return this;
-		},
-		get allPoints () {
-			var points = [];
-			this.each(function (method, args) {
-				if (method == 'arc') {
-					points.include(args[0].circle.center);
-				} else for (var i = 0, l = args.length; i < l; i++) {
-					points.include(args[i]);
-				}
-			});
-			return points;
-		},
-		get center () {
-			return new Point().mean(this.allPoints);
-		},
-		hasPoint : function (point) {
-			var ctx = shapeTestBuffer().ctx;
-			if (this.builder.changed) {
-				this.builder.changed = false;
-				this.processPath(ctx);
+/** @class Path */
+var Path = LibCanvas.declare( 'LibCanvas.Shapes.Path', 'Path', Shape, {
+	getCoords: null,
+	builder  : null,
+	set : function (builder) {
+		this.builder = builder;
+		builder.path = this;
+		return this;
+	},
+	processPath : function (ctx, noWrap) {
+		if (!noWrap) ctx.beginPath();
+		this.each(function (method, args) {
+			ctx[method].apply(ctx, args);
+		});
+		if (!noWrap) ctx.closePath();
+		return ctx;
+	},
+	intersect: function (obj) {
+		return this.getBoundingRectangle( obj ).intersect( this.getBoundingRectangle() );
+	},
+	each: function (fn) {
+		this.builder.parts.forEach(function (part) {
+			fn.call( this, part.method, part.args );
+		}.bind(this));
+		return this;
+	},
+	get allPoints () {
+		var points = [];
+		this.each(function (method, args) {
+			if (method == 'arc') {
+				points.include(args[0].circle.center);
+			} else for (var i = 0, l = args.length; i < l; i++) {
+				points.include(args[i]);
 			}
-			return ctx.isPointInPath(Point(arguments));
-		},
-		draw : function (ctx, type) {
-			this.processPath(ctx)[type]();
-			return this;
-		},
-		move : function (distance, reverse) {
-			this.builder.changed = true;
-
-			this.allPoints.invoke( 'move', distance, reverse );
-			return this;
-		},
-		scale: function (power, pivot) {
-			this.builder.changed = true;
-
-			this.allPoints.invoke( 'scale', power, pivot );
-			return this;
-		},
-		grow: function () {
-			return this;
-		},
-		rotate: function (angle, pivot) {
-			this.builder.changed = true;
-
-			this.allPoints.invoke( 'rotate', angle, pivot );
-
-			this.each(function (method, args) {
-				if (method == 'arc') {
-					var a = args[0].angle;
-					a.start = (a.start + angle).normalizeAngle();
-					a.end   = (a.end   + angle).normalizeAngle();
-				}
-			}.bind(this));
-			return this;
-		},
-		// #todo: fix arc, cache
-		getBoundingRectangle: function () {
-			var p = this.allPoints, from, to;
-			if (p.length == 0) throw new Error('Is empty');
-
-			from = p[0].clone(), to = p[0].clone();
-			for (var l = p.length; l--;) {
-				from.x = Math.min( from.x, p[l].x );
-				from.y = Math.min( from.y, p[l].y );
-				  to.x = Math.max(   to.x, p[l].x );
-				  to.y = Math.max(   to.y, p[l].y );
-			}
-			return new Rectangle( from, to );
-		},
-		clone: function () {
-			var builder = new Path.Builder;
-			builder.parts.append( this.builder.parts.clone() );
-			return builder.build();
+		});
+		return points;
+	},
+	get center () {
+		return new Point().mean(this.allPoints);
+	},
+	hasPoint : function (point) {
+		var ctx = shapeTestBuffer().ctx;
+		if (this.builder.changed) {
+			this.builder.changed = false;
+			this.processPath(ctx);
 		}
+		return ctx.isPointInPath(Point(arguments));
+	},
+	draw : function (ctx, type) {
+		this.processPath(ctx)[type]();
+		return this;
+	},
+	move : function (distance, reverse) {
+		this.builder.changed = true;
+
+		this.allPoints.invoke( 'move', distance, reverse );
+		return this;
+	},
+	scale: function (power, pivot) {
+		this.builder.changed = true;
+
+		this.allPoints.invoke( 'scale', power, pivot );
+		return this;
+	},
+	grow: function () {
+		return this;
+	},
+	rotate: function (angle, pivot) {
+		this.builder.changed = true;
+
+		this.allPoints.invoke( 'rotate', angle, pivot );
+
+		this.each(function (method, args) {
+			if (method == 'arc') {
+				var a = args[0].angle;
+				a.start = (a.start + angle).normalizeAngle();
+				a.end   = (a.end   + angle).normalizeAngle();
+			}
+		}.bind(this));
+		return this;
+	},
+	// #todo: fix arc, cache
+	getBoundingRectangle: function () {
+		var p = this.allPoints, from, to;
+		if (p.length == 0) throw new Error('Is empty');
+
+		from = p[0].clone(), to = p[0].clone();
+		for (var l = p.length; l--;) {
+			from.x = Math.min( from.x, p[l].x );
+			from.y = Math.min( from.y, p[l].y );
+			  to.x = Math.max(   to.x, p[l].x );
+			  to.y = Math.max(   to.y, p[l].y );
+		}
+		return new Rectangle( from, to );
+	},
+	clone: function () {
+		var builder = new Path.Builder;
+		builder.parts.append( this.builder.parts.clone() );
+		return builder.build();
 	}
 });
 
-Path.Builder = declare( 'LibCanvas.Shapes.Path.Builder', {
+/** @class Path.Builder */
+declare( 'LibCanvas.Shapes.Path.Builder', {
 	initialize: function (str) {
 		this.update = this.update.bind( this );
 		this.parts  = [];
@@ -160,10 +152,6 @@ Path.Builder = declare( 'LibCanvas.Shapes.Path.Builder', {
 		});
 		return this;
 	},
-	/** @deprecated */
-	listenPoint: function (p) {
-		return Point( p );
-	},
 
 	// queue/stack
 	changed : true,
@@ -186,10 +174,10 @@ Path.Builder = declare( 'LibCanvas.Shapes.Path.Builder', {
 
 	// methods
 	move : function () {
-		return this.push('moveTo', [ this.listenPoint(arguments) ]);
+		return this.push('moveTo', [ Point(arguments) ]);
 	},
 	line : function () {
-		return this.push('lineTo', [ this.listenPoint(arguments) ]);
+		return this.push('lineTo', [ Point(arguments) ]);
 	},
 	curve : function (to, p1, p2) {
 		var args = Array.pickFrom(arguments);
@@ -207,7 +195,7 @@ Path.Builder = declare( 'LibCanvas.Shapes.Path.Builder', {
 			];
 		}
 
-		return this.push('curveTo', args.map( this.listenPoint.bind( this ) ));
+		return this.push('curveTo', args.map( Point ));
 	},
 	arc : function (circle, angle, acw) {
 		var a = Array.pickFrom(arguments);
@@ -237,7 +225,7 @@ Path.Builder = declare( 'LibCanvas.Shapes.Path.Builder', {
 			};
 		}
 
-		this.listenPoint( a.circle.center );
+		Point( a.circle.center );
 
 		a.acw = !!(a.acw || a.anticlockwise);
 		return this.push('arc', [a]);
