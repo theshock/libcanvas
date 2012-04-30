@@ -1494,10 +1494,9 @@ provides: Utils.Math
 
 	});
 
-	degreesCache = [0, 45, 90, 135, 180, 225, 270, 315, 360]
-		.associate(function (num) {
-			return num.degree();
-		});
+	degreesCache = atom.array.associate([0, 45, 90, 135, 180, 225, 270, 315, 360], function (num) {
+		return num.degree();
+	});
 	d360 = degreesCache[360];
 
 })();
@@ -1535,184 +1534,176 @@ provides: Point
 ...
 */
 
-/**
- * @class
- * @name Point
- * @name LibCanvas.Point
- */
-var Point = LibCanvas.declare( 'LibCanvas.Point', 'Point', {
-	parent: Geometry,
-
-	prototype: {
-		/**
-		 *   new Point(1, 1);
-		 *   new Point([1, 1]);
-		 *   new Point({x:1, y:1});
-		 *   new Point(point);
-		 * @constructs
-		 * @param {Number} x
-		 * @param {Number} y
-		 * @returns {Point}
-		 */
-		set : function (x, y) {
-			if (arguments.length != 2) {
-				if (atom.core.isArrayLike(x)) {
-					y = x[1];
-					x = x[0];
-				} else if (x && x.x != null && x.y != null) {
-					y = x.y;
-					x = x.x;
-				} else {
-					throw new TypeError( 'Wrong Arguments In Point.Set' );
-				}
-			}
-
-			this.x = Number(x);
-			this.y = Number(y);
-			return this;
-		},
-		/** @returns {Point} */
-		move: function (distance, reverse) {
-			distance = this.cast(distance);
-			reverse  = reverse ? -1 : 1;
-			this.x += distance.x * reverse;
-			this.y += distance.y * reverse;
-			return this;
-		},
-		/** @returns {Point} */
-		moveTo : function (point) {
-			return this.move(this.diff(this.cast(point)));
-		},
-		/** @returns {Number} */
-		angleTo : function (point) {
-			var diff = this.cast(point).diff(this);
-			return Math.atan2(diff.y, diff.x).normalizeAngle();
-		},
-		/** @returns {Number} */
-		distanceTo : function (point) {
-			var diff = this.cast(point).diff(this);
-			return Math.hypotenuse(diff.x, diff.y);
-		},
-		/** @returns {Point} */
-		diff : function (point) {
-			return new this.constructor(point).move(this, true);
-		},
-		/** @returns {Point} */
-		rotate : function (angle, pivot) {
-			pivot = pivot ? this.cast(pivot) : new this.constructor(0, 0);
-			if (this.equals(pivot)) return this;
-
-			var radius = pivot.distanceTo(this);
-			var sides  = pivot.diff(this);
-			// TODO: check, maybe here should be "sides.y, sides.x" ?
-			var newAngle = Math.atan2(sides.x, sides.y) - angle;
-
-			return this.moveTo({
-				x : Math.sin(newAngle) * radius + pivot.x,
-				y : Math.cos(newAngle) * radius + pivot.y
-			});
-		},
-		/** @returns {Point} */
-		scale : function (power, pivot) {
-			pivot = pivot ? this.cast(pivot) : new this.constructor(0, 0);
-			
-			var diff = this.diff(pivot), isObject = typeof power == 'object';
-			return this.moveTo({
-				x : pivot.x - diff.x  * (isObject ? power.x : power),
-				y : pivot.y - diff.y  * (isObject ? power.y : power)
-			});
-		},
-		/** @returns {Point} */
-		alterPos : function (arg, fn) {
-			return this.moveTo({
-				x: fn(this.x, typeof arg == 'object' ? arg.x : arg),
-				y: fn(this.y, typeof arg == 'object' ? arg.y : arg)
-			});
-		},
-		/** @returns {Point} */
-		mul : function (arg) {
-			return this.alterPos(arg, function(a, b) {
-				return a * b;
-			});
-		},
-		/** @returns {Point} */
-		getNeighbour : function (dir) {
-			return this.clone().move(this.constructor.shifts[dir]);
-		},
-		/** @returns {Point[]} */
-		get neighbours () {
-			return this.getNeighbours( true );
-		},
-		/** @returns {Point[]} */
-		getNeighbours: function (corners, asObject) {
-			var shifts = ['t', 'l', 'r', 'b'], result, i, dir;
-
-			if (corners) shifts.push('tl', 'tr', 'bl', 'br');
-
-			if (asObject) {
-				result = {};
-				for (i = shifts.length; i--;) {
-					dir = shifts[i];
-					result[dir] = this.getNeighbour( dir );
-				}
-				return result;
+/** @class Point */
+var Point = LibCanvas.declare( 'LibCanvas.Point', 'Point', Geometry, {
+	/**
+	 *   new Point(1, 1);
+	 *   new Point([1, 1]);
+	 *   new Point({x:1, y:1});
+	 *   new Point(point);
+	 * @constructs
+	 * @param {Number} x
+	 * @param {Number} y
+	 * @returns {Point}
+	 */
+	set : function (x, y) {
+		if (arguments.length != 2) {
+			if (atom.core.isArrayLike(x)) {
+				y = x[1];
+				x = x[0];
+			} else if (x && x.x != null && x.y != null) {
+				y = x.y;
+				x = x.x;
 			} else {
-				return shifts.map(this.getNeighbour.bind(this));
+				throw new TypeError( 'Wrong Arguments In Point.Set' );
 			}
-		},
-		/** @returns {boolean} */
-		equals : function (to, accuracy) {
-			to = this.cast(to);
-			if (accuracy == null) {
-				return to.x == this.x && to.y == this.y;
-			}
-			return this.x.equals(to.x, accuracy) && this.y.equals(to.y, accuracy);
-		},
-		/** @returns {object} */
-		toObject: function () {
-			return { x: this.x, y: this.y };
-		},
-		/** @returns {Point} */
-		invoke: function (method) {
-			this.x = this.x[method]();
-			this.y = this.y[method]();
-			return this;
-		},
-		/** @returns {Point} */
-		map: function (fn, context) {
-			this.x = fn.call(context || this, this.x, 'x', this);
-			this.y = fn.call(context || this, this.y, 'y', this);
-			return this;
-		},
-		/** @returns {Point} */
-		mean: function (points) {
-			var l = points.length, i = l, x = 0, y = 0;
-			while (i--) {
-				x += points[i].x;
-				y += points[i].y;
-			}
-			return this.set(x/l, y/l);
-		},
-		/** @returns {Point} */
-		snapToPixel: function () {
-			this.x += 0.5 - (this.x - this.x.floor());
-			this.y += 0.5 - (this.y - this.y.floor());
-			return this;
-		},
-		/** @returns {Point} */
-		reverse: function () {
-			this.x *= -1;
-			this.y *= -1;
-			return this;
-		},
-		/** @returns {Point} */
-		clone : function () {
-			return new this.constructor(this);
-		},
-		/** @returns {string} */
-		dump: function () {
-			return '[Point(' + this.x + ', ' + this.y + ')]';
 		}
+
+		this.x = Number(x);
+		this.y = Number(y);
+		return this;
+	},
+	/** @returns {Point} */
+	move: function (distance, reverse) {
+		distance = this.cast(distance);
+		reverse  = reverse ? -1 : 1;
+		this.x += distance.x * reverse;
+		this.y += distance.y * reverse;
+		return this;
+	},
+	/** @returns {Point} */
+	moveTo : function (point) {
+		return this.move(this.diff(this.cast(point)));
+	},
+	/** @returns {Number} */
+	angleTo : function (point) {
+		var diff = this.cast(point).diff(this);
+		return Math.atan2(diff.y, diff.x).normalizeAngle();
+	},
+	/** @returns {Number} */
+	distanceTo : function (point) {
+		var diff = this.cast(point).diff(this);
+		return Math.hypotenuse(diff.x, diff.y);
+	},
+	/** @returns {Point} */
+	diff : function (point) {
+		return new this.constructor(point).move(this, true);
+	},
+	/** @returns {Point} */
+	rotate : function (angle, pivot) {
+		pivot = pivot ? this.cast(pivot) : new this.constructor(0, 0);
+		if (this.equals(pivot)) return this;
+
+		var radius = pivot.distanceTo(this);
+		var sides  = pivot.diff(this);
+		// TODO: check, maybe here should be "sides.y, sides.x" ?
+		var newAngle = Math.atan2(sides.x, sides.y) - angle;
+
+		return this.moveTo({
+			x : Math.sin(newAngle) * radius + pivot.x,
+			y : Math.cos(newAngle) * radius + pivot.y
+		});
+	},
+	/** @returns {Point} */
+	scale : function (power, pivot) {
+		pivot = pivot ? this.cast(pivot) : new this.constructor(0, 0);
+
+		var diff = this.diff(pivot), isObject = typeof power == 'object';
+		return this.moveTo({
+			x : pivot.x - diff.x  * (isObject ? power.x : power),
+			y : pivot.y - diff.y  * (isObject ? power.y : power)
+		});
+	},
+	/** @returns {Point} */
+	alterPos : function (arg, fn) {
+		return this.moveTo({
+			x: fn(this.x, typeof arg == 'object' ? arg.x : arg),
+			y: fn(this.y, typeof arg == 'object' ? arg.y : arg)
+		});
+	},
+	/** @returns {Point} */
+	mul : function (arg) {
+		return this.alterPos(arg, function(a, b) {
+			return a * b;
+		});
+	},
+	/** @returns {Point} */
+	getNeighbour : function (dir) {
+		return this.clone().move(this.constructor.shifts[dir]);
+	},
+	/** @returns {Point[]} */
+	get neighbours () {
+		return this.getNeighbours( true );
+	},
+	/** @returns {Point[]} */
+	getNeighbours: function (corners, asObject) {
+		var shifts = ['t', 'l', 'r', 'b'], result, i, dir;
+
+		if (corners) shifts.push('tl', 'tr', 'bl', 'br');
+
+		if (asObject) {
+			result = {};
+			for (i = shifts.length; i--;) {
+				dir = shifts[i];
+				result[dir] = this.getNeighbour( dir );
+			}
+			return result;
+		} else {
+			return shifts.map(this.getNeighbour.bind(this));
+		}
+	},
+	/** @returns {boolean} */
+	equals : function (to, accuracy) {
+		to = this.cast(to);
+		if (accuracy == null) {
+			return to.x == this.x && to.y == this.y;
+		}
+		return this.x.equals(to.x, accuracy) && this.y.equals(to.y, accuracy);
+	},
+	/** @returns {object} */
+	toObject: function () {
+		return { x: this.x, y: this.y };
+	},
+	/** @returns {Point} */
+	invoke: function (method) {
+		this.x = this.x[method]();
+		this.y = this.y[method]();
+		return this;
+	},
+	/** @returns {Point} */
+	map: function (fn, context) {
+		this.x = fn.call(context || this, this.x, 'x', this);
+		this.y = fn.call(context || this, this.y, 'y', this);
+		return this;
+	},
+	/** @returns {Point} */
+	mean: function (points) {
+		var l = points.length, i = l, x = 0, y = 0;
+		while (i--) {
+			x += points[i].x;
+			y += points[i].y;
+		}
+		return this.set(x/l, y/l);
+	},
+	/** @returns {Point} */
+	snapToPixel: function () {
+		this.x += 0.5 - (this.x - this.x.floor());
+		this.y += 0.5 - (this.y - this.y.floor());
+		return this;
+	},
+	/** @returns {Point} */
+	reverse: function () {
+		this.x *= -1;
+		this.y *= -1;
+		return this;
+	},
+	/** @returns {Point} */
+	clone : function () {
+		return new this.constructor(this);
+	},
+	/** @returns {string} */
+	dump: function () {
+		return '[Point(' + this.x + ', ' + this.y + ')]';
 	}
 });
 
@@ -1754,34 +1745,26 @@ provides: Size
 ...
 */
 
-/**
- * @class
- * @name Size
- * @name LibCanvas.Size
- */
-var Size = LibCanvas.declare( 'LibCanvas.Size', 'Size', {
-	parent: Point,
+/** @class Size */
+var Size = LibCanvas.declare( 'LibCanvas.Size', 'Size', Point, {
+	set: function (size) {
+		if (typeof size == 'object' && size.width != null) {
+			this.x = Number(size.width);
+			this.y = Number(size.height);
 
-	prototype: {
-		set: function (size) {
-			if (typeof size == 'object' && size.width != null) {
-				this.x = Number(size.width);
-				this.y = Number(size.height);
-
-				return this;
-			}
-			return Point.prototype.set.apply( this, arguments );
-		},
-
-		get width  ( ) { return this.x },
-		get height ( ) { return this.y },
-		set width  (w) { this.x = w },
-		set height (h) { this.y = h },
-
-		/** @returns {object} */
-		toObject: function () {
-			return { width: this.x, height: this.y };
+			return this;
 		}
+		return Point.prototype.set.apply( this, arguments );
+	},
+
+	get width  ( ) { return this.x },
+	get height ( ) { return this.y },
+	set width  (w) { this.x = w },
+	set height (h) { this.y = h },
+
+	/** @returns {object} */
+	toObject: function () {
+		return { width: this.x, height: this.y };
 	}
 });
 
@@ -1816,86 +1799,74 @@ var shapeTestBuffer = function () {
 	return shapeTestBuffer.buffer;
 };
 
-/**
- * @class
- * @name Shape
- * @name LibCanvas.Shape
- */
-var Shape = declare( 'LibCanvas.Shape',
-/**
- * @lends LibCanvas.Shape.prototype
- * @augments LibCanvas.Geometry.prototype
- */
-{
-	parent : Geometry,
-	prototype  : {
-		set        : 'abstract',
-		hasPoint   : 'abstract',
-		processPath: 'abstract',
-		draw : function (ctx, type) {
-			this.processPath(ctx)[type]();
-			return this;
-		},
-		// Методы ниже рассчитывают на то, что в фигуре есть точки from и to
-		getCoords : function () {
-			return this.from;
-		},
-		/** @returns {LibCanvas.Shape} */
-		grow: function (size) {
-			if (typeof size == 'number') {
-				size = new Point(size/2, size/2);
-			} else {
-				size = new Point(size.x/2, size.y/2);
-			}
-
-			this.from.move(size, true);
-			this. to .move(size);
-			return this;
-		},
-		get x () { return this.from.x },
-		get y () { return this.from.y },
-		set x (x) {
-			return this.move(new Point(x - this.x, 0));
-		},
-		set y (y) {
-			return this.move(new Point(0, y - this.y));
-		},
-		get bottomLeft () {
-			return new Point(this.from.x, this.to.y);
-		},
-		get topRight() {
-			return new Point(this.to.x, this.from.y);
-		},
-		get center() {
-			var from = this.from, to = this.to;
-			return new Point( (from.x + to.x) / 2, (from.y + to.y) / 2 );
-		},
-		getBoundingRectangle: function () {
-			return new Rectangle( this.from, this.to );
-		},
-		getCenter : function () {
-			return this.center;
-		},
-		move : function (distance, reverse) {
-			this.from.move(distance, reverse);
-			this. to .move(distance, reverse);
-			return this;
-		},
-		equals : function (shape, accuracy) {
-			return shape instanceof this.constructor &&
-				shape.from.equals(this.from, accuracy) &&
-				shape.to  .equals(this.to  , accuracy);
-		},
-		clone : function () {
-			return new this.constructor(this.from.clone(), this.to.clone());
-		},
-		dumpPoint: function (point) {
-			return '[' + point.x + ', ' + point.y + ']';
-		},
-		dump: function (shape) {
-			if (!shape) return this.toString();
-			return '[shape '+shape+'(from'+this.dumpPoint(this.from)+', to'+this.dumpPoint(this.to)+')]';
+/** @class Shape */
+var Shape = declare( 'LibCanvas.Shape', Geometry, {
+	set        : 'abstract',
+	hasPoint   : 'abstract',
+	processPath: 'abstract',
+	draw : function (ctx, type) {
+		this.processPath(ctx)[type]();
+		return this;
+	},
+	// Методы ниже рассчитывают на то, что в фигуре есть точки from и to
+	getCoords : function () {
+		return this.from;
+	},
+	/** @returns {LibCanvas.Shape} */
+	grow: function (size) {
+		if (typeof size == 'number') {
+			size = new Point(size/2, size/2);
+		} else {
+			size = new Point(size.x/2, size.y/2);
 		}
+
+		this.from.move(size, true);
+		this. to .move(size);
+		return this;
+	},
+	get x () { return this.from.x },
+	get y () { return this.from.y },
+	set x (x) {
+		return this.move(new Point(x - this.x, 0));
+	},
+	set y (y) {
+		return this.move(new Point(0, y - this.y));
+	},
+	get bottomLeft () {
+		return new Point(this.from.x, this.to.y);
+	},
+	get topRight() {
+		return new Point(this.to.x, this.from.y);
+	},
+	get center() {
+		var from = this.from, to = this.to;
+		return new Point( (from.x + to.x) / 2, (from.y + to.y) / 2 );
+	},
+	getBoundingRectangle: function () {
+		return new Rectangle( this.from, this.to );
+	},
+	getCenter : function () {
+		return this.center;
+	},
+	move : function (distance, reverse) {
+		this.from.move(distance, reverse);
+		this. to .move(distance, reverse);
+		return this;
+	},
+	equals : function (shape, accuracy) {
+		return shape instanceof this.constructor &&
+			shape.from.equals(this.from, accuracy) &&
+			shape.to  .equals(this.to  , accuracy);
+	},
+	clone : function () {
+		return new this.constructor(this.from.clone(), this.to.clone());
+	},
+	dumpPoint: function (point) {
+		return '[' + point.x + ', ' + point.y + ']';
+	},
+	dump: function (shape) {
+		if (!shape) return this.toString();
+		return '[shape '+shape+'(from'+this.dumpPoint(this.from)+', to'+this.dumpPoint(this.to)+')]';
 	}
 });
 
@@ -1923,190 +1894,183 @@ provides: Shapes.Rectangle
 ...
 */
 
-/**
- * @class
- * @name Rectangle
- * @name LibCanvas.Shapes.Rectangle
- */
-var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', {
-	parent: Shape,
-	prototype: {
-		set : function () {
-			var a = Array.pickFrom(arguments);
+/** @class Rectangle */
+var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Shape, {
+	set : function () {
+		var a = Array.pickFrom(arguments);
 
-			if (a.length == 4) {
-				this.from = new Point(a[0], a[1]);
-				this.to   = new Point(a[0]+a[2], a[1]+a[3]);
-			} else if (a.length == 2) {
-				if ('width' in a[1] && 'height' in a[1]) {
-					this.set({ from: a[0], size: a[1] });
+		if (a.length == 4) {
+			this.from = new Point(a[0], a[1]);
+			this.to   = new Point(a[0]+a[2], a[1]+a[3]);
+		} else if (a.length == 2) {
+			if ('width' in a[1] && 'height' in a[1]) {
+				this.set({ from: a[0], size: a[1] });
+			} else {
+				this.from = Point(a[0]);
+				this.to   = Point(a[1]);
+			}
+		} else {
+			a = a[0];
+			if (a.from) {
+				this.from = Point(a.from);
+			} else if ('x' in a && 'y' in a) {
+				this.from = new Point(a.x, a.y);
+			}
+			if (a.to) this.to = Point(a.to);
+
+			if (!a.from || !a.to) {
+				var as = a.size,
+					sizeX = (as ? [as.w, as[0], as.width ] : [ a.w, a.width  ]).pick(),
+					sizeY = (as ? [as.h, as[1], as.height] : [ a.h, a.height ]).pick();
+				if (this.from) {
+					this.to   = new Point(this.from.x + sizeX, this.from.y + sizeY);
 				} else {
-					this.from = Point(a[0]);
-					this.to   = Point(a[1]);
+					this.from = new Point(this.to.x   - sizeX, this.to.y   - sizeY);
 				}
-			} else {
-				a = a[0];
-				if (a.from) {
-					this.from = Point(a.from);
-				} else if ('x' in a && 'y' in a) {
-					this.from = new Point(a.x, a.y);
-				}
-				if (a.to) this.to = Point(a.to);
-
-				if (!a.from || !a.to) {
-					var as = a.size,
-						sizeX = (as ? [as.w, as[0], as.width ] : [ a.w, a.width  ]).pick(),
-						sizeY = (as ? [as.h, as[1], as.height] : [ a.h, a.height ]).pick();
-					if (this.from) {
-						this.to   = new Point(this.from.x + sizeX, this.from.y + sizeY);
-					} else {
-						this.from = new Point(this.to.x   - sizeX, this.to.y   - sizeY);
-					}
-				}
-
-			}
-			return this;
-		},
-
-		get width() {
-			return this.to.x - this.from.x;
-		},
-		get height() {
-			return this.to.y - this.from.y;
-		},
-		set width (width) {
-			this.to.x = this.from.x + width;
-		},
-		set height (height) {
-			this.to.y = this.from.y + height;
-		},
-		get size () {
-			return new Size( this.width, this.height );
-		},
-		set size (size) {
-			if (size.width != this.width || size.height != this.height) {
-				this.to.set(this.from.x + size.width, this.from.y + size.height);
-			}
-		},
-		/** @returns {boolean} */
-		hasPoint : function (point, padding) {
-			point   = Point(arguments);
-			padding = padding || 0;
-			return point.x != null && point.y != null
-				&& point.x.between(Math.min(this.from.x, this.to.x) + padding, Math.max(this.from.x, this.to.x) - padding, 1)
-				&& point.y.between(Math.min(this.from.y, this.to.y) + padding, Math.max(this.from.y, this.to.y) - padding, 1);
-		},
-		align: function (rect, sides) {
-			if (sides == null) sides = 'center middle';
-
-			var moveTo = this.from.clone();
-			if (sides.indexOf('left') != -1) {
-				moveTo.x = rect.from.x;
-			} else if (sides.indexOf('center') != -1) {
-				moveTo.x = rect.from.x + (rect.width - this.width) / 2;
-			} else if (sides.indexOf('right') != -1) {
-				moveTo.x = rect.to.x - this.width;
 			}
 
-			if (sides.indexOf('top') != -1) {
-				moveTo.y = rect.from.y;
-			} else if (sides.indexOf('middle') != -1) {
-				moveTo.y = rect.from.y + (rect.height - this.height) / 2;
-			} else if (sides.indexOf('bottom') != -1) {
-				moveTo.y = rect.to.y - this.height;
-			}
-
-			return this.moveTo( moveTo );
-		},
-		/** @returns {LibCanvas.Shapes.Rectangle} */
-		moveTo: function (rect) {
-			if (rect instanceof Point) {
-				this.move( this.from.diff(rect) );
-			} else {
-				rect = Rectangle(arguments);
-				this.from.moveTo(rect.from);
-				this.  to.moveTo(rect.to);
-			}
-			return this;
-		},
-		/** @returns {LibCanvas.Shapes.Rectangle} */
-		draw : function (ctx, type) {
-			// fixed Opera bug - cant drawing rectangle with width or height below zero
-			ctx.original(type + 'Rect', [
-				Math.min(this.from.x, this.to.x),
-				Math.min(this.from.y, this.to.y),
-				this.width .abs(),
-				this.height.abs()
-			]);
-			return this;
-		},
-		/** @returns {LibCanvas.Context2D} */
-		processPath : function (ctx, noWrap) {
-			if (!noWrap) ctx.beginPath();
-			ctx.ctx2d.rect( this.from.x, this.from.y, this.width, this.height );
-			if (!noWrap) ctx.closePath();
-			return ctx;
-		},
-		/** @returns {boolean} */
-		intersect : function (obj) {
-			if (obj.prototype != this.constructor) {
-				if (obj.getBoundingRectangle) {
-					obj = obj.getBoundingRectangle();
-				} else return false;
-			}
-			return this.from.x < obj.to.x && this.to.x > obj.from.x
-				&& this.from.y < obj.to.y && this.to.y > obj.from.y;
-		},
-		getBoundingRectangle: function () {
-			return this;
-		},
-		/** @returns {LibCanvas.Point} */
-		getRandomPoint : function (margin) {
-			margin = margin || 0;
-			return new Point(
-				Number.random(margin, this.width  - margin),
-				Number.random(margin, this.height - margin)
-			);
-		},
-		/** @returns {LibCanvas.Shapes.Rectangle} */
-		translate : function (point, fromRect) {
-			var diff = fromRect.from.diff(point);
-			return new Point({
-				x : (diff.x / fromRect.width ) * this.width,
-				y : (diff.y / fromRect.height) * this.height
-			});
-		},
-		/** @returns {LibCanvas.Shapes.Rectangle} */
-		fillToPixel: function () {
-			var from = this.from, to = this.to,
-				point = function (side, round) {
-					return new Point(
-						Math[round](Math[side](from.x, to.x)),
-						Math[round](Math[side](from.y, to.y))
-					);
-				};
-
-			return new Rectangle(
-				point( 'min', 'floor' ),
-				point( 'max', 'ceil'  )
-			);
-		},
-		/** @returns {LibCanvas.Shapes.Rectangle} */
-		snapToPixel: function () {
-			this.from.snapToPixel();
-			this.to.snapToPixel().move(new Point(-1, -1));
-			return this;
-		},
-		/** @returns {string} */
-		dump: function (name) {
-			return Shape.prototype.dump.call(this, name || 'Rectangle');
-		},
-		/** @returns {LibCanvas.Shapes.Polygon} */
-		toPolygon: function () {
-			return new Polygon(
-				this.from.clone(), this.topRight, this.to.clone(), this.bottomLeft
-			);
 		}
+		return this;
+	},
+
+	get width() {
+		return this.to.x - this.from.x;
+	},
+	get height() {
+		return this.to.y - this.from.y;
+	},
+	set width (width) {
+		this.to.x = this.from.x + width;
+	},
+	set height (height) {
+		this.to.y = this.from.y + height;
+	},
+	get size () {
+		return new Size( this.width, this.height );
+	},
+	set size (size) {
+		if (size.width != this.width || size.height != this.height) {
+			this.to.set(this.from.x + size.width, this.from.y + size.height);
+		}
+	},
+	/** @returns {boolean} */
+	hasPoint : function (point, padding) {
+		point   = Point(arguments);
+		padding = padding || 0;
+		return point.x != null && point.y != null
+			&& point.x.between(Math.min(this.from.x, this.to.x) + padding, Math.max(this.from.x, this.to.x) - padding, 1)
+			&& point.y.between(Math.min(this.from.y, this.to.y) + padding, Math.max(this.from.y, this.to.y) - padding, 1);
+	},
+	align: function (rect, sides) {
+		if (sides == null) sides = 'center middle';
+
+		var moveTo = this.from.clone();
+		if (sides.indexOf('left') != -1) {
+			moveTo.x = rect.from.x;
+		} else if (sides.indexOf('center') != -1) {
+			moveTo.x = rect.from.x + (rect.width - this.width) / 2;
+		} else if (sides.indexOf('right') != -1) {
+			moveTo.x = rect.to.x - this.width;
+		}
+
+		if (sides.indexOf('top') != -1) {
+			moveTo.y = rect.from.y;
+		} else if (sides.indexOf('middle') != -1) {
+			moveTo.y = rect.from.y + (rect.height - this.height) / 2;
+		} else if (sides.indexOf('bottom') != -1) {
+			moveTo.y = rect.to.y - this.height;
+		}
+
+		return this.moveTo( moveTo );
+	},
+	/** @returns {LibCanvas.Shapes.Rectangle} */
+	moveTo: function (rect) {
+		if (rect instanceof Point) {
+			this.move( this.from.diff(rect) );
+		} else {
+			rect = Rectangle(arguments);
+			this.from.moveTo(rect.from);
+			this.  to.moveTo(rect.to);
+		}
+		return this;
+	},
+	/** @returns {LibCanvas.Shapes.Rectangle} */
+	draw : function (ctx, type) {
+		// fixed Opera bug - cant drawing rectangle with width or height below zero
+		ctx.original(type + 'Rect', [
+			Math.min(this.from.x, this.to.x),
+			Math.min(this.from.y, this.to.y),
+			this.width .abs(),
+			this.height.abs()
+		]);
+		return this;
+	},
+	/** @returns {LibCanvas.Context2D} */
+	processPath : function (ctx, noWrap) {
+		if (!noWrap) ctx.beginPath();
+		ctx.ctx2d.rect( this.from.x, this.from.y, this.width, this.height );
+		if (!noWrap) ctx.closePath();
+		return ctx;
+	},
+	/** @returns {boolean} */
+	intersect : function (obj) {
+		if (obj.prototype != this.constructor) {
+			if (obj.getBoundingRectangle) {
+				obj = obj.getBoundingRectangle();
+			} else return false;
+		}
+		return this.from.x < obj.to.x && this.to.x > obj.from.x
+			&& this.from.y < obj.to.y && this.to.y > obj.from.y;
+	},
+	getBoundingRectangle: function () {
+		return this;
+	},
+	/** @returns {LibCanvas.Point} */
+	getRandomPoint : function (margin) {
+		margin = margin || 0;
+		return new Point(
+			Number.random(margin, this.width  - margin),
+			Number.random(margin, this.height - margin)
+		);
+	},
+	/** @returns {LibCanvas.Shapes.Rectangle} */
+	translate : function (point, fromRect) {
+		var diff = fromRect.from.diff(point);
+		return new Point({
+			x : (diff.x / fromRect.width ) * this.width,
+			y : (diff.y / fromRect.height) * this.height
+		});
+	},
+	/** @returns {LibCanvas.Shapes.Rectangle} */
+	fillToPixel: function () {
+		var from = this.from, to = this.to,
+			point = function (side, round) {
+				return new Point(
+					Math[round](Math[side](from.x, to.x)),
+					Math[round](Math[side](from.y, to.y))
+				);
+			};
+
+		return new Rectangle(
+			point( 'min', 'floor' ),
+			point( 'max', 'ceil'  )
+		);
+	},
+	/** @returns {LibCanvas.Shapes.Rectangle} */
+	snapToPixel: function () {
+		this.from.snapToPixel();
+		this.to.snapToPixel().move(new Point(-1, -1));
+		return this;
+	},
+	/** @returns {string} */
+	dump: function (name) {
+		return Shape.prototype.dump.call(this, name || 'Rectangle');
+	},
+	/** @returns {LibCanvas.Shapes.Polygon} */
+	toPolygon: function () {
+		return new Polygon(
+			this.from.clone(), this.topRight, this.to.clone(), this.bottomLeft
+		);
 	}
 });
 
@@ -2134,106 +2098,97 @@ provides: Shapes.Circle
 ...
 */
 
-/**
- * @class
- * @name Circle
- * @name LibCanvas.Shapes.Circle
- */
-var Circle = LibCanvas.declare( 'LibCanvas.Shapes.Circle', 'Circle',
-/** @lends {Circle#} */
-{
-	parent: Shape,
-	prototype: {
-		set : function () {
-			var a = Array.pickFrom(arguments);
+/** @class Circle */
+var Circle = LibCanvas.declare( 'LibCanvas.Shapes.Circle', 'Circle', Shape, {
+	set : function () {
+		var a = Array.pickFrom(arguments);
 
-			if (a.length >= 3) {
-				this.center = new Point(a[0], a[1]);
-				this.radius = a[2];
-			} else if (a.length == 2) {
-				this.center = Point(a[0]);
-				this.radius = a[1];
-			} else {
-				a = a[0];
-				this.radius = [a.r, a.radius].pick();
-				if ('x' in a && 'y' in a) {
-					this.center = new Point(a.x, a.y);
-				} else if ('center' in a) {
-					this.center = Point(a.center);
-				} else if ('from' in a) {
-					this.center = new Point(a.from).move({
-						x: this.radius,
-						y: this.radius
-					});
-				}
-			}
-			if (this.center == null) throw new TypeError('center is null');
-			if (this.radius == null) throw new TypeError('radius is null');
-		},
-		// we need accessors to redefine parent "get center"
-		get center ( ) { return this._center; },
-		set center (c) { this._center = c; },
-		grow: function (size) {
-			this.radius += size/2;
-			return this;
-		},
-		getCoords : function () {
-			return this.center;
-		},
-		hasPoint : function (point) {
-			return this.center.distanceTo(point) <= this.radius;
-		},
-		scale : function (factor, pivot) {
-			if (pivot) this.center.scale(factor, pivot);
-			this.radius *= factor;
-			return this;
-		},
-		getCenter: function () {
-			return this.center;
-		},
-		intersect : function (obj) {
-			if (obj instanceof this.constructor) {
-				return this.center.distanceTo(obj.center) < this.radius + obj.radius;
-			} else {
-				return this.getBoundingRectangle().intersect( obj );
-			}
-		},
-		move : function (distance, reverse) {
-			this.center.move(distance, reverse);
-			return this;
-		},
-		processPath : function (ctx, noWrap) {
-			if (!noWrap) ctx.beginPath();
-			if (this.radius) {
-				ctx.arc({
-					circle : this,
-					angle  : [0, (360).degree()]
+		if (a.length >= 3) {
+			this.center = new Point(a[0], a[1]);
+			this.radius = a[2];
+		} else if (a.length == 2) {
+			this.center = Point(a[0]);
+			this.radius = a[1];
+		} else {
+			a = a[0];
+			this.radius = [a.r, a.radius].pick();
+			if ('x' in a && 'y' in a) {
+				this.center = new Point(a.x, a.y);
+			} else if ('center' in a) {
+				this.center = Point(a.center);
+			} else if ('from' in a) {
+				this.center = new Point(a.from).move({
+					x: this.radius,
+					y: this.radius
 				});
 			}
-			if (!noWrap) ctx.closePath();
-			return ctx;
-		},
-		getBoundingRectangle: function () {
-			var r = this.radius, center = this.center;
-			return new Rectangle(
-				new Point(center.x - r, center.y - r),
-				new Point(center.x + r, center.y + r)
-			);
-		},
-		clone : function () {
-			return new this.constructor(this.center.clone(), this.radius);
-		},
-		getPoints : function () {
-			return { center : this.center };
-		},
-		equals : function (shape, accuracy) {
-			return shape instanceof this.shape &&
-				shape.radius == this.radius    &&
-				shape.center.equals(this.center, accuracy);
-		},
-		dump: function () {
-			return '[shape Circle(center['+this.center.x+', '+this.center.y+'], '+this.radius+')]';
 		}
+		if (this.center == null) throw new TypeError('center is null');
+		if (this.radius == null) throw new TypeError('radius is null');
+	},
+	// we need accessors to redefine parent "get center"
+	get center ( ) { return this._center; },
+	set center (c) { this._center = c; },
+	grow: function (size) {
+		this.radius += size/2;
+		return this;
+	},
+	getCoords : function () {
+		return this.center;
+	},
+	hasPoint : function (point) {
+		return this.center.distanceTo(point) <= this.radius;
+	},
+	scale : function (factor, pivot) {
+		if (pivot) this.center.scale(factor, pivot);
+		this.radius *= factor;
+		return this;
+	},
+	getCenter: function () {
+		return this.center;
+	},
+	intersect : function (obj) {
+		if (obj instanceof this.constructor) {
+			return this.center.distanceTo(obj.center) < this.radius + obj.radius;
+		} else {
+			return this.getBoundingRectangle().intersect( obj );
+		}
+	},
+	move : function (distance, reverse) {
+		this.center.move(distance, reverse);
+		return this;
+	},
+	processPath : function (ctx, noWrap) {
+		if (!noWrap) ctx.beginPath();
+		if (this.radius) {
+			ctx.arc({
+				circle : this,
+				angle  : [0, (360).degree()]
+			});
+		}
+		if (!noWrap) ctx.closePath();
+		return ctx;
+	},
+	getBoundingRectangle: function () {
+		var r = this.radius, center = this.center;
+		return new Rectangle(
+			new Point(center.x - r, center.y - r),
+			new Point(center.x + r, center.y + r)
+		);
+	},
+	clone : function () {
+		return new this.constructor(this.center.clone(), this.radius);
+	},
+	getPoints : function () {
+		return { center : this.center };
+	},
+	equals : function (shape, accuracy) {
+		return shape instanceof this.shape &&
+			shape.radius == this.radius    &&
+			shape.center.equals(this.center, accuracy);
+	},
+	dump: function () {
+		return '[shape Circle(center['+this.center.x+', '+this.center.y+'], '+this.radius+')]';
 	}
 });
 
@@ -2259,7 +2214,7 @@ provides: Utils.Canvas
 ...
 */
 
-atom.append(HTMLCanvasElement,
+atom.core.append(HTMLCanvasElement,
 /** @lends HTMLCanvasElement */
 {
 	/** @private */
@@ -2275,7 +2230,7 @@ atom.append(HTMLCanvasElement,
 	}
 });
 
-atom.append(HTMLCanvasElement.prototype,
+atom.core.append(HTMLCanvasElement.prototype,
 /** @lends HTMLCanvasElement.prototype */
 {
 	getOriginalContext: HTMLCanvasElement.prototype.getContext,
@@ -2464,745 +2419,738 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
  * @property {string} textBaseline
  */
 {
-	own: constants,
+	initialize : function (canvas) {
+		if (canvas instanceof CanvasRenderingContext2D) {
+			this.ctx2d  = canvas;
+			this.canvas = this.ctx2d.canvas;
+		} else {
+			this.canvas = canvas;
+			this.ctx2d  = canvas.getOriginalContext('2d');
+		}
+	},
+	get width () { return this.canvas.width; },
+	get height() { return this.canvas.height; },
+	set width (width)  { this.canvas.width  = width; },
+	set height(height) { this.canvas.height = height;},
 
-	prototype: {
-		initialize : function (canvas) {
-			if (canvas instanceof CanvasRenderingContext2D) {
-				this.ctx2d  = canvas;
-				this.canvas = this.ctx2d.canvas;
-			} else {
-				this.canvas = canvas;
-				this.ctx2d  = canvas.getOriginalContext('2d');
-			}
-		},
-		get width () { return this.canvas.width; },
-		get height() { return this.canvas.height; },
-		set width (width)  { this.canvas.width  = width; },
-		set height(height) { this.canvas.height = height;},
+	get shadow () {
+		return [this.shadowOffsetX, this.shadowOffsetY, this.shadowBlur, this.shadowColor].join( ' ' );
+	},
 
-		get shadow () {
-			return [this.shadowOffsetX, this.shadowOffsetY, this.shadowBlur, this.shadowColor].join( ' ' );
-		},
+	set shadow (value) {
+		value = value.split( ' ' );
+		this.shadowOffsetX = value[0];
+		this.shadowOffsetY = value[1];
+		this.shadowBlur    = value[2];
+		this.shadowColor   = value[3];
+	},
 
-		set shadow (value) {
-			value = value.split( ' ' );
-			this.shadowOffsetX = value[0];
-			this.shadowOffsetY = value[1];
-			this.shadowBlur    = value[2];
-			this.shadowColor   = value[3];
-		},
+	/** @private */
+	safeSet: function (property, value) {
+		try {
+			this.ctx2d[property] = value;
+		} catch (e) {
+			throw TypeError('Exception while setting «' + property + '» to «' + value + '»: ' + e.message);
+		}
+	},
 
-		/** @private */
-		safeSet: function (property, value) {
-			try {
-				this.ctx2d[property] = value;
-			} catch (e) {
-				throw TypeError('Exception while setting «' + property + '» to «' + value + '»: ' + e.message);
-			}
-		},
+	set shadowOffsetY (value) {
+		if (shadowBug) value *= -1;
+		this.safeSet('shadowOffsetY', value);
+	},
 
-		set shadowOffsetY (value) {
-			if (shadowBug) value *= -1;
-			this.safeSet('shadowOffsetY', value);
-		},
+	set shadowBlur (value) {
+		if (shadowBug && value < 1) value = 1;
+		this.safeSet('shadowBlur', value);
+	},
 
-		set shadowBlur (value) {
-			if (shadowBug && value < 1) value = 1;
-			this.safeSet('shadowBlur', value);
-		},
+	get shadowOffsetY () {
+		return this.ctx2d.shadowOffsetY;
+	},
 
-		get shadowOffsetY () {
-			return this.ctx2d.shadowOffsetY;
-		},
+	get shadowBlur () {
+		return this.ctx2d.shadowBlur;
+	},
 
-		get shadowBlur () {
-			return this.ctx2d.shadowBlur;
-		},
+	get opacity () {
+		return this.globalAlpha;
+	},
 
-		get opacity () {
-			return this.globalAlpha;
-		},
+	set opacity (value) {
+		this.globalAlpha = value;
+	},
 
-		set opacity (value) {
-			this.globalAlpha = value;
-		},
+	_rectangle: null,
+	/** @returns {Rectangle} */
+	get rectangle () {
+		var rect = this._rectangle;
+		if (!rect) {
+			this._rectangle = rect = new Rectangle(0, 0, this.width, this.height)
+		} else {
+			rect.size = this;
+		}
+		return rect;
+	},
+	/** @returns {Context2D} */
+	original : function (method, args, returnResult) {
+		try {
+			var result = this.ctx2d[method].apply(this.ctx2d, args || []);
+			if (returnResult) return result;
+		} catch (e) {
+			console.log('Error in context2d.original(', method, ',', (args || []), ')');
+			throw e;
+		}
+		return this;
+	},
+	/** @returns {HTMLCanvasElement} */
+	getClone : function (width, height) {
+		var resize = !!(width || height), canvas = this.canvas;
+		width  = width  || canvas.width;
+		height = height || canvas.height;
 
-		_rectangle: null,
-		/** @returns {Rectangle} */
-		get rectangle () {
-			var rect = this._rectangle;
-			if (!rect) {
-				this._rectangle = rect = new Rectangle(0, 0, this.width, this.height)
-			} else {
-				rect.size = this;
-			}
-			return rect;
-		},
-		/** @returns {Context2D} */
-		original : function (method, args, returnResult) {
-			try {
-				var result = this.ctx2d[method].apply(this.ctx2d, args || []);
-				if (returnResult) return result;
-			} catch (e) {
-				console.log('Error in context2d.original(', method, ',', (args || []), ')');
-				throw e;
-			}
-			return this;
-		},
-		/** @returns {HTMLCanvasElement} */
-		getClone : function (width, height) {
-			var resize = !!(width || height), canvas = this.canvas;
-			width  = width  || canvas.width;
-			height = height || canvas.height;
+		var args = [canvas, 0, 0];
+		if (resize) args.push(width, height);
 
-			var args = [canvas, 0, 0];
-			if (resize) args.push(width, height);
+		var clone = LibCanvas.buffer(width, height, true);
+		clone.ctx.original('drawImage', args);
+		return clone;
+	},
 
-			var clone = LibCanvas.buffer(width, height, true);
-			clone.ctx.original('drawImage', args);
-			return clone;
-		},
+	// Values
+	/** @returns {Context2D} */
+	set : function (name, value) {
+		if (typeof name == 'object') {
+			for (var i in name) this[i] = name[i];
+		} else this[name] = value;
+		return this;
+	},
+	/** @returns {string} */
+	get : function (name) {
+		return this[name];
+	},
 
-		// Values
-		/** @returns {Context2D} */
-		set : function (name, value) {
-			if (typeof name == 'object') {
-				for (var i in name) this[i] = name[i];
-			} else this[name] = value;
-			return this;
-		},
-		/** @returns {string} */
-		get : function (name) {
-			return this[name];
-		},
+	// All
+	/** @returns {Context2D} */
+	fillAll : function (style) {
+		return office.all.call(this, 'fill', style);
+	},
+	/** @returns {Context2D} */
+	strokeAll : function (style) {
+		return office.all.call(this, 'stroke', style);
+	},
+	/** @returns {Context2D} */
+	clearAll : function (style) {
+		return office.all.call(this, 'clear', style);
+	},
 
-		// All
-		/** @returns {Context2D} */
-		fillAll : function (style) {
-			return office.all.call(this, 'fill', style);
-		},
-		/** @returns {Context2D} */
-		strokeAll : function (style) {
-			return office.all.call(this, 'stroke', style);
-		},
-		/** @returns {Context2D} */
-		clearAll : function (style) {
-			return office.all.call(this, 'clear', style);
-		},
+	// Save/Restore
+	/** @returns {Context2D} */
+	save : function () {
+		return this.original('save');
+	},
+	/** @returns {Context2D} */
+	restore : function () {
+		return this.original('restore');
+	},
 
-		// Save/Restore
-		/** @returns {Context2D} */
-		save : function () {
-			return this.original('save');
-		},
-		/** @returns {Context2D} */
-		restore : function () {
-			return this.original('restore');
-		},
+	// Fill/Stroke
+	/** @returns {Context2D} */
+	fill : function (shape) {
+		return office.fillStroke.call(this, 'fill', arguments);
+	},
+	/** @returns {Context2D} */
+	stroke : function (shape) {
+		return office.fillStroke.call(this, 'stroke', arguments);
+	},
+	/** @returns {Context2D} */
+	clear: function (shape, stroke) {
+		return shape instanceof Shape && shape.constructor != Rectangle ?
+			this
+				.save()
+				.set({ globalCompositeOperation: Context2D.COMPOSITE.DESTINATION_OUT })
+				[stroke ? 'stroke' : 'fill']( shape )
+				.restore() :
+			this.clearRect( Rectangle(arguments) );
+	},
 
-		// Fill/Stroke
-		/** @returns {Context2D} */
-		fill : function (shape) {
-			return office.fillStroke.call(this, 'fill', arguments);
-		},
-		/** @returns {Context2D} */
-		stroke : function (shape) {
-			return office.fillStroke.call(this, 'stroke', arguments);
-		},
-		/** @returns {Context2D} */
-		clear: function (shape, stroke) {
-			return shape instanceof Shape && shape.constructor != Rectangle ?
-				this
-					.save()
-					.set({ globalCompositeOperation: Context2D.COMPOSITE.DESTINATION_OUT })
-					[stroke ? 'stroke' : 'fill']( shape )
-					.restore() :
-				this.clearRect( Rectangle(arguments) );
-		},
+	// Path
+	/** @returns {Context2D} */
+	beginPath : function (moveTo) {
+		var ret = this.original('beginPath');
+		arguments.length && this.moveTo.apply(this, arguments);
+		return ret;
+	},
+	/** @returns {Context2D} */
+	closePath : function () {
+		arguments.length && this.lineTo.apply(this, arguments);
+		return this.original('closePath');
+	},
+	/** @returns {Context2D} */
+	moveTo : function (point) {
+		return office.originalPoint.call(this, 'moveTo', arguments);
+	},
+	/** @returns {Context2D} */
+	lineTo : function (point) {
+		return office.originalPoint.call(this, 'lineTo', arguments);
+	},
 
-		// Path
-		/** @returns {Context2D} */
-		beginPath : function (moveTo) {
-			var ret = this.original('beginPath');
-			arguments.length && this.moveTo.apply(this, arguments);
-			return ret;
-		},
-		/** @returns {Context2D} */
-		closePath : function () {
-			arguments.length && this.lineTo.apply(this, arguments);
-			return this.original('closePath');
-		},
-		/** @returns {Context2D} */
-		moveTo : function (point) {
-			return office.originalPoint.call(this, 'moveTo', arguments);
-		},
-		/** @returns {Context2D} */
-		lineTo : function (point) {
-			return office.originalPoint.call(this, 'lineTo', arguments);
-		},
-
-		/** @returns {Context2D} */
-		arc : function (x, y, r, startAngle, endAngle, anticlockwise) {
-			var a = Array.pickFrom(arguments), circle, angle, acw;
-			if (a.length > 1) {
-				return this.original('arc', a);
-			} else if ('circle' in a[0]) {
-				circle = Circle(a[0].circle);
-				angle  = Array.isArray(a[0].angle) ?
-					a[0].angle.associate(['start', 'end']) :
-					Object.collect(a[0].angle, ['start', 'end', 'size']);
-				if (Array.isArray(angle)) {
-					angle = angle.associate(['start', 'end']);
-				} else if (angle.size != null) {
-					if ('end' in angle) {
-						angle.end = angle.size + angle.start;
-					} else if ('start' in angle) {
-						angle.start = angle.end - angle.size;
-					}
+	/** @returns {Context2D} */
+	arc : function (x, y, r, startAngle, endAngle, anticlockwise) {
+		var a = Array.pickFrom(arguments), circle, angle, acw;
+		if (a.length > 1) {
+			return this.original('arc', a);
+		} else if ('circle' in a[0]) {
+			circle = Circle(a[0].circle);
+			angle  = Array.isArray(a[0].angle) ?
+				a[0].angle.associate(['start', 'end']) :
+				Object.collect(a[0].angle, ['start', 'end', 'size']);
+			if (Array.isArray(angle)) {
+				angle = angle.associate(['start', 'end']);
+			} else if (angle.size != null) {
+				if ('end' in angle) {
+					angle.end = angle.size + angle.start;
+				} else if ('start' in angle) {
+					angle.start = angle.end - angle.size;
 				}
-				acw = !!(a[0].anticlockwise || a[0].acw);
-			} else {
-				throw new TypeError('Wrong arguments in CanvasContext.arc');
 			}
-			return this.original('arc', [
-				circle.center.x, circle.center.y, circle.radius, angle.start, angle.end, acw
+			acw = !!(a[0].anticlockwise || a[0].acw);
+		} else {
+			throw new TypeError('Wrong arguments in CanvasContext.arc');
+		}
+		return this.original('arc', [
+			circle.center.x, circle.center.y, circle.radius, angle.start, angle.end, acw
+		]);
+	},
+
+	/** @returns {Context2D} */
+	arcTo : function () {
+		// @todo Beauty arguments
+		return this.original('arcTo', arguments);
+	},
+	/** @returns {Context2D} */
+	curveTo: function (curve) {
+		var p, l, to;
+
+		if (typeof curve == 'number') {
+			if (arguments.length === 4) {
+				return this.original('quadraticCurveTo', arguments);
+			} else if (arguments.length === 6) {
+				return this.original('bezierCurveTo', arguments);
+			}
+		} else if (arguments.length > 1) {
+			p  = Array.from( arguments ).map(Point);
+			to = p.shift()
+		} else {
+			p  = Array.from( curve.points ).map(Point);
+			to = Point(curve.to);
+		}
+
+		l = p.length;
+
+		if (l == 2) {
+			this.original('bezierCurveTo', [
+				p[0].x, p[0].y, p[1].x, p[1].y, to.x, to.y
 			]);
-		},
+		} else if (l == 1) {
+			this.original('quadraticCurveTo', [
+				p[0].x, p[0].y, to.x, to.y
+			]);
+		} else {
+			this.original('lineTo', [to]);
+		}
+		return this;
+	},
+	/** @returns {Context2D} */
+	quadraticCurveTo : function () {
+		var a = arguments;
+		if (a.length == 4) {
+			return this.original('bezierCurveTo', arguments);
+		} else {
+			a = a.length == 2 ? a.associate(['p', 'to']) : a[0];
+			return this.curveTo({
+				to: a.to,
+				points: [a.p]
+			});
+		}
+	},
+	/** @returns {Context2D} */
+	bezierCurveTo : function () {
+		var a = arguments;
+		if (a.length == 6) {
+			return this.original('bezierCurveTo', arguments);
+		} else {
+			a = a.length == 3 ? {p1:a[0], p2:a[1], to:a[2]} : a[0];
+			return this.curveTo({
+				to: a.to,
+				points: [a.p1, a.p2]
+			});
+		}
+	},
+	/** @returns {boolean} */
+	isPointInPath : function (x, y) {
+		var point = Point(arguments);
+		return this.original('isPointInPath', [point.x, point.y], true);
+	},
+	/** @returns {Context2D} */
+	clip : function (shape) {
+		if (shape && typeof shape.processPath == 'function') {
+			shape.processPath(this);
+		}
+		return this.original('clip');
+	},
 
-		/** @returns {Context2D} */
-		arcTo : function () {
-			// @todo Beauty arguments
-			return this.original('arcTo', arguments);
-		},
-		/** @returns {Context2D} */
-		curveTo: function (curve) {
-			var p, l, to;
+	// transformation
+	/** @returns {Context2D} */
+	rotate : function (angle, pivot) {
+		if (angle) {
+			if (pivot) this.translate(pivot);
+			this.original('rotate', [angle]);
+			if (pivot) this.translate(pivot, true);
+		}
+		return this;
+	},
+	/** @returns {Context2D} */
+	translate : function (point, reverse) {
+		point = Point(
+			(arguments.length === 1 || typeof reverse === 'boolean')
+				? point : arguments
+		);
+		var multi = reverse === true ? -1 : 1;
+		this.original('translate', [point.x * multi, point.y * multi]);
+		return this;
+	},
+	/** @returns {Context2D} */
+	scale : function (power, pivot) {
+		if (typeof pivot == 'number') {
+			power = new Point(power, pivot);
+			pivot = null;
+		} else {
+			power = Point(power);
+		}
+		if (power.x != 1 || power.y != 1) {
+			if (pivot) this.translate(pivot);
+			this.original('scale', [power.x, power.y]);
+			if (pivot) this.translate(pivot, true);
+		}
+		return this;
+	},
+	/** @returns {Context2D} */
+	transform : function () {
+		// @todo Beauty arguments
+		return this.original('transform', arguments);
+	},
+	/** @returns {Context2D} */
+	setTransform : function () {
+		// @todo Beauty arguments
+		return this.original('setTransform', arguments);
+	},
 
-			if (typeof curve == 'number') {
-				if (arguments.length === 4) {
-					return this.original('quadraticCurveTo', arguments);
-				} else if (arguments.length === 6) {
-					return this.original('bezierCurveTo', arguments);
+	// Rectangle
+	/** @returns {Context2D} */
+	fillRect : function (rectangle) {
+		return office.rect.call(this, 'fillRect', arguments);
+	},
+	/** @returns {Context2D} */
+	strokeRect : function (rectangle) {
+		return office.rect.call(this, 'strokeRect', arguments);
+	},
+	/** @returns {Context2D} */
+	clearRect : function (rectangle) {
+		return office.rect.call(this, 'clearRect', arguments);
+	},
+
+	// text
+	/** @returns {Context2D} */
+	fillText : function (text, x, y, maxWidth) {
+		var type = typeof x;
+		if (type != 'number' && type != 'string') {
+			maxWidth = y;
+			x = Point( x );
+			y = x.y;
+			x = x.x;
+		}
+		var args = [text, x, y];
+		if (maxWidth) args.push( maxWidth );
+		return this.original('fillText', args);
+	},
+	/** @returns {Context2D} */
+	strokeText : function (text, x, y, maxWidth) {
+		var type = typeof x;
+		if (type != 'number' && type != 'string') {
+			maxWidth = y;
+			x = Point( x );
+			y = x.y;
+			x = x.x;
+		}
+		var args = [text, x, y];
+		if (maxWidth) args.push( maxWidth );
+		return this.original('strokeText', args);
+	},
+	/** @returns {object} */
+	measureText : function (textToMeasure) {
+		return this.original('measureText', arguments, true);
+	},
+	/** @returns {Context2D} */
+	text : function (cfg) {
+		if (!this.ctx2d.fillText) return this;
+
+		cfg = atom.append({
+			text   : '',
+			color  : null, /* @color */
+			wrap   : 'normal', /* no|normal */
+			to     : null,
+			align  : 'left', /* center|left|right */
+			size   : 16,
+			weigth : 'normal', /* bold|normal */
+			style  : 'normal', /* italic|normal */
+			family : 'arial,sans-serif', /* @fontFamily */
+			lineHeight : null,
+			overflow   : 'visible', /* hidden|visible */
+			padding : [0,0],
+			shadow : null
+		}, cfg);
+
+		this.save();
+		if (atom.typeOf(cfg.padding) == 'number') {
+			cfg.padding = [cfg.padding, cfg.padding];
+		}
+		var to = cfg.to ? Rectangle(cfg.to) : this.rectangle;
+		var lh = (cfg.lineHeight || (cfg.size * 1.15)).round();
+		this.set('font', '{style}{weight}{size}px {family}'
+			.substitute({
+				style  : cfg.style == 'italic' ? 'italic ' : '',
+				weight : cfg.weight == 'bold'  ? 'bold '   : '',
+				size   : cfg.size,
+				family : cfg.family
+			})
+		);
+		if (cfg.shadow) this.shadow = cfg.shadow;
+		if (cfg.color) this.set({ fillStyle: cfg.color });
+		if (cfg.overflow == 'hidden') this.clip(to);
+
+		var xGet = function (lineWidth) {
+			var al = cfg.align, pad = cfg.padding[1];
+			return Math.round(
+				al == 'left'  ? to.from.x + pad :
+				al == 'right' ? to.to.x - lineWidth - pad :
+					to.from.x + (to.width - lineWidth)/2
+			);
+		};
+		var lines = String(cfg.text).split('\n');
+
+		var measure = function (text) { return Number(this.measureText(text).width); }.bind(this);
+		if (cfg.wrap == 'no') {
+			lines.forEach(function (line, i) {
+				if (!line) return;
+
+				this.fillText(line, xGet(cfg.align == 'left' ? 0 : measure(line)), to.from.y + (i+1)*lh);
+			}.bind(this));
+		} else {
+			var lNum = 0;
+			lines.forEach(function (line) {
+				if (!line) {
+					lNum++;
+					return;
 				}
-			} else if (arguments.length > 1) {
-				p  = Array.from( arguments ).map(Point);
-				to = p.shift()
-			} else {
-				p  = Array.from( curve.points ).map(Point);
-				to = Point(curve.to);
-			}
 
-			l = p.length;
-
-			if (l == 2) {
-				this.original('bezierCurveTo', [
-					p[0].x, p[0].y, p[1].x, p[1].y, to.x, to.y
-				]);
-			} else if (l == 1) {
-				this.original('quadraticCurveTo', [
-					p[0].x, p[0].y, to.x, to.y
-				]);
-			} else {
-				this.original('lineTo', [to]);
-			}
-			return this;
-		},
-		/** @returns {Context2D} */
-		quadraticCurveTo : function () {
-			var a = arguments;
-			if (a.length == 4) {
-				return this.original('bezierCurveTo', arguments);
-			} else {
-				a = a.length == 2 ? a.associate(['p', 'to']) : a[0];
-				return this.curveTo({
-					to: a.to,
-					points: [a.p]
-				});
-			}
-		},
-		/** @returns {Context2D} */
-		bezierCurveTo : function () {
-			var a = arguments;
-			if (a.length == 6) {
-				return this.original('bezierCurveTo', arguments);
-			} else {
-				a = a.length == 3 ? {p1:a[0], p2:a[1], to:a[2]} : a[0];
-				return this.curveTo({
-					to: a.to,
-					points: [a.p1, a.p2]
-				});
-			}
-		},
-		/** @returns {boolean} */
-		isPointInPath : function (x, y) {
-			var point = Point(arguments);
-			return this.original('isPointInPath', [point.x, point.y], true);
-		},
-		/** @returns {Context2D} */
-		clip : function (shape) {
-			if (shape && typeof shape.processPath == 'function') {
-				shape.processPath(this);
-			}
-			return this.original('clip');
-		},
-
-		// transformation
-		/** @returns {Context2D} */
-		rotate : function (angle, pivot) {
-			if (angle) {
-				if (pivot) this.translate(pivot);
-				this.original('rotate', [angle]);
-				if (pivot) this.translate(pivot, true);
-			}
-			return this;
-		},
-		/** @returns {Context2D} */
-		translate : function (point, reverse) {
-			point = Point(
-				(arguments.length === 1 || typeof reverse === 'boolean')
-					? point : arguments
-			);
-			var multi = reverse === true ? -1 : 1;
-			this.original('translate', [point.x * multi, point.y * multi]);
-			return this;
-		},
-		/** @returns {Context2D} */
-		scale : function (power, pivot) {
-			if (typeof pivot == 'number') {
-				power = new Point(power, pivot);
-				pivot = null;
-			} else {
-				power = Point(power);
-			}
-			if (power.x != 1 || power.y != 1) {
-				if (pivot) this.translate(pivot);
-				this.original('scale', [power.x, power.y]);
-				if (pivot) this.translate(pivot, true);
-			}
-			return this;
-		},
-		/** @returns {Context2D} */
-		transform : function () {
-			// @todo Beauty arguments
-			return this.original('transform', arguments);
-		},
-		/** @returns {Context2D} */
-		setTransform : function () {
-			// @todo Beauty arguments
-			return this.original('setTransform', arguments);
-		},
-
-		// Rectangle
-		/** @returns {Context2D} */
-		fillRect : function (rectangle) {
-			return office.rect.call(this, 'fillRect', arguments);
-		},
-		/** @returns {Context2D} */
-		strokeRect : function (rectangle) {
-			return office.rect.call(this, 'strokeRect', arguments);
-		},
-		/** @returns {Context2D} */
-		clearRect : function (rectangle) {
-			return office.rect.call(this, 'clearRect', arguments);
-		},
-
-		// text
-		/** @returns {Context2D} */
-		fillText : function (text, x, y, maxWidth) {
-			var type = typeof x;
-			if (type != 'number' && type != 'string') {
-				maxWidth = y;
-				x = Point( x );
-				y = x.y;
-				x = x.x;
-			}
-			var args = [text, x, y];
-			if (maxWidth) args.push( maxWidth );
-			return this.original('fillText', args);
-		},
-		/** @returns {Context2D} */
-		strokeText : function (text, x, y, maxWidth) {
-			var type = typeof x;
-			if (type != 'number' && type != 'string') {
-				maxWidth = y;
-				x = Point( x );
-				y = x.y;
-				x = x.x;
-			}
-			var args = [text, x, y];
-			if (maxWidth) args.push( maxWidth );
-			return this.original('strokeText', args);
-		},
-		/** @returns {object} */
-		measureText : function (textToMeasure) {
-			return this.original('measureText', arguments, true);
-		},
-		/** @returns {Context2D} */
-		text : function (cfg) {
-			if (!this.ctx2d.fillText) return this;
-
-			cfg = atom.append({
-				text   : '',
-				color  : null, /* @color */
-				wrap   : 'normal', /* no|normal */
-				to     : null,
-				align  : 'left', /* center|left|right */
-				size   : 16,
-				weigth : 'normal', /* bold|normal */
-				style  : 'normal', /* italic|normal */
-				family : 'arial,sans-serif', /* @fontFamily */
-				lineHeight : null,
-				overflow   : 'visible', /* hidden|visible */
-				padding : [0,0],
-				shadow : null
-			}, cfg);
-
-			this.save();
-			if (atom.typeOf(cfg.padding) == 'number') {
-				cfg.padding = [cfg.padding, cfg.padding];
-			}
-			var to = cfg.to ? Rectangle(cfg.to) : this.rectangle;
-			var lh = (cfg.lineHeight || (cfg.size * 1.15)).round();
-			this.set('font', '{style}{weight}{size}px {family}'
-				.substitute({
-					style  : cfg.style == 'italic' ? 'italic ' : '',
-					weight : cfg.weight == 'bold'  ? 'bold '   : '',
-					size   : cfg.size,
-					family : cfg.family
-				})
-			);
-			if (cfg.shadow) this.shadow = cfg.shadow;
-			if (cfg.color) this.set({ fillStyle: cfg.color });
-			if (cfg.overflow == 'hidden') this.clip(to);
-
-			var xGet = function (lineWidth) {
-				var al = cfg.align, pad = cfg.padding[1];
-				return Math.round(
-					al == 'left'  ? to.from.x + pad :
-					al == 'right' ? to.to.x - lineWidth - pad :
-						to.from.x + (to.width - lineWidth)/2
-				);
-			};
-			var lines = String(cfg.text).split('\n');
-
-			var measure = function (text) { return Number(this.measureText(text).width); }.bind(this);
-			if (cfg.wrap == 'no') {
-				lines.forEach(function (line, i) {
-					if (!line) return;
-
-					this.fillText(line, xGet(cfg.align == 'left' ? 0 : measure(line)), to.from.y + (i+1)*lh);
-				}.bind(this));
-			} else {
-				var lNum = 0;
-				lines.forEach(function (line) {
-					if (!line) {
-						lNum++;
-						return;
-					}
-
-					var words = (line || ' ').match(/.+?(\s|$)/g);
-					if (!words) {
-						lNum++;
-						return;
-					}
-					var L  = '';
-					var Lw = 0;
-					for (var i = 0; i <= words.length; i++) {
-						var last = i == words.length;
-						if (!last) {
-							var text = words[i];
-							// @todo too slow. 2-4ms for 50words
-							var wordWidth = measure(text);
-							if (!Lw || Lw + wordWidth < to.width) {
-								Lw += wordWidth;
-								L  += text;
-								continue;
-							}
-						}
-						if (Lw) {
-							this.fillText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
-							if (last) {
-								L  = '';
-								Lw = 0;
-							} else {
-								L  = text;
-								Lw = wordWidth;
-							}
+				var words = (line || ' ').match(/.+?(\s|$)/g);
+				if (!words) {
+					lNum++;
+					return;
+				}
+				var L  = '';
+				var Lw = 0;
+				for (var i = 0; i <= words.length; i++) {
+					var last = i == words.length;
+					if (!last) {
+						var text = words[i];
+						// @todo too slow. 2-4ms for 50words
+						var wordWidth = measure(text);
+						if (!Lw || Lw + wordWidth < to.width) {
+							Lw += wordWidth;
+							L  += text;
+							continue;
 						}
 					}
 					if (Lw) {
 						this.fillText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
-						L  = '';
-						Lw = 0;
+						if (last) {
+							L  = '';
+							Lw = 0;
+						} else {
+							L  = text;
+							Lw = wordWidth;
+						}
 					}
-				}.bind(this));
+				}
+				if (Lw) {
+					this.fillText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
+					L  = '';
+					Lw = 0;
+				}
+			}.bind(this));
 
-			}
-			return this.restore();
-		},
+		}
+		return this.restore();
+	},
 
-		// image
-		/** @returns {Context2D} */
-		drawImage : function (a) {
-			if (arguments.length > 2) return this.original('drawImage', arguments);
-			if (arguments.length == 2) {
-				a = { image: a, draw: arguments[1] };
-			} else if (atom.typeOf(a) == 'element') {
-				return this.original('drawImage', [a, 0, 0]);
-			}
+	// image
+	/** @returns {Context2D} */
+	drawImage : function (a) {
+		if (arguments.length > 2) return this.original('drawImage', arguments);
+		if (arguments.length == 2) {
+			a = { image: a, draw: arguments[1] };
+		} else if (atom.typeOf(a) == 'element') {
+			return this.original('drawImage', [a, 0, 0]);
+		}
 
-			if (!a.image) throw new TypeError('No image');
-			var center, from = a.center || a.from;
+		if (!a.image) throw new TypeError('No image');
+		var center, from = a.center || a.from;
 
-			var scale = a.scale ? Point(a.scale) : null;
+		var scale = a.scale ? Point(a.scale) : null;
 
-			var transform = function (a, center) {
-				if (a.angle) this.rotate(a.angle, center);
-				if (scale  ) this.scale( scale, center );
-			}.bind(this);
+		var transform = function (a, center) {
+			if (a.angle) this.rotate(a.angle, center);
+			if (scale  ) this.scale( scale, center );
+		}.bind(this);
 
-			var needTransform = a.angle || (scale && (scale.x != 1 || scale.y != 1));
+		var needTransform = a.angle || (scale && (scale.x != 1 || scale.y != 1));
 
-			this.save();
-			if (from) {
-				from = Point(from);
-				if (a.center) from = {
-					x : from.x - a.image.width/2,
-					y : from.y - a.image.height/2
+		this.save();
+		if (from) {
+			from = Point(from);
+			if (a.center) from = {
+				x : from.x - a.image.width/2,
+				y : from.y - a.image.height/2
+			};
+			if (needTransform) {
+				center = a.center || {
+					x : from.x + a.image.width/2,
+					y : from.y + a.image.height/2
 				};
-				if (needTransform) {
-					center = a.center || {
-						x : from.x + a.image.width/2,
-						y : from.y + a.image.height/2
-					};
-					transform(a, center);
-				} else if (a.optimize) {
-					from = { x: from.x.round(), y: from.y.round() }
-				}
+				transform(a, center);
+			} else if (a.optimize) {
+				from = { x: from.x.round(), y: from.y.round() }
+			}
+			this.original('drawImage', [
+				a.image, from.x, from.y
+			]);
+		} else if (a.draw) {
+			var draw = Rectangle(a.draw);
+			if (needTransform) transform(a, draw.center);
+
+			if (a.crop) {
+				var crop = Rectangle(a.crop);
 				this.original('drawImage', [
-					a.image, from.x, from.y
+					a.image,
+					crop.from.x, crop.from.y, crop.width, crop.height,
+					draw.from.x, draw.from.y, draw.width, draw.height
 				]);
-			} else if (a.draw) {
-				var draw = Rectangle(a.draw);
-				if (needTransform) transform(a, draw.center);
-
-				if (a.crop) {
-					var crop = Rectangle(a.crop);
-					this.original('drawImage', [
-						a.image,
-						crop.from.x, crop.from.y, crop.width, crop.height,
-						draw.from.x, draw.from.y, draw.width, draw.height
-					]);
-				} else if (a.optimize) {
-					var size = draw.size, dSize = {
-						x: (size.width  - a.image.width ).abs(),
-						y: (size.height - a.image.height).abs()
-					};
-					from = { x: draw.from.x.round(), y: draw.from.y.round() };
-					if (dSize.x <= 1.1 && dSize.y <= 1.1 ) {
-						this.original('drawImage', [ a.image, from.x, from.y ]);
-					} else {
-						this.original('drawImage', [
-							a.image, from.x, from.y, size.width.round(), size.height.round()
-						]);
-					}
+			} else if (a.optimize) {
+				var size = draw.size, dSize = {
+					x: (size.width  - a.image.width ).abs(),
+					y: (size.height - a.image.height).abs()
+				};
+				from = { x: draw.from.x.round(), y: draw.from.y.round() };
+				if (dSize.x <= 1.1 && dSize.y <= 1.1 ) {
+					this.original('drawImage', [ a.image, from.x, from.y ]);
 				} else {
 					this.original('drawImage', [
-						a.image, draw.from.x, draw.from.y, draw.width, draw.height
+						a.image, from.x, from.y, size.width.round(), size.height.round()
 					]);
 				}
 			} else {
-				throw new TypeError('Wrong Args in Context.drawImage');
+				this.original('drawImage', [
+					a.image, draw.from.x, draw.from.y, draw.width, draw.height
+				]);
 			}
-			return this.restore();
-		},
+		} else {
+			throw new TypeError('Wrong Args in Context.drawImage');
+		}
+		return this.restore();
+	},
 
-		// image data
-		/** @returns {CanvasPixelArray} */
-		createImageData : function () {
-			var w, h;
+	// image data
+	/** @returns {CanvasPixelArray} */
+	createImageData : function () {
+		var w, h;
 
-			var args = Array.pickFrom(arguments);
-			switch (args.length) {
-				case 0:{
-					w = this.canvas.width;
-					h = this.canvas.height;
-				} break;
+		var args = Array.pickFrom(arguments);
+		switch (args.length) {
+			case 0:{
+				w = this.canvas.width;
+				h = this.canvas.height;
+			} break;
 
-				case 1: {
-					var obj = args[0];
-					if (atom.typeOf(obj) == 'object' && ('width' in obj) && ('height' in obj)) {
-						w = obj.width;
-						h = obj.height;
-					}
-					else {
-						throw new TypeError('Wrong argument in the Context.createImageData');
-					}
-				} break;
+			case 1: {
+				var obj = args[0];
+				if (atom.typeOf(obj) == 'object' && ('width' in obj) && ('height' in obj)) {
+					w = obj.width;
+					h = obj.height;
+				}
+				else {
+					throw new TypeError('Wrong argument in the Context.createImageData');
+				}
+			} break;
 
-				case 2: {
-					w = args[0];
-					h = args[1];
-				} break;
+			case 2: {
+				w = args[0];
+				h = args[1];
+			} break;
 
-				default: throw new TypeError('Wrong args number in the Context.createImageData');
-			}
+			default: throw new TypeError('Wrong args number in the Context.createImageData');
+		}
 
-			return this.original('createImageData', [w, h], true);
-		},
+		return this.original('createImageData', [w, h], true);
+	},
 
-		/** @returns {Context2D} */
-		putImageData : function () {
-			var a = arguments, put = {}, args, rect;
+	/** @returns {Context2D} */
+	putImageData : function () {
+		var a = arguments, put = {}, args, rect;
 
-			switch (a.length) {
-				case 1: {
-					if (!typeof a == 'object') {
-						throw new TypeError('Wrong argument in the Context.putImageData');
-					}
+		switch (a.length) {
+			case 1: {
+				if (!typeof a == 'object') {
+					throw new TypeError('Wrong argument in the Context.putImageData');
+				}
 
-					a = a[0];
-					put.image = a.image;
-					put.from = Point(a.from);
+				a = a[0];
+				put.image = a.image;
+				put.from = Point(a.from);
 
-					if (a.crop) put.crop = Rectangle(a.crop);
-				} break;
+				if (a.crop) put.crop = Rectangle(a.crop);
+			} break;
 
-				case 3: {
-					put.image = a[0];
-					put.from = Point([a[1], a[2]]);
-				} break;
+			case 3: {
+				put.image = a[0];
+				put.from = Point([a[1], a[2]]);
+			} break;
 
-				case 7: {
-					put.image = a[0];
-					put.from = new Point(a[1], a[2]);
-					put.crop = new Rectangle(a[3], a[4], a[5], a[6]);
-				} break;
+			case 7: {
+				put.image = a[0];
+				put.from = new Point(a[1], a[2]);
+				put.crop = new Rectangle(a[3], a[4], a[5], a[6]);
+			} break;
 
-				default : throw new TypeError('Wrong args number in the Context.putImageData');
-			}
+			default : throw new TypeError('Wrong args number in the Context.putImageData');
+		}
 
-			args = [put.image, put.from.x, put.from.y];
+		args = [put.image, put.from.x, put.from.y];
 
-			if (put.crop) {
-				rect = put.crop;
-				args.append([rect.from.x, rect.from.y, rect.width, rect.height])
-			}
+		if (put.crop) {
+			rect = put.crop;
+			args.append([rect.from.x, rect.from.y, rect.width, rect.height])
+		}
 
-			return this.original('putImageData', args);
-		},
-		/** @returns {CanvasPixelArray} */
-		getImageData : function (rectangle) {
-			var rect = office.makeRect.call(this, arguments);
+		return this.original('putImageData', args);
+	},
+	/** @returns {CanvasPixelArray} */
+	getImageData : function (rectangle) {
+		var rect = office.makeRect.call(this, arguments);
 
-			return this.original('getImageData', [rect.from.x, rect.from.y, rect.width, rect.height], true);
-		},
-		getPixels : function (rectangle) {
-			var rect = Rectangle(arguments),
-				data = this.getImageData(rect).data,
-				result = [],
+		return this.original('getImageData', [rect.from.x, rect.from.y, rect.width, rect.height], true);
+	},
+	getPixels : function (rectangle) {
+		var rect = Rectangle(arguments),
+			data = this.getImageData(rect).data,
+			result = [],
+			line = [];
+		for (var i = 0, L = data.length; i < L; i+=4)  {
+			line.push({
+				r : data[i],
+				g : data[i+1],
+				b : data[i+2],
+				a : data[i+3] / 255
+			});
+			if (line.length == rect.width) {
+				result.push(line);
 				line = [];
-			for (var i = 0, L = data.length; i < L; i+=4)  {
-				line.push({
-					r : data[i],
-					g : data[i+1],
-					b : data[i+2],
-					a : data[i+3] / 255
-				});
-				if (line.length == rect.width) {
-					result.push(line);
-					line = [];
-				}
 			}
-			return result;
-		},
-		
-		getPixel: function (point) {
-			var
-				rect = new Rectangle(Point( arguments ), size1),
-				data = slice.call(this.getImageData(rect).data);
-			data[3] /= 255;
+		}
+		return result;
+	},
 
-			return new atom.Color(data);
-		},
+	getPixel: function (point) {
+		var
+			rect = new Rectangle(Point( arguments ), size1),
+			data = slice.call(this.getImageData(rect).data);
+		data[3] /= 255;
+
+		return new atom.Color(data);
+	},
 
 
-		/** @returns {CanvasGradient} */
-		createGradient: function (from, to, colors) {
-			var gradient;
-			if ( from instanceof Rectangle ) {
-				colors   = to;
-				gradient = this.createLinearGradient( from );
-			} else if (from instanceof Circle) {
-				gradient = this.createRadialGradient( from, to );
-			} else if (from instanceof Point) {
-				gradient = this.createLinearGradient( from, to, colors );
+	/** @returns {CanvasGradient} */
+	createGradient: function (from, to, colors) {
+		var gradient;
+		if ( from instanceof Rectangle ) {
+			colors   = to;
+			gradient = this.createLinearGradient( from );
+		} else if (from instanceof Circle) {
+			gradient = this.createRadialGradient( from, to );
+		} else if (from instanceof Point) {
+			gradient = this.createLinearGradient( from, to, colors );
+		} else {
+			throw new Error('Unknown arguments');
+		}
+		if (typeof colors == 'object') gradient.addColorStop( colors );
+		return gradient;
+	},
+	/** @returns {CanvasGradient} */
+	createRectangleGradient: function (rectangle, colors) {
+		rectangle = Rectangle( rectangle );
+
+		var from = rectangle.from, line = new Line( rectangle.bottomLeft, rectangle.topRight );
+
+		return this.createGradient( from, line.perpendicular(from).scale(2, from), colors );
+	},
+	/** @returns {CanvasGradient} */
+	createLinearGradient : function (from, to) {
+		var a = arguments;
+		if (a.length != 4) {
+			if (a.length == 2) {
+				to   = Point(to);
+				from = Point(from);
+			} else if (a.length == 1) {
+				// wee
+				to   = Point(a[0].to);
+				from = Point(a[0].from);
+			}
+			a = [from.x, from.y, to.x, to.y];
+		}
+		return fixGradient( this.original('createLinearGradient', a, true) );
+	},
+	/** @returns {CanvasGradient} */
+	createRadialGradient: function () {
+		var points, c1, c2, a = arguments;
+		if (a.length == 1 || a.length == 2) {
+			if (a.length == 2) {
+				c1 = Circle( a[0] );
+				c2 = Circle( a[1] );
 			} else {
-				throw new Error('Unknown arguments');
+				c1 = Circle( a.start );
+				c2 = Circle( a.end   );
 			}
-			if (typeof colors == 'object') gradient.addColorStop( colors );
-			return gradient;
-		},
-		/** @returns {CanvasGradient} */
-		createRectangleGradient: function (rectangle, colors) {
-			rectangle = Rectangle( rectangle );
+			points = [c1.center.x, c1.center.y, c1.radius, c2.center.x, c2.center.y, c2.radius];
+		} else if (a.length == 6) {
+			points = a;
+		} else {
+			throw new TypeError('Wrong args number in the Context.createRadialGradient');
+		}
 
-			var from = rectangle.from, line = new Line( rectangle.bottomLeft, rectangle.topRight );
+		return fixGradient( this.original('createRadialGradient', points, true) );
+	},
 
-			return this.createGradient( from, line.perpendicular(from).scale(2, from), colors );
-		},
-		/** @returns {CanvasGradient} */
-		createLinearGradient : function (from, to) {
-			var a = arguments;
-			if (a.length != 4) {
-				if (a.length == 2) {
-					to   = Point(to);
-					from = Point(from);
-				} else if (a.length == 1) {
-					// wee
-					to   = Point(a[0].to);
-					from = Point(a[0].from);
-				}
-				a = [from.x, from.y, to.x, to.y];
-			}
-			return fixGradient( this.original('createLinearGradient', a, true) );
-		},
-		/** @returns {CanvasGradient} */
-		createRadialGradient: function () {
-			var points, c1, c2, a = arguments;
-			if (a.length == 1 || a.length == 2) {
-				if (a.length == 2) {
-					c1 = Circle( a[0] );
-					c2 = Circle( a[1] );
-				} else {
-					c1 = Circle( a.start );
-					c2 = Circle( a.end   );
-				}
-				points = [c1.center.x, c1.center.y, c1.radius, c2.center.x, c2.center.y, c2.radius];
-			} else if (a.length == 6) {
-				points = a;
-			} else {
-				throw new TypeError('Wrong args number in the Context.createRadialGradient');
-			}
+	/** @returns {CanvasPattern} */
+	createPattern : function () {
+		return this.original('createPattern', arguments, true);
+	},
 
-			return fixGradient( this.original('createRadialGradient', points, true) );
-		},
-
-		/** @returns {CanvasPattern} */
-		createPattern : function () {
-			return this.original('createPattern', arguments, true);
-		},
-		/** @returns {CanvasGradient} */
-		drawWindow : function () {
-			return this.original('drawWindow', arguments);
-		},
-		/** @returns {string} */
-		toString: Function.lambda('[object LibCanvas.Context2D]')
-		// Such moz* methods wasn't duplicated:
-		// mozTextStyle, mozDrawText, mozMeasureText, mozPathText, mozTextAlongPath
+	drawWindow : function () {
+		return this.original('drawWindow', arguments);
 	}
-});
+
+}).own(constants);
 
 
 [ 'fillStyle','font','globalAlpha','globalCompositeOperation','lineCap',
@@ -3277,7 +3225,7 @@ provides: Mouse
 */
 
 /** @class Mouse */
-LibCanvas.declare( 'LibCanvas.Mouse', 'Mouse', {
+var Mouse = LibCanvas.declare( 'LibCanvas.Mouse', 'Mouse', {
 	/** @private */
 	elem: null,
 
@@ -3451,126 +3399,116 @@ provides: Point3D
 ...
 */
 
-/**
- * @class
- * @name Point3D
- * @name LibCanvas.Point3D
- */
-var Point3D = LibCanvas.declare( 'LibCanvas.Point3D', 'Point3D',
-/** @lends Point3D# */
-{
-	parent: Geometry,
+/** @class Point3D */
+var Point3D = LibCanvas.declare( 'LibCanvas.Point3D', 'Point3D', Geometry, {
+	x: 0,
+	y: 0,
+	z: 0,
 
-	prototype: {
-		x: 0,
-		y: 0,
-		z: 0,
+	/** @private */
+	coordinatesArray: ['x', 'y', 'z'],
 
-		/** @private */
-		coordinatesArray: ['x', 'y', 'z'],
-
-		/**
-		 * @constructs
-		 * @param {Number} x
-		 * @param {Number} y
-		 * @param {Number} z
-		 * @returns {Point3D}
-		 */
-		set: function (x, y, z) {
-			if ( arguments.length > 1 ) {
-				this.x = Number(x) || 0;
-				this.y = Number(y) || 0;
-				this.z = Number(z) || 0;
-			} else if ( x && typeof x.x  === 'number' ) {
-				this.set( x.x, x.y, x.z );
-			} else if ( x && typeof x[0] === 'number' ) {
-				this.set( x[0], x[1], x[2] );
-			} else {
-				throw new Error( 'Wrong arguments in Isometric.Point3D' );
-			}
-			return this;
-		},
-
-		/**
-		 * You can pass callback (function( value, axis, point ){})
-		 * @param {function} fn
-		 * @param {object} context
-		 * @returns {Point3D}
-		 */
-		map: function (fn, context) {
-			var point = this;
-			point.coordinatesArray.forEach(function (axis) {
-				point[axis] = fn.call( context || point, point[axis], axis, point );
-			});
-			return this;
-		},
-
-		/**
-		 * @param {Number} factor
-		 * @returns {Point3D}
-		 */
-		add: function (factor) {
-			return this.map(function (c) { return c+factor });
-		},
-
-		/**
-		 * @param {Number} factor
-		 * @returns {Point3D}
-		 */
-		mul: function (factor) {
-			return this.map(function (c) { return c*factor });
-		},
-
-		/**
-		 * @param {Point3D} point3d
-		 * @returns {Point3D}
-		 */
-		diff: function (point3d) {
-			point3d = this.cast( point3d );
-			return new this.constructor(
-				point3d.x - this.x,
-				point3d.y - this.y,
-				point3d.z - this.z
-			);
-		},
-
-		/**
-		 * @param {Point3D} point3d
-		 * @returns {Point3D}
-		 */
-		move: function (point3d) {
-			point3d = this.cast( arguments );
-			this.x += point3d.x;
-			this.y += point3d.y;
-			this.z += point3d.z;
-			return this;
-		},
-
-		/**
-		 * @param {Point3D} point3d
-		 * @param {Number} accuracy
-		 * @returns {boolean}
-		 */
-		equals: function (point3d, accuracy) {
-			return point3d.x.equals( this.x, accuracy ) &&
-			       point3d.y.equals( this.y, accuracy ) &&
-			       point3d.z.equals( this.z, accuracy );
-		},
-
-		/** @returns {Point3D} */
-		clone: function () {
-			return new this.constructor( this );
-		},
-
-		/** @returns Array */
-		toArray: function () {
-			return [this.x, this.y, this.z];
-		},
-
-		/** @returns String */
-		dump: function () {
-			return '[LibCanvas.Point3D(' + this.toArray() + ')]';
+	/**
+	 * @constructs
+	 * @param {Number} x
+	 * @param {Number} y
+	 * @param {Number} z
+	 * @returns {Point3D}
+	 */
+	set: function (x, y, z) {
+		if ( arguments.length > 1 ) {
+			this.x = Number(x) || 0;
+			this.y = Number(y) || 0;
+			this.z = Number(z) || 0;
+		} else if ( x && typeof x.x  === 'number' ) {
+			this.set( x.x, x.y, x.z );
+		} else if ( x && typeof x[0] === 'number' ) {
+			this.set( x[0], x[1], x[2] );
+		} else {
+			throw new Error( 'Wrong arguments in Isometric.Point3D' );
 		}
+		return this;
+	},
+
+	/**
+	 * You can pass callback (function( value, axis, point ){})
+	 * @param {function} fn
+	 * @param {object} context
+	 * @returns {Point3D}
+	 */
+	map: function (fn, context) {
+		var point = this;
+		point.coordinatesArray.forEach(function (axis) {
+			point[axis] = fn.call( context || point, point[axis], axis, point );
+		});
+		return this;
+	},
+
+	/**
+	 * @param {Number} factor
+	 * @returns {Point3D}
+	 */
+	add: function (factor) {
+		return this.map(function (c) { return c+factor });
+	},
+
+	/**
+	 * @param {Number} factor
+	 * @returns {Point3D}
+	 */
+	mul: function (factor) {
+		return this.map(function (c) { return c*factor });
+	},
+
+	/**
+	 * @param {Point3D} point3d
+	 * @returns {Point3D}
+	 */
+	diff: function (point3d) {
+		point3d = this.cast( point3d );
+		return new this.constructor(
+			point3d.x - this.x,
+			point3d.y - this.y,
+			point3d.z - this.z
+		);
+	},
+
+	/**
+	 * @param {Point3D} point3d
+	 * @returns {Point3D}
+	 */
+	move: function (point3d) {
+		point3d = this.cast( arguments );
+		this.x += point3d.x;
+		this.y += point3d.y;
+		this.z += point3d.z;
+		return this;
+	},
+
+	/**
+	 * @param {Point3D} point3d
+	 * @param {Number} accuracy
+	 * @returns {boolean}
+	 */
+	equals: function (point3d, accuracy) {
+		return point3d.x.equals( this.x, accuracy ) &&
+		       point3d.y.equals( this.y, accuracy ) &&
+		       point3d.z.equals( this.z, accuracy );
+	},
+
+	/** @returns {Point3D} */
+	clone: function () {
+		return new this.constructor( this );
+	},
+
+	/** @returns Array */
+	toArray: function () {
+		return [this.x, this.y, this.z];
+	},
+
+	/** @returns String */
+	dump: function () {
+		return '[LibCanvas.Point3D(' + this.toArray() + ')]';
 	}
 });
 
@@ -3596,11 +3534,7 @@ provides: Engines.HexProjection
 ...
 */
 
-/**
- * @class
- * @name HexProjection
- * @name LibCanvas.Engines.HexProjection
- */
+/** @class HexProjection */
 LibCanvas.declare( 'LibCanvas.Engines.HexProjection', 'HexProjection', {
 	/**
 	 * @param {object} settings
@@ -3819,11 +3753,7 @@ provides: Engines.IsometricProjection
 ...
 */
 
-/**
- * @class
- * @name IsometricProjection
- * @name LibCanvas.Engines.IsometricProjection
- */
+/** @class IsometricProjection */
 LibCanvas.declare( 'LibCanvas.Engines.IsometricProjection', 'IsometricProjection', {
 
 	/**
@@ -3920,245 +3850,222 @@ LibCanvas.declare( 'LibCanvas.Engines.IsometricProjection', 'IsometricProjection
  ...
  */
 
-(function () {
-	var Animation;
+/** @class Animation */
+var Animation = LibCanvas.declare( 'LibCanvas.Plugins.Animation', 'Animation', {
+	currentName : null,
+	ownStartTime: null,
+	timeoutId   : 0,
+	synchronizedWith: null,
 
-	/**
-	 * @class
-	 * @name Animation
-	 * @name LibCanvas.Plugins.Animation
-	 */
-	Animation = LibCanvas.declare( 'LibCanvas.Plugins.Animation', 'Animation', {
-		currentName : null,
-		ownStartTime: null,
-		timeoutId   : 0,
-		synchronizedWith: null,
+	initialize: function (settings) {
+		this.bindMethods('update');
 
-		initialize: function (settings) {
-			this.bindMethods('update');
+		this.events = new atom.Events(this);
+		this.settings = new atom.Settings(settings).addEvents(this.events);
+		this.run();
+	},
 
-			this.events = new atom.Events(this);
-			this.settings = new atom.Settings(settings).addEvents(this.events);
-			this.run();
-		},
+	get sheet () {
+		return this.settings.get('sheet');
+	},
 
-		get sheet () {
-			return this.settings.get('sheet');
-		},
+	set sheet (sheet) {
+		return this.settings.set('sheet', sheet);
+	},
 
-		set sheet (sheet) {
-			return this.settings.set('sheet', sheet);
-		},
+	set startTime (time) {
+		this.ownStartTime = time;
+	},
 
-		set startTime (time) {
-			this.ownStartTime = time;
-		},
-
-		get startTime () {
-			if (this.synchronizedWith) {
-				return this.synchronizedWith.startTime;
-			} else {
-				return this.ownStartTime;
-			}
-		},
-
-		stop: function () {
-			this.startTime = null;
-			return this.update();
-		},
-
-		run: function () {
-			this.startTime = Date.now();
-			return this.update();
-		},
-
-		synchronize: function (anim) {
-			this.synchronizedWith = anim;
-			return this;
-		},
-
-		get: function () {
-			return this.sheet.get(this.startTime);
-		},
-
-		/** @private */
-		update: function () {
-			var delay = this.getDelay();
-
-			clearTimeout(this.timeoutId);
-
-			if (delay == null) {
-				this.events.fire('stop');
-			} else {
-				this.events.fire('update', [ this.get() ]);
-				this.timeoutId = setTimeout( this.update, delay );
-			}
-			return this;
-		},
-
-		/** @private */
-		getDelay: function () {
-			return this.startTime == null ? null :
-				this.sheet.getCurrentDelay(this.startTime);
+	get startTime () {
+		if (this.synchronizedWith) {
+			return this.synchronizedWith.startTime;
+		} else {
+			return this.ownStartTime;
 		}
-	});
+	},
 
-	/**
-	 * @class
-	 * @name Animation.Frames
-	 * @name LibCanvas.Plugins.Animation.Frames
-	 */
-	atom.declare( 'LibCanvas.Plugins.Animation.Frames', {
-		initialize: function (image, width, height) {
-			if (image  == null) throw new TypeError('`image` cant be null');
+	stop: function () {
+		this.startTime = null;
+		return this.update();
+	},
 
-			this.sprites = [];
-			this.image   = image;
-			this.size    = new Size(
-				width  == null ? image.width  : width ,
-				height == null ? image.height : height
-			);
+	run: function () {
+		this.startTime = Date.now();
+		return this.update();
+	},
 
-			this.prepare();
-		},
+	synchronize: function (anim) {
+		this.synchronizedWith = anim;
+		return this;
+	},
 
-		get length () {
-			return this.sprites.length;
-		},
+	get: function () {
+		return this.sheet.get(this.startTime);
+	},
 
-		/** @private */
-		prepare: function () {
-			var x, y,
-				im = this.image,
-				w  = this.size.width,
-				h  = this.size.height;
+	/** @private */
+	update: function () {
+		var delay = this.getDelay();
 
-			for     (x = 0; x <= im.width  - w; x += w) {
-				for (y = 0; y <= im.height - h; y += h) {
-					this.sprites.push( im.sprite(x, y, w, h) );
-				}
-			}
+		clearTimeout(this.timeoutId);
 
-			if (!this.sprites.length) {
-				throw new TypeError('Animation is empty');
-			}
-		},
-
-		get: function (id) {
-			var sprite = this.sprites[id];
-
-			if (!sprite) {
-				throw new Error('No sprite with such id: ' + id);
-			}
-
-			return sprite;
+		if (delay == null) {
+			this.events.fire('stop');
+		} else {
+			this.events.fire('update', [ this.get() ]);
+			this.timeoutId = setTimeout( this.update, delay );
 		}
-	});
+		return this;
+	},
 
-	/**
-	 * @class
-	 * @name Animation.Sheet
-	 * @name LibCanvas.Plugins.Animation.Sheet
-	 */
-	atom.declare( 'LibCanvas.Plugins.Animation.Sheet', {
+	/** @private */
+	getDelay: function () {
+		return this.startTime == null ? null :
+			this.sheet.getCurrentDelay(this.startTime);
+	}
+});
 
-		initialize: function (options) {
-			this.frames   = options.frames;
-			this.delay    = options.delay;
-			this.looped   = options.looped;
-			if (options.sequence == null) {
-				this.sequence = atom.array.range(0, this.frames.length - 1);
-			} else {
-				this.sequence = options.sequence;
+/** @class Animation.Frames */
+atom.declare( 'LibCanvas.Plugins.Animation.Frames', {
+	initialize: function (image, width, height) {
+		if (image  == null) throw new TypeError('`image` cant be null');
+
+		this.sprites = [];
+		this.image   = image;
+		this.size    = new Size(
+			width  == null ? image.width  : width ,
+			height == null ? image.height : height
+		);
+
+		this.prepare();
+	},
+
+	get length () {
+		return this.sprites.length;
+	},
+
+	/** @private */
+	prepare: function () {
+		var x, y,
+			im = this.image,
+			w  = this.size.width,
+			h  = this.size.height;
+
+		for     (x = 0; x <= im.width  - w; x += w) {
+			for (y = 0; y <= im.height - h; y += h) {
+				this.sprites.push( im.sprite(x, y, w, h) );
 			}
-		},
-
-		get size () {
-			return this.frames.size;
-		},
-
-		get: function (startTime) {
-			if (startTime == null) return startTime;
-
-			var id = this.getFrameId(this.countFrames(startTime));
-			return id == null ? id : this.frames.get( id );
-		},
-
-		getCurrentDelay: function (startTime) {
-			var frames, switchTime;
-
-			frames = this.countFrames(startTime);
-
-			if (this.getFrameId(frames) == null) {
-				return null;
-			}
-
-			// когда был включён текущий кадр
-			switchTime = frames * this.delay + startTime;
-
-			// до следующего кадра - задержка минус время, которое показывается текущий
-			return this.delay - ( Date.now() - switchTime );
-		},
-
-		/** @private */
-		getFrameId: function (framesCount) {
-			if (this.looped) {
-				return this.sequence[ framesCount % this.sequence.length ];
-			} else if (framesCount >= this.sequence.length) {
-				return null;
-			} else {
-				return this.sequence[framesCount];
-			}
-		},
-
-		/** @private */
-		countFrames: function (startTime) {
-			return Math.floor( (Date.now() - startTime) / this.delay );
 		}
 
-	});
-
-	/**
-	 * @class
-	 * @name Animation.Image
-	 * @name LibCanvas.Plugins.Animation.Image
-	 */
-	atom.declare( 'LibCanvas.Plugins.Animation.Image', {
-
-		own: {
-			element: function (animation) {
-				return new this(animation).element;
-			}
-		},
-
-		prototype: {
-			initialize: function (animation) {
-				this.bindMethods('update');
-
-				if (animation instanceof Animation.Sheet) {
-					animation = { sheet: animation };
-				}
-				if (!(animation instanceof Animation)) {
-					animation = new Animation(animation);
-				}
-
-				this.buffer    = LibCanvas.buffer(animation.sheet.size, true);
-				this.element   = atom.dom(this.buffer);
-				this.animation = animation;
-				this.element.controller = this;
-
-				animation.events.add( 'update', this.update );
-			},
-
-			update: function (image) {
-				this.buffer.ctx.clearAll();
-				if (image) this.buffer.ctx.drawImage(image);
-			}
+		if (!this.sprites.length) {
+			throw new TypeError('Animation is empty');
 		}
-	});
+	},
 
-})();
+	get: function (id) {
+		var sprite = this.sprites[id];
 
+		if (!sprite) {
+			throw new Error('No sprite with such id: ' + id);
+		}
+
+		return sprite;
+	}
+});
+
+/** @class Animation.Sheet */
+atom.declare( 'LibCanvas.Plugins.Animation.Sheet', {
+
+	initialize: function (options) {
+		this.frames   = options.frames;
+		this.delay    = options.delay;
+		this.looped   = options.looped;
+		if (options.sequence == null) {
+			this.sequence = atom.array.range(0, this.frames.length - 1);
+		} else {
+			this.sequence = options.sequence;
+		}
+	},
+
+	get size () {
+		return this.frames.size;
+	},
+
+	get: function (startTime) {
+		if (startTime == null) return startTime;
+
+		var id = this.getFrameId(this.countFrames(startTime));
+		return id == null ? id : this.frames.get( id );
+	},
+
+	getCurrentDelay: function (startTime) {
+		var frames, switchTime;
+
+		frames = this.countFrames(startTime);
+
+		if (this.getFrameId(frames) == null) {
+			return null;
+		}
+
+		// когда был включён текущий кадр
+		switchTime = frames * this.delay + startTime;
+
+		// до следующего кадра - задержка минус время, которое показывается текущий
+		return this.delay - ( Date.now() - switchTime );
+	},
+
+	/** @private */
+	getFrameId: function (framesCount) {
+		if (this.looped) {
+			return this.sequence[ framesCount % this.sequence.length ];
+		} else if (framesCount >= this.sequence.length) {
+			return null;
+		} else {
+			return this.sequence[framesCount];
+		}
+	},
+
+	/** @private */
+	countFrames: function (startTime) {
+		return Math.floor( (Date.now() - startTime) / this.delay );
+	}
+
+});
+
+/**
+ * @class
+ * @name Animation.Image
+ * @name LibCanvas.Plugins.Animation.Image
+ */
+atom.declare( 'LibCanvas.Plugins.Animation.Image', {
+	initialize: function (animation) {
+		this.bindMethods('update');
+
+		if (animation instanceof Animation.Sheet) {
+			animation = { sheet: animation };
+		}
+		if (!(animation instanceof Animation)) {
+			animation = new Animation(animation);
+		}
+
+		this.buffer    = LibCanvas.buffer(animation.sheet.size, true);
+		this.element   = atom.dom(this.buffer);
+		this.animation = animation;
+		this.element.controller = this;
+
+		animation.events.add( 'update', this.update );
+	},
+
+	update: function (image) {
+		this.buffer.ctx.clearAll();
+		if (image) this.buffer.ctx.drawImage(image);
+	}
+}).own({
+	element: function (animation) {
+		return new this(animation).element;
+	}
+});
 
 /*
 ---
@@ -4367,14 +4274,9 @@ Context2D.prototype.drawCurve = function (obj) {
  ...
  */
 
-/**
- * @class
- * @name ImageBuilder
- * @name LibCanvas.Plugins.ImageBuilder
- */
+/** @class ImageBuilder */
 var ImageBuilder = LibCanvas.declare(
-	'LibCanvas.Plugins.ImageBuilder', 'ImageBuilder',
-	{
+	'LibCanvas.Plugins.ImageBuilder', 'ImageBuilder', {
 		ctx     : null,
 		shape   : null,
 		images  : [
@@ -4506,103 +4408,89 @@ var ImageBuilder = LibCanvas.declare(
 	}
 );
 
-/**
- * @class
- * @name ImageBuilder.Horisontal
- * @name LibCanvas.Plugins.ImageBuilder.Horisontal
- */
-atom.declare( 'LibCanvas.Plugins.ImageBuilder.Horisontal', {
-	parent: ImageBuilder,
-	prototype: {
-		images: [ 0, 1, 2 ],
-		/** @private */
-		countBasis: function (basis) {
-			var images = this.images, size = this.shape.size;
+/** @class ImageBuilder.Horisontal */
+atom.declare( 'LibCanvas.Plugins.ImageBuilder.Horisontal', ImageBuilder, {
+	images: [ 0, 1, 2 ],
+	/** @private */
+	countBasis: function (basis) {
+		var images = this.images, size = this.shape.size;
 
-			switch (basis) {
-				case 'left'  : return images[0].width;
-				case 'right' : return size.width  - images[2].width;
-				case 'top'   : return 0;
-				case 'bottom': return size.height;
-				default: throw new TypeError('Wrong basis: ' + basis);
-			}
-		},
-		/** @private */
-		renderParts: function () {
-			var images = this.images;
-			this
-				.renderRepeated( images[1], 'center', 'middle' )
-				.renderSingle  ( images[0], 'left'  , 'middle' )
-				.renderSingle  ( images[2], 'right' , 'middle' );
-		},
-		/** @private */
-		cropImage: function (data) {
-			var w, x, width,
-				images  = [],
-				widths  = data.widths;
-
-			for (x = 0, w = 0; w < widths.length; w++) {
-				width = widths[w];
-
-				images.push(this.createCroppedImage( data.source,
-					new Rectangle(x,0,width,data.source.height)
-				));
-
-				x += width;
-			}
-
-			this.images = images;
+		switch (basis) {
+			case 'left'  : return images[0].width;
+			case 'right' : return size.width  - images[2].width;
+			case 'top'   : return 0;
+			case 'bottom': return size.height;
+			default: throw new TypeError('Wrong basis: ' + basis);
 		}
+	},
+	/** @private */
+	renderParts: function () {
+		var images = this.images;
+		this
+			.renderRepeated( images[1], 'center', 'middle' )
+			.renderSingle  ( images[0], 'left'  , 'middle' )
+			.renderSingle  ( images[2], 'right' , 'middle' );
+	},
+	/** @private */
+	cropImage: function (data) {
+		var w, x, width,
+			images  = [],
+			widths  = data.widths;
+
+		for (x = 0, w = 0; w < widths.length; w++) {
+			width = widths[w];
+
+			images.push(this.createCroppedImage( data.source,
+				new Rectangle(x,0,width,data.source.height)
+			));
+
+			x += width;
+		}
+
+		this.images = images;
 	}
 });
 
-/**
- * @class
- * @name ImageBuilder.Vertical
- * @name LibCanvas.Plugins.ImageBuilder.Vertical
- */
-atom.declare( 'LibCanvas.Plugins.ImageBuilder.Vertical', {
-	parent: ImageBuilder,
-	prototype: {
-		images: [ 0, 1, 2 ],
-		/** @private */
-		countBasis: function (basis) {
-			var images = this.images, size = this.shape.size;
+/** @class ImageBuilder.Vertical */
+atom.declare( 'LibCanvas.Plugins.ImageBuilder.Vertical', ImageBuilder, {
+	images: [ 0, 1, 2 ],
+	/** @private */
+	countBasis: function (basis) {
+		var images = this.images, size = this.shape.size;
 
-			switch (basis) {
-				case 'left'  : return 0;
-				case 'right' : return size.width;
-				case 'top'   : return images[0].height;
-				case 'bottom': return size.height - images[2].height;
-				default: throw new TypeError('Wrong basis: ' + basis);
-			}
-		},
-		/** @private */
-		renderParts: function () {
-			var images = this.images;
-			this
-				.renderRepeated( images[1], 'center', 'middle' )
-				.renderSingle  ( images[0], 'center', 'top'    )
-				.renderSingle  ( images[2], 'center', 'bottom' );
-		},
-		/** @private */
-		cropImage: function (data) {
-			var h, y, height,
-				images  = [],
-				heights = data.heights;
-
-			for (y = 0, h = 0; h < heights.length; h++) {
-				height = heights[h];
-
-				images.push(this.createCroppedImage( data.source,
-					new Rectangle(0,y,data.source.width,height)
-				));
-
-				y += height;
-			}
-
-			this.images = images;
+		switch (basis) {
+			case 'left'  : return 0;
+			case 'right' : return size.width;
+			case 'top'   : return images[0].height;
+			case 'bottom': return size.height - images[2].height;
+			default: throw new TypeError('Wrong basis: ' + basis);
 		}
+	},
+	/** @private */
+	renderParts: function () {
+		var images = this.images;
+		this
+			.renderRepeated( images[1], 'center', 'middle' )
+			.renderSingle  ( images[0], 'center', 'top'    )
+			.renderSingle  ( images[2], 'center', 'bottom' );
+	},
+	/** @private */
+	cropImage: function (data) {
+		var h, y, height,
+			images  = [],
+			heights = data.heights;
+
+		for (y = 0, h = 0; h < heights.length; h++) {
+			height = heights[h];
+
+			images.push(this.createCroppedImage( data.source,
+				new Rectangle(0,y,data.source.width,height)
+			));
+
+			y += height;
+		}
+
+		this.images = images;
 	}
 });
 
@@ -5024,524 +4912,494 @@ return ProjectiveTexture;
  ...
  */
 
-(function () {
-	var SpriteFont;
+/** @class SpriteFont */
+var SpriteFont = LibCanvas.declare(
+	'LibCanvas.Plugins.SpriteFont', 'SpriteFont',
+	{
+		initialize: function (symbols) {
+			if (typeof symbols == 'string') {
+				symbols = symbols.split('');
+			}
+			this.symbols = symbols;
+			this.normal  = {};
+			this.bold    = {};
+		},
 
-	/**
-	 * @class
-	 * @name SpriteFont
-	 * @name LibCanvas.Plugins.SpriteFont
-	 */
-	SpriteFont = LibCanvas.declare(
-		'LibCanvas.Plugins.SpriteFont', 'SpriteFont',
-		{
-			initialize: function (symbols) {
-				if (typeof symbols == 'string') {
-					symbols = symbols.split('');
-				}
-				this.symbols = symbols;
-				this.normal  = {};
-				this.bold    = {};
-			},
+		make: function (sheet) {
+			sheet = new SpriteFont.Sheet(this, sheet);
 
-			make: function (sheet) {
-				sheet = new SpriteFont.Sheet(this, sheet);
+			var target = sheet.bold ? this.bold : this.normal;
 
-				var target = sheet.bold ? this.bold : this.normal;
+			if (target[sheet.size]) {
+				throw new TypeError('Size already exists');
+			}
 
-				if (target[sheet.size]) {
-					throw new TypeError('Size already exists');
-				}
+			target[sheet.size] = sheet;
 
-				target[sheet.size] = sheet;
+			return sheet;
+		},
 
-				return sheet;
-			},
-
-			get: function (symbol, data) {
-				var font = ( data.bold ? this.bold : this.normal )[ data.size ];
-				if (font) {
-					return font.get(symbol, data.color);
-				} else {
-					throw new Error('No such sheet in font');
-				}
+		get: function (symbol, data) {
+			var font = ( data.bold ? this.bold : this.normal )[ data.size ];
+			if (font) {
+				return font.get(symbol, data.color);
+			} else {
+				throw new Error('No such sheet in font');
 			}
 		}
-	);
+	}
+);
 
-	/**
-	 * @class
-	 * @name SpriteFont.Sheet
-	 * @name LibCanvas.Plugins.SpriteFont.Sheet
-	 */
-	atom.declare( 'LibCanvas.Plugins.SpriteFont.Sheet', {
-		defaultColor: atom.Color.colorNames.black,
+/** @class SpriteFont.Sheet */
+atom.declare( 'LibCanvas.Plugins.SpriteFont.Sheet', {
+	defaultColor: atom.Color.colorNames.black,
 
-		settings: {
-			image  : null,
-			width  : [],
-			symbols: [],
-			bold   : false,
-			size   : false
-		},
+	settings: {
+		image  : null,
+		width  : [],
+		symbols: [],
+		bold   : false,
+		size   : false
+	},
 
-		initialize: function (font, data) {
-			this.settings = new atom.Settings(this.settings).set(data);
-			this.symbols  = font.symbols;
-			this.colors   = {};
-			this.icons    = {};
-		},
+	initialize: function (font, data) {
+		this.settings = new atom.Settings(this.settings).set(data);
+		this.symbols  = font.symbols;
+		this.colors   = {};
+		this.icons    = {};
+	},
 
-		get bold () { return this.settings.get('bold') },
-		get size () { return this.settings.get('size') },
+	get bold () { return this.settings.get('bold') },
+	get size () { return this.settings.get('size') },
 
-		get: function (symbol, color) {
-			if (symbol in this.icons) {
-				return this.icons[symbol];
-			}
-
-			if (!symbol in this.symbols) {
-				throw new TypeError('Unknown symbol: ' + symbol);
-			}
-			if (color == null) {
-				color = this.defaultColor;
-			}
-			color = atom.Color(color).toString('hex');
-
-			var colors = this.colors;
-
-			if (!colors[color]) {
-				colors[color] = {};
-			}
-			if (!colors[color][symbol]) {
-				colors[color][symbol] = this.generateSymbol(symbol, color);
-			}
-
-			return colors[color][symbol];
-		},
-
-		addIcon: atom.core.overloadSetter(function (name, image) {
-			this.icons[name] = image;
-		}),
-
-		generateSymbol: function (symbol, color) {
-			var i, w, h, x, img, buffer,
-				width   = this.settings.get('width'),
-				found   = false,
-				symbols = this.symbols;
-
-			for ( i = 0, x = 0; i < symbols.length; i++ ) {
-				w = width[i];
-				if (symbols[i] == symbol) {
-					found = true;
-					break;
-				}
-				x += w;
-			}
-
-			if (!found) {
-				throw new Error('No symbol in list: ' + symbol);
-			}
-
-			img = this.settings.get('image');
-			h   = img.height;
-			buffer = LibCanvas.buffer(w, h, true);
-			buffer.ctx.drawImage({
-				image: img,
-				crop : [ x, 0, w, h ],
-				draw : buffer.ctx.rectangle
-			});
-
-			if (color != this.defaultColor) {
-				buffer.ctx
-					.save()
-					.set({ globalCompositeOperation: Context2D.COMPOSITE.SOURCE_IN })
-					.fillAll(color)
-					.restore();
-
-			}
-
-			return buffer;
+	get: function (symbol, color) {
+		if (symbol in this.icons) {
+			return this.icons[symbol];
 		}
-	});
 
-
-	/**
-	 * @class
-	 * @name SpriteFont.Render
-	 * @name LibCanvas.Plugins.SpriteFont.Render
-	 */
-	atom.declare( 'LibCanvas.Plugins.SpriteFont.Render', {
-
-		/**
-		 * @param {object}      ctx
-		 * @param {object}      options
-		 * @param {number}     [options.size=16]
-		 * @param {boolean}    [options.bold=false]
-		 * @param {boolean}    [options.tags=true]
-		 * @param {string}     [options.text='']
-		 * @param {SpriteFont}  options.font
-		 * @param {Rectangle}   options.shape
-		 * @param {string}     [options.align='left'] - 'left|middle|right'
-		 */
-		initialize: function (ctx, options) {
-			this.ctx = ctx;
-			this.options = atom.core.append({
-				size : 16,
-				bold : false,
-				text : '',
-				tags : '{*}',
-				font : null,
-				shape: null,
-				color: 'black',
-				align: 'left',
-				lines: null,
-				letterSpacing: 0
-			}, options);
-
-			var steps = new SpriteFont.Steps(this, new SpriteFont.Lexer(
-				this.options.text, this.options.tags
-			));
-
-			steps.countSizes(this.options.font, this.options.letterSpacing);
-
-			var lines = this.options.lines;
-			if (!lines) lines = new SpriteFont.LinesEnRu( this.options.font );
-
-			this.render( lines.run( steps.steps, this.options.shape.width ) );
-		},
-
-		render: function (lines) {
-			var x, y, l, i, from = this.options.shape.from;
-
-			for (l = 0, y = from.y; l < lines.length; l++) {
-				for (i = 0, x = from.x; i < lines[l].length; i++) {
-					this.ctx.drawImage( lines[l][i].image, x, y );
-					x += lines[l][i].width;
-				}
-				y += lines[l].height;
-			}
+		if (!symbol in this.symbols) {
+			throw new TypeError('Unknown symbol: ' + symbol);
 		}
-	});
+		if (color == null) {
+			color = this.defaultColor;
+		}
+		color = atom.Color(color).toString('hex');
+
+		var colors = this.colors;
+
+		if (!colors[color]) {
+			colors[color] = {};
+		}
+		if (!colors[color][symbol]) {
+			colors[color][symbol] = this.generateSymbol(symbol, color);
+		}
+
+		return colors[color][symbol];
+	},
+
+	addIcon: atom.core.overloadSetter(function (name, image) {
+		this.icons[name] = image;
+	}),
+
+	generateSymbol: function (symbol, color) {
+		var i, w, h, x, img, buffer,
+			width   = this.settings.get('width'),
+			found   = false,
+			symbols = this.symbols;
+
+		for ( i = 0, x = 0; i < symbols.length; i++ ) {
+			w = width[i];
+			if (symbols[i] == symbol) {
+				found = true;
+				break;
+			}
+			x += w;
+		}
+
+		if (!found) {
+			throw new Error('No symbol in list: ' + symbol);
+		}
+
+		img = this.settings.get('image');
+		h   = img.height;
+		buffer = LibCanvas.buffer(w, h, true);
+		buffer.ctx.drawImage({
+			image: img,
+			crop : [ x, 0, w, h ],
+			draw : buffer.ctx.rectangle
+		});
+
+		if (color != this.defaultColor) {
+			buffer.ctx
+				.save()
+				.set({ globalCompositeOperation: Context2D.COMPOSITE.SOURCE_IN })
+				.fillAll(color)
+				.restore();
+
+		}
+
+		return buffer;
+	}
+});
+
+
+/** @class SpriteFont.Render */
+atom.declare( 'LibCanvas.Plugins.SpriteFont.Render', {
 
 	/**
-	 * @class
-	 * @name SpriteFont.Steps
-	 * @name LibCanvas.Plugins.SpriteFont.Steps
+	 * @param {object}      ctx
+	 * @param {object}      options
+	 * @param {number}     [options.size=16]
+	 * @param {boolean}    [options.bold=false]
+	 * @param {boolean}    [options.tags=true]
+	 * @param {string}     [options.text='']
+	 * @param {SpriteFont}  options.font
+	 * @param {Rectangle}   options.shape
+	 * @param {string}     [options.align='left'] - 'left|middle|right'
 	 */
-	atom.declare( 'LibCanvas.Plugins.SpriteFont.Steps', {
-		tags: {
+	initialize: function (ctx, options) {
+		this.ctx = ctx;
+		this.options = atom.core.append({
+			size : 16,
 			bold : false,
-			size : true,
-			color: true
-		},
+			text : '',
+			tags : '{*}',
+			font : null,
+			shape: null,
+			color: 'black',
+			align: 'left',
+			lines: null,
+			letterSpacing: 0
+		}, options);
 
-		tagRegExp: /(\w+)(=.*)?/,
+		var steps = new SpriteFont.Steps(this, new SpriteFont.Lexer(
+			this.options.text, this.options.tags
+		));
 
-		initialize: function (render, lexer) {
-			this.steps  = [];
-			this.tokens = lexer.tokens;
-			this.index  = -1;
+		steps.countSizes(this.options.font, this.options.letterSpacing);
 
-			this.split(atom.object.collect(render.options, [ 'color', 'size', 'bold' ]));
-		},
+		var lines = this.options.lines;
+		if (!lines) lines = new SpriteFont.LinesEnRu( this.options.font );
 
-		split: function (initialMode) {
-			var t,
-				i = 0,
-				l = this.tokens.length,
-				stack = [ initialMode ],
-				last  = function () {
-					return stack[ stack.length - 1 ];
-				};
+		this.render( lines.run( steps.steps, this.options.shape.width ) );
+	},
 
-			for (; i < l; i++) {
-				t = this.tokens[i];
-				if (t.type == 'string') {
-					t.content.split('').forEach(function (l) {
-						this.steps.push({ type: 'symbol', content: l, mode: last() });
-					}.bind(this));
-				} else if (t.type == 'nl') {
-					this.steps.push(t);
-				} else if (t.type == 'tag') {
-					if (this.isCloseModeTag(t)) {
-						stack.pop();
-					} else if (this.isChangeModeTag(t)) {
-						stack.push(this.createMode(t, last()));
-					} else {
-						this.steps.push({ type: 'icon', content: t.content, mode: last() });
-					}
-				} else {
-					throw new Error('Unknown type: ' + t.type);
-				}
+	render: function (lines) {
+		var x, y, l, i, from = this.options.shape.from;
+
+		for (l = 0, y = from.y; l < lines.length; l++) {
+			for (i = 0, x = from.x; i < lines[l].length; i++) {
+				this.ctx.drawImage( lines[l][i].image, x, y );
+				x += lines[l][i].width;
 			}
-		},
+			y += lines[l].height;
+		}
+	}
+});
 
-		isChangeModeTag: function (t) {
-			return t.content.match( this.tagRegExp )[1] in this.tags;
-		},
+/** @class SpriteFont.Steps */
+atom.declare( 'LibCanvas.Plugins.SpriteFont.Steps', {
+	tags: {
+		bold : false,
+		size : true,
+		color: true
+	},
 
-		isCloseModeTag: function (t) {
-			return t.content == '/';
-		},
+	tagRegExp: /(\w+)(=.*)?/,
 
-		createMode: function (t, currentMode) {
-			var
-				parts = t.content.match( this.tagRegExp ),
-				tag   = parts[1],
-				value = parts[2],
-				mode  = atom.append({}, currentMode);
+	initialize: function (render, lexer) {
+		this.steps  = [];
+		this.tokens = lexer.tokens;
+		this.index  = -1;
 
-			if (this.tags[tag]) {
-				if (value) value = value.substr(1);
-				if (value == '') throw new Error('Value required in tag ' + tag);
+		this.split(atom.object.collect(render.options, [ 'color', 'size', 'bold' ]));
+	},
+
+	split: function (initialMode) {
+		var t,
+			i = 0,
+			l = this.tokens.length,
+			stack = [ initialMode ],
+			last  = function () {
+				return stack[ stack.length - 1 ];
+			};
+
+		for (; i < l; i++) {
+			t = this.tokens[i];
+			if (t.type == 'string') {
+				t.content.split('').forEach(function (l) {
+					this.steps.push({ type: 'symbol', content: l, mode: last() });
+				}.bind(this));
+			} else if (t.type == 'nl') {
+				this.steps.push(t);
+			} else if (t.type == 'tag') {
+				if (this.isCloseModeTag(t)) {
+					stack.pop();
+				} else if (this.isChangeModeTag(t)) {
+					stack.push(this.createMode(t, last()));
+				} else {
+					this.steps.push({ type: 'icon', content: t.content, mode: last() });
+				}
 			} else {
-				value = true;
-			}
-
-			mode[tag] = value;
-			return mode;
-		},
-
-		countSizes: function (font, letterSpacing) {
-			var i, s, img;
-			for (i = 0; i < this.steps.length; i++) {
-				s = this.steps[i];
-				if (s.type == 'symbol' || s.type == 'icon') {
-					img = font.get( s.content, s.mode );
-					s.image  = img;
-					s.width  = img.width + letterSpacing;
-					s.height = img.height;
-				}
+				throw new Error('Unknown type: ' + t.type);
 			}
 		}
-	});
+	},
 
-	/**
-	 * @class
-	 * @name SpriteFont.Lexer
-	 * @name LibCanvas.Plugins.SpriteFont.Lexer
-	 */
-	atom.declare( 'LibCanvas.Plugins.SpriteFont.Lexer', {
+	isChangeModeTag: function (t) {
+		return t.content.match( this.tagRegExp )[1] in this.tags;
+	},
 
-		initialize: function (string, tags) {
-			this.string = string;
-			this.tags   = this.parseTags(tags);
-			this.tokens = this.tokenize();
-		},
+	isCloseModeTag: function (t) {
+		return t.content == '/';
+	},
 
-		tokenize: function () {
-			var t = this.tags, s = this.string;
-			return t ?
-				this.parseTaggedText(s, t) :
-				this.parsePlainText (s);
-		},
+	createMode: function (t, currentMode) {
+		var
+			parts = t.content.match( this.tagRegExp ),
+			tag   = parts[1],
+			value = parts[2],
+			mode  = atom.append({}, currentMode);
 
-		parseTaggedText: function (string, tags) {
-			var
-				i = 0,
-				last,
-				symbol = '',
-				result = [],
-				length = string.length,
-				startTag = false;
-
-			for (; i < length; i++) {
-				symbol = string[i];
-				if (symbol == '\n') {
-					if (last && last.type == 'tag') {
-						throw new Error('Tag started, but not finished at symbol ' + i);
-					}
-					result.push({ type: 'nl' });
-					last = null;
-				} else if (symbol == tags[0]) {
-					if (last && last.type == 'tag') {
-						throw new Error('Wrong tag opening at symbol ' + i);
-					}
-					result.push(last = { type: 'tag'   , content: '' });
-				} else if (!last) {
-					result.push(last = { type: 'string', content: string[i] });
-				} else if (symbol == tags[1] && last.type == 'tag') {
-					last = null;
-				} else {
-					last.content += string[i];
-				}
-			}
-
-			return result;
-		},
-
-		parsePlainText: function (string) {
-			var
-				i = 0,
-				last,
-				result = [],
-				length = string.length;
-			for (; i < length; i++) {
-				if (string[i] == '\n') {
-					last = null;
-					result.push({ type: 'nl' });
-				} else if (!last) {
-					last = { type: 'string', content: string[i] };
-					result.push(last);
-				} else {
-					last.content += string[i];
-				}
-			}
-			return result;
-		},
-
-		parseTags: function (tags) {
-			if (tags == null) return null;
-
-			function wrong (part) {
-				throw new TypeError('String like "[*]" required (' + part + ')');
-			}
-
-			if (typeof tags != 'string') wrong('typeof');
-
-			tags = tags.split('*');
-
-			if (tags   .length != 2) wrong('split');
-			if (tags[0].length != 1) wrong('left' );
-			if (tags[1].length != 1) wrong('right');
-
-			return tags;
+		if (this.tags[tag]) {
+			if (value) value = value.substr(1);
+			if (value == '') throw new Error('Value required in tag ' + tag);
+		} else {
+			value = true;
 		}
-	});
 
+		mode[tag] = value;
+		return mode;
+	},
 
-	/**
-	 * @class
-	 * @name SpriteFont.LinesEnRu
-	 * @name LibCanvas.Plugins.SpriteFont.LinesEnRu
-	 */
-	atom.declare( 'LibCanvas.Plugins.SpriteFont.LinesEnRu', {
-		vowels: 'AEIOUYaeiouyАОУЮИЫЕЭЯЁаоуюиыеэяёьЄІЇЎєіїў',
-
-		initialize: function (font) {
-			this.font = font;
-		},
-
-		run: function (steps, maxWidth) {
-
-			var i, line = [], morphemes = [];
-			for (i = 0; i < steps.length; i++) {
-				if (steps[i].type == 'nl' || i == steps.length - 1) {
-					morphemes.push( this.findMorphemes(line) );
-					line = [];
-				} else {
-					line.push(steps[i]);
-				}
+	countSizes: function (font, letterSpacing) {
+		var i, s, img;
+		for (i = 0; i < this.steps.length; i++) {
+			s = this.steps[i];
+			if (s.type == 'symbol' || s.type == 'icon') {
+				img = font.get( s.content, s.mode );
+				s.image  = img;
+				s.width  = img.width + letterSpacing;
+				s.height = img.height;
 			}
+		}
+	}
+});
 
-			return this.countLines(morphemes, maxWidth);
+/** @class SpriteFont.Lexer */
+atom.declare( 'LibCanvas.Plugins.SpriteFont.Lexer', {
 
-		},
+	initialize: function (string, tags) {
+		this.string = string;
+		this.tags   = this.parseTags(tags);
+		this.tokens = this.tokenize();
+	},
 
-		countLines: function (mLines, maxWidth) {
-			var lines = [], l, i, line = [], width = 0, mWidth;
+	tokenize: function () {
+		var t = this.tags, s = this.string;
+		return t ?
+			this.parseTaggedText(s, t) :
+			this.parsePlainText (s);
+	},
 
-			function add (data) {
-				if (!Array.isArray(data)) data = [ data ];
-				for (var i = 0; i < data.length; i++) {
-					line.push(data[i]);
-					width += data[i].width;
+	parseTaggedText: function (string, tags) {
+		var
+			i = 0,
+			last,
+			symbol = '',
+			result = [],
+			length = string.length,
+			startTag = false;
+
+		for (; i < length; i++) {
+			symbol = string[i];
+			if (symbol == '\n') {
+				if (last && last.type == 'tag') {
+					throw new Error('Tag started, but not finished at symbol ' + i);
 				}
-			}
-
-			for (l = 0; l < mLines.length; l++) {
-				for (i = 0; i < mLines[l].length; i++) {
-					mWidth = this.countLength(mLines[l][i]);
-
-					if (mWidth > maxWidth) {
-						throw new Error('Morpheme too long');
-					}
-
-					if (width + mWidth > maxWidth || (i == 0 && l > 0)) {
-						lines.push(line);
-						line  = [];
-						width = 0;
-					}
-
-					add(mLines[l][i]);
+				result.push({ type: 'nl' });
+				last = null;
+			} else if (symbol == tags[0]) {
+				if (last && last.type == 'tag') {
+					throw new Error('Wrong tag opening at symbol ' + i);
 				}
+				result.push(last = { type: 'tag'   , content: '' });
+			} else if (!last) {
+				result.push(last = { type: 'string', content: string[i] });
+			} else if (symbol == tags[1] && last.type == 'tag') {
+				last = null;
+			} else {
+				last.content += string[i];
 			}
+		}
 
-			lines.forEach(function (l) {
-				l.height = 0;
+		return result;
+	},
 
-				l.forEach(function (obj) {
-					l.height = Math.max( l.height, obj.height );
-				});
+	parsePlainText: function (string) {
+		var
+			i = 0,
+			last,
+			result = [],
+			length = string.length;
+		for (; i < length; i++) {
+			if (string[i] == '\n') {
+				last = null;
+				result.push({ type: 'nl' });
+			} else if (!last) {
+				last = { type: 'string', content: string[i] };
+				result.push(last);
+			} else {
+				last.content += string[i];
+			}
+		}
+		return result;
+	},
+
+	parseTags: function (tags) {
+		if (tags == null) return null;
+
+		function wrong (part) {
+			throw new TypeError('String like "[*]" required (' + part + ')');
+		}
+
+		if (typeof tags != 'string') wrong('typeof');
+
+		tags = tags.split('*');
+
+		if (tags   .length != 2) wrong('split');
+		if (tags[0].length != 1) wrong('left' );
+		if (tags[1].length != 1) wrong('right');
+
+		return tags;
+	}
+});
+
+
+/** @class SpriteFont.LinesEnRu */
+atom.declare( 'LibCanvas.Plugins.SpriteFont.LinesEnRu', {
+	vowels: 'AEIOUYaeiouyАОУЮИЫЕЭЯЁаоуюиыеэяёьЄІЇЎєіїў',
+
+	initialize: function (font) {
+		this.font = font;
+	},
+
+	run: function (steps, maxWidth) {
+
+		var i, line = [], morphemes = [];
+		for (i = 0; i < steps.length; i++) {
+			if (steps[i].type == 'nl' || i == steps.length - 1) {
+				morphemes.push( this.findMorphemes(line) );
+				line = [];
+			} else {
+				line.push(steps[i]);
+			}
+		}
+
+		return this.countLines(morphemes, maxWidth);
+
+	},
+
+	countLines: function (mLines, maxWidth) {
+		var lines = [], l, i, line = [], width = 0, mWidth;
+
+		function add (data) {
+			if (!Array.isArray(data)) data = [ data ];
+			for (var i = 0; i < data.length; i++) {
+				line.push(data[i]);
+				width += data[i].width;
+			}
+		}
+
+		for (l = 0; l < mLines.length; l++) {
+			for (i = 0; i < mLines[l].length; i++) {
+				mWidth = this.countLength(mLines[l][i]);
+
+				if (mWidth > maxWidth) {
+					throw new Error('Morpheme too long');
+				}
+
+				if (width + mWidth > maxWidth || (i == 0 && l > 0)) {
+					lines.push(line);
+					line  = [];
+					width = 0;
+				}
+
+				add(mLines[l][i]);
+			}
+		}
+
+		lines.forEach(function (l) {
+			l.height = 0;
+
+			l.forEach(function (obj) {
+				l.height = Math.max( l.height, obj.height );
 			});
+		});
 
-			return lines;
-		},
+		return lines;
+	},
 
-		countLength: function (m) {
-			if (Array.isArray(m)) {
-				return m.reduce(function (value, sym) { return value + sym.width }, 0);
-			} else {
-				return m.width;
-			}
-		},
+	countLength: function (m) {
+		if (Array.isArray(m)) {
+			return m.reduce(function (value, sym) { return value + sym.width }, 0);
+		} else {
+			return m.width;
+		}
+	},
 
-		isLetter: function(str) {
-			return (str >= 'a' && str <= 'z') || (str >= 'A' && str <= 'я') ||
-			       (str >= 'A' && str <= 'Z') || (str >= '\u00c0' && str <= '\u02a8') ||
-			       (str >= '0' && str <= '9') || (str >= '\u0386' && str <= '\u04ff');
-		},
+	isLetter: function(str) {
+		return (str >= 'a' && str <= 'z') || (str >= 'A' && str <= 'я') ||
+		       (str >= 'A' && str <= 'Z') || (str >= '\u00c0' && str <= '\u02a8') ||
+		       (str >= '0' && str <= '9') || (str >= '\u0386' && str <= '\u04ff');
+	},
 
-		isVowel: function(str) {
-			return str && str.length == 1 && this.vowels.indexOf(str) > -1;
-		},
+	isVowel: function(str) {
+		return str && str.length == 1 && this.vowels.indexOf(str) > -1;
+	},
 
-		isMorpheme: function (str) {
-			if (!str || str.length <= 1) return false;
+	isMorpheme: function (str) {
+		if (!str || str.length <= 1) return false;
 
-			for (var i = str.length; i--;) if (this.isVowel(str[i])) return true;
+		for (var i = str.length; i--;) if (this.isVowel(str[i])) return true;
 
-			return false;
-		},
+		return false;
+	},
 
-		findMorphemes: function (line) {
-			var i = 0, c, morphemes = [], lastStr = '', last = [], prev;
+	findMorphemes: function (line) {
+		var i = 0, c, morphemes = [], lastStr = '', last = [], prev;
 
-			for (; i < line.length; i++) {
-				c = line[i].content;
-				if (line[i].type == 'symbol' && this.isLetter(c)) {
-					lastStr += c;
-					last.push(line[i]);
-					if (this.isMorpheme(lastStr)) {
-						morphemes.push(last);
-						last = [];
-						lastStr = '';
-					}
-				} else if (lastStr) {
-					prev = morphemes[ morphemes.length - 1 ];
-					if (Array.isArray(prev)) {
-						atom.array.append( prev, last );
-					} else {
-						morphemes.push(last);
-					}
+		for (; i < line.length; i++) {
+			c = line[i].content;
+			if (line[i].type == 'symbol' && this.isLetter(c)) {
+				lastStr += c;
+				last.push(line[i]);
+				if (this.isMorpheme(lastStr)) {
+					morphemes.push(last);
 					last = [];
 					lastStr = '';
-
-					if (!this.isLetter(c)) {
-						morphemes.push( line[i] );
-					}
+				}
+			} else if (lastStr) {
+				prev = morphemes[ morphemes.length - 1 ];
+				if (Array.isArray(prev)) {
+					atom.array.append( prev, last );
 				} else {
+					morphemes.push(last);
+				}
+				last = [];
+				lastStr = '';
+
+				if (!this.isLetter(c)) {
 					morphemes.push( line[i] );
 				}
+			} else {
+				morphemes.push( line[i] );
 			}
-
-			return morphemes;
 		}
-	});
 
-})();
-
+		return morphemes;
+	}
+});
 
 /*
 ---
@@ -5567,93 +5425,86 @@ provides: Shapes.Ellipse
 ...
 */
 
-/**
- * @class
- * @name Ellipse
- * @name LibCanvas.Shapes.Ellipse
- */
-var Ellipse = LibCanvas.declare( 'LibCanvas.Shapes.Ellipse', 'Ellipse', {
-	parent: Rectangle,
-	prototype: {
-		set : function () {
-			this.bindMethods( 'update' );
-			Rectangle.prototype.set.apply(this, arguments);
-		},
-		_angle : 0,
-		get angle () {
-			return this._angle;
-		},
-		set angle (a) {
-			if (this._angle == a) return;
-			this._angle = a.normalizeAngle();
-			this.updateCache = true;
-		},
-		update: function () {
-			this.updateCache = true;
-		},
-		rotate : function (degree) {
-			this.angle += degree;
-			return this;
-		},
-		hasPoint : function () {
-			var ctx = this.processPath( shapeTestBuffer().ctx );
-			return ctx.isPointInPath(Point(arguments));
-		},
-		cache : null,
-		updateCache : true,
-		countCache : function () {
-			if (this.cache && !this.updateCache) {
-				return this.cache;
-			}
-
-			if (this.cache === null) {
-				this.cache = [];
-				for (var i = 12; i--;) this.cache.push(new Point());
-			}
-			var c = this.cache,
-				angle = this._angle,
-				kappa = .5522848,
-				x  = this.from.x,
-				y  = this.from.y,
-				xe = this.to.x,
-				ye = this.to.y,
-				xm = (xe + x) / 2,
-				ym = (ye + y) / 2,
-				ox = (xe - x) / 2 * kappa,
-				oy = (ye - y) / 2 * kappa;
-			c[0].set(x, ym - oy); c[ 1].set(xm - ox, y); c[ 2].set(xm, y);
-			c[3].set(xm + ox, y); c[ 4].set(xe, ym -oy); c[ 5].set(xe, ym);
-			c[6].set(xe, ym +oy); c[ 7].set(xm +ox, ye); c[ 8].set(xm, ye);
-			c[9].set(xm -ox, ye); c[10].set(x, ym + oy); c[11].set(x, ym);
-
-			if (angle) {
-				var center = new Point(xm, ym);
-				for (i = c.length; i--;) c[i].rotate(angle, center);
-			}
-
-			return c;
-		},
-		processPath : function (ctx, noWrap) {
-			if (!noWrap) ctx.beginPath();
-			var c = this.countCache();
-			ctx.beginPath(c[11])
-			   .bezierCurveTo(c[0], c[1], c[2])
-			   .bezierCurveTo(c[3], c[4], c[5])
-			   .bezierCurveTo(c[6], c[7], c[8])
-			   .bezierCurveTo(c[9], c[10],c[11]);
-			if (!noWrap) ctx.closePath();
-			return ctx;
-		},
-		equals : function (shape, accuracy) {
-			return Rectangle.prototype.equals.call( this, shape, accuracy ) && shape.angle == this.angle;
-		},
-		draw : function (ctx, type) {
-			this.processPath(ctx)[type]();
-			return this;
-		},
-		dump: function (name) {
-			return Rectangle.prototype.dump.call(this, name || 'Ellipse');
+/** @class Ellipse */
+var Ellipse = LibCanvas.declare( 'LibCanvas.Shapes.Ellipse', 'Ellipse', Rectangle, {
+	set: function () {
+		this.bindMethods( 'update' );
+		Rectangle.prototype.set.apply(this, arguments);
+	},
+	_angle : 0,
+	get angle () {
+		return this._angle;
+	},
+	set angle (a) {
+		if (this._angle == a) return;
+		this._angle = a.normalizeAngle();
+		this.updateCache = true;
+	},
+	update: function () {
+		this.updateCache = true;
+	},
+	rotate : function (degree) {
+		this.angle += degree;
+		return this;
+	},
+	hasPoint : function () {
+		var ctx = this.processPath( shapeTestBuffer().ctx );
+		return ctx.isPointInPath(Point(arguments));
+	},
+	cache : null,
+	updateCache : true,
+	countCache : function () {
+		if (this.cache && !this.updateCache) {
+			return this.cache;
 		}
+
+		if (this.cache === null) {
+			this.cache = [];
+			for (var i = 12; i--;) this.cache.push(new Point());
+		}
+		var c = this.cache,
+			angle = this._angle,
+			kappa = .5522848,
+			x  = this.from.x,
+			y  = this.from.y,
+			xe = this.to.x,
+			ye = this.to.y,
+			xm = (xe + x) / 2,
+			ym = (ye + y) / 2,
+			ox = (xe - x) / 2 * kappa,
+			oy = (ye - y) / 2 * kappa;
+		c[0].set(x, ym - oy); c[ 1].set(xm - ox, y); c[ 2].set(xm, y);
+		c[3].set(xm + ox, y); c[ 4].set(xe, ym -oy); c[ 5].set(xe, ym);
+		c[6].set(xe, ym +oy); c[ 7].set(xm +ox, ye); c[ 8].set(xm, ye);
+		c[9].set(xm -ox, ye); c[10].set(x, ym + oy); c[11].set(x, ym);
+
+		if (angle) {
+			var center = new Point(xm, ym);
+			for (i = c.length; i--;) c[i].rotate(angle, center);
+		}
+
+		return c;
+	},
+	processPath : function (ctx, noWrap) {
+		if (!noWrap) ctx.beginPath();
+		var c = this.countCache();
+		ctx.beginPath(c[11])
+		   .bezierCurveTo(c[0], c[1], c[2])
+		   .bezierCurveTo(c[3], c[4], c[5])
+		   .bezierCurveTo(c[6], c[7], c[8])
+		   .bezierCurveTo(c[9], c[10],c[11]);
+		if (!noWrap) ctx.closePath();
+		return ctx;
+	},
+	equals : function (shape, accuracy) {
+		return Rectangle.prototype.equals.call( this, shape, accuracy ) && shape.angle == this.angle;
+	},
+	draw : function (ctx, type) {
+		this.processPath(ctx)[type]();
+		return this;
+	},
+	dump: function (name) {
+		return Rectangle.prototype.dump.call(this, name || 'Ellipse');
 	}
 });
 
@@ -5681,142 +5532,135 @@ provides: Shapes.Line
 ...
 */
 
-/**
- * @class
- * @name Line
- * @name LibCanvas.Shapes.Line
- */
 var Line = function () {
 
 var between = function (x, a, b, accuracy) {
 	return x.equals(a, accuracy) || x.equals(b, accuracy) || (a < x && x < b) || (b < x && x < a);
 };
 
-return LibCanvas.declare( 'LibCanvas.Shapes.Line', 'Line', {
-	parent: Shape,
-	prototype: {
-		set : function (from, to) {
-			var a = Array.pickFrom(arguments);
+/** @class Line */
+return LibCanvas.declare( 'LibCanvas.Shapes.Line', 'Line', Shape, {
+	set : function (from, to) {
+		var a = Array.pickFrom(arguments);
 
-			if (a.length === 4) {
-				this.from = new Point( a[0], a[1] );
-				this.to   = new Point( a[2], a[3] );
-			} else {
-				this.from = Point(a[0] || a.from);
-				this.to   = Point(a[1] || a.to);
-			}
+		if (a.length === 4) {
+			this.from = new Point( a[0], a[1] );
+			this.to   = new Point( a[2], a[3] );
+		} else {
+			this.from = Point(a[0] || a.from);
+			this.to   = Point(a[1] || a.to);
+		}
 
-			return this;
-		},
-		hasPoint : function (point) {
-			var fx = this.from.x,
-				fy = this.from.y,
-				tx = this.to.x,
-				ty = this.to.y,
-				px = point.x,
-				py = point.y;
+		return this;
+	},
+	hasPoint : function (point) {
+		var fx = this.from.x,
+			fy = this.from.y,
+			tx = this.to.x,
+			ty = this.to.y,
+			px = point.x,
+			py = point.y;
 
-			if (!( point.x.between(Math.min(fx, tx), Math.max(fx, tx))
-			    && point.y.between(Math.min(fy, ty), Math.max(fy, ty))
-			)) return false;
+		if (!( point.x.between(Math.min(fx, tx), Math.max(fx, tx))
+		    && point.y.between(Math.min(fy, ty), Math.max(fy, ty))
+		)) return false;
 
-			// if triangle square is zero - points are on one line
-			return ((fx-px)*(ty-py)-(tx-px)*(fy-py)).round(6) == 0;
-		},
-		getBoundingRectangle: function () {
-			return new Rectangle(this.from, this.to).fillToPixel().grow(2);
-		},
-		intersect: function (line, point, accuracy) {
-			if (line.constructor != this.constructor) {
-				return this.getBoundingRectangle().intersect( line );
-			}
-			var a = this.from, b = this.to, c = line.from, d = line.to, x, y, FALSE = point ? null : false;
-			if (d.x.equals(c.x, accuracy)) { // DC == vertical line
-				if (b.x.equals(a.x, accuracy)) {
-					if (a.x.equals(d.x, accuracy)) {
-						if (a.y.between(c.y, d.y)) {
-							return a.clone();
-						} else if (b.y.between(c.y, d.y)) {
-							return b.clone();
-						} else {
-							return FALSE;
-						}
+		// if triangle square is zero - points are on one line
+		return ((fx-px)*(ty-py)-(tx-px)*(fy-py)).round(6) == 0;
+	},
+	getBoundingRectangle: function () {
+		return new Rectangle(this.from, this.to).fillToPixel().grow(2);
+	},
+	intersect: function (line, point, accuracy) {
+		if (line.constructor != this.constructor) {
+			return this.getBoundingRectangle().intersect( line );
+		}
+		var a = this.from, b = this.to, c = line.from, d = line.to, x, y, FALSE = point ? null : false;
+		if (d.x.equals(c.x, accuracy)) { // DC == vertical line
+			if (b.x.equals(a.x, accuracy)) {
+				if (a.x.equals(d.x, accuracy)) {
+					if (a.y.between(c.y, d.y)) {
+						return a.clone();
+					} else if (b.y.between(c.y, d.y)) {
+						return b.clone();
 					} else {
 						return FALSE;
 					}
-				}
-				x = d.x;
-				y = b.y + (x-b.x)*(a.y-b.y)/(a.x-b.x);
-			} else {
-				x = ((a.x*b.y - b.x*a.y)*(d.x-c.x)-(c.x*d.y - d.x*c.y)*(b.x-a.x))/((a.y-b.y)*(d.x-c.x)-(c.y-d.y)*(b.x-a.x));
-				y = ((c.y-d.y)*x-(c.x*d.y-d.x*c.y))/(d.x-c.x);
-				x *= -1;
-			}
-
-			if (!between(x, a.x, b.x, accuracy)) return FALSE;
-			if (!between(y, a.y, b.y, accuracy)) return FALSE;
-			if (!between(x, c.x, d.x, accuracy)) return FALSE;
-			if (!between(y, c.y, d.y, accuracy)) return FALSE;
-
-			return point ? new Point(x, y) : true;
-		},
-		perpendicular: function (point) {
-			point = Point( point );
-			var
-				fX = this.from.x,
-				fY = this.from.y,
-				tX = this.to.x,
-				tY = this.to.y,
-				pX = point.x,
-				pY = point.y,
-				dX = (tX-fX) * (tX-fX),
-				dY = (tY-fY) * (tY-fY),
-				rX = ((tX-fX)*(tY-fY)*(pY-fY)+fX*dY+pX*dX) / (dX+dY),
-				rY = (tY-fY)*(rX-fX)/(tX-fX)+fY;
-
-			return new Point( rX, rY );
-		},
-		distanceTo: function (p, asInfiniteLine) {
-			p = Point(p);
-			var f = this.from, t = this.to, degree, s, x, y;
-
-			if (!asInfiniteLine) {
-				degree = Math.atan2(p.x - t.x, p.y - t.y).getDegree();
-				if ( degree.between(-90, 90) ) {
-					return t.distanceTo( p );
-				}
-
-				degree = Math.atan2(f.x - p.x, f.y - p.y).getDegree();
-				if ( degree.between(-90, 90) ) {
-					return f.distanceTo( p );
+				} else {
+					return FALSE;
 				}
 			}
-
-			s = (
-				f.x * (t.y - p.y) +
-				t.x * (p.y - f.y) +
-				p.x * (f.y - t.y)
-			).abs() / 2;
-
-			x = f.x - t.x;
-			y = f.y - t.y;
-			return 2 * s / Math.sqrt(x*x+y*y);
-		},
-		get length () {
-			return this.to.distanceTo(this.from);
-		},
-		getLength : function () {
-			return this.length;
-		},
-		processPath : function (ctx, noWrap) {
-			if (!noWrap) ctx.beginPath();
-			ctx.moveTo(this.from).lineTo(this.to);
-			if (!noWrap) ctx.closePath();
-			return ctx;
-		},
-		dump: function () {
-			return Shape.prototype.dump.call(this, 'Line');
+			x = d.x;
+			y = b.y + (x-b.x)*(a.y-b.y)/(a.x-b.x);
+		} else {
+			x = ((a.x*b.y - b.x*a.y)*(d.x-c.x)-(c.x*d.y - d.x*c.y)*(b.x-a.x))/((a.y-b.y)*(d.x-c.x)-(c.y-d.y)*(b.x-a.x));
+			y = ((c.y-d.y)*x-(c.x*d.y-d.x*c.y))/(d.x-c.x);
+			x *= -1;
 		}
+
+		if (!between(x, a.x, b.x, accuracy)) return FALSE;
+		if (!between(y, a.y, b.y, accuracy)) return FALSE;
+		if (!between(x, c.x, d.x, accuracy)) return FALSE;
+		if (!between(y, c.y, d.y, accuracy)) return FALSE;
+
+		return point ? new Point(x, y) : true;
+	},
+	perpendicular: function (point) {
+		point = Point( point );
+		var
+			fX = this.from.x,
+			fY = this.from.y,
+			tX = this.to.x,
+			tY = this.to.y,
+			pX = point.x,
+			pY = point.y,
+			dX = (tX-fX) * (tX-fX),
+			dY = (tY-fY) * (tY-fY),
+			rX = ((tX-fX)*(tY-fY)*(pY-fY)+fX*dY+pX*dX) / (dX+dY),
+			rY = (tY-fY)*(rX-fX)/(tX-fX)+fY;
+
+		return new Point( rX, rY );
+	},
+	distanceTo: function (p, asInfiniteLine) {
+		p = Point(p);
+		var f = this.from, t = this.to, degree, s, x, y;
+
+		if (!asInfiniteLine) {
+			degree = Math.atan2(p.x - t.x, p.y - t.y).getDegree();
+			if ( degree.between(-90, 90) ) {
+				return t.distanceTo( p );
+			}
+
+			degree = Math.atan2(f.x - p.x, f.y - p.y).getDegree();
+			if ( degree.between(-90, 90) ) {
+				return f.distanceTo( p );
+			}
+		}
+
+		s = (
+			f.x * (t.y - p.y) +
+			t.x * (p.y - f.y) +
+			p.x * (f.y - t.y)
+		).abs() / 2;
+
+		x = f.x - t.x;
+		y = f.y - t.y;
+		return 2 * s / Math.sqrt(x*x+y*y);
+	},
+	get length () {
+		return this.to.distanceTo(this.from);
+	},
+	getLength : function () {
+		return this.length;
+	},
+	processPath : function (ctx, noWrap) {
+		if (!noWrap) ctx.beginPath();
+		ctx.moveTo(this.from).lineTo(this.to);
+		if (!noWrap) ctx.closePath();
+		return ctx;
+	},
+	dump: function () {
+		return Shape.prototype.dump.call(this, 'Line');
 	}
 });
 
@@ -5847,118 +5691,110 @@ provides: Shapes.Path
 ...
 */
 
-/**
- * @class
- * @name Path
- * @name LibCanvas.Shapes.Path
- */
-var Path = LibCanvas.declare( 'LibCanvas.Shapes.Path', 'Path',
-/** @lends {LibCanvas.Shapes.Path.prototype} */
-{
-	parent: Shape,
-
-	prototype: {
-		getCoords: null,
-		set : function (builder) {
-			this.builder = builder;
-			builder.path = this;
-			return this;
-		},
-		processPath : function (ctx, noWrap) {
-			if (!noWrap) ctx.beginPath();
-			this.each(function (method, args) {
-				ctx[method].apply(ctx, args);
-			});
-			if (!noWrap) ctx.closePath();
-			return ctx;
-		},
-		intersect: function (obj) {
-			return this.getBoundingRectangle( obj ).intersect( this.getBoundingRectangle() );
-		},
-		each: function (fn) {
-			this.builder.parts.forEach(function (part) {
-				fn.call( this, part.method, part.args );
-			}.bind(this));
-			return this;
-		},
-		get allPoints () {
-			var points = [];
-			this.each(function (method, args) {
-				if (method == 'arc') {
-					points.include(args[0].circle.center);
-				} else for (var i = 0, l = args.length; i < l; i++) {
-					points.include(args[i]);
-				}
-			});
-			return points;
-		},
-		get center () {
-			return new Point().mean(this.allPoints);
-		},
-		hasPoint : function (point) {
-			var ctx = shapeTestBuffer().ctx;
-			if (this.builder.changed) {
-				this.builder.changed = false;
-				this.processPath(ctx);
+/** @class Path */
+var Path = LibCanvas.declare( 'LibCanvas.Shapes.Path', 'Path', Shape, {
+	getCoords: null,
+	builder  : null,
+	set : function (builder) {
+		this.builder = builder;
+		builder.path = this;
+		return this;
+	},
+	processPath : function (ctx, noWrap) {
+		if (!noWrap) ctx.beginPath();
+		this.each(function (method, args) {
+			ctx[method].apply(ctx, args);
+		});
+		if (!noWrap) ctx.closePath();
+		return ctx;
+	},
+	intersect: function (obj) {
+		return this.getBoundingRectangle( obj ).intersect( this.getBoundingRectangle() );
+	},
+	each: function (fn) {
+		this.builder.parts.forEach(function (part) {
+			fn.call( this, part.method, part.args );
+		}.bind(this));
+		return this;
+	},
+	get allPoints () {
+		var points = [];
+		this.each(function (method, args) {
+			if (method == 'arc') {
+				points.include(args[0].circle.center);
+			} else for (var i = 0, l = args.length; i < l; i++) {
+				points.include(args[i]);
 			}
-			return ctx.isPointInPath(Point(arguments));
-		},
-		draw : function (ctx, type) {
-			this.processPath(ctx)[type]();
-			return this;
-		},
-		move : function (distance, reverse) {
-			this.builder.changed = true;
-
-			this.allPoints.invoke( 'move', distance, reverse );
-			return this;
-		},
-		scale: function (power, pivot) {
-			this.builder.changed = true;
-
-			this.allPoints.invoke( 'scale', power, pivot );
-			return this;
-		},
-		grow: function () {
-			return this;
-		},
-		rotate: function (angle, pivot) {
-			this.builder.changed = true;
-
-			this.allPoints.invoke( 'rotate', angle, pivot );
-
-			this.each(function (method, args) {
-				if (method == 'arc') {
-					var a = args[0].angle;
-					a.start = (a.start + angle).normalizeAngle();
-					a.end   = (a.end   + angle).normalizeAngle();
-				}
-			}.bind(this));
-			return this;
-		},
-		// #todo: fix arc, cache
-		getBoundingRectangle: function () {
-			var p = this.allPoints, from, to;
-			if (p.length == 0) throw new Error('Is empty');
-
-			from = p[0].clone(), to = p[0].clone();
-			for (var l = p.length; l--;) {
-				from.x = Math.min( from.x, p[l].x );
-				from.y = Math.min( from.y, p[l].y );
-				  to.x = Math.max(   to.x, p[l].x );
-				  to.y = Math.max(   to.y, p[l].y );
-			}
-			return new Rectangle( from, to );
-		},
-		clone: function () {
-			var builder = new Path.Builder;
-			builder.parts.append( this.builder.parts.clone() );
-			return builder.build();
+		});
+		return points;
+	},
+	get center () {
+		return new Point().mean(this.allPoints);
+	},
+	hasPoint : function (point) {
+		var ctx = shapeTestBuffer().ctx;
+		if (this.builder.changed) {
+			this.builder.changed = false;
+			this.processPath(ctx);
 		}
+		return ctx.isPointInPath(Point(arguments));
+	},
+	draw : function (ctx, type) {
+		this.processPath(ctx)[type]();
+		return this;
+	},
+	move : function (distance, reverse) {
+		this.builder.changed = true;
+
+		this.allPoints.invoke( 'move', distance, reverse );
+		return this;
+	},
+	scale: function (power, pivot) {
+		this.builder.changed = true;
+
+		this.allPoints.invoke( 'scale', power, pivot );
+		return this;
+	},
+	grow: function () {
+		return this;
+	},
+	rotate: function (angle, pivot) {
+		this.builder.changed = true;
+
+		this.allPoints.invoke( 'rotate', angle, pivot );
+
+		this.each(function (method, args) {
+			if (method == 'arc') {
+				var a = args[0].angle;
+				a.start = (a.start + angle).normalizeAngle();
+				a.end   = (a.end   + angle).normalizeAngle();
+			}
+		}.bind(this));
+		return this;
+	},
+	// #todo: fix arc, cache
+	getBoundingRectangle: function () {
+		var p = this.allPoints, from, to;
+		if (p.length == 0) throw new Error('Is empty');
+
+		from = p[0].clone(), to = p[0].clone();
+		for (var l = p.length; l--;) {
+			from.x = Math.min( from.x, p[l].x );
+			from.y = Math.min( from.y, p[l].y );
+			  to.x = Math.max(   to.x, p[l].x );
+			  to.y = Math.max(   to.y, p[l].y );
+		}
+		return new Rectangle( from, to );
+	},
+	clone: function () {
+		var builder = new Path.Builder;
+		builder.parts.append( this.builder.parts.clone() );
+		return builder.build();
 	}
 });
 
-Path.Builder = declare( 'LibCanvas.Shapes.Path.Builder', {
+/** @class Path.Builder */
+declare( 'LibCanvas.Shapes.Path.Builder', {
 	initialize: function (str) {
 		this.update = this.update.bind( this );
 		this.parts  = [];
@@ -5985,10 +5821,6 @@ Path.Builder = declare( 'LibCanvas.Shapes.Path.Builder', {
 		});
 		return this;
 	},
-	/** @deprecated */
-	listenPoint: function (p) {
-		return Point( p );
-	},
 
 	// queue/stack
 	changed : true,
@@ -6011,10 +5843,10 @@ Path.Builder = declare( 'LibCanvas.Shapes.Path.Builder', {
 
 	// methods
 	move : function () {
-		return this.push('moveTo', [ this.listenPoint(arguments) ]);
+		return this.push('moveTo', [ Point(arguments) ]);
 	},
 	line : function () {
-		return this.push('lineTo', [ this.listenPoint(arguments) ]);
+		return this.push('lineTo', [ Point(arguments) ]);
 	},
 	curve : function (to, p1, p2) {
 		var args = Array.pickFrom(arguments);
@@ -6032,7 +5864,7 @@ Path.Builder = declare( 'LibCanvas.Shapes.Path.Builder', {
 			];
 		}
 
-		return this.push('curveTo', args.map( this.listenPoint.bind( this ) ));
+		return this.push('curveTo', args.map( Point ));
 	},
 	arc : function (circle, angle, acw) {
 		var a = Array.pickFrom(arguments);
@@ -6062,7 +5894,7 @@ Path.Builder = declare( 'LibCanvas.Shapes.Path.Builder', {
 			};
 		}
 
-		this.listenPoint( a.circle.center );
+		Point( a.circle.center );
 
 		a.acw = !!(a.acw || a.anticlockwise);
 		return this.push('arc', [a]);
@@ -6132,123 +5964,116 @@ provides: Shapes.Polygon
 ...
 */
 
-/**
- * @class
- * @name Polygon
- * @name LibCanvas.Shapes.Polygon
- */
-var Polygon = LibCanvas.declare( 'LibCanvas.Shapes.Polygon', 'Polygon', {
-	parent: Shape,
-	prototype: {
-		initialize: function () {
-			this.points = [];
-			this._lines = [];
-			Shape.prototype.initialize.apply(this, arguments);
-		},
-		set : function (poly) {
-			this.points.empty().append(
-				Array.pickFrom(arguments)
-					.map(function (elem) {
-						if (elem) return Point(elem);
-					})
-					.clean()
-			);
-			this._lines.empty();
-			return this;
-		},
-		get length () {
-			return this.points.length;
-		},
-		get lines () {
-			var lines = this._lines, p = this.points, l = p.length, i = 0;
-			if (lines.length != l) for (;i < l; i++) {
-				lines.push( new Line( p[i], i+1 == l ? p[0] : p[i+1] ) );
-			}
-			return this._lines;
-		},
-		get center () {
-			return new Point().mean(this.points);
-		},
-		get: function (index) {
-			return this.points[index];
-		},
-		hasPoint : function (point) {
-			point = Point(Array.pickFrom(arguments));
-
-			var result = false, points = this.points;
-			for (var i = 0, l = this.length; i < l; i++) {
-				var k = (i || l) - 1, I = points[i], K = points[k];
-				if (
-					(point.y.between(I.y , K.y, "L") || point.y.between(K.y , I.y, "L"))
-						&&
-					 point.x < (K.x - I.x) * (point.y -I.y) / (K.y - I.y) + I.x
-				) {
-					result = !result;
-				}
-			}
-			return result;
-		},
-		getCoords : function () {
-			return this.points[0];
-		},
-		processPath : function (ctx, noWrap) {
-			if (!noWrap) ctx.beginPath();
-			for (var i = 0, l = this.points.length; i < l; i++) {
-				var point = this.points[i];
-				ctx[i > 0 ? 'lineTo' : 'moveTo'](point.x, point.y);
-			}
-			if (!noWrap) ctx.closePath();
-			return ctx;
-		},
-		move : function (distance, reverse) {
-			this.points.invoke('move', distance, reverse);
-			return this;
-		},
-		grow: function () {
-			return this;
-		},
-		getBoundingRectangle: function () {
-			var p = this.points, from, to;
-			if (p.length == 0) throw new Error('Polygon is empty');
-
-			from = p[0].clone(), to = p[0].clone();
-			for (var l = p.length; l--;) {
-				from.x = Math.min( from.x, p[l].x );
-				from.y = Math.min( from.y, p[l].y );
-				  to.x = Math.max(   to.x, p[l].x );
-				  to.y = Math.max(   to.y, p[l].y );
-			}
-			return new Rectangle( from, to );
-		},
-		rotate : function (angle, pivot) {
-			this.points.invoke('rotate', angle, pivot);
-			return this;
-		},
-		scale : function (power, pivot) {
-			this.points.invoke('scale', power, pivot);
-			return this;
-		},
-		// #todo: cache
-		intersect : function (poly) {
-			if (poly.constructor != this.constructor) {
-				return this.getBoundingRectangle().intersect( poly );
-			}
-			var tL = this.lines, pL = poly.lines, i = tL.length, k = pL.length;
-			while (i-- > 0) for (k = pL.length; k-- > 0;) {
-				if (tL[i].intersect(pL[k])) return true;
-			}
-			return false;
-		},
-		each : function (fn, context) {
-			return this.points.forEach(context ? fn.bind(context) : fn);
-		},
-
-		getPoints : function () {
-			return Array.toHash(this.points);
-		},
-		clone: function () {
-			return new this.constructor(this.points.invoke('clone'));
+/** @class Polygon */
+var Polygon = LibCanvas.declare( 'LibCanvas.Shapes.Polygon', 'Polygon', Shape, {
+	initialize: function () {
+		this.points = [];
+		this._lines = [];
+		Shape.prototype.initialize.apply(this, arguments);
+	},
+	set : function (poly) {
+		this.points.empty().append(
+			Array.pickFrom(arguments)
+				.map(function (elem) {
+					if (elem) return Point(elem);
+				})
+				.clean()
+		);
+		this._lines.empty();
+		return this;
+	},
+	get length () {
+		return this.points.length;
+	},
+	get lines () {
+		var lines = this._lines, p = this.points, l = p.length, i = 0;
+		if (lines.length != l) for (;i < l; i++) {
+			lines.push( new Line( p[i], i+1 == l ? p[0] : p[i+1] ) );
 		}
+		return this._lines;
+	},
+	get center () {
+		return new Point().mean(this.points);
+	},
+	get: function (index) {
+		return this.points[index];
+	},
+	hasPoint : function (point) {
+		point = Point(Array.pickFrom(arguments));
+
+		var result = false, points = this.points;
+		for (var i = 0, l = this.length; i < l; i++) {
+			var k = (i || l) - 1, I = points[i], K = points[k];
+			if (
+				(point.y.between(I.y , K.y, "L") || point.y.between(K.y , I.y, "L"))
+					&&
+				 point.x < (K.x - I.x) * (point.y -I.y) / (K.y - I.y) + I.x
+			) {
+				result = !result;
+			}
+		}
+		return result;
+	},
+	getCoords : function () {
+		return this.points[0];
+	},
+	processPath : function (ctx, noWrap) {
+		if (!noWrap) ctx.beginPath();
+		for (var i = 0, l = this.points.length; i < l; i++) {
+			var point = this.points[i];
+			ctx[i > 0 ? 'lineTo' : 'moveTo'](point.x, point.y);
+		}
+		if (!noWrap) ctx.closePath();
+		return ctx;
+	},
+	move : function (distance, reverse) {
+		this.points.invoke('move', distance, reverse);
+		return this;
+	},
+	grow: function () {
+		return this;
+	},
+	getBoundingRectangle: function () {
+		var p = this.points, from, to;
+		if (p.length == 0) throw new Error('Polygon is empty');
+
+		from = p[0].clone(), to = p[0].clone();
+		for (var l = p.length; l--;) {
+			from.x = Math.min( from.x, p[l].x );
+			from.y = Math.min( from.y, p[l].y );
+			  to.x = Math.max(   to.x, p[l].x );
+			  to.y = Math.max(   to.y, p[l].y );
+		}
+		return new Rectangle( from, to );
+	},
+	rotate : function (angle, pivot) {
+		this.points.invoke('rotate', angle, pivot);
+		return this;
+	},
+	scale : function (power, pivot) {
+		this.points.invoke('scale', power, pivot);
+		return this;
+	},
+	// #todo: cache
+	intersect : function (poly) {
+		if (poly.constructor != this.constructor) {
+			return this.getBoundingRectangle().intersect( poly );
+		}
+		var tL = this.lines, pL = poly.lines, i = tL.length, k = pL.length;
+		while (i-- > 0) for (k = pL.length; k-- > 0;) {
+			if (tL[i].intersect(pL[k])) return true;
+		}
+		return false;
+	},
+	each : function (fn, context) {
+		return this.points.forEach(context ? fn.bind(context) : fn);
+	},
+
+	getPoints : function () {
+		return Array.toHash(this.points);
+	},
+	clone: function () {
+		return new this.constructor(this.points.invoke('clone'));
 	}
 });
 
@@ -6275,15 +6100,9 @@ provides: Shapes.RoundedRectangle
 ...
 */
 
-/**
- * @class
- * @name RoundedRectangle
- * @name LibCanvas.Shapes.RoundedRectangle
- */
-var RoundedRectangle = LibCanvas.declare( 'LibCanvas.Shapes.RoundedRectangle', 'RoundedRectangle', {
-	parent: Rectangle,
-
-	prototype: {
+/** @class RoundedRectangle */
+var RoundedRectangle = LibCanvas.declare(
+	'LibCanvas.Shapes.RoundedRectangle', 'RoundedRectangle', Rectangle, {
 		radius: 0,
 
 		setRadius: function (value) {
@@ -6316,7 +6135,6 @@ var RoundedRectangle = LibCanvas.declare( 'LibCanvas.Shapes.RoundedRectangle', '
 			var p = function (p) { return '[' + p.x + ', ' + p.y + ']'; };
 			return '[shape RoundedRectangle(from'+p(this.from)+', to'+p(this.to)+', radius='+this.radius+')]';
 		}
-	}
 });
 
 /*
@@ -6342,7 +6160,7 @@ provides: Utils.Image
 ...
 */
 // <image> tag
-atom.append(HTMLImageElement.prototype, {
+atom.core.append(HTMLImageElement.prototype, {
 	// наверное, лучше использовать createPattern
 	createSprite: function (rect) {
 		if (rect.width <= 0 || rect.height <= 0) {
@@ -6427,7 +6245,7 @@ atom.append(HTMLImageElement.prototype, {
 	}
 });
 	// mixin from image
-atom.append(HTMLCanvasElement.prototype, {
+atom.core.append(HTMLCanvasElement.prototype, {
 	createSprite : HTMLImageElement.prototype.createSprite,
 	sprite   : HTMLImageElement.prototype.sprite,
 	isLoaded : function () { return true; },
@@ -6457,11 +6275,7 @@ provides: Utils.ImagePreloader
 ...
 */
 
-/**
- * @class
- * @name ImagePreloader
- * @name LibCanvas.Utils.ImagePreloader
- */
+/** @class ImagePreloader */
 var ImagePreloader = LibCanvas.declare( 'LibCanvas.Utils.ImagePreloader', 'ImagePreloader', {
 	processed : 0,
 	number    : 0,
@@ -6597,7 +6411,7 @@ var ImagePreloader = LibCanvas.declare( 'LibCanvas.Utils.ImagePreloader', 'Image
 	}
 });
 
-LibCanvas.Utils.ImagePreloader.run = function (images, callback, context) {
+ImagePreloader.run = function (images, callback, context) {
 	return new ImagePreloader({ images: images }).events
 		.add( 'ready', context ? callback.bind(context) : callback );
 };
@@ -6867,11 +6681,7 @@ provides: Engines.Tile
 ...
 */
 
-/**
- * @class
- * @name TileEngine
- * @name LibCanvas.Engines.Tile
- */
+/** @class TileEngine */
 LibCanvas.declare( 'LibCanvas.Engines.Tile', 'TileEngine', {
 
 	/**
@@ -7019,11 +6829,7 @@ provides: Engines.Tile.Cell
 
 ...
 */
-/**
- * @class
- * @name TileEngine.Cell
- * @name LibCanvas.Engines.Tile.Cell
- */
+/** @class TileEngine.Cell */
 declare( 'LibCanvas.Engines.Tile.Cell', {
 
 	initialize: function (engine, point, rectangle, value) {
@@ -7090,46 +6896,38 @@ provides: Engines.Tile.Element
 
 ...
 */
-/**
- * @class
- * @name TileEngine.Element
- * @name LibCanvas.Engines.Tile.Element
- */
-declare( 'LibCanvas.Engines.Tile.Element', {
-	parent: App.Element,
-
-	own: {
-		app: function (app, engine, from) {
-			return new this( app.createScene({
-				intersection: 'manual',
-				invoke: false
-			}), {
-				engine: engine,
-				from: from || new Point(0, 0)
-			});
-		}
+/** @class TileEngine.Element */
+declare( 'LibCanvas.Engines.Tile.Element', App.Element, {
+	configure: function () {
+		this.shape = new Rectangle(
+			this.settings.get('from'),
+			this.engine.countSize()
+		);
+		this.engine.events.add( 'update', this.redraw );
 	},
 
-	prototype: {
-		configure: function () {
-			this.shape = new Rectangle(
-				this.settings.get('from'),
-				this.engine.countSize()
-			);
-			this.engine.events.add( 'update', this.redraw );
-		},
+	get engine () {
+		return this.settings.get('engine');
+	},
 
-		get engine () {
-			return this.settings.get('engine');
-		},
+	clearPrevious: function () {},
 
-		clearPrevious: function () {},
-
-		renderTo: function (ctx) {
-			this.engine.refresh(ctx, this.shape.from);
-		}
+	renderTo: function (ctx) {
+		this.engine.refresh(ctx, this.shape.from);
+	}
+}).own({
+	app: function (app, engine, from) {
+		return new this( app.createScene({
+			intersection: 'manual',
+			invoke: false
+		}), {
+			engine: engine,
+			from: from || new Point(0, 0)
+		});
 	}
 });
+
+
 
 /*
 ---
@@ -7150,11 +6948,7 @@ provides: Engines.Tile.Mouse
 
 ...
 */
-/**
- * @class
- * @name TileEngine.Mouse
- * @name LibCanvas.Engines.Tile.Mouse
- */
+/** @class TileEngine.Mouse */
 declare( 'LibCanvas.Engines.Tile.Mouse', {
 	initialize: function (element, mouse) {
 		var handler = this;
