@@ -22,14 +22,9 @@
  ...
  */
 
-/**
- * @class
- * @name ImageBuilder
- * @name LibCanvas.Plugins.ImageBuilder
- */
+/** @class ImageBuilder */
 var ImageBuilder = LibCanvas.declare(
-	'LibCanvas.Plugins.ImageBuilder', 'ImageBuilder',
-	{
+	'LibCanvas.Plugins.ImageBuilder', 'ImageBuilder', {
 		ctx     : null,
 		shape   : null,
 		images  : [
@@ -161,102 +156,88 @@ var ImageBuilder = LibCanvas.declare(
 	}
 );
 
-/**
- * @class
- * @name ImageBuilder.Horisontal
- * @name LibCanvas.Plugins.ImageBuilder.Horisontal
- */
-atom.declare( 'LibCanvas.Plugins.ImageBuilder.Horisontal', {
-	parent: ImageBuilder,
-	prototype: {
-		images: [ 0, 1, 2 ],
-		/** @private */
-		countBasis: function (basis) {
-			var images = this.images, size = this.shape.size;
+/** @class ImageBuilder.Horisontal */
+atom.declare( 'LibCanvas.Plugins.ImageBuilder.Horisontal', ImageBuilder, {
+	images: [ 0, 1, 2 ],
+	/** @private */
+	countBasis: function (basis) {
+		var images = this.images, size = this.shape.size;
 
-			switch (basis) {
-				case 'left'  : return images[0].width;
-				case 'right' : return size.width  - images[2].width;
-				case 'top'   : return 0;
-				case 'bottom': return size.height;
-				default: throw new TypeError('Wrong basis: ' + basis);
-			}
-		},
-		/** @private */
-		renderParts: function () {
-			var images = this.images;
-			this
-				.renderRepeated( images[1], 'center', 'middle' )
-				.renderSingle  ( images[0], 'left'  , 'middle' )
-				.renderSingle  ( images[2], 'right' , 'middle' );
-		},
-		/** @private */
-		cropImage: function (data) {
-			var w, x, width,
-				images  = [],
-				widths  = data.widths;
-
-			for (x = 0, w = 0; w < widths.length; w++) {
-				width = widths[w];
-
-				images.push(this.createCroppedImage( data.source,
-					new Rectangle(x,0,width,data.source.height)
-				));
-
-				x += width;
-			}
-
-			this.images = images;
+		switch (basis) {
+			case 'left'  : return images[0].width;
+			case 'right' : return size.width  - images[2].width;
+			case 'top'   : return 0;
+			case 'bottom': return size.height;
+			default: throw new TypeError('Wrong basis: ' + basis);
 		}
+	},
+	/** @private */
+	renderParts: function () {
+		var images = this.images;
+		this
+			.renderRepeated( images[1], 'center', 'middle' )
+			.renderSingle  ( images[0], 'left'  , 'middle' )
+			.renderSingle  ( images[2], 'right' , 'middle' );
+	},
+	/** @private */
+	cropImage: function (data) {
+		var w, x, width,
+			images  = [],
+			widths  = data.widths;
+
+		for (x = 0, w = 0; w < widths.length; w++) {
+			width = widths[w];
+
+			images.push(this.createCroppedImage( data.source,
+				new Rectangle(x,0,width,data.source.height)
+			));
+
+			x += width;
+		}
+
+		this.images = images;
 	}
 });
 
-/**
- * @class
- * @name ImageBuilder.Vertical
- * @name LibCanvas.Plugins.ImageBuilder.Vertical
- */
-atom.declare( 'LibCanvas.Plugins.ImageBuilder.Vertical', {
-	parent: ImageBuilder,
-	prototype: {
-		images: [ 0, 1, 2 ],
-		/** @private */
-		countBasis: function (basis) {
-			var images = this.images, size = this.shape.size;
+/** @class ImageBuilder.Vertical */
+atom.declare( 'LibCanvas.Plugins.ImageBuilder.Vertical', ImageBuilder, {
+	images: [ 0, 1, 2 ],
+	/** @private */
+	countBasis: function (basis) {
+		var images = this.images, size = this.shape.size;
 
-			switch (basis) {
-				case 'left'  : return 0;
-				case 'right' : return size.width;
-				case 'top'   : return images[0].height;
-				case 'bottom': return size.height - images[2].height;
-				default: throw new TypeError('Wrong basis: ' + basis);
-			}
-		},
-		/** @private */
-		renderParts: function () {
-			var images = this.images;
-			this
-				.renderRepeated( images[1], 'center', 'middle' )
-				.renderSingle  ( images[0], 'center', 'top'    )
-				.renderSingle  ( images[2], 'center', 'bottom' );
-		},
-		/** @private */
-		cropImage: function (data) {
-			var h, y, height,
-				images  = [],
-				heights = data.heights;
-
-			for (y = 0, h = 0; h < heights.length; h++) {
-				height = heights[h];
-
-				images.push(this.createCroppedImage( data.source,
-					new Rectangle(0,y,data.source.width,height)
-				));
-
-				y += height;
-			}
-
-			this.images = images;
+		switch (basis) {
+			case 'left'  : return 0;
+			case 'right' : return size.width;
+			case 'top'   : return images[0].height;
+			case 'bottom': return size.height - images[2].height;
+			default: throw new TypeError('Wrong basis: ' + basis);
 		}
+	},
+	/** @private */
+	renderParts: function () {
+		var images = this.images;
+		this
+			.renderRepeated( images[1], 'center', 'middle' )
+			.renderSingle  ( images[0], 'center', 'top'    )
+			.renderSingle  ( images[2], 'center', 'bottom' );
+	},
+	/** @private */
+	cropImage: function (data) {
+		var h, y, height,
+			images  = [],
+			heights = data.heights;
+
+		for (y = 0, h = 0; h < heights.length; h++) {
+			height = heights[h];
+
+			images.push(this.createCroppedImage( data.source,
+				new Rectangle(0,y,data.source.width,height)
+			));
+
+			y += height;
+		}
+
+		this.images = images;
 	}
 });
