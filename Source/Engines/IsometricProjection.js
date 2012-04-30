@@ -19,11 +19,7 @@ provides: Engines.IsometricProjection
 ...
 */
 
-/**
- * @class
- * @name IsometricProjection
- * @name LibCanvas.Engines.IsometricProjection
- */
+/** @class IsometricProjection */
 LibCanvas.declare( 'LibCanvas.Engines.IsometricProjection', 'IsometricProjection', {
 
 	/**

@@ -17,11 +17,7 @@ provides: Engines.Tile.Mouse
 
 ...
 */
-/**
- * @class
- * @name TileEngine.Mouse
- * @name LibCanvas.Engines.Tile.Mouse
- */
+/** @class TileEngine.Mouse */
 declare( 'LibCanvas.Engines.Tile.Mouse', {
 	initialize: function (element, mouse) {
 		var handler = this;

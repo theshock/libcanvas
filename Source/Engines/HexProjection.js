@@ -20,11 +20,7 @@ provides: Engines.HexProjection
 ...
 */
 
-/**
- * @class
- * @name HexProjection
- * @name LibCanvas.Engines.HexProjection
- */
+/** @class HexProjection */
 LibCanvas.declare( 'LibCanvas.Engines.HexProjection', 'HexProjection', {
 	/**
 	 * @param {object} settings

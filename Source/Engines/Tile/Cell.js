@@ -17,11 +17,7 @@ provides: Engines.Tile.Cell
 
 ...
 */
-/**
- * @class
- * @name TileEngine.Cell
- * @name LibCanvas.Engines.Tile.Cell
- */
+/** @class TileEngine.Cell */
 declare( 'LibCanvas.Engines.Tile.Cell', {
 
 	initialize: function (engine, point, rectangle, value) {
