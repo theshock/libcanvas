@@ -22,7 +22,7 @@ provides: Mouse
 */
 
 /** @class Mouse */
-LibCanvas.declare( 'LibCanvas.Mouse', 'Mouse', {
+var Mouse = LibCanvas.declare( 'LibCanvas.Mouse', 'Mouse', {
 	/** @private */
 	elem: null,
 
