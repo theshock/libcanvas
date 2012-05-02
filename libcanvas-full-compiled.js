@@ -1024,6 +1024,7 @@ declare( 'LibCanvas.App.Scene', {
 	rmElement: function (element) {
 		if (element.scene == this) {
 			if (this.shouldRedrawAll) {
+				this.needUpdate = true;
 				this.clear.push(element);
 			} else {
 				this.redrawElement( element );
