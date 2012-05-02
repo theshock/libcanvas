@@ -899,12 +899,15 @@ declare( 'LibCanvas.App.Scene', {
 	initialize: function (app, settings) {
 		this.settings = new Settings({
 			invoke      : app.settings.get('invoke'),
-			intersection: 'auto' // 'auto'|'manual'
+			intersection: 'auto' // auto|manual|all
 		}).set(settings);
+
+		this.shouldRedrawAll = this.settings.get('intersection') === 'all';
 
 		this.app      = app;
 		this.elements = [];
-		this.redraw   = [];
+		this.redraw   = this.shouldRedrawAll ? this.elements : [];
+		this.clear    = [];
 		this.createLayer();
 	},
 
@@ -924,6 +927,9 @@ declare( 'LibCanvas.App.Scene', {
 		this.stopped = true;
 		return this;
 	},
+
+	/** @private */
+	shouldRedrawAll: false,
 
 	/** @private */
 	tick: function (time) {
@@ -948,6 +954,7 @@ declare( 'LibCanvas.App.Scene', {
 		var i, elem,
 			ctx = this.layer.canvas.ctx,
 			redraw = this.redraw,
+			clear  = this.clear,
 			resources = this.app.resources;
 
 		if (this.settings.get('intersection') === 'auto') {
@@ -956,6 +963,12 @@ declare( 'LibCanvas.App.Scene', {
 
 		// draw elements with the lower zIndex first
 		atom.array.sortBy( redraw, 'zIndex' );
+
+		if (this.shouldRedrawAll) {
+			for (i = clear.length; i--;) {
+				clear[i].clearPrevious( ctx, resources );
+			}
+		}
 
 		for (i = redraw.length; i--;) {
 			redraw[i].clearPrevious( ctx, resources );
@@ -972,7 +985,9 @@ declare( 'LibCanvas.App.Scene', {
 			}
 		}
 
-		redraw.length = 0;
+		if (!this.shouldRedrawAll) {
+			redraw.length = 0;
+		}
 	},
 
 	/** @private */
@@ -1008,7 +1023,11 @@ declare( 'LibCanvas.App.Scene', {
 	/** @private */
 	rmElement: function (element) {
 		if (element.scene == this) {
-			this.redrawElement ( element );
+			if (this.shouldRedrawAll) {
+				this.clear.push(element);
+			} else {
+				this.redrawElement( element );
+			}
 			this.elements.erase( element );
 			element.scene = null;
 		}
@@ -1018,9 +1037,11 @@ declare( 'LibCanvas.App.Scene', {
 	/** @private */
 	redrawElement: function (element) {
 		if (element.scene == this && !element.redrawRequested) {
-			this.redraw.push( element );
 			this.needUpdate = true;
 			element.redrawRequested = true;
+			if (!this.shouldRedrawAll) {
+				this.redraw.push( element );
+			}
 		}
 		return this;
 	},
