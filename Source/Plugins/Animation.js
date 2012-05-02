@@ -122,8 +122,8 @@ atom.declare( 'LibCanvas.Plugins.Animation.Frames', {
 			w  = this.size.width,
 			h  = this.size.height;
 
-		for     (x = 0; x <= im.width  - w; x += w) {
-			for (y = 0; y <= im.height - h; y += h) {
+		for     (y = 0; y <= im.height - h; y += h) {
+			for (x = 0; x <= im.width  - w; x += w) {
 				this.sprites.push( im.sprite(x, y, w, h) );
 			}
 		}
