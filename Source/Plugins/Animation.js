@@ -80,7 +80,7 @@ var Animation = LibCanvas.declare( 'LibCanvas.Plugins.Animation', 'Animation', {
 
 		clearTimeout(this.timeoutId);
 
-		if (delay == null) {
+		if (delay == null || this.startTime == null) {
 			this.events.fire('stop');
 		} else {
 			this.events.fire('update', [ this.get() ]);
