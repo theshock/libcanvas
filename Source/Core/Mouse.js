@@ -142,6 +142,7 @@ var Mouse = LibCanvas.declare( 'LibCanvas.Mouse', 'Mouse', {
 			));
 	}
 }).own({
+	prevent: function (e) {e.preventDefault()},
 	eventSource: function (e) {
 		return e.changedTouches ? e.changedTouches[0] : e;
 	},
