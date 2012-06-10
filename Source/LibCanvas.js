@@ -17,7 +17,7 @@ provides: LibCanvas
 ...
 */
 
-var LibCanvas = this.LibCanvas = declare({ name: 'LibCanvas' })
+var LibCanvas = this.LibCanvas = declare({ name: 'LibCanvas', prototype: {} })
 	.own({
 		Buffer: function () {
 			return LibCanvas.buffer.apply( LibCanvas, arguments );
