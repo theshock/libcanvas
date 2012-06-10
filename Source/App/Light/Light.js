@@ -32,10 +32,11 @@ declare( 'LibCanvas.App.Light', {
 			name    : 'main',
 			mouse   : true,
 			invoke  : false,
-			appendTo: 'body'
+			appendTo: 'body',
+			intersection: 'auto'
 		}).set(settings || {});
 		this.app   = new App( this.settings.get(['size', 'appendTo']) );
-		this.scene = this.app.createScene(this.settings.get(['name','invoke']));
+		this.scene = this.app.createScene(this.settings.get(['name','invoke','intersection']));
 		if (this.settings.get('mouse') === true) {
 			mouse = new Mouse(this.app.container.bounds);
 			mouseHandler = new App.MouseHandler({ mouse: mouse, app: this.app });
