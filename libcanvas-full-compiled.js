@@ -4193,15 +4193,12 @@ provides: Plugins.ExtendedCurves
 
 new function () {
 
-/*
-	The following text contains bad code and due to it's code it should not be readed by ANYONE!
-*/
+// The following text contains bad code and due to it's code it should not be readed by ANYONE!
 
 var
 	Transition = atom.Transition,
 	Color = atom.Color,
-	Point = LibCanvas.Point,
-	EC    = {};
+	EC = {};
 
 /** @returns {atom.Color} */
 EC.getColor = function (color) {
