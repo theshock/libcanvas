@@ -135,21 +135,11 @@ var Mouse = LibCanvas.declare( 'LibCanvas.Mouse', 'Mouse', {
 	},
 	/** @private */
 	listen : function (callback) {
-		this.elem.bind({
-			click      : callback,
-			dblclick   : callback,
-			contextmenu: callback,
-
-			mouseover  : callback,
-			mousedown  : callback,
-			mouseup    : callback,
-			mousemove  : callback,
-			mouseout   : callback,
-
-			DOMMouseScroll: callback,
-			mousewheel    : callback,
-			selectstart   : false
-		});
+		this.elem
+			.bind({ selectstart: false })
+			.bind(atom.object.map(
+				this.mapping, atom.fn.lambda(callback)
+			));
 	}
 }).own({
 	eventSource: function (e) {
