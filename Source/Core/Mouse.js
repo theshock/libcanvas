@@ -108,6 +108,10 @@ var Mouse = LibCanvas.declare( 'LibCanvas.Mouse', 'Mouse', {
 			this.set(e, true);
 		},
 
+		down: function (e) {
+			this.set(e, true);
+		},
+
 		over: function (e) {
 			if (this.checkEvent(e)) {
 				this.fire('enter', e);
