@@ -146,7 +146,8 @@ var Point = LibCanvas.declare( 'LibCanvas.Point', 'Point', Geometry, {
 		if (accuracy == null) {
 			return to.x == this.x && to.y == this.y;
 		}
-		return this.x.equals(to.x, accuracy) && this.y.equals(to.y, accuracy);
+		return atom.number.equals(this.x, to.x, accuracy)
+			&& atom.number.equals(this.y, to.y, accuracy);
 	},
 	/** @returns {object} */
 	toObject: function () {
@@ -175,8 +176,8 @@ var Point = LibCanvas.declare( 'LibCanvas.Point', 'Point', Geometry, {
 	},
 	/** @returns {Point} */
 	snapToPixel: function () {
-		this.x += 0.5 - (this.x - this.x.floor());
-		this.y += 0.5 - (this.y - this.y.floor());
+		this.x += 0.5 - (this.x - Math.floor(this.x));
+		this.y += 0.5 - (this.y - Math.floor(this.y));
 		return this;
 	},
 	/** @returns {Point} */

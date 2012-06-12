@@ -44,8 +44,8 @@ var UtilsImage = atom.declare( 'LibCanvas.Utils.Image', {
 		buf = LibCanvas.buffer(rect.width, rect.height, true);
 
 		// если координаты выходят за левый/верхний край картинки
-		if (rect.from.x < 0) xShift = (rect.from.x.abs() / rect.width ).ceil();
-		if (rect.from.y < 0) yShift = (rect.from.y.abs() / rect.height).ceil();
+		if (rect.from.x < 0) xShift = Math.ceil(Math.abs(rect.from.x) / rect.width );
+		if (rect.from.y < 0) yShift = Math.ceil(Math.abs(rect.from.y) / rect.height);
 		if (xShift || yShift) {
 			rect = rect.clone().move(new Point(
 				xShift * image.width,

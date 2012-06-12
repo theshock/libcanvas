@@ -558,9 +558,9 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 			cfg.padding = [cfg.padding, cfg.padding];
 		}
 		var to = cfg.to ? Rectangle(cfg.to) : this.rectangle;
-		var lh = (cfg.lineHeight || (cfg.size * 1.15)).round();
-		this.set('font', '{style}{weight}{size}px {family}'
-			.substitute({
+		var lh = Math.round(cfg.lineHeight || (cfg.size * 1.15));
+		this.set('font', atom.string.substitute(
+			'{style}{weight}{size}px {family}', {
 				style  : cfg.style == 'italic' ? 'italic ' : '',
 				weight : cfg.weight == 'bold'  ? 'bold '   : '',
 				size   : cfg.size,
@@ -673,7 +673,7 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 				};
 				transform(a, center);
 			} else if (a.optimize) {
-				from = { x: from.x.round(), y: from.y.round() }
+				from = { x: Math.round(from.x), y: Math.round(from.y) }
 			}
 			this.original('drawImage', [
 				a.image, from.x, from.y
@@ -691,15 +691,15 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 				]);
 			} else if (a.optimize) {
 				var size = draw.size, dSize = {
-					x: (size.width  - a.image.width ).abs(),
-					y: (size.height - a.image.height).abs()
+					x: Math.abs(size.width  - a.image.width ),
+					y: Math.abs(size.height - a.image.height)
 				};
-				from = { x: draw.from.x.round(), y: draw.from.y.round() };
+				from = { x:Math.round(draw.from.x), y: Math.round(draw.from.y) };
 				if (dSize.x <= 1.1 && dSize.y <= 1.1 ) {
 					this.original('drawImage', [ a.image, from.x, from.y ]);
 				} else {
 					this.original('drawImage', [
-						a.image, from.x, from.y, size.width.round(), size.height.round()
+						a.image, from.x, from.y, Math.round(size.width), Math.round(size.height)
 					]);
 				}
 			} else {

@@ -86,8 +86,8 @@ var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Sh
 		point   = Point(arguments);
 		padding = padding || 0;
 		return point.x != null && point.y != null
-			&& point.x.between(Math.min(this.from.x, this.to.x) + padding, Math.max(this.from.x, this.to.x) - padding, 1)
-			&& point.y.between(Math.min(this.from.y, this.to.y) + padding, Math.max(this.from.y, this.to.y) - padding, 1);
+			&& atom.number.between(point.x, Math.min(this.from.x, this.to.x) + padding, Math.max(this.from.x, this.to.x) - padding, 1)
+			&& atom.number.between(point.y, Math.min(this.from.y, this.to.y) + padding, Math.max(this.from.y, this.to.y) - padding, 1);
 	},
 	align: function (rect, sides) {
 		if (sides == null) sides = 'center middle';
@@ -128,8 +128,8 @@ var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Sh
 		ctx.original(type + 'Rect', [
 			Math.min(this.from.x, this.to.x),
 			Math.min(this.from.y, this.to.y),
-			this.width .abs(),
-			this.height.abs()
+			Math.abs(this.width ),
+			Math.abs(this.height)
 		]);
 		return this;
 	},

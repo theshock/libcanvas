@@ -1162,8 +1162,8 @@ declare( 'LibCanvas.App.SceneShift', {
 
 		var limit = this.limitShift, current = this.shift;
 		if (limit) {
-			shift.x = shift.x.limit(limit.from.x - current.x, limit.to.x - current.x);
-			shift.y = shift.y.limit(limit.from.y - current.y, limit.to.y - current.y);
+			shift.x = atom.number.limit(shift.x, limit.from.x - current.x, limit.to.x - current.x);
+			shift.y = atom.number.limit(shift.y, limit.from.y - current.y, limit.to.y - current.y);
 		}
 
 		current.move( shift );
@@ -1588,7 +1588,8 @@ var Point = LibCanvas.declare( 'LibCanvas.Point', 'Point', Geometry, {
 		if (accuracy == null) {
 			return to.x == this.x && to.y == this.y;
 		}
-		return this.x.equals(to.x, accuracy) && this.y.equals(to.y, accuracy);
+		return atom.number.equals(this.x, to.x, accuracy)
+			&& atom.number.equals(this.y, to.y, accuracy);
 	},
 	/** @returns {object} */
 	toObject: function () {
@@ -1617,8 +1618,8 @@ var Point = LibCanvas.declare( 'LibCanvas.Point', 'Point', Geometry, {
 	},
 	/** @returns {Point} */
 	snapToPixel: function () {
-		this.x += 0.5 - (this.x - this.x.floor());
-		this.y += 0.5 - (this.y - this.y.floor());
+		this.x += 0.5 - (this.x - Math.floor(this.x));
+		this.y += 0.5 - (this.y - Math.floor(this.y));
 		return this;
 	},
 	/** @returns {Point} */
@@ -1888,8 +1889,8 @@ var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Sh
 		point   = Point(arguments);
 		padding = padding || 0;
 		return point.x != null && point.y != null
-			&& point.x.between(Math.min(this.from.x, this.to.x) + padding, Math.max(this.from.x, this.to.x) - padding, 1)
-			&& point.y.between(Math.min(this.from.y, this.to.y) + padding, Math.max(this.from.y, this.to.y) - padding, 1);
+			&& atom.number.between(point.x, Math.min(this.from.x, this.to.x) + padding, Math.max(this.from.x, this.to.x) - padding, 1)
+			&& atom.number.between(point.y, Math.min(this.from.y, this.to.y) + padding, Math.max(this.from.y, this.to.y) - padding, 1);
 	},
 	align: function (rect, sides) {
 		if (sides == null) sides = 'center middle';
@@ -1930,8 +1931,8 @@ var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Sh
 		ctx.original(type + 'Rect', [
 			Math.min(this.from.x, this.to.x),
 			Math.min(this.from.y, this.to.y),
-			this.width .abs(),
-			this.height.abs()
+			Math.abs(this.width ),
+			Math.abs(this.height)
 		]);
 		return this;
 	},
@@ -2746,9 +2747,9 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 			cfg.padding = [cfg.padding, cfg.padding];
 		}
 		var to = cfg.to ? Rectangle(cfg.to) : this.rectangle;
-		var lh = (cfg.lineHeight || (cfg.size * 1.15)).round();
-		this.set('font', '{style}{weight}{size}px {family}'
-			.substitute({
+		var lh = Math.round(cfg.lineHeight || (cfg.size * 1.15));
+		this.set('font', atom.string.substitute(
+			'{style}{weight}{size}px {family}', {
 				style  : cfg.style == 'italic' ? 'italic ' : '',
 				weight : cfg.weight == 'bold'  ? 'bold '   : '',
 				size   : cfg.size,
@@ -2861,7 +2862,7 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 				};
 				transform(a, center);
 			} else if (a.optimize) {
-				from = { x: from.x.round(), y: from.y.round() }
+				from = { x: Math.round(from.x), y: Math.round(from.y) }
 			}
 			this.original('drawImage', [
 				a.image, from.x, from.y
@@ -2879,15 +2880,15 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 				]);
 			} else if (a.optimize) {
 				var size = draw.size, dSize = {
-					x: (size.width  - a.image.width ).abs(),
-					y: (size.height - a.image.height).abs()
+					x: Math.abs(size.width  - a.image.width ),
+					y: Math.abs(size.height - a.image.height)
 				};
-				from = { x: draw.from.x.round(), y: draw.from.y.round() };
+				from = { x:Math.round(draw.from.x), y: Math.round(draw.from.y) };
 				if (dSize.x <= 1.1 && dSize.y <= 1.1 ) {
 					this.original('drawImage', [ a.image, from.x, from.y ]);
 				} else {
 					this.original('drawImage', [
-						a.image, from.x, from.y, size.width.round(), size.height.round()
+						a.image, from.x, from.y, Math.round(size.width), Math.round(size.height)
 					]);
 				}
 			} else {
@@ -5549,7 +5550,10 @@ provides: Shapes.Line
 var Line = function () {
 
 var between = function (x, a, b, accuracy) {
-	return x.equals(a, accuracy) || x.equals(b, accuracy) || (a < x && x < b) || (b < x && x < a);
+	return atom.number.equals(x, a, accuracy)
+		|| atom.number.equals(x, b, accuracy)
+		|| (a < x && x < b)
+		|| (b < x && x < a);
 };
 
 var halfPi = Math.PI/2;
@@ -5577,12 +5581,12 @@ return LibCanvas.declare( 'LibCanvas.Shapes.Line', 'Line', Shape, {
 			px = point.x,
 			py = point.y;
 
-		if (!( point.x.between(Math.min(fx, tx), Math.max(fx, tx))
-		    && point.y.between(Math.min(fy, ty), Math.max(fy, ty))
+		if (!( atom.number.between(point.x, Math.min(fx, tx), Math.max(fx, tx))
+		    && atom.number.between(point.y, Math.min(fy, ty), Math.max(fy, ty))
 		)) return false;
 
 		// if triangle square is zero - points are on one line
-		return ((fx-px)*(ty-py)-(tx-px)*(fy-py)).round(6) == 0;
+		return atom.number.round(((fx-px)*(ty-py)-(tx-px)*(fy-py)), 6) == 0;
 	},
 	getBoundingRectangle: function () {
 		return new Rectangle(this.from, this.to).fillToPixel().grow(2);
@@ -5592,12 +5596,12 @@ return LibCanvas.declare( 'LibCanvas.Shapes.Line', 'Line', Shape, {
 			return this.getBoundingRectangle().intersect( line );
 		}
 		var a = this.from, b = this.to, c = line.from, d = line.to, x, y, FALSE = point ? null : false;
-		if (d.x.equals(c.x, accuracy)) { // DC == vertical line
-			if (b.x.equals(a.x, accuracy)) {
-				if (a.x.equals(d.x, accuracy)) {
-					if (a.y.between(c.y, d.y)) {
+		if (atom.number.equals(d.x, c.x, accuracy)) { // DC == vertical line
+			if (atom.number.equals(b.x, a.x, accuracy)) {
+				if (atom.number.equals(a.x, d.x, accuracy)) {
+					if (atom.number.between(a.y, c.y, d.y)) {
 						return a.clone();
-					} else if (b.y.between(c.y, d.y)) {
+					} else if (atom.number.between(b.y, c.y, d.y)) {
 						return b.clone();
 					} else {
 						return FALSE;
@@ -5919,7 +5923,7 @@ declare( 'LibCanvas.Shapes.Path.Builder', {
 	// stringing
 	stringify : function (sep) {
 		if (!sep) sep = ' ';
-		var p = function (p) { return sep + p.x.round(2) + sep + p.y.round(2); };
+		var p = function (p) { return sep + p.x.toFixed(2) + sep + p.y.toFixed(2); };
 		return this.parts.map(function (part) {
 			var a = part.args[0];
 			switch(part.method) {
@@ -5927,8 +5931,8 @@ declare( 'LibCanvas.Shapes.Path.Builder', {
 				case 'lineTo' : return 'L' + p(a);
 				case 'curveTo': return 'C' + part.args.map(p).join('');
 				case 'arc'    : return 'A' +
-					p( a.circle.center ) + sep + a.circle.radius.round(2) + sep +
-					a.angle.start.round(2) + sep + a.angle.end.round(2) + sep + (a.acw ? 1 : 0);
+					p( a.circle.center ) + sep + a.circle.radius.toFixed(2) + sep +
+					a.angle.start.toFixed(2) + sep + a.angle.end.toFixed(2) + sep + (a.acw ? 1 : 0);
 			}
 		}).join(sep);
 	},
@@ -6022,9 +6026,9 @@ var Polygon = LibCanvas.declare( 'LibCanvas.Shapes.Polygon', 'Polygon', Shape, {
 		for (var i = 0, l = this.length; i < l; i++) {
 			var k = (i || l) - 1, I = points[i], K = points[k];
 			if (
-				(point.y.between(I.y , K.y, "L") || point.y.between(K.y , I.y, "L"))
-					&&
-				 point.x < (K.x - I.x) * (point.y -I.y) / (K.y - I.y) + I.x
+				(atom.number.between(point.y, I.y , K.y, "L")
+				|| atom.number.between(point.y, K.y , I.y, "L")
+				) && point.x < (K.x - I.x) * (point.y -I.y) / (K.y - I.y) + I.x
 			) {
 				result = !result;
 			}
@@ -6200,8 +6204,8 @@ var UtilsImage = atom.declare( 'LibCanvas.Utils.Image', {
 		buf = LibCanvas.buffer(rect.width, rect.height, true);
 
 		// если координаты выходят за левый/верхний край картинки
-		if (rect.from.x < 0) xShift = (rect.from.x.abs() / rect.width ).ceil();
-		if (rect.from.y < 0) yShift = (rect.from.y.abs() / rect.height).ceil();
+		if (rect.from.x < 0) xShift = Math.ceil(Math.abs(rect.from.x) / rect.width );
+		if (rect.from.y < 0) yShift = Math.ceil(Math.abs(rect.from.y) / rect.height);
 		if (xShift || yShift) {
 			rect = rect.clone().move(new Point(
 				xShift * image.width,

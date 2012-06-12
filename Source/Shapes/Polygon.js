@@ -65,9 +65,9 @@ var Polygon = LibCanvas.declare( 'LibCanvas.Shapes.Polygon', 'Polygon', Shape, {
 		for (var i = 0, l = this.length; i < l; i++) {
 			var k = (i || l) - 1, I = points[i], K = points[k];
 			if (
-				(point.y.between(I.y , K.y, "L") || point.y.between(K.y , I.y, "L"))
-					&&
-				 point.x < (K.x - I.x) * (point.y -I.y) / (K.y - I.y) + I.x
+				(atom.number.between(point.y, I.y , K.y, "L")
+				|| atom.number.between(point.y, K.y , I.y, "L")
+				) && point.x < (K.x - I.x) * (point.y -I.y) / (K.y - I.y) + I.x
 			) {
 				result = !result;
 			}

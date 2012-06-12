@@ -234,7 +234,7 @@ declare( 'LibCanvas.Shapes.Path.Builder', {
 	// stringing
 	stringify : function (sep) {
 		if (!sep) sep = ' ';
-		var p = function (p) { return sep + p.x.round(2) + sep + p.y.round(2); };
+		var p = function (p) { return sep + p.x.toFixed(2) + sep + p.y.toFixed(2); };
 		return this.parts.map(function (part) {
 			var a = part.args[0];
 			switch(part.method) {
@@ -242,8 +242,8 @@ declare( 'LibCanvas.Shapes.Path.Builder', {
 				case 'lineTo' : return 'L' + p(a);
 				case 'curveTo': return 'C' + part.args.map(p).join('');
 				case 'arc'    : return 'A' +
-					p( a.circle.center ) + sep + a.circle.radius.round(2) + sep +
-					a.angle.start.round(2) + sep + a.angle.end.round(2) + sep + (a.acw ? 1 : 0);
+					p( a.circle.center ) + sep + a.circle.radius.toFixed(2) + sep +
+					a.angle.start.toFixed(2) + sep + a.angle.end.toFixed(2) + sep + (a.acw ? 1 : 0);
 			}
 		}).join(sep);
 	},

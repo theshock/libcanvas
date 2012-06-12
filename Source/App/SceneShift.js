@@ -79,8 +79,8 @@ declare( 'LibCanvas.App.SceneShift', {
 
 		var limit = this.limitShift, current = this.shift;
 		if (limit) {
-			shift.x = shift.x.limit(limit.from.x - current.x, limit.to.x - current.x);
-			shift.y = shift.y.limit(limit.from.y - current.y, limit.to.y - current.y);
+			shift.x = atom.number.limit(shift.x, limit.from.x - current.x, limit.to.x - current.x);
+			shift.y = atom.number.limit(shift.y, limit.from.y - current.y, limit.to.y - current.y);
 		}
 
 		current.move( shift );
