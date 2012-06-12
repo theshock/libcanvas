@@ -25,7 +25,7 @@ provides: Shapes.Circle
 /** @class Circle */
 var Circle = LibCanvas.declare( 'LibCanvas.Shapes.Circle', 'Circle', Shape, {
 	set : function () {
-		var a = Array.pickFrom(arguments);
+		var a = atom.array.pickFrom(arguments);
 
 		if (a.length >= 3) {
 			this.center = new Point(a[0], a[1]);
@@ -35,7 +35,7 @@ var Circle = LibCanvas.declare( 'LibCanvas.Shapes.Circle', 'Circle', Shape, {
 			this.radius = a[1];
 		} else {
 			a = a[0];
-			this.radius = [a.r, a.radius].pick();
+			this.radius = a.r == null ? a.radius : a.r;
 			if ('x' in a && 'y' in a) {
 				this.center = new Point(a.x, a.y);
 			} else if ('center' in a) {

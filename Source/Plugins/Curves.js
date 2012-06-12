@@ -123,7 +123,7 @@ EC.curvesFunctions = [
 ];
 
 Context2D.prototype.drawCurve = function (obj) {
-	var points = [Point(obj.from)].append( obj.points.map(Point), [Point(obj.to)] );
+	var points = atom.array.append( [Point(obj.from)], obj.points.map(Point), [Point(obj.to)] );
 
 	var gradientFunction = EC.getGradientFunction(obj),             //Getting gradient function
 		widthFunction    = EC.getWidthFunction(obj),                //Getting width function

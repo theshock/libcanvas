@@ -25,7 +25,7 @@ provides: Shapes.Rectangle
 /** @class Rectangle */
 var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Shape, {
 	set : function () {
-		var a = Array.pickFrom(arguments);
+		var a = atom.array.pickFrom(arguments);
 
 		if (a.length == 4) {
 			this.from = new Point(a[0], a[1]);
@@ -48,8 +48,8 @@ var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Sh
 
 			if (!a.from || !a.to) {
 				var as = a.size,
-					sizeX = (as ? [as.w, as[0], as.width ] : [ a.w, a.width  ]).pick(),
-					sizeY = (as ? [as.h, as[1], as.height] : [ a.h, a.height ]).pick();
+					sizeX = atom.array.pick(as ? [as.w, as[0], as.width ] : [ a.w, a.width  ]),
+					sizeY = atom.array.pick(as ? [as.h, as[1], as.height] : [ a.h, a.height ]);
 				if (this.from) {
 					this.to   = new Point(this.from.x + sizeX, this.from.y + sizeY);
 				} else {

@@ -33,7 +33,7 @@ var halfPi = Math.PI/2;
 /** @class Line */
 return LibCanvas.declare( 'LibCanvas.Shapes.Line', 'Line', Shape, {
 	set : function (from, to) {
-		var a = Array.pickFrom(arguments);
+		var a = atom.array.pickFrom(arguments);
 
 		if (a.length === 4) {
 			this.from = new Point( a[0], a[1] );

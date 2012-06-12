@@ -166,7 +166,7 @@ declare( 'LibCanvas.App.MouseHandler', {
 			i = lastMove.length;
 		while (i--) {
 			elem = lastMove[i];
-			if (!elements.contains(elem)) {
+			if (elements.indexOf(elem) < 0) {
 				elem.events.fire( 'mouseout', eventArgs );
 				lastMove.splice(i, 1);
 			}

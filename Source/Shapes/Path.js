@@ -52,9 +52,9 @@ var Path = LibCanvas.declare( 'LibCanvas.Shapes.Path', 'Path', Shape, {
 		var points = [];
 		this.each(function (method, args) {
 			if (method == 'arc') {
-				points.include(args[0].circle.center);
+				atom.array.include(points, args[0].circle.center);
 			} else for (var i = 0, l = args.length; i < l; i++) {
-				points.include(args[i]);
+				atom.array.include(points, args[i]);
 			}
 		});
 		return points;
@@ -77,13 +77,13 @@ var Path = LibCanvas.declare( 'LibCanvas.Shapes.Path', 'Path', Shape, {
 	move : function (distance, reverse) {
 		this.builder.changed = true;
 
-		this.allPoints.invoke( 'move', distance, reverse );
+		atom.array.invoke( this.allPoints, 'move', distance, reverse );
 		return this;
 	},
 	scale: function (power, pivot) {
 		this.builder.changed = true;
 
-		this.allPoints.invoke( 'scale', power, pivot );
+		atom.array.invoke( this.allPoints, 'scale', power, pivot );
 		return this;
 	},
 	grow: function () {
@@ -92,7 +92,7 @@ var Path = LibCanvas.declare( 'LibCanvas.Shapes.Path', 'Path', Shape, {
 	rotate: function (angle, pivot) {
 		this.builder.changed = true;
 
-		this.allPoints.invoke( 'rotate', angle, pivot );
+		atom.array.invoke( this.allPoints, 'rotate', angle, pivot );
 
 		this.each(function (method, args) {
 			if (method == 'arc') {
@@ -119,7 +119,7 @@ var Path = LibCanvas.declare( 'LibCanvas.Shapes.Path', 'Path', Shape, {
 	},
 	clone: function () {
 		var builder = new Path.Builder;
-		builder.parts.append( this.builder.parts.clone() );
+		atom.core.append( builder.parts, this.builder.parts.clone() );
 		return builder.build();
 	}
 });
@@ -147,7 +147,7 @@ declare( 'LibCanvas.Shapes.Path.Builder', {
 			if (part.method == 'arc') {
 				a[0].circle.center.snapToPixel();
 			} else {
-				a.invoke('snapToPixel');
+				atom.array.invoke( a, 'snapToPixel' );
 			}
 		});
 		return this;
@@ -180,7 +180,7 @@ declare( 'LibCanvas.Shapes.Path.Builder', {
 		return this.push('lineTo', [ Point(arguments) ]);
 	},
 	curve : function (to, p1, p2) {
-		var args = Array.pickFrom(arguments);
+		var args = atom.array.pickFrom(arguments);
 
 		if (args.length == 6) {
 			args = [
@@ -198,7 +198,7 @@ declare( 'LibCanvas.Shapes.Path.Builder', {
 		return this.push('curveTo', args.map( Point ));
 	},
 	arc : function (circle, angle, acw) {
-		var a = Array.pickFrom(arguments);
+		var a = atom.array.pickFrom(arguments);
 
 		if (a.length >= 6) {
 			a = {

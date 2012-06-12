@@ -338,16 +338,17 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 
 	/** @returns {Context2D} */
 	arc : function (x, y, r, startAngle, endAngle, anticlockwise) {
-		var a = Array.pickFrom(arguments), circle, angle, acw;
+		var a = atom.array.pickFrom(arguments), circle, angle, acw;
 		if (a.length > 1) {
 			return this.original('arc', a);
 		} else if ('circle' in a[0]) {
 			circle = Circle(a[0].circle);
 			angle  = Array.isArray(a[0].angle) ?
-				a[0].angle.associate(['start', 'end']) :
-				Object.collect(a[0].angle, ['start', 'end', 'size']);
+				atom.array.associate(a[0].angle, ['start', 'end']) :
+				atom.object.collect(a[0].angle, ['start', 'end', 'size']);
+
 			if (Array.isArray(angle)) {
-				angle = angle.associate(['start', 'end']);
+				angle = atom.array.associate(angle, ['start', 'end']);
 			} else if (angle.size != null) {
 				if ('end' in angle) {
 					angle.end = angle.size + angle.start;
@@ -380,10 +381,10 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 				return this.original('bezierCurveTo', arguments);
 			}
 		} else if (arguments.length > 1) {
-			p  = Array.from( arguments ).map(Point);
+			p  = atom.array.from( arguments ).map(Point);
 			to = p.shift()
 		} else {
-			p  = Array.from( curve.points ).map(Point);
+			p  = atom.array.from( curve.points ).map(Point);
 			to = Point(curve.to);
 		}
 
@@ -408,7 +409,7 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 		if (a.length == 4) {
 			return this.original('bezierCurveTo', arguments);
 		} else {
-			a = a.length == 2 ? a.associate(['p', 'to']) : a[0];
+			a = a.length == 2 ? atom.array.associate(a, ['p', 'to']) : a[0];
 			return this.curveTo({
 				to: a.to,
 				points: [a.p]
@@ -536,7 +537,7 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 	text : function (cfg) {
 		if (!this.ctx2d.fillText) return this;
 
-		cfg = atom.append({
+		cfg = atom.core.append({
 			text   : '',
 			color  : null, /* @color */
 			wrap   : 'normal', /* no|normal */
@@ -717,7 +718,7 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 	createImageData : function () {
 		var w, h;
 
-		var args = Array.pickFrom(arguments);
+		var args = atom.array.pickFrom(arguments);
 		switch (args.length) {
 			case 0:{
 				w = this.canvas.width;
@@ -781,7 +782,7 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 
 		if (put.crop) {
 			rect = put.crop;
-			args.append([rect.from.x, rect.from.y, rect.width, rect.height])
+			atom.array.append(args, [rect.from.x, rect.from.y, rect.width, rect.height])
 		}
 
 		return this.original('putImageData', args);

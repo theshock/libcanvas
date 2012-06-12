@@ -815,7 +815,7 @@ declare( 'LibCanvas.App.MouseHandler', {
 			i = lastMove.length;
 		while (i--) {
 			elem = lastMove[i];
-			if (!elements.contains(elem)) {
+			if (elements.indexOf(elem) < 0) {
 				elem.events.fire( 'mouseout', eventArgs );
 				lastMove.splice(i, 1);
 			}
@@ -1029,7 +1029,7 @@ declare( 'LibCanvas.App.Scene', {
 			} else {
 				this.redrawElement( element );
 			}
-			this.elements.erase( element );
+			atom.array.erase( this.elements, element );
 			element.scene = null;
 		}
 		return this;
@@ -1827,7 +1827,7 @@ provides: Shapes.Rectangle
 /** @class Rectangle */
 var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Shape, {
 	set : function () {
-		var a = Array.pickFrom(arguments);
+		var a = atom.array.pickFrom(arguments);
 
 		if (a.length == 4) {
 			this.from = new Point(a[0], a[1]);
@@ -1850,8 +1850,8 @@ var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Sh
 
 			if (!a.from || !a.to) {
 				var as = a.size,
-					sizeX = (as ? [as.w, as[0], as.width ] : [ a.w, a.width  ]).pick(),
-					sizeY = (as ? [as.h, as[1], as.height] : [ a.h, a.height ]).pick();
+					sizeX = atom.array.pick(as ? [as.w, as[0], as.width ] : [ a.w, a.width  ]),
+					sizeY = atom.array.pick(as ? [as.h, as[1], as.height] : [ a.h, a.height ]);
 				if (this.from) {
 					this.to   = new Point(this.from.x + sizeX, this.from.y + sizeY);
 				} else {
@@ -2031,7 +2031,7 @@ provides: Shapes.Circle
 /** @class Circle */
 var Circle = LibCanvas.declare( 'LibCanvas.Shapes.Circle', 'Circle', Shape, {
 	set : function () {
-		var a = Array.pickFrom(arguments);
+		var a = atom.array.pickFrom(arguments);
 
 		if (a.length >= 3) {
 			this.center = new Point(a[0], a[1]);
@@ -2041,7 +2041,7 @@ var Circle = LibCanvas.declare( 'LibCanvas.Shapes.Circle', 'Circle', Shape, {
 			this.radius = a[1];
 		} else {
 			a = a[0];
-			this.radius = [a.r, a.radius].pick();
+			this.radius = a.r == null ? a.radius : a.r;
 			if ('x' in a && 'y' in a) {
 				this.center = new Point(a.x, a.y);
 			} else if ('center' in a) {
@@ -2526,16 +2526,17 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 
 	/** @returns {Context2D} */
 	arc : function (x, y, r, startAngle, endAngle, anticlockwise) {
-		var a = Array.pickFrom(arguments), circle, angle, acw;
+		var a = atom.array.pickFrom(arguments), circle, angle, acw;
 		if (a.length > 1) {
 			return this.original('arc', a);
 		} else if ('circle' in a[0]) {
 			circle = Circle(a[0].circle);
 			angle  = Array.isArray(a[0].angle) ?
-				a[0].angle.associate(['start', 'end']) :
-				Object.collect(a[0].angle, ['start', 'end', 'size']);
+				atom.array.associate(a[0].angle, ['start', 'end']) :
+				atom.object.collect(a[0].angle, ['start', 'end', 'size']);
+
 			if (Array.isArray(angle)) {
-				angle = angle.associate(['start', 'end']);
+				angle = atom.array.associate(angle, ['start', 'end']);
 			} else if (angle.size != null) {
 				if ('end' in angle) {
 					angle.end = angle.size + angle.start;
@@ -2568,10 +2569,10 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 				return this.original('bezierCurveTo', arguments);
 			}
 		} else if (arguments.length > 1) {
-			p  = Array.from( arguments ).map(Point);
+			p  = atom.array.from( arguments ).map(Point);
 			to = p.shift()
 		} else {
-			p  = Array.from( curve.points ).map(Point);
+			p  = atom.array.from( curve.points ).map(Point);
 			to = Point(curve.to);
 		}
 
@@ -2596,7 +2597,7 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 		if (a.length == 4) {
 			return this.original('bezierCurveTo', arguments);
 		} else {
-			a = a.length == 2 ? a.associate(['p', 'to']) : a[0];
+			a = a.length == 2 ? atom.array.associate(a, ['p', 'to']) : a[0];
 			return this.curveTo({
 				to: a.to,
 				points: [a.p]
@@ -2724,7 +2725,7 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 	text : function (cfg) {
 		if (!this.ctx2d.fillText) return this;
 
-		cfg = atom.append({
+		cfg = atom.core.append({
 			text   : '',
 			color  : null, /* @color */
 			wrap   : 'normal', /* no|normal */
@@ -2905,7 +2906,7 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 	createImageData : function () {
 		var w, h;
 
-		var args = Array.pickFrom(arguments);
+		var args = atom.array.pickFrom(arguments);
 		switch (args.length) {
 			case 0:{
 				w = this.canvas.width;
@@ -2969,7 +2970,7 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 
 		if (put.crop) {
 			rect = put.crop;
-			args.append([rect.from.x, rect.from.y, rect.width, rect.height])
+			atom.array.append(args, [rect.from.x, rect.from.y, rect.width, rect.height])
 		}
 
 		return this.original('putImageData', args);
@@ -4206,7 +4207,7 @@ EC.curvesFunctions = [
 ];
 
 Context2D.prototype.drawCurve = function (obj) {
-	var points = [Point(obj.from)].append( obj.points.map(Point), [Point(obj.to)] );
+	var points = atom.array.append( [Point(obj.from)], obj.points.map(Point), [Point(obj.to)] );
 
 	var gradientFunction = EC.getGradientFunction(obj),             //Getting gradient function
 		widthFunction    = EC.getWidthFunction(obj),                //Getting width function
@@ -5170,7 +5171,7 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.Steps', {
 			parts = t.content.match( this.tagRegExp ),
 			tag   = parts[1],
 			value = parts[2],
-			mode  = atom.append({}, currentMode);
+			mode  = atom.core.append({}, currentMode);
 
 		if (this.tags[tag]) {
 			if (value) value = value.substr(1);
@@ -5556,7 +5557,7 @@ var halfPi = Math.PI/2;
 /** @class Line */
 return LibCanvas.declare( 'LibCanvas.Shapes.Line', 'Line', Shape, {
 	set : function (from, to) {
-		var a = Array.pickFrom(arguments);
+		var a = atom.array.pickFrom(arguments);
 
 		if (a.length === 4) {
 			this.from = new Point( a[0], a[1] );
@@ -5736,9 +5737,9 @@ var Path = LibCanvas.declare( 'LibCanvas.Shapes.Path', 'Path', Shape, {
 		var points = [];
 		this.each(function (method, args) {
 			if (method == 'arc') {
-				points.include(args[0].circle.center);
+				atom.array.include(points, args[0].circle.center);
 			} else for (var i = 0, l = args.length; i < l; i++) {
-				points.include(args[i]);
+				atom.array.include(points, args[i]);
 			}
 		});
 		return points;
@@ -5761,13 +5762,13 @@ var Path = LibCanvas.declare( 'LibCanvas.Shapes.Path', 'Path', Shape, {
 	move : function (distance, reverse) {
 		this.builder.changed = true;
 
-		this.allPoints.invoke( 'move', distance, reverse );
+		atom.array.invoke( this.allPoints, 'move', distance, reverse );
 		return this;
 	},
 	scale: function (power, pivot) {
 		this.builder.changed = true;
 
-		this.allPoints.invoke( 'scale', power, pivot );
+		atom.array.invoke( this.allPoints, 'scale', power, pivot );
 		return this;
 	},
 	grow: function () {
@@ -5776,7 +5777,7 @@ var Path = LibCanvas.declare( 'LibCanvas.Shapes.Path', 'Path', Shape, {
 	rotate: function (angle, pivot) {
 		this.builder.changed = true;
 
-		this.allPoints.invoke( 'rotate', angle, pivot );
+		atom.array.invoke( this.allPoints, 'rotate', angle, pivot );
 
 		this.each(function (method, args) {
 			if (method == 'arc') {
@@ -5803,7 +5804,7 @@ var Path = LibCanvas.declare( 'LibCanvas.Shapes.Path', 'Path', Shape, {
 	},
 	clone: function () {
 		var builder = new Path.Builder;
-		builder.parts.append( this.builder.parts.clone() );
+		atom.core.append( builder.parts, this.builder.parts.clone() );
 		return builder.build();
 	}
 });
@@ -5831,7 +5832,7 @@ declare( 'LibCanvas.Shapes.Path.Builder', {
 			if (part.method == 'arc') {
 				a[0].circle.center.snapToPixel();
 			} else {
-				a.invoke('snapToPixel');
+				atom.array.invoke( a, 'snapToPixel' );
 			}
 		});
 		return this;
@@ -5864,7 +5865,7 @@ declare( 'LibCanvas.Shapes.Path.Builder', {
 		return this.push('lineTo', [ Point(arguments) ]);
 	},
 	curve : function (to, p1, p2) {
-		var args = Array.pickFrom(arguments);
+		var args = atom.array.pickFrom(arguments);
 
 		if (args.length == 6) {
 			args = [
@@ -5882,7 +5883,7 @@ declare( 'LibCanvas.Shapes.Path.Builder', {
 		return this.push('curveTo', args.map( Point ));
 	},
 	arc : function (circle, angle, acw) {
-		var a = Array.pickFrom(arguments);
+		var a = atom.array.pickFrom(arguments);
 
 		if (a.length >= 6) {
 			a = {
@@ -5987,14 +5988,15 @@ var Polygon = LibCanvas.declare( 'LibCanvas.Shapes.Polygon', 'Polygon', Shape, {
 		Shape.prototype.initialize.apply(this, arguments);
 	},
 	set : function (poly) {
-		this.points.empty().append(
-			Array.pickFrom(arguments)
-				.map(function (elem) {
-					if (elem) return Point(elem);
-				})
-				.clean()
+		this.points.length = 0;
+		atom.array.append( this.points,
+			atom.array.clean(
+				atom.array
+					.pickFrom(arguments)
+					.map(function (elem) { if (elem) return Point(elem) })
+			)
 		);
-		this._lines.empty();
+		this._lines.length = 0;
 		return this;
 	},
 	get length () {
@@ -6014,7 +6016,7 @@ var Polygon = LibCanvas.declare( 'LibCanvas.Shapes.Polygon', 'Polygon', Shape, {
 		return this.points[index];
 	},
 	hasPoint : function (point) {
-		point = Point(Array.pickFrom(arguments));
+		point = Point(atom.array.pickFrom(arguments));
 
 		var result = false, points = this.points;
 		for (var i = 0, l = this.length; i < l; i++) {
@@ -6042,7 +6044,7 @@ var Polygon = LibCanvas.declare( 'LibCanvas.Shapes.Polygon', 'Polygon', Shape, {
 		return ctx;
 	},
 	move : function (distance, reverse) {
-		this.points.invoke('move', distance, reverse);
+		atom.array.invoke( this.points, 'move', distance, reverse);
 		return this;
 	},
 	grow: function () {
@@ -6062,11 +6064,11 @@ var Polygon = LibCanvas.declare( 'LibCanvas.Shapes.Polygon', 'Polygon', Shape, {
 		return new Rectangle( from, to );
 	},
 	rotate : function (angle, pivot) {
-		this.points.invoke('rotate', angle, pivot);
+		atom.array.invoke( this.points, 'rotate', angle, pivot );
 		return this;
 	},
 	scale : function (power, pivot) {
-		this.points.invoke('scale', power, pivot);
+		atom.array.invoke( this.points, 'scale', power, pivot );
 		return this;
 	},
 	// #todo: cache
@@ -6085,10 +6087,10 @@ var Polygon = LibCanvas.declare( 'LibCanvas.Shapes.Polygon', 'Polygon', Shape, {
 	},
 
 	getPoints : function () {
-		return Array.toHash(this.points);
+		return atom.array.toHash(this.points);
 	},
 	clone: function () {
-		return new this.constructor(this.points.invoke('clone'));
+		return new this.constructor( atom.array.invoke(this.points, 'clone') );
 	}
 });
 
@@ -6393,13 +6395,13 @@ declare( 'LibCanvas.App.Light', {
 	},
 
 	createVector: function (shape, settings) {
-		settings = atom.append({ shape:shape }, settings || {});
+		settings = atom.core.append({ shape:shape }, settings || {});
 
 		return new App.Light.Vector(this.scene, settings);
 	},
 
 	createText: function (shape, style, settings) {
-		settings = atom.append({ shape: shape, style: style }, settings);
+		settings = atom.core.append({ shape: shape, style: style }, settings);
 		return new App.Light.Text(this.scene, settings);
 	},
 

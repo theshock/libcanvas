@@ -157,7 +157,7 @@ declare( 'LibCanvas.App.Scene', {
 			} else {
 				this.redrawElement( element );
 			}
-			this.elements.erase( element );
+			atom.array.erase( this.elements, element );
 			element.scene = null;
 		}
 		return this;

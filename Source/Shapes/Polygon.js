@@ -31,14 +31,15 @@ var Polygon = LibCanvas.declare( 'LibCanvas.Shapes.Polygon', 'Polygon', Shape, {
 		Shape.prototype.initialize.apply(this, arguments);
 	},
 	set : function (poly) {
-		this.points.empty().append(
-			Array.pickFrom(arguments)
-				.map(function (elem) {
-					if (elem) return Point(elem);
-				})
-				.clean()
+		this.points.length = 0;
+		atom.array.append( this.points,
+			atom.array.clean(
+				atom.array
+					.pickFrom(arguments)
+					.map(function (elem) { if (elem) return Point(elem) })
+			)
 		);
-		this._lines.empty();
+		this._lines.length = 0;
 		return this;
 	},
 	get length () {
@@ -58,7 +59,7 @@ var Polygon = LibCanvas.declare( 'LibCanvas.Shapes.Polygon', 'Polygon', Shape, {
 		return this.points[index];
 	},
 	hasPoint : function (point) {
-		point = Point(Array.pickFrom(arguments));
+		point = Point(atom.array.pickFrom(arguments));
 
 		var result = false, points = this.points;
 		for (var i = 0, l = this.length; i < l; i++) {
@@ -86,7 +87,7 @@ var Polygon = LibCanvas.declare( 'LibCanvas.Shapes.Polygon', 'Polygon', Shape, {
 		return ctx;
 	},
 	move : function (distance, reverse) {
-		this.points.invoke('move', distance, reverse);
+		atom.array.invoke( this.points, 'move', distance, reverse);
 		return this;
 	},
 	grow: function () {
@@ -106,11 +107,11 @@ var Polygon = LibCanvas.declare( 'LibCanvas.Shapes.Polygon', 'Polygon', Shape, {
 		return new Rectangle( from, to );
 	},
 	rotate : function (angle, pivot) {
-		this.points.invoke('rotate', angle, pivot);
+		atom.array.invoke( this.points, 'rotate', angle, pivot );
 		return this;
 	},
 	scale : function (power, pivot) {
-		this.points.invoke('scale', power, pivot);
+		atom.array.invoke( this.points, 'scale', power, pivot );
 		return this;
 	},
 	// #todo: cache
@@ -129,9 +130,9 @@ var Polygon = LibCanvas.declare( 'LibCanvas.Shapes.Polygon', 'Polygon', Shape, {
 	},
 
 	getPoints : function () {
-		return Array.toHash(this.points);
+		return atom.array.toHash(this.points);
 	},
 	clone: function () {
-		return new this.constructor(this.points.invoke('clone'));
+		return new this.constructor( atom.array.invoke(this.points, 'clone') );
 	}
 });

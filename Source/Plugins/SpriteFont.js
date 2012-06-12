@@ -267,7 +267,7 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.Steps', {
 			parts = t.content.match( this.tagRegExp ),
 			tag   = parts[1],
 			value = parts[2],
-			mode  = atom.append({}, currentMode);
+			mode  = atom.core.append({}, currentMode);
 
 		if (this.tags[tag]) {
 			if (value) value = value.substr(1);
