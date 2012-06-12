@@ -46,13 +46,13 @@ declare( 'LibCanvas.App.Light', {
 	},
 
 	createVector: function (shape, settings) {
-		settings = atom.append({ shape:shape }, settings || {});
+		settings = atom.core.append({ shape:shape }, settings || {});
 
 		return new App.Light.Vector(this.scene, settings);
 	},
 
 	createText: function (shape, style, settings) {
-		settings = atom.append({ shape: shape, style: style }, settings);
+		settings = atom.core.append({ shape: shape, style: style }, settings);
 		return new App.Light.Text(this.scene, settings);
 	},
 
