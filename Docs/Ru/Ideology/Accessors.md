@@ -25,7 +25,7 @@
 
 Допустим у нас есть класс
 
-	var Point = atom.Class({
+	atom.declare( 'Point', {
 		initialize: function (x, y) {
 			this.x = x;
 			this.y = y;
@@ -39,7 +39,7 @@
 
 Допустим, нам необходимо добавить перерисовку холста при изменении координат точек, но не изменяя API. Делаем свойство приватными (нижнее подчёркивание как префикс) и добавляем аксессоры:
 
-	var Point = atom.Class({
+	atom.declare( 'Point', {
 		initialize: function (x, y) {
 			this._x = x;
 			this._y = y;
