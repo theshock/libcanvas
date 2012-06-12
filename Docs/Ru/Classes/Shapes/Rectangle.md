@@ -45,6 +45,7 @@ LibCanvas.Shapes.Rectangle
 	var rect = new LibCanvas.Shapes.Rectangle( fromPoint.clone(), toPoint.clone() );
 
 Или клонируя ректангл (предыдущее - предпочтительнее):
+
 	var rect = new LibCanvas.Shapes.Rectangle( fromPoint, toPoint ).clone();
 
 ## Свойства
