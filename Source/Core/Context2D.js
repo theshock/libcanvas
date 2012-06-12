@@ -938,7 +938,9 @@ var fixGradient = function (grad) {
 
 Context2D.office = office;
 
-HTMLCanvasElement.addContext('2d-libcanvas', Context2D);
+if (atom.core.isFunction(HTMLCanvasElement.addContext)) {
+	HTMLCanvasElement.addContext('2d-libcanvas', Context2D);
+}
 
 return Context2D;
 }();

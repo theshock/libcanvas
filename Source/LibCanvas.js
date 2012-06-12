@@ -34,7 +34,7 @@ var LibCanvas = this.LibCanvas = declare({ name: 'LibCanvas', prototype: {} })
 				height : size.height
 			}).first;
 			
-			if (withCtx) canvas.ctx = canvas.getContext('2d-libcanvas');
+			if (withCtx) canvas.ctx = new Context2D(canvas);
 			return canvas;
 		},
 		'declare.classes': {},

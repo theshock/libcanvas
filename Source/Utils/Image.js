@@ -20,95 +20,124 @@ provides: Utils.Image
 
 ...
 */
-// <image> tag
-atom.core.append(HTMLImageElement.prototype, {
-	// наверное, лучше использовать createPattern
+
+var UtilsImage = atom.declare( 'LibCanvas.Utils.Image', {
+	canvasCache: null,
+
+	initialize: function (image) {
+		this.image = image;
+		this.cache = {};
+	},
+
+	/**
+	 * @param {Rectangle} rect
+	 * #todo: use createPattern
+	 */
 	createSprite: function (rect) {
+		var image, buf, xShift, yShift, x, y, xMax, yMax, crop, size, current, from, to;
+
 		if (rect.width <= 0 || rect.height <= 0) {
 			throw new TypeError('Wrong rectangle size');
 		}
 
-		var buf = LibCanvas.buffer(rect.width, rect.height, true),
-			xShift, yShift, x, y, xMax, yMax, crop, size;
+		image = this.image;
+		buf = LibCanvas.buffer(rect.width, rect.height, true);
 
 		// если координаты выходят за левый/верхний край картинки
-		{
-			if (rect.from.x < 0) xShift = (rect.from.x.abs() / rect.width ).ceil();
-			if (rect.from.y < 0) yShift = (rect.from.y.abs() / rect.height).ceil();
-			if (xShift || yShift) {
-				rect = rect.clone().move({
-					x: xShift * this.width,
-					y: yShift * this.height
-				});
-			}
+		if (rect.from.x < 0) xShift = (rect.from.x.abs() / rect.width ).ceil();
+		if (rect.from.y < 0) yShift = (rect.from.y.abs() / rect.height).ceil();
+		if (xShift || yShift) {
+			rect = rect.clone().move(new Point(
+				xShift * image.width,
+				yShift * image.height
+			));
 		}
 
 		// для того, чтобы была возможность указывать ректангл, выходящий
 		// за пределы картинки. текущая картинка повторяется как паттерн
-		xMax = (rect.to.x / this.width ).ceil();
-		yMax = (rect.to.y / this.height).ceil();
+		xMax = Math.ceil(rect.to.x / image.width );
+		yMax = Math.ceil(rect.to.y / image.height);
 		for (y = yMax; y-- > 0;) for (x = xMax; x-- > 0;) {
-			var current = new Point(x * this.width, y * this.height);
-			var from = current.clone();
-			var to   = from.clone().move([this.width, this.height]);
+			current = new Point(x * image.width, y * image.height);
+			from = current.clone();
+			to   = from.clone().move([image.width, image.height]);
 
 			if (from.x < rect.from.x) from.x = rect.from.x;
 			if (from.y < rect.from.y) from.y = rect.from.y;
 			if (  to.x > rect. to .x)   to.x = rect. to .x;
 			if (  to.y > rect. to .y)   to.y = rect. to .y;
-			
+
 			crop = new Rectangle(from, to);
 			size = crop.size;
-			crop.from.x %= this.width;
-			crop.from.y %= this.height;
+			crop.from.x %= image.width;
+			crop.from.y %= image.height;
 			crop.size    = size;
 
 			if (x) current.x -= rect.from.x;
 			if (y) current.y -= rect.from.y;
 
 			if (size.width && size.height) buf.ctx.drawImage({
-				image : this,
+				image : image,
 				crop  : crop,
-				draw  : new Rectangle({
-					from: current,
-					size: size
-				})
+				draw  : new Rectangle( current, size )
 			});
 		}
 
 		return buf;
 	},
+
 	toCanvas: function () {
-		var cache = (this.spriteCache = (this.spriteCache || {}));
-		if (!cache[0]) {
-			cache[0] = Buffer(this, true)
-				.ctx.drawImage(this)
-				.canvas;
+		var cache = this.canvasCache;
+
+		if (!cache) {
+			cache = this.canvasCache = LibCanvas.buffer(this, true);
+			cache.ctx.drawImage(this);
 		}
-		return cache[0];
+		return cache;
 	},
-	sprite : function () {
+
+	isLoaded: function () {
+		return this.constructor.isLoaded( this.image );
+	},
+
+	sprite: function () {
 		if (!this.isLoaded()) throw new Error('Not loaded in Image.sprite, logged');
 
 		if (arguments.length) {
-			var rect  = Rectangle(arguments),
-				index = [rect.from.x,rect.from.y,rect.width,rect.height].join('.'),
-				cache = (this.spriteCache = (this.spriteCache || {}));
-			if (!cache[index]) cache[index] = this.createSprite(rect);
-			return cache[index];
+			var
+				rect  = Rectangle(arguments),
+				index = rect.dump(),
+				cache = this.cache[index];
+
+			if (!cache) {
+				cache = this.cache[index] = this.createSprite(rect);
+			}
+			return cache;
 		} else {
 			return this.toCanvas();
 		}
-	},
-	isLoaded : function () {
-		if (!this.complete)  return false;
-		return (this.naturalWidth == null) || !!this.naturalWidth;
 	}
 });
-	// mixin from image
-atom.core.append(HTMLCanvasElement.prototype, {
-	createSprite : HTMLImageElement.prototype.createSprite,
-	sprite   : HTMLImageElement.prototype.sprite,
-	isLoaded : function () { return true; },
-	toCanvas : function () { return this; }
+UtilsImage.own({
+	isLoaded : function (image) {
+		return image.complete && ( (image.naturalWidth == null) || !!image.naturalWidth );
+	},
+
+	sprite: function (image, rectangle) {
+		return this.mix(image).sprite(rectangle);
+	},
+
+	toCanvas: function (image) {
+		return this.mix(image).toCanvas();
+	},
+
+	mix: function (image) {
+		var key = 'libcanvas.image';
+
+		if (!image[key]) {
+			image[key] = new this(image);
+		}
+
+		return image[key];
+	}
 });

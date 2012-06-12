@@ -98,6 +98,8 @@ var Animation = LibCanvas.declare( 'LibCanvas.Plugins.Animation', 'Animation', {
 
 /** @class Animation.Frames */
 atom.declare( 'LibCanvas.Plugins.Animation.Frames', {
+	sprites: [],
+
 	initialize: function (image, width, height) {
 		if (image  == null) throw new TypeError('`image` cant be null');
 
@@ -124,7 +126,7 @@ atom.declare( 'LibCanvas.Plugins.Animation.Frames', {
 
 		for     (y = 0; y <= im.height - h; y += h) {
 			for (x = 0; x <= im.width  - w; x += w) {
-				this.sprites.push( im.sprite(x, y, w, h) );
+				this.sprites.push( UtilsImage.sprite(im, new Rectangle(x, y, w, h)) );
 			}
 		}
 

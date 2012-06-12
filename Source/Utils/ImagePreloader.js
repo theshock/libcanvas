@@ -85,7 +85,7 @@ var ImagePreloader = LibCanvas.declare( 'LibCanvas.Utils.ImagePreloader', 'Image
 		for (i in this.usrImages) {
 			parts = this.splitUrl( this.usrImages[i] );
 			img   = this.domImages[ parts.url ];
-			if (parts.coords) img = img.sprite(new Rectangle( parts.coords ));
+			if (parts.coords) img = UtilsImage.sprite(img, new Rectangle( parts.coords ));
 			this.images[i] = img;
 		}
 		return this;
