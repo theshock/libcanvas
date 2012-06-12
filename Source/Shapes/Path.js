@@ -257,7 +257,7 @@ declare( 'LibCanvas.Shapes.Path.Builder', {
 			if (isNaN(part)) {
 				full.push({ method : part, args : [] });
 			} else if (full.length) {
-				full.last.args.push( Number(part) );
+				full[full.length-1].args.push( Number(part) );
 			}
 		});
 

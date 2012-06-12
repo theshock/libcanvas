@@ -1959,8 +1959,8 @@ var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Sh
 	getRandomPoint : function (margin) {
 		margin = margin || 0;
 		return new Point(
-			Number.random(margin, this.width  - margin),
-			Number.random(margin, this.height - margin)
+			atom.number.random(margin, this.width  - margin),
+			atom.number.random(margin, this.height - margin)
 		);
 	},
 	/** @returns {LibCanvas.Shapes.Rectangle} */
@@ -5353,7 +5353,9 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.LinesEnRu', {
 
 	countLength: function (m) {
 		if (Array.isArray(m)) {
-			return m.reduce(function (value, sym) { return value + sym.width }, 0);
+			return atom.array.reduce(
+				m, function (value, sym) { return value + sym.width }, 0
+			);
 		} else {
 			return m.width;
 		}
@@ -5939,7 +5941,7 @@ declare( 'LibCanvas.Shapes.Path.Builder', {
 			if (isNaN(part)) {
 				full.push({ method : part, args : [] });
 			} else if (full.length) {
-				full.last.args.push( Number(part) );
+				full[full.length-1].args.push( Number(part) );
 			}
 		});
 

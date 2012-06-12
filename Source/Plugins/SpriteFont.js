@@ -450,7 +450,9 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.LinesEnRu', {
 
 	countLength: function (m) {
 		if (Array.isArray(m)) {
-			return m.reduce(function (value, sym) { return value + sym.width }, 0);
+			return atom.array.reduce(
+				m, function (value, sym) { return value + sym.width }, 0
+			);
 		} else {
 			return m.width;
 		}

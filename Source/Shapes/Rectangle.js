@@ -157,8 +157,8 @@ var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Sh
 	getRandomPoint : function (margin) {
 		margin = margin || 0;
 		return new Point(
-			Number.random(margin, this.width  - margin),
-			Number.random(margin, this.height - margin)
+			atom.number.random(margin, this.width  - margin),
+			atom.number.random(margin, this.height - margin)
 		);
 	},
 	/** @returns {LibCanvas.Shapes.Rectangle} */
