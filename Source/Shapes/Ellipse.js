@@ -34,7 +34,7 @@ var Ellipse = LibCanvas.declare( 'LibCanvas.Shapes.Ellipse', 'Ellipse', Rectangl
 	},
 	set angle (a) {
 		if (this._angle == a) return;
-		this._angle = a.normalizeAngle();
+		this._angle = atom.math.normalizeAngle(a);
 		this.updateCache = true;
 	},
 	update: function () {

@@ -66,12 +66,12 @@ var Point = LibCanvas.declare( 'LibCanvas.Point', 'Point', Geometry, {
 	/** @returns {Number} */
 	angleTo : function (point) {
 		var diff = this.cast(point).diff(this);
-		return Math.atan2(diff.y, diff.x).normalizeAngle();
+		return atom.math.normalizeAngle( Math.atan2(diff.y, diff.x) );
 	},
 	/** @returns {Number} */
 	distanceTo : function (point) {
 		var diff = this.cast(point).diff(this);
-		return Math.hypotenuse(diff.x, diff.y);
+		return atom.math.hypotenuse(diff.x, diff.y);
 	},
 	/** @returns {Point} */
 	diff : function (point) {

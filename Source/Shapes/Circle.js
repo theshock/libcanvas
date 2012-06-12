@@ -87,7 +87,7 @@ var Circle = LibCanvas.declare( 'LibCanvas.Shapes.Circle', 'Circle', Shape, {
 		if (this.radius) {
 			ctx.arc({
 				circle : this,
-				angle  : [0, (360).degree()]
+				angle  : [0, Math.PI * 2]
 			});
 		}
 		if (!noWrap) ctx.closePath();

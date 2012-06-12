@@ -97,8 +97,8 @@ var Path = LibCanvas.declare( 'LibCanvas.Shapes.Path', 'Path', Shape, {
 		this.each(function (method, args) {
 			if (method == 'arc') {
 				var a = args[0].angle;
-				a.start = (a.start + angle).normalizeAngle();
-				a.end   = (a.end   + angle).normalizeAngle();
+				a.start = atom.math.normalizeAngle(a.start + angle);
+				a.end   = atom.math.normalizeAngle(a.end   + angle);
 			}
 		}.bind(this));
 		return this;
@@ -211,7 +211,7 @@ declare( 'LibCanvas.Shapes.Path.Builder', {
 			a.angle  = angle;
 			a.acw    = acw;
 		} else if (circle instanceof Circle) {
-			a = { circle: circle, angle: [0, (360).degree()] };
+			a = { circle: circle, angle: [0, Math.PI * 2] };
 		} else {
 			a = a[0];
 		}

@@ -1443,98 +1443,6 @@ var Geometry = declare( 'LibCanvas.Geometry', {
 /*
 ---
 
-name: "Utils.Math"
-
-description: "Helpers for basic math operations, such as degree, hypotenuse from two cathetus, etc"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-provides: Utils.Math
-
-...
-*/
-
-// Number
-(function () {
-
-	var degreesCache = {}, d360;
-
-	atom.core.append(Number.prototype, {
-		/**
-		 * Cast degrees to radians
-		 * (90).degree() == Math.PI/2
-		 */
-		degree: function () {
-			return this in degreesCache ? degreesCache[this] :
-				this * Math.PI / 180;
-		},
-		/**
-		 * Cast radians to degrees
-		 * (Math.PI/2).getDegree() == 90
-		 */
-		getDegree: function (round) {
-			return arguments.length == 0 ?
-				this / Math.PI * 180 :
-				this.getDegree().round(round);
-		},
-		normalizeAngle : function () {
-			var num  = this % d360;
-			return num < 0 ? num + d360 : num;
-		},
-		normalizeDegree : function (base) {
-			return this
-				.getDegree()
-				.round(base || 0)
-				.degree()
-				.normalizeAngle();
-		},
-
-		toSeconds: function () {
-			return this / 1000;
-		},
-		toMinutes: function () {
-			return this / 60 / 1000;
-		},
-		toHours: function () {
-			return this / 60 / 60 / 1000;
-		},
-
-		seconds: function () {
-			return this * 1000;
-		},
-		minutes: function () {
-			return this * 60 * 1000;
-		},
-		hours: function () {
-			return this * 60 * 60 * 1000;
-		}
-
-	});
-
-	degreesCache = atom.array.associate([0, 45, 90, 135, 180, 225, 270, 315, 360], function (num) {
-		return num.degree();
-	});
-	d360 = degreesCache[360];
-
-})();
-
-atom.core.append(Math, {
-	hypotenuse: function (cathetus1, cathetus2)  {
-		return (cathetus1*cathetus1 + cathetus2*cathetus2).sqrt();
-	},
-	cathetus: function (hypotenuse, cathetus2)  {
-		return (hypotenuse*hypotenuse - cathetus2*cathetus2).sqrt();
-	}
-});
-
-/*
----
-
 name: "Point"
 
 description: "A X/Y point coordinates encapsulating class"
@@ -1600,12 +1508,12 @@ var Point = LibCanvas.declare( 'LibCanvas.Point', 'Point', Geometry, {
 	/** @returns {Number} */
 	angleTo : function (point) {
 		var diff = this.cast(point).diff(this);
-		return Math.atan2(diff.y, diff.x).normalizeAngle();
+		return atom.math.normalizeAngle( Math.atan2(diff.y, diff.x) );
 	},
 	/** @returns {Number} */
 	distanceTo : function (point) {
 		var diff = this.cast(point).diff(this);
-		return Math.hypotenuse(diff.x, diff.y);
+		return atom.math.hypotenuse(diff.x, diff.y);
 	},
 	/** @returns {Point} */
 	diff : function (point) {
@@ -2185,7 +2093,7 @@ var Circle = LibCanvas.declare( 'LibCanvas.Shapes.Circle', 'Circle', Shape, {
 		if (this.radius) {
 			ctx.arc({
 				circle : this,
-				angle  : [0, (360).degree()]
+				angle  : [0, Math.PI * 2]
 			});
 		}
 		if (!noWrap) ctx.closePath();
@@ -4209,7 +4117,7 @@ EC.getPoints = function (prevPos, pos, width, inverted) {
 	var
 		w    = pos.x-prevPos.x,
 		h    = pos.y-prevPos.y,
-		dist = Math.hypotenuse(w, h),
+		dist = atom.math.hypotenuse(w, h),
 
 		sin = h / dist,
 		cos = w / dist,
@@ -5536,7 +5444,7 @@ var Ellipse = LibCanvas.declare( 'LibCanvas.Shapes.Ellipse', 'Ellipse', Rectangl
 	},
 	set angle (a) {
 		if (this._angle == a) return;
-		this._angle = a.normalizeAngle();
+		this._angle = atom.math.normalizeAngle(a);
 		this.updateCache = true;
 	},
 	update: function () {
@@ -5637,6 +5545,8 @@ var between = function (x, a, b, accuracy) {
 	return x.equals(a, accuracy) || x.equals(b, accuracy) || (a < x && x < b) || (b < x && x < a);
 };
 
+var halfPi = Math.PI/2;
+
 /** @class Line */
 return LibCanvas.declare( 'LibCanvas.Shapes.Line', 'Line', Shape, {
 	set : function (from, to) {
@@ -5722,25 +5632,25 @@ return LibCanvas.declare( 'LibCanvas.Shapes.Line', 'Line', Shape, {
 	},
 	distanceTo: function (p, asInfiniteLine) {
 		p = Point(p);
-		var f = this.from, t = this.to, degree, s, x, y;
+		var f = this.from, t = this.to, angle, s, x, y;
 
 		if (!asInfiniteLine) {
-			degree = Math.atan2(p.x - t.x, p.y - t.y).getDegree();
-			if ( degree.between(-90, 90) ) {
+			angle = Math.atan2(p.x - t.x, p.y - t.y);
+			if ( atom.number.between(angle, -halfPi, halfPi) ) {
 				return t.distanceTo( p );
 			}
 
-			degree = Math.atan2(f.x - p.x, f.y - p.y).getDegree();
-			if ( degree.between(-90, 90) ) {
+			angle = Math.atan2(f.x - p.x, f.y - p.y);
+			if ( atom.number.between(angle, -halfPi, halfPi) ) {
 				return f.distanceTo( p );
 			}
 		}
 
-		s = (
+		s = Math.abs(
 			f.x * (t.y - p.y) +
 			t.x * (p.y - f.y) +
 			p.x * (f.y - t.y)
-		).abs() / 2;
+		) / 2;
 
 		x = f.x - t.x;
 		y = f.y - t.y;
@@ -5865,8 +5775,8 @@ var Path = LibCanvas.declare( 'LibCanvas.Shapes.Path', 'Path', Shape, {
 		this.each(function (method, args) {
 			if (method == 'arc') {
 				var a = args[0].angle;
-				a.start = (a.start + angle).normalizeAngle();
-				a.end   = (a.end   + angle).normalizeAngle();
+				a.start = atom.math.normalizeAngle(a.start + angle);
+				a.end   = atom.math.normalizeAngle(a.end   + angle);
 			}
 		}.bind(this));
 		return this;
@@ -5979,7 +5889,7 @@ declare( 'LibCanvas.Shapes.Path.Builder', {
 			a.angle  = angle;
 			a.acw    = acw;
 		} else if (circle instanceof Circle) {
-			a = { circle: circle, angle: [0, (360).degree()] };
+			a = { circle: circle, angle: [0, Math.PI * 2] };
 		} else {
 			a = a[0];
 		}

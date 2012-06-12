@@ -38,7 +38,7 @@ EC.getPoints = function (prevPos, pos, width, inverted) {
 	var
 		w    = pos.x-prevPos.x,
 		h    = pos.y-prevPos.y,
-		dist = Math.hypotenuse(w, h),
+		dist = atom.math.hypotenuse(w, h),
 
 		sin = h / dist,
 		cos = w / dist,

@@ -28,6 +28,8 @@ var between = function (x, a, b, accuracy) {
 	return x.equals(a, accuracy) || x.equals(b, accuracy) || (a < x && x < b) || (b < x && x < a);
 };
 
+var halfPi = Math.PI/2;
+
 /** @class Line */
 return LibCanvas.declare( 'LibCanvas.Shapes.Line', 'Line', Shape, {
 	set : function (from, to) {
@@ -113,25 +115,25 @@ return LibCanvas.declare( 'LibCanvas.Shapes.Line', 'Line', Shape, {
 	},
 	distanceTo: function (p, asInfiniteLine) {
 		p = Point(p);
-		var f = this.from, t = this.to, degree, s, x, y;
+		var f = this.from, t = this.to, angle, s, x, y;
 
 		if (!asInfiniteLine) {
-			degree = Math.atan2(p.x - t.x, p.y - t.y).getDegree();
-			if ( degree.between(-90, 90) ) {
+			angle = Math.atan2(p.x - t.x, p.y - t.y);
+			if ( atom.number.between(angle, -halfPi, halfPi) ) {
 				return t.distanceTo( p );
 			}
 
-			degree = Math.atan2(f.x - p.x, f.y - p.y).getDegree();
-			if ( degree.between(-90, 90) ) {
+			angle = Math.atan2(f.x - p.x, f.y - p.y);
+			if ( atom.number.between(angle, -halfPi, halfPi) ) {
 				return f.distanceTo( p );
 			}
 		}
 
-		s = (
+		s = Math.abs(
 			f.x * (t.y - p.y) +
 			t.x * (p.y - f.y) +
 			p.x * (f.y - t.y)
-		).abs() / 2;
+		) / 2;
 
 		x = f.x - t.x;
 		y = f.y - t.y;
