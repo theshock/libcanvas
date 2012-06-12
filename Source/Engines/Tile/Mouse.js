@@ -64,7 +64,9 @@ declare( 'LibCanvas.Engines.Tile.Mouse', {
 
 	/** @private */
 	get: function () {
-		return this.element.engine.getCellByPoint( this.mouse.point );
+		return this.element.engine.getCellByPoint(
+			this.mouse.point.clone().move(this.element.shape.from, true)
+		);
 	},
 
 	/** @private */
