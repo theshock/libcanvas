@@ -134,7 +134,7 @@ declare( 'LibCanvas.App.Scene', {
 	/** @private */
 	createLayer: function () {
 		this.layer = this.app.container.createLayer(
-			this.settings.get([ 'name', 'zIndex' ])
+			this.settings.subset([ 'name', 'zIndex' ])
 		);
 	},
 
