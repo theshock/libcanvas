@@ -23,34 +23,30 @@ provides: App.Light.Text
 */
 
 /** @class App.Light.Text */
-atom.declare( 'LibCanvas.App.Light.Text', {
-	parent: App.Element,
+atom.declare( 'LibCanvas.App.Light.Text', App.Element, {
+	get content () {
+		return this.settings.get('content') || '';
+	},
 
-	prototype: {
-		get content () {
-			return this.settings.get('content') || '';
-		},
+	set content (c) {
+		if (Array.isArray(c)) c = c.join('\n');
 
-		set content (c) {
-			if (Array.isArray(c)) c = c.join('\n');
-			
-			if (c != this.content) {
-				this.redraw();
-				this.settings.set('content', String(c) || '');
-			}
-		},
-
-		renderTo: function (ctx) {
-			var
-				style = this.settings.get('style') || {},
-				bg    = this.settings.get('background');
-			ctx.save();
-			if (bg) ctx.fill( this.shape, bg );
-			ctx.text(atom.core.append({
-				text: this.content,
-				to  : this.shape
-			}, style));
-			ctx.restore();
+		if (c != this.content) {
+			this.redraw();
+			this.settings.set('content', String(c) || '');
 		}
+	},
+
+	renderTo: function (ctx) {
+		var
+			style = this.settings.get('style') || {},
+			bg    = this.settings.get('background');
+		ctx.save();
+		if (bg) ctx.fill( this.shape, bg );
+		ctx.text(atom.core.append({
+			text: this.content,
+			to  : this.shape
+		}, style));
+		ctx.restore();
 	}
 });
