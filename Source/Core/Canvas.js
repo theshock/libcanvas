@@ -1,7 +1,7 @@
 /*
 ---
 
-name: "Utils.Canvas"
+name: "Core.Canvas"
 
 description: "Provides some Canvas extensions"
 
@@ -15,7 +15,7 @@ authors:
 requires:
 	- LibCanvas
 
-provides: Utils.Canvas
+provides: Core.Canvas
 
 ...
 */

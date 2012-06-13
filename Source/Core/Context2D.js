@@ -18,7 +18,7 @@ requires:
 	- Size
 	- Shapes.Rectangle
 	- Shapes.Circle
-	- Utils.Canvas
+	- Core.Canvas
 
 provides: Context2D
 
@@ -167,7 +167,9 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 			this.canvas = this.ctx2d.canvas;
 		} else {
 			this.canvas = canvas;
-			this.ctx2d  = canvas.getOriginalContext('2d');
+			this.ctx2d  = atom.core.isFunction(canvas.getOriginalContext) ?
+				canvas.getOriginalContext('2d') :
+				canvas.getContext('2d');
 		}
 	},
 	get width () { return this.canvas.width; },

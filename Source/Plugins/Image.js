@@ -1,7 +1,7 @@
 /*
 ---
 
-name: "Utils.Image"
+name: "Plugins.Image"
 
 description: "Provides some Image extensions"
 
@@ -16,7 +16,7 @@ requires:
 	- LibCanvas
 	- Shapes.Rectangle
 
-provides: Utils.Image
+provides: Plugins.Image
 
 ...
 */
@@ -118,6 +118,7 @@ var UtilsImage = atom.declare( 'LibCanvas.Utils.Image', {
 		}
 	}
 });
+
 UtilsImage.own({
 	isLoaded : function (image) {
 		return image.complete && ( (image.naturalWidth == null) || !!image.naturalWidth );

@@ -16,6 +16,7 @@
 
  requires:
  - LibCanvas
+ - Plugins.Image
 
  ...
  */

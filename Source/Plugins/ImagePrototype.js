@@ -1,7 +1,7 @@
 /*
 ---
 
-name: "Utils.ImagePrototype"
+name: "Plugins.ImagePrototype"
 
 description: "Provides some Image extensions"
 
@@ -16,7 +16,7 @@ requires:
 	- LibCanvas
 	- Utils.Image
 
-provides: Utils.ImagePrototype
+provides: Plugins.ImagePrototype
 
 ...
 */
