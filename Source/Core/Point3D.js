@@ -55,7 +55,7 @@ var Point3D = LibCanvas.declare( 'LibCanvas.Point3D', 'Point3D', Geometry, {
 	/**
 	 * You can pass callback (function( value, axis, point ){})
 	 * @param {function} fn
-	 * @param {object} context
+	 * @param {object} [context=null]
 	 * @returns {Point3D}
 	 */
 	map: function (fn, context) {
