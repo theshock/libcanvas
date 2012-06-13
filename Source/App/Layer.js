@@ -178,7 +178,7 @@ declare( 'LibCanvas.App.Layer', {
 
 	/** @private */
 	addIntersections: function () {
-		var i, elem, layer  = this;
+		var i, elem, layer = this;
 
 		for (i = 0; i < this.redraw.length; i++) {
 			elem = this.redraw[i];

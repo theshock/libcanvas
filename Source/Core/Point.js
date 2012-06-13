@@ -24,6 +24,9 @@ provides: Point
 
 /** @class Point */
 var Point = LibCanvas.declare( 'LibCanvas.Point', 'Point', Geometry, {
+	x: 0,
+	y: 0,
+
 	/**
 	 *   new Point(1, 1);
 	 *   new Point([1, 1]);
