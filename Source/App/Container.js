@@ -29,7 +29,7 @@ declare( 'LibCanvas.App.Container', {
 	 *  @property {Size} */
 	currentSize: null,
 
-	/** @property {App.Layer[]} */
+	/** @property {App.Dom[]} */
 	layers: [],
 
 	initialize: function (settings) {
@@ -55,8 +55,8 @@ declare( 'LibCanvas.App.Container', {
 		return this.currentSize;
 	},
 
-	createLayer: function (settings) {
-		var layer = new App.Layer( this, settings );
+	createDom: function (settings) {
+		var layer = new App.Dom( this, settings );
 		this.layers.push(layer);
 		return layer;
 	},

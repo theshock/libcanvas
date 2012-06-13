@@ -1,7 +1,7 @@
 /*
 ---
 
-name: "App.Layer"
+name: "App.Dom"
 
 description: ""
 
@@ -16,14 +16,14 @@ requires:
 	- LibCanvas
 	- App
 
-provides: App.Layer
+provides: App.Dom
 
 ...
 */
 
 
-/** @class App.Layer */
-declare( 'LibCanvas.App.Layer', {
+/** @class App.Dom */
+declare( 'LibCanvas.App.Dom', {
 	/** @private
 	 *  @property {Size} */
 	currentSize: null,
@@ -71,7 +71,7 @@ declare( 'LibCanvas.App.Layer', {
 
 	/**
 	 * @param {Point} shift
-	 * @returns {App.Layer}
+	 * @returns {App.Dom}
 	 */
 	addShift: function ( shift ) {
 		shift = Point( shift );
@@ -85,7 +85,7 @@ declare( 'LibCanvas.App.Layer', {
 
 	/**
 	 * @param {Point} shift
-	 * @returns {App.Layer}
+	 * @returns {App.Dom}
 	 */
 	setShift: function (shift) {
 		return this.addShift( this.shift.diff(shift) );

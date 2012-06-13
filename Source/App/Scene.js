@@ -36,7 +36,7 @@ declare( 'LibCanvas.App.Scene', {
 		this.elements = [];
 		this.redraw   = this.shouldRedrawAll ? this.elements : [];
 		this.clear    = [];
-		this.createLayer();
+		this.createDom();
 	},
 
 	get ctx () {
@@ -132,8 +132,8 @@ declare( 'LibCanvas.App.Scene', {
 	needUpdate: false,
 
 	/** @private */
-	createLayer: function () {
-		this.layer = this.app.container.createLayer(
+	createDom: function () {
+		this.layer = this.app.container.createDom(
 			this.settings.subset([ 'name', 'zIndex' ])
 		);
 	},
