@@ -20,7 +20,6 @@ provides: Canvas2DContext
 
 new function () {
 
-
 var object = {
 	initialize: function (canvas) {
 		if (canvas instanceof CanvasRenderingContext2D) {
@@ -31,26 +30,30 @@ var object = {
 			this.ctx    = canvas.getOriginalContext('2d');
 		}
 	},
-	get width () { return this.canvas.width; },
-	get height() { return this.canvas.height; },
-	set width (width)  { this.canvas.width  = width; },
-	set height(height) { this.canvas.height = height;},
-
-	toString: Function.lambda('[object LibCanvas.Canvas2DContext]')
+	get width () { return this.canvas.width  },
+	get height() { return this.canvas.height  },
+	set width (width)  { this.canvas.width  = width  },
+	set height(height) { this.canvas.height = height }
 },
 
-methods = ['arc','arcTo','beginPath','bezierCurveTo','clearRect','clip',
-	'closePath','drawImage','fill','fillRect','fillText','lineTo','moveTo',
-	'quadraticCurveTo','rect','restore','rotate','save','scale','setTransform',
-	'stroke','strokeRect','strokeText','transform','translate'],
+methods =
+	'arc arcTo beginPath bezierCurveTo clearRect clip ' +
+	'closePath drawImage fill fillRect fillText lineTo moveTo ' +
+	'quadraticCurveTo rect restore rotate save scale setTransform ' +
+	'stroke strokeRect strokeText transform translate'
+	.split(' '),
 
-getterMethods = ['createPattern','drawFocusRing','isPointInPath','measureText',
-	'createImageData','createLinearGradient',
-	'createRadialGradient', 'getImageData','putImageData'],
+getterMethods = 
+	'createPattern drawFocusRing isPointInPath measureText ' +
+	'createImageData createLinearGradient ' +
+	'createRadialGradient getImageData putImageData'
+	.split(' '),
 
-properties = ['fillStyle','font','globalAlpha','globalCompositeOperation','lineCap',
-	'lineJoin','lineWidth','miterLimit','shadowOffsetX','shadowOffsetY',
-	'shadowBlur','shadowColor','strokeStyle','textAlign','textBaseline' ];
+properties =
+	'fillStyle font globalAlpha globalCompositeOperation lineCap ' +
+	'lineJoin lineWidth miterLimit shadowOffsetX shadowOffsetY ' +
+	'shadowBlur shadowColor strokeStyle textAlign textBaseline'
+	.split(' ');
 
 properties.forEach(function (property) {
 	atom.accessors.define(object, property, {
@@ -80,6 +83,6 @@ getterMethods.forEach(function (method) {
 	};
 });
 
-LibCanvas.Canvas2DContext = atom.Class(object);
+atom.declare( 'LibCanvas.Canvas2DContext', object );
 
 };
