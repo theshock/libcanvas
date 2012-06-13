@@ -15,6 +15,7 @@ authors:
 requires:
 	- LibCanvas
 	- App
+	- App.Dom
 
 provides: App.Layer
 

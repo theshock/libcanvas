@@ -15,6 +15,7 @@ authors:
 requires:
 	- LibCanvas
 	- App
+	- App.LayerShift
 
 provides: App.Dragger
 
