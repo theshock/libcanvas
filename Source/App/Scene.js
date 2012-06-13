@@ -40,7 +40,7 @@ declare( 'LibCanvas.App.Scene', {
 	},
 
 	get ctx () {
-		return this.layer.canvas.ctx;
+		return this.dom.canvas.ctx;
 	},
 
 	/** @private */
@@ -80,7 +80,7 @@ declare( 'LibCanvas.App.Scene', {
 	/** @private */
 	draw: function () {
 		var i, elem,
-			ctx = this.layer.canvas.ctx,
+			ctx = this.dom.canvas.ctx,
 			redraw = this.redraw,
 			clear  = this.clear,
 			resources = this.app.resources;
@@ -133,7 +133,7 @@ declare( 'LibCanvas.App.Scene', {
 
 	/** @private */
 	createDom: function () {
-		this.layer = this.app.container.createDom(
+		this.dom = this.app.container.createDom(
 			this.settings.subset([ 'name', 'zIndex' ])
 		);
 	},

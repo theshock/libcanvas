@@ -52,8 +52,8 @@ LibCanvas.declare( 'LibCanvas.App', 'App', {
 		if (!right || !right.scene) throw new TypeError( 'Wrong right element' );
 
 
-		 leftZ =  left.scene.layer.zIndex;
-		rightZ = right.scene.layer.zIndex;
+		 leftZ =  left.scene.dom.zIndex;
+		rightZ = right.scene.dom.zIndex;
 
 		if (leftZ > rightZ) return -1 * factor;
 		if (leftZ < rightZ) return +1 * factor;

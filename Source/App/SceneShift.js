@@ -84,8 +84,8 @@ declare( 'LibCanvas.App.SceneShift', {
 		}
 
 		current.move( shift );
-		this.scene.layer.addShift( shift );
-		this.scene.layer.canvas.ctx.translate( shift, true );
+		this.scene.dom.addShift( shift );
+		this.scene.dom.canvas.ctx.translate( shift, true );
 		if (withElements) this.addElementsShift( shift );
 		return this;
 	},
