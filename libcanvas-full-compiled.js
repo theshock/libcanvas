@@ -6168,8 +6168,10 @@ provides: App.Behaviors
 ...
 */
 
-/** @class Behaviors */
+/** @class App.Behaviors */
 var Behaviors = declare( 'LibCanvas.App.Behaviors', {
+	behaviors: {},
+
 	initialize: function (element) {
 		this.element   = element;
 		this.behaviors = {};
@@ -6192,7 +6194,27 @@ var Behaviors = declare( 'LibCanvas.App.Behaviors', {
 
 	get: function (name) {
 		return this.behaviors[name] || null;
+	},
+
+	startAll: function (arg) {
+		this.invoke('start', arguments);
+		return this;
+	},
+
+	stopAll: function () {
+		this.invoke('stop', arguments);
+		return this;
+	},
+
+	/** @private */
+	invoke: function (method, args) {
+		var i, b = this.behaviors;
+		for (i in b) if (b.hasOwnProperty(i)) {
+			b[i][method].apply(b[i], args);
+		}
+		return this;
 	}
+
 }).own({
 	attach: function (target, types, arg) {
 		target.behaviors = new Behaviors(target);
