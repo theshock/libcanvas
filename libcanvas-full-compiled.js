@@ -6463,63 +6463,16 @@ declare( 'LibCanvas.App.Light', {
 		return new App.Light.Text(this.layer, settings);
 	},
 
+	createImage: function (shape, image, settings) {
+		return new App.Light.Image(this.layer, atom.core.append({
+			shape: shape, image: image
+		}, settings));
+	},
+
 	get mouse () {
 		return this.app.resources.get( 'mouse' );
 	}
 
-});
-
-/*
----
-
-name: "App.Light.Text"
-
-description: ""
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- App
-	- App.Light
-
-provides: App.Light.Text
-
-...
-*/
-
-/** @class App.Light.Text */
-atom.declare( 'LibCanvas.App.Light.Text', App.Element, {
-	get content () {
-		return this.settings.get('content') || '';
-	},
-
-	set content (c) {
-		if (Array.isArray(c)) c = c.join('\n');
-
-		if (c != this.content) {
-			this.redraw();
-			this.settings.set('content', String(c) || '');
-		}
-	},
-
-	renderTo: function (ctx) {
-		var
-			style = this.settings.get('style') || {},
-			bg    = this.settings.get('background');
-		ctx.save();
-		if (bg) ctx.fill( this.shape, bg );
-		ctx.text(atom.core.append({
-			text: this.content,
-			to  : this.shape
-		}, style));
-		ctx.restore();
-	}
 });
 
 /*
@@ -6601,9 +6554,9 @@ App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', App.Element, {
 		return this.layer.app.resources.get('mouseHandler')[method](this);
 	},
 
-	destroy: function () {
+	destroy: function method () {
 		this.listenMouse(true);
-		return App.Element.prototype.destroy.call(this);
+		return method.previous.call(this);
 	},
 
 	get currentBoundingShape () {
@@ -6631,6 +6584,96 @@ App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', App.Element, {
 		}
 		ctx.restore();
 		return this;
+	}
+});
+
+/*
+---
+
+name: "App.Light.Image"
+
+description: ""
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- App.Light.Vector
+
+provides: App.Light.Image
+
+...
+*/
+
+/** @class App.Light.Image */
+App.Light.Image = atom.declare( 'LibCanvas.App.Light.Image', App.Light.Vector, {
+	get currentBoundingShape () {
+		return this.shape.clone().fillToPixel();
+	},
+
+	renderTo: function (ctx) {
+		ctx.drawImage({
+			image: this.settings.get('image'),
+			draw : this.shape
+		})
+	}
+});
+
+/*
+---
+
+name: "App.Light.Text"
+
+description: ""
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- App
+	- App.Light
+
+provides: App.Light.Text
+
+...
+*/
+
+/** @class App.Light.Text */
+atom.declare( 'LibCanvas.App.Light.Text', App.Element, {
+	get content () {
+		return this.settings.get('content') || '';
+	},
+
+	set content (c) {
+		if (Array.isArray(c)) c = c.join('\n');
+
+		if (c != this.content) {
+			this.redraw();
+			this.settings.set('content', String(c) || '');
+		}
+	},
+
+	renderTo: function (ctx) {
+		var
+			style = this.settings.get('style') || {},
+			bg    = this.settings.get('background');
+		ctx.save();
+		if (bg) ctx.fill( this.shape, bg );
+		ctx.text(atom.core.append({
+			text: this.content,
+			to  : this.shape
+		}, style));
+		ctx.restore();
 	}
 });
 

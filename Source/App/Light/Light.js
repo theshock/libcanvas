@@ -56,6 +56,12 @@ declare( 'LibCanvas.App.Light', {
 		return new App.Light.Text(this.layer, settings);
 	},
 
+	createImage: function (shape, image, settings) {
+		return new App.Light.Image(this.layer, atom.core.append({
+			shape: shape, image: image
+		}, settings));
+	},
+
 	get mouse () {
 		return this.app.resources.get( 'mouse' );
 	}
