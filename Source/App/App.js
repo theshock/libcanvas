@@ -25,7 +25,7 @@ LibCanvas.declare( 'LibCanvas.App', 'App', {
 	initialize: function (settings) {
 		this.bindMethods( 'tick' );
 
-		this.scenes    = [];
+		this.layers    = [];
 		this.settings  = new Settings({ appendTo: 'body' }).set(settings);
 		this.container = new App.Container(
 			this.settings.subset(['size', 'appendTo'])
@@ -48,12 +48,12 @@ LibCanvas.declare( 'LibCanvas.App', 'App', {
 	zIndexCompare: function (left, right, inverted) {
 		var leftZ, rightZ, factor = inverted ? -1 : +1;
 
-		if (!left  || !left.scene ) throw new TypeError( 'Wrong left element'  );
-		if (!right || !right.scene) throw new TypeError( 'Wrong right element' );
+		if (!left  || !left.layer ) throw new TypeError( 'Wrong left element'  );
+		if (!right || !right.layer) throw new TypeError( 'Wrong right element' );
 
 
-		 leftZ =  left.scene.dom.zIndex;
-		rightZ = right.scene.dom.zIndex;
+		 leftZ =  left.layer.dom.zIndex;
+		rightZ = right.layer.dom.zIndex;
 
 		if (leftZ > rightZ) return -1 * factor;
 		if (leftZ < rightZ) return +1 * factor;
@@ -67,14 +67,14 @@ LibCanvas.declare( 'LibCanvas.App', 'App', {
 		return 0;
 	},
 
-	createScene: function (settings) {
-		var scene = new App.Scene(this, settings);
-		this.scenes.push(scene);
-		return scene;
+	createLayer: function (settings) {
+		var layer = new App.Layer(this, settings);
+		this.layers.push(layer);
+		return layer;
 	},
 
 	tick: function (time) {
-		atom.array.invoke(this.scenes, 'tick', time);
+		atom.array.invoke(this.layers, 'tick', time);
 	}
 });
 

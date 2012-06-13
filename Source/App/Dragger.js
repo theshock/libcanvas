@@ -37,7 +37,7 @@ declare( 'LibCanvas.App.Dragger', {
 		};
 	},
 
-	addSceneShift: function (shift) {
+	addLayerShift: function (shift) {
 		this.shifts.push( shift );
 		return this;
 	},
@@ -64,7 +64,7 @@ declare( 'LibCanvas.App.Dragger', {
 		if (!this.shouldStartDrag(e)) return;
 
 		for (var i = this.shifts.length; i--;) {
-			this.shifts[i].scene.stop();
+			this.shifts[i].layer.stop();
 		}
 		this.drag = true;
 		this.events.fire( 'start', [ e ]);
@@ -76,7 +76,7 @@ declare( 'LibCanvas.App.Dragger', {
 		for (var i = this.shifts.length; i--;) {
 			var shift = this.shifts[i];
 			shift.addElementsShift();
-			shift.scene.start();
+			shift.layer.start();
 		}
 
 		this.drag = false;

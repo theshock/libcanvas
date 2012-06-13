@@ -1,7 +1,7 @@
 /*
 ---
 
-name: "App.Scene"
+name: "App.Layer"
 
 description: ""
 
@@ -16,13 +16,13 @@ requires:
 	- LibCanvas
 	- App
 
-provides: App.Scene
+provides: App.Layer
 
 ...
 */
 
-/** @class App.Scene */
-declare( 'LibCanvas.App.Scene', {
+/** @class App.Layer */
+declare( 'LibCanvas.App.Layer', {
 
 	initialize: function (app, settings) {
 		this.settings = new Settings({
@@ -104,7 +104,7 @@ declare( 'LibCanvas.App.Scene', {
 
 		for (i = redraw.length; i--;) {
 			elem = redraw[i];
-			if (elem.scene == this) {
+			if (elem.layer == this) {
 				elem.redrawRequested = false;
 				if (elem.isVisible()) {
 					elem.renderTo( ctx, resources );
@@ -140,8 +140,8 @@ declare( 'LibCanvas.App.Scene', {
 
 	/** @private */
 	addElement: function (element) {
-		if (element.scene != this) {
-			element.scene = this;
+		if (element.layer != this) {
+			element.layer = this;
 			this.elements.push( element );
 			this.redrawElement( element );
 		}
@@ -150,7 +150,7 @@ declare( 'LibCanvas.App.Scene', {
 
 	/** @private */
 	rmElement: function (element) {
-		if (element.scene == this) {
+		if (element.layer == this) {
 			if (this.shouldRedrawAll) {
 				this.needUpdate = true;
 				this.clear.push(element);
@@ -158,14 +158,14 @@ declare( 'LibCanvas.App.Scene', {
 				this.redrawElement( element );
 			}
 			atom.array.erase( this.elements, element );
-			element.scene = null;
+			element.layer = null;
 		}
 		return this;
 	},
 
 	/** @private */
 	redrawElement: function (element) {
-		if (element.scene == this && !element.redrawRequested) {
+		if (element.layer == this && !element.redrawRequested) {
 			this.needUpdate = true;
 			element.redrawRequested = true;
 			if (!this.shouldRedrawAll) {
@@ -177,7 +177,7 @@ declare( 'LibCanvas.App.Scene', {
 
 	/** @private */
 	addIntersections: function () {
-		var i, elem, scene  = this;
+		var i, elem, layer  = this;
 
 		for (i = 0; i < this.redraw.length; i++) {
 			elem = this.redraw[i];
@@ -186,7 +186,7 @@ declare( 'LibCanvas.App.Scene', {
 			this.findIntersections(elem. currentBoundingShape, elem, function (e) {
 				// we need to redraw it, only if it will be over our element
 				if (e.zIndex > elem.zIndex) {
-					scene.redrawElement( e );
+					layer.redrawElement( e );
 				}
 			});
 		}

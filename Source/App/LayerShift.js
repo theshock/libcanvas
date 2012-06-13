@@ -1,7 +1,7 @@
 /*
 ---
 
-name: "App.SceneShift"
+name: "App.LayerShift"
 
 description: ""
 
@@ -16,16 +16,16 @@ requires:
 	- LibCanvas
 	- App
 
-provides: App.SceneShift
+provides: App.LayerShift
 
 ...
 */
 
-/** @class App.SceneShift */
-declare( 'LibCanvas.App.SceneShift', {
+/** @class App.LayerShift */
+declare( 'LibCanvas.App.LayerShift', {
 
-	initialize: function (scene) {
-		this.scene    = scene;
+	initialize: function (layer) {
+		this.layer    = layer;
 		this.shift    = new Point(0, 0);
 		this.elementsShift = new Point(0, 0);
 	},
@@ -51,7 +51,7 @@ declare( 'LibCanvas.App.SceneShift', {
 		} else {
 			shift = Point(shift);
 		}
-		var e = this.scene.elements, i = e.length;
+		var e = this.layer.elements, i = e.length;
 		while (i--) e[i].addShift(shift);
 		this.elementsShift.move(shift);
 		return this;
@@ -84,8 +84,8 @@ declare( 'LibCanvas.App.SceneShift', {
 		}
 
 		current.move( shift );
-		this.scene.dom.addShift( shift );
-		this.scene.dom.canvas.ctx.translate( shift, true );
+		this.layer.dom.addShift( shift );
+		this.layer.dom.canvas.ctx.translate( shift, true );
 		if (withElements) this.addElementsShift( shift );
 		return this;
 	},

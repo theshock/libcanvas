@@ -39,7 +39,7 @@ declare( 'LibCanvas.Engines.Tile.Element', App.Element, {
 	}
 }).own({
 	app: function (app, engine, from) {
-		return new this( app.createScene({
+		return new this( app.createLayer({
 			intersection: 'manual',
 			invoke: false
 		}), {

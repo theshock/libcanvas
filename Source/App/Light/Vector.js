@@ -44,7 +44,7 @@ App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', {
 		},
 
 		get mouse () {
-			return this.scene.app.resources.get( 'mouse' );
+			return this.layer.app.resources.get( 'mouse' );
 		},
 
 		move: function (point) {
@@ -83,7 +83,7 @@ App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', {
 
 		listenMouse: function (unsubscribe) {
 			var method = unsubscribe ? 'unsubscribe' : 'subscribe';
-			return this.scene.app.resources.get('mouseHandler')[method](this);
+			return this.layer.app.resources.get('mouseHandler')[method](this);
 		},
 
 		destroy: function () {

@@ -3,7 +3,7 @@
 
 name: "App.Element"
 
-description: "LibCanvas.Scene"
+description: "LibCanvas.Layer"
 
 license:
 	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
@@ -29,7 +29,7 @@ declare( 'LibCanvas.App.Element', {
 	settings: {},
 
 	/** @constructs */
-	initialize: function (scene, settings) {
+	initialize: function (layer, settings) {
 		this.bindMethods([ 'redraw', 'destroy' ]);
 
 		this.events = new Events(this);
@@ -37,7 +37,7 @@ declare( 'LibCanvas.App.Element', {
 			.set(this.settings)
 			.set(settings)
 			.addEvents(this.events);
-		scene.addElement( this );
+		layer.addElement( this );
 
 		var ownShape = this.shape && this.shape != this.constructor.prototype.shape;
 
@@ -63,7 +63,7 @@ declare( 'LibCanvas.App.Element', {
 	},
 
 	destroy: function () {
-		this.scene.rmElement( this );
+		this.layer.rmElement( this );
 		return this;
 	},
 
@@ -86,7 +86,7 @@ declare( 'LibCanvas.App.Element', {
 	},
 
 	redraw: function () {
-		this.scene.redrawElement( this );
+		this.layer.redrawElement( this );
 		return this;
 	},
 

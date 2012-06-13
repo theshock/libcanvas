@@ -36,7 +36,7 @@ declare( 'LibCanvas.App.Light', {
 			intersection: 'auto'
 		}).set(settings || {});
 		this.app   = new App( this.settings.subset(['size', 'appendTo']) );
-		this.scene = this.app.createScene(this.settings.subset(['name','invoke','intersection']));
+		this.layer = this.app.createLayer(this.settings.subset(['name','invoke','intersection']));
 		if (this.settings.get('mouse') === true) {
 			mouse = new Mouse(this.app.container.bounds);
 			mouseHandler = new App.MouseHandler({ mouse: mouse, app: this.app });
@@ -48,12 +48,12 @@ declare( 'LibCanvas.App.Light', {
 	createVector: function (shape, settings) {
 		settings = atom.core.append({ shape:shape }, settings || {});
 
-		return new App.Light.Vector(this.scene, settings);
+		return new App.Light.Vector(this.layer, settings);
 	},
 
 	createText: function (shape, style, settings) {
 		settings = atom.core.append({ shape: shape, style: style }, settings);
-		return new App.Light.Text(this.scene, settings);
+		return new App.Light.Text(this.layer, settings);
 	},
 
 	get mouse () {

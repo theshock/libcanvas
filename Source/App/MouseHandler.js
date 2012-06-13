@@ -96,7 +96,7 @@ declare( 'LibCanvas.App.MouseHandler', {
 		try {
 			return elements.sort( this.compareFunction );
 		} catch (e) {
-			throw new Error('Element binded to mouse, but without scene, check elements');
+			throw new Error('Element binded to mouse, but without layer, check elements');
 		}
 	},
 
