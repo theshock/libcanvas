@@ -22,7 +22,7 @@ provides: Engines.Tile
 */
 
 /** @class TileEngine */
-LibCanvas.declare( 'LibCanvas.Engines.Tile', 'TileEngine', {
+var TileEngine = LibCanvas.declare( 'LibCanvas.Engines.Tile', 'TileEngine', {
 
 	/**
 	 * @param {Object} settings
@@ -116,7 +116,7 @@ LibCanvas.declare( 'LibCanvas.Engines.Tile', 'TileEngine', {
 		for (y = 0; y < size.height; y++) for (x = 0; x < size.width; x++) {
 			point = new Point(x, y);
 			shape = this.createCellRectangle(point, cellSize, cellMargin);
-			cell  = new LibCanvas.Engines.Tile.Cell( this, point, shape, value );
+			cell  = new TileEngine.Cell( this, point, shape, value );
 
 			this.cells.push( cell );
 		}
