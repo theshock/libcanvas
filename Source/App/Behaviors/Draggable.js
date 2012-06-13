@@ -1,7 +1,7 @@
 /*
 ---
 
-name: "Behaviors.Draggable"
+name: "App.Behaviors.Draggable"
 
 description: "When object implements LibCanvas.Behaviors.Draggable interface dragging made possible"
 
@@ -14,20 +14,21 @@ authors:
 
 requires:
 	- LibCanvas
-	- Behaviors
+	- App.Behaviors
 
-provides: Behaviors.Draggable
+provides: App.Behaviors.Draggable
 
 ...
 */
 
-declare( 'LibCanvas.Behaviors.Draggable', Behavior, {
+declare( 'LibCanvas.App.Behaviors.Draggable', Behavior, {
 	stopDrag: [ 'up', 'out' ],
 
 	initialize: function (behaviors, args) {
 		this.bindMethods([ 'onStop', 'onDrag', 'onStart' ]);
 
-		this.element = behaviors.element;
+		this.behaviors = behaviors;
+		this.element   = behaviors.element;
 		if (!atom.core.isFunction(this.element.move)) {
 			throw new TypeError( 'Element ' + this.element + ' must has «move» method' );
 		}
@@ -36,7 +37,7 @@ declare( 'LibCanvas.Behaviors.Draggable', Behavior, {
 	},
 
 	bindMouse: function (method) {
-		var mouse = this.element.mouse, stop = this.stopDrag;
+		var mouse = this.behaviors.getMouse(), stop = this.stopDrag;
 		if (!mouse) throw new Error('No mouse in element');
 
 		mouse.events
@@ -69,7 +70,7 @@ declare( 'LibCanvas.Behaviors.Draggable', Behavior, {
 
 	/** @private */
 	onDrag: function (e) {
-		var delta = this.element.mouse.delta;
+		var delta = this.behaviors.getMouse().delta;
 		this.element.move( delta );
 		this.events.fire('moveDrag', [delta, e]);
 	},

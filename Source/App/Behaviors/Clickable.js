@@ -1,7 +1,7 @@
 /*
 ---
 
-name: "Behaviors.Clickable"
+name: "App.Behaviors.Clickable"
 
 description: "Provides interface for clickable canvas objects"
 
@@ -14,9 +14,9 @@ authors:
 
 requires:
 	- LibCanvas
-	- Behaviors
+	- App.Behaviors
 
-provides: Behaviors.Clickable
+provides: App.Behaviors.Clickable
 
 ...
 */
@@ -33,7 +33,7 @@ function setValueFn (name, val) {
 	};
 }
 
-return declare( 'LibCanvas.Behaviors.Clickable', Behavior, {
+return declare( 'LibCanvas.App.Behaviors.Clickable', Behavior, {
 
 	callbacks: {
 		'mouseover'   : setValueFn('hover' , true ),

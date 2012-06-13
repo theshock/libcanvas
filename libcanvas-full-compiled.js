@@ -1198,231 +1198,6 @@ declare( 'LibCanvas.App.MouseHandler', {
 /*
 ---
 
-name: "Behaviors"
-
-description: ""
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-
-provides: Behaviors
-
-...
-*/
-
-/** @class Behaviors */
-var Behaviors = LibCanvas.declare( 'LibCanvas.Behaviors', 'Behaviors', {
-	initialize: function (element) {
-		this.element   = element;
-		this.behaviors = {};
-	},
-
-	add: function (Behaviour, args) {
-		if (typeof Behaviour == 'string') {
-			Behaviour = this.constructor[Behaviour];
-		}
-
-		return this.behaviors[Behaviour.index] = new Behaviour(this, slice.call( arguments, 1 ));
-	},
-
-	get: function (name) {
-		return this.behaviors[name] || null;
-	}
-}).own({
-	attach: function (target, types, arg) {
-		target.behaviors = new Behaviors(target);
-
-		types.forEach(function (type) {
-			target.behaviors.add(type, arg);
-		});
-
-		return target.behaviors;
-	}
-});
-
-
-var Behavior = declare( 'LibCanvas.Behaviors.Behavior', {
-	started: false,
-
-	/** @private */
-	eventArgs: function (args, eventName) {
-		if (atom.core.isFunction(args[0])) {
-			this.events.add( eventName, args[0] );
-		}
-	},
-
-	/** @private */
-	changeStatus: function (status){
-		if (this.started == status) {
-			return false;
-		} else {
-			this.started = status;
-			return true;
-		}
-	}
-});
-
-/*
----
-
-name: "Behaviors.Clickable"
-
-description: "Provides interface for clickable canvas objects"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Behaviors
-
-provides: Behaviors.Clickable
-
-...
-*/
-
-new function () {
-
-function setValueFn (name, val) {
-	var result = [name, val];
-	return function () {
-		if (this[name] != val) {
-			this[name] = val;
-			this.events.fire('statusChange', result);
-		}
-	};
-}
-
-return declare( 'LibCanvas.Behaviors.Clickable', Behavior, {
-
-	callbacks: {
-		'mouseover'   : setValueFn('hover' , true ),
-		'mouseout'    : setValueFn('hover' , false),
-		'mousedown'   : setValueFn('active', true ),
-		'mouseup'     : setValueFn('active', false),
-		'away:mouseup': setValueFn('active', false)
-	},
-
-	initialize: function (behaviors, args) {
-		this.events = behaviors.element.events;
-		this.eventArgs(args, 'statusChange');
-	},
-
-	start: function () {
-		if (!this.changeStatus(true)) return this;
-
-		this.eventArgs(arguments, 'statusChange');
-		this.events.add(this.callbacks);
-	},
-
-	stop: function () {
-		if (!this.changeStatus(false)) return this;
-
-		this.events.remove(this.callbacks);
-	}
-
-}).own({ index: 'clickable' });
-
-};
-
-/*
----
-
-name: "Behaviors.Draggable"
-
-description: "When object implements LibCanvas.Behaviors.Draggable interface dragging made possible"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-	- Behaviors
-
-provides: Behaviors.Draggable
-
-...
-*/
-
-declare( 'LibCanvas.Behaviors.Draggable', Behavior, {
-	stopDrag: [ 'up', 'out' ],
-
-	initialize: function (behaviors, args) {
-		this.bindMethods([ 'onStop', 'onDrag', 'onStart' ]);
-
-		this.element = behaviors.element;
-		if (!atom.core.isFunction(this.element.move)) {
-			throw new TypeError( 'Element ' + this.element + ' must has «move» method' );
-		}
-		this.events  = behaviors.element.events;
-		this.eventArgs(args, 'moveDrag');
-	},
-
-	bindMouse: function (method) {
-		var mouse = this.element.mouse, stop = this.stopDrag;
-		if (!mouse) throw new Error('No mouse in element');
-
-		mouse.events
-			[method]( 'move', this.onDrag )
-			[method](  stop , this.onStop );
-
-		return mouse;
-	},
-
-	start: function () {
-		if (!this.changeStatus(true)) return this;
-
-		this.eventArgs(arguments, 'moveDrag');
-		this.events.add( 'mousedown', this.onStart );
-	},
-
-	stop: function () {
-		if (!this.changeStatus(false)) return this;
-
-		this.events.remove( 'mousedown', this.onStart );
-	},
-
-	/** @private */
-	onStart: function (e) {
-		if (e.button !== 0) return;
-
-		this.bindMouse('add');
-		this.events.fire('startDrag', [ e ]);
-	},
-
-	/** @private */
-	onDrag: function (e) {
-		var delta = this.element.mouse.delta;
-		this.element.move( delta );
-		this.events.fire('moveDrag', [delta, e]);
-	},
-
-	/** @private */
-	onStop: function (e) {
-		if (e.button !== 0) return;
-		this.bindMouse('remove');
-		this.events.fire('stopDrag', [ e ]);
-	}
-}).own({ index: 'draggable' });
-
-/*
----
-
 name: "Geometry"
 
 description: "Base for such things as Point and Shape"
@@ -6374,6 +6149,239 @@ atom.core.append(HTMLCanvasElement.prototype, {
 /*
 ---
 
+name: "App.Behaviors"
+
+description: ""
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+
+provides: App.Behaviors
+
+...
+*/
+
+/** @class Behaviors */
+var Behaviors = declare( 'LibCanvas.App.Behaviors', {
+	initialize: function (element) {
+		this.element   = element;
+		this.behaviors = {};
+	},
+
+	/** @param [handler=false] */
+	getMouse: function (handler) {
+		return this.element.layer.app.resources.get(
+			handler ? 'mouseHandler' : 'mouse'
+		);
+	},
+
+	add: function (Behaviour, args) {
+		if (typeof Behaviour == 'string') {
+			Behaviour = this.constructor[Behaviour];
+		}
+
+		return this.behaviors[Behaviour.index] = new Behaviour(this, slice.call( arguments, 1 ));
+	},
+
+	get: function (name) {
+		return this.behaviors[name] || null;
+	}
+}).own({
+	attach: function (target, types, arg) {
+		target.behaviors = new Behaviors(target);
+
+		types.forEach(function (type) {
+			target.behaviors.add(type, arg);
+		});
+
+		return target.behaviors;
+	}
+});
+
+
+var Behavior = declare( 'LibCanvas.App.Behaviors.Behavior', {
+	started: false,
+
+	/** @private */
+	eventArgs: function (args, eventName) {
+		if (atom.core.isFunction(args[0])) {
+			this.events.add( eventName, args[0] );
+		}
+	},
+
+	/** @private */
+	changeStatus: function (status){
+		if (this.started == status) {
+			return false;
+		} else {
+			this.started = status;
+			return true;
+		}
+	}
+});
+
+/*
+---
+
+name: "App.Behaviors.Clickable"
+
+description: "Provides interface for clickable canvas objects"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- App.Behaviors
+
+provides: App.Behaviors.Clickable
+
+...
+*/
+
+new function () {
+
+function setValueFn (name, val) {
+	var result = [name, val];
+	return function () {
+		if (this[name] != val) {
+			this[name] = val;
+			this.events.fire('statusChange', result);
+		}
+	};
+}
+
+return declare( 'LibCanvas.App.Behaviors.Clickable', Behavior, {
+
+	callbacks: {
+		'mouseover'   : setValueFn('hover' , true ),
+		'mouseout'    : setValueFn('hover' , false),
+		'mousedown'   : setValueFn('active', true ),
+		'mouseup'     : setValueFn('active', false),
+		'away:mouseup': setValueFn('active', false)
+	},
+
+	initialize: function (behaviors, args) {
+		this.events = behaviors.element.events;
+		this.eventArgs(args, 'statusChange');
+	},
+
+	start: function () {
+		if (!this.changeStatus(true)) return this;
+
+		this.eventArgs(arguments, 'statusChange');
+		this.events.add(this.callbacks);
+	},
+
+	stop: function () {
+		if (!this.changeStatus(false)) return this;
+
+		this.events.remove(this.callbacks);
+	}
+
+}).own({ index: 'clickable' });
+
+};
+
+/*
+---
+
+name: "App.Behaviors.Draggable"
+
+description: "When object implements LibCanvas.Behaviors.Draggable interface dragging made possible"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- App.Behaviors
+
+provides: App.Behaviors.Draggable
+
+...
+*/
+
+declare( 'LibCanvas.App.Behaviors.Draggable', Behavior, {
+	stopDrag: [ 'up', 'out' ],
+
+	initialize: function (behaviors, args) {
+		this.bindMethods([ 'onStop', 'onDrag', 'onStart' ]);
+
+		this.behaviors = behaviors;
+		this.element   = behaviors.element;
+		if (!atom.core.isFunction(this.element.move)) {
+			throw new TypeError( 'Element ' + this.element + ' must has «move» method' );
+		}
+		this.events  = behaviors.element.events;
+		this.eventArgs(args, 'moveDrag');
+	},
+
+	bindMouse: function (method) {
+		var mouse = this.behaviors.getMouse(), stop = this.stopDrag;
+		if (!mouse) throw new Error('No mouse in element');
+
+		mouse.events
+			[method]( 'move', this.onDrag )
+			[method](  stop , this.onStop );
+
+		return mouse;
+	},
+
+	start: function () {
+		if (!this.changeStatus(true)) return this;
+
+		this.eventArgs(arguments, 'moveDrag');
+		this.events.add( 'mousedown', this.onStart );
+	},
+
+	stop: function () {
+		if (!this.changeStatus(false)) return this;
+
+		this.events.remove( 'mousedown', this.onStart );
+	},
+
+	/** @private */
+	onStart: function (e) {
+		if (e.button !== 0) return;
+
+		this.bindMouse('add');
+		this.events.fire('startDrag', [ e ]);
+	},
+
+	/** @private */
+	onDrag: function (e) {
+		var delta = this.behaviors.getMouse().delta;
+		this.element.move( delta );
+		this.events.fire('moveDrag', [delta, e]);
+	},
+
+	/** @private */
+	onStop: function (e) {
+		if (e.button !== 0) return;
+		this.bindMouse('remove');
+		this.events.fire('stopDrag', [ e ]);
+	}
+}).own({ index: 'draggable' });
+
+/*
+---
+
 name: "App.Light"
 
 description: "LibCanvas.App.Light"
@@ -6533,10 +6541,6 @@ App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', {
 			if (this.settings.get('mouse') !== false) {
 				this.listenMouse();
 			}
-		},
-
-		get mouse () {
-			return this.layer.app.resources.get( 'mouse' );
 		},
 
 		move: function (point) {

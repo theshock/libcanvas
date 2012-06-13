@@ -1,7 +1,7 @@
 /*
 ---
 
-name: "Behaviors"
+name: "App.Behaviors"
 
 description: ""
 
@@ -15,16 +15,23 @@ authors:
 requires:
 	- LibCanvas
 
-provides: Behaviors
+provides: App.Behaviors
 
 ...
 */
 
 /** @class Behaviors */
-var Behaviors = LibCanvas.declare( 'LibCanvas.Behaviors', 'Behaviors', {
+var Behaviors = declare( 'LibCanvas.App.Behaviors', {
 	initialize: function (element) {
 		this.element   = element;
 		this.behaviors = {};
+	},
+
+	/** @param [handler=false] */
+	getMouse: function (handler) {
+		return this.element.layer.app.resources.get(
+			handler ? 'mouseHandler' : 'mouse'
+		);
 	},
 
 	add: function (Behaviour, args) {
@@ -51,7 +58,7 @@ var Behaviors = LibCanvas.declare( 'LibCanvas.Behaviors', 'Behaviors', {
 });
 
 
-var Behavior = declare( 'LibCanvas.Behaviors.Behavior', {
+var Behavior = declare( 'LibCanvas.App.Behaviors.Behavior', {
 	started: false,
 
 	/** @private */

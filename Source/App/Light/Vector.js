@@ -41,10 +41,6 @@ App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', {
 			}
 		},
 
-		get mouse () {
-			return this.layer.app.resources.get( 'mouse' );
-		},
-
 		move: function (point) {
 			this.shape.move(point);
 			this.redraw();
