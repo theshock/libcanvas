@@ -935,7 +935,7 @@ declare( 'LibCanvas.App.Layer', {
 
 	/** @private */
 	addIntersections: function () {
-		var i, elem, layer  = this;
+		var i, elem, layer = this;
 
 		for (i = 0; i < this.redraw.length; i++) {
 			elem = this.redraw[i];
@@ -1230,6 +1230,16 @@ var Behaviors = LibCanvas.declare( 'LibCanvas.Behaviors', 'Behaviors', {
 	get: function (name) {
 		return this.behaviors[name] || null;
 	}
+}).own({
+	attach: function (target, types, arg) {
+		target.behaviors = new Behaviors(target);
+
+		types.forEach(function (type) {
+			target.behaviors.add(type, arg);
+		});
+
+		return target.behaviors;
+	}
 });
 
 
@@ -1468,6 +1478,9 @@ provides: Point
 
 /** @class Point */
 var Point = LibCanvas.declare( 'LibCanvas.Point', 'Point', Geometry, {
+	x: 0,
+	y: 0,
+
 	/**
 	 *   new Point(1, 1);
 	 *   new Point([1, 1]);
@@ -3364,7 +3377,7 @@ var Point3D = LibCanvas.declare( 'LibCanvas.Point3D', 'Point3D', Geometry, {
 	/**
 	 * You can pass callback (function( value, axis, point ){})
 	 * @param {function} fn
-	 * @param {object} context
+	 * @param {object} [context=null]
 	 * @returns {Point3D}
 	 */
 	map: function (fn, context) {
@@ -6511,9 +6524,7 @@ App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', {
 			this.styleHover  = {};
 			
 			this.animate = new atom.Animatable(this).animate;
-			this.behaviors = new Behaviors(this);
-			this.behaviors.add('Draggable', this.redraw);
-			this.behaviors.add('Clickable', this.redraw);
+			Behaviors.attach( this, [ 'Draggable', 'Clickable' ], this.redraw );
 			if (this.settings.get('mouse') !== false) {
 				this.listenMouse();
 			}
@@ -6620,7 +6631,7 @@ provides: Engines.Tile
 */
 
 /** @class TileEngine */
-LibCanvas.declare( 'LibCanvas.Engines.Tile', 'TileEngine', {
+var TileEngine = LibCanvas.declare( 'LibCanvas.Engines.Tile', 'TileEngine', {
 
 	/**
 	 * @param {Object} settings
@@ -6714,7 +6725,7 @@ LibCanvas.declare( 'LibCanvas.Engines.Tile', 'TileEngine', {
 		for (y = 0; y < size.height; y++) for (x = 0; x < size.width; x++) {
 			point = new Point(x, y);
 			shape = this.createCellRectangle(point, cellSize, cellMargin);
-			cell  = new LibCanvas.Engines.Tile.Cell( this, point, shape, value );
+			cell  = new TileEngine.Cell( this, point, shape, value );
 
 			this.cells.push( cell );
 		}
