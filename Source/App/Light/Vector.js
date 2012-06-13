@@ -35,9 +35,7 @@ App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', {
 			this.styleHover  = {};
 			
 			this.animate = new atom.Animatable(this).animate;
-			this.behaviors = new Behaviors(this);
-			this.behaviors.add('Draggable', this.redraw);
-			this.behaviors.add('Clickable', this.redraw);
+			Behaviors.attach( this, [ 'Draggable', 'Clickable' ], this.redraw );
 			if (this.settings.get('mouse') !== false) {
 				this.listenMouse();
 			}
