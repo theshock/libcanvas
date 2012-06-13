@@ -76,7 +76,7 @@ declare( 'LibCanvas.App.Container', {
 		
 		this.wrapper = atom.dom.create('div')
 			.css(this.currentSize.toObject())
-			.addClass('libcanvas-layers-container');
+			.addClass('libcanvas-app');
 
 		this.bounds .appendTo(this.wrapper);
 		this.wrapper.appendTo(this.settings.get( 'appendTo' ));
