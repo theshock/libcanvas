@@ -108,7 +108,7 @@ declare( 'LibCanvas.App.Layer', {
 			if (elem.layer == this) {
 				elem.redrawRequested = false;
 				if (elem.isVisible()) {
-					elem.renderTo( ctx, resources );
+					elem.renderToWrapper( ctx, resources );
 					elem.saveCurrentBoundingShape();
 				}
 			}

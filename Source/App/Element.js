@@ -106,6 +106,11 @@ declare( 'LibCanvas.App.Element', {
 		return this;
 	},
 
+	renderToWrapper: function (ctx, resources) {
+		this.renderTo(ctx, resources);
+		return this;
+	},
+
 	renderTo: function (ctx, resources) {
 		if (this.renderer) {
 			this.renderer.renderTo(ctx, resources);

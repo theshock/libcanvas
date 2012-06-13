@@ -697,6 +697,11 @@ declare( 'LibCanvas.App.Element', {
 		return this;
 	},
 
+	renderToWrapper: function (ctx, resources) {
+		this.renderTo(ctx, resources);
+		return this;
+	},
+
 	renderTo: function (ctx, resources) {
 		if (this.renderer) {
 			this.renderer.renderTo(ctx, resources);
@@ -865,7 +870,7 @@ declare( 'LibCanvas.App.Layer', {
 			if (elem.layer == this) {
 				elem.redrawRequested = false;
 				if (elem.isVisible()) {
-					elem.renderTo( ctx, resources );
+					elem.renderToWrapper( ctx, resources );
 					elem.saveCurrentBoundingShape();
 				}
 			}
