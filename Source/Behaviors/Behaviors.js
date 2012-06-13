@@ -38,6 +38,16 @@ var Behaviors = LibCanvas.declare( 'LibCanvas.Behaviors', 'Behaviors', {
 	get: function (name) {
 		return this.behaviors[name] || null;
 	}
+}).own({
+	attach: function (target, types, arg) {
+		target.behaviors = new Behaviors(target);
+
+		types.forEach(function (type) {
+			target.behaviors.add(type, arg);
+		});
+
+		return target.behaviors;
+	}
 });
 
 
