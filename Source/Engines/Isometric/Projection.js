@@ -1,7 +1,7 @@
 /*
 ---
 
-name: "IsometricProjection"
+name: "Engines.Isometric.Projection"
 
 license:
 	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
@@ -13,14 +13,15 @@ authors:
 requires:
 	- LibCanvas
 	- Point3D
+	- Engines.Isometric
 
-provides: Engines.IsometricProjection
+provides: Engines.Isometric.Projection
 
 ...
 */
 
 /** @class IsometricProjection */
-LibCanvas.declare( 'LibCanvas.Engines.IsometricProjection', 'IsometricProjection', {
+atom.declare( 'LibCanvas.Engines.Isometric.Projection', {
 
 	/**
 	 * factor (and default factor in proto)
@@ -39,11 +40,6 @@ LibCanvas.declare( 'LibCanvas.Engines.IsometricProjection', 'IsometricProjection
 	 * @property {Point}
 	 */
 	start: [0, 0],
-
-	/**
-	 * @constructs
-	 * @param {Point3D} factor
-	 */
 
 	/**
 	 * @constructs
