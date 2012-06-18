@@ -1,7 +1,7 @@
 /*
 ---
 
-name: "HexProjection"
+name: "Engines.Hex.Projection"
 
 license:
 	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
@@ -14,14 +14,15 @@ requires:
 	- LibCanvas
 	- Point
 	- Polygon
+	- Engines.Hex
 
-provides: Engines.HexProjection
+provides: Engines.Hex.Projection
 
 ...
 */
 
-/** @class HexProjection */
-LibCanvas.declare( 'LibCanvas.Engines.HexProjection', 'HexProjection', {
+/** @class HexEngine.Projection */
+atom.declare( 'LibCanvas.Engines.Hex.Projection', {
 	multipliers: {
 		height: Math.cos( Math.PI / 6 ) * 2,
 		chord : 1/2 // Math.sin( Math.PI / 6 )
@@ -54,7 +55,7 @@ LibCanvas.declare( 'LibCanvas.Engines.HexProjection', 'HexProjection', {
 	 * @return LibCanvas.Engines.HexProjection.Sizes
 	 */
 	sizes: function (padding) {
-		return new LibCanvas.Engines.HexProjection.Sizes(this, padding);
+		return new this.constructor.Sizes(this, padding);
 	},
 
 	/**
@@ -161,7 +162,7 @@ LibCanvas.declare( 'LibCanvas.Engines.HexProjection', 'HexProjection', {
 	}
 });
 
-declare( 'LibCanvas.Engines.HexProjection.Sizes', {
+declare( 'LibCanvas.Engines.Hex.Projection.Sizes', {
 
 	initialize: function (projection, padding) {
 		this.projection = projection;
