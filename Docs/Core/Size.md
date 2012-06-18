@@ -1,12 +1,10 @@
 LibCanvas.Size
 ==============
 
-`LibCanvas.Size` - ���������� `LibCanvas.Point`, ���������� ���� �� ����������, �� `width` �������� ������� ��� `x`, � `height` - 	������� ��� `y`.
+`LibCanvas.Size` - расширение `LibCanvas.Point`, обладатает теми же свойствами, но `width` является алиасом для `x`, а `height` - алиасом для `y`.
 
 	var size = new LibCanvas.Size({ width: 15, height: 35 });
 
 #### Global
 
-����� ������ LibCanvas.extract() ����� ������������ �������� ����� "Size"
-
-
+После вызова LibCanvas.extract() можно использовать короткий алиас "Size"

@@ -1,43 +1,43 @@
 LibCanvas.Context2D
 ===================
 
-`LibCanvas.Context2D` - ����������� ����������� ����������� 2d-��������, ������� ����� �������� ���:
+`LibCanvas.Context2D` - значительно расширенный стандартный 2d-контекст, который можно получить так:
 
 	var context = canvas.getContext('2d-libcanvas');
 	// alternate syntax:
 	var context = new LibCanvas.Context2D(canvas);
 
-�������� ��� ���� - ��� ������, ���� �� ��������� ����� ���������� ������ �� �������� ��� ������������� � �������� �������, ����������� ������������� ����������� ���������� � ������������� �������� LibCanvas.
+Основная его идея - все методы, если не требуется иного возвращают ссылку на контекст для использования в цепочках вызовов, возможность использования именованных аргументов и использование объектов LibCanvas.
 
-����� ����� �� ������������� ��������� ������������� �������.
+Кроме этого он предоставляет множество нестандартных методов.
 
 #### Global
 
-����� ������ LibCanvas.extract() ����� ������������ �������� ����� "Context2D"
+После вызова LibCanvas.extract() можно использовать короткий алиас "Context2D"
 
-## ��������
+## Свойства
 
 ### canvas (get)
-������ �� ������������ dom-�������
+Ссылка на родительский dom-елемент
 
 ### width (get/set)
-����������/�������� ������ ������
+Возвращает/изменяет ширину холста
 
 ### height (get/set)
-����������/�������� ������ ������
+Возвращает/изменяет высоту холста
 
 ### rectangle (get)
-���������� ������ �� �������������, ��������������� �������� ������
-������ �� ������������� �������� �������� � ���� ��������. ���� ���������� - ����������� ����.
+Возвращает ссылку на прямоугольник, соответствующий размерам холста
+Крайне не рекомендуется работать напрямую с этим объектом. Если необходимо - используйте клон.
 
-#### ������
+#### Пример
 
 	if (context.rectangle.hasPoint(somePoint)) {
-		// ����� ��������� � �������� ������
+		// Точка находится в пределах холста
 		doSmth();
 	}
 
-	// �������� �������������
+	// Изменяем прямоугольник
 	var clone = context.rectangle.clone();
 
 	clone.height /= 2;
@@ -46,36 +46,36 @@ LibCanvas.Context2D
 	context.fillAll( clone, 'red' );
 
 ### shadow (get/set)
-��������� ��������/���������� �������� shadowOffsetX, shadowOffsetY, shadowBlur � shadowColor ���������� ��������
+Позволяет получить/установить свойства shadowOffsetX, shadowOffsetY, shadowBlur и shadowColor лаконичным способом
 
-#### ������
+#### Пример
 	context.shadow = '1 2 3 black';
 
-	// ������:
+	// Аналог:
 	context.shadowOffsetX = 1;
 	context.shadowOffsetY = 2;
 	context.shadowBlur    = 3;
 	context.shadowColor   = 'black;
 
 
-## ����� getClone
+## Метод getClone
 
 	HTMLCanvasElement getClone(int width, int height)
 
-���������� �����, ������ �� ����������� � � ���������� ��������, ���� ������� width � height
-����� ���������� ��� �������� ����� �������� ����, ��������� ������, ���.
+Возвращает холст, равный по изображению и с измененным размером, если указаны width и height
+Может применятся для создания копии текущего слоя, маленькой иконки, итд.
 
-#### ������
+#### Пример
 	context.drawImage(context.getClone(64, 48));
 
-## ����� set
+## Метод set
 
 	[this] set(object properties)
 	[this] set(string propertyName, string propertyValue)
 
-��������� �������� ������
+Указывает свойства холста
 
-#### ������
+#### Пример
 
 	context
 		.set({
@@ -84,185 +84,185 @@ LibCanvas.Context2D
 		})
 		.set('globalOpacity', 0.5);
 
-## ����� get
+## Метод get
 
 	string get(string propertyName)
 
-�������� �������� ��������
+Получить значения свойства
 
-#### ������
+#### Пример
 	context.get('fillStyle');
 
-## ����� fillAll
+## Метод fillAll
 
 	[this] fillAll()
 	[this] fillAll(string fillStyle)
 
-�������� ���� ����� ������ fillStyle ��� ������ ��-���������, ���� �������� �� �������
+Заливает весь холст цветом fillStyle или цветом по-умолчанию, если аргумент не передан
 
-#### ������
+#### Пример
 
 	context.fillAll('red');
 
-## ����� strokeAll
+## Метод strokeAll
 
 	[this] strokeAll()
 	[this] strokeAll(string strokeStyle)
 
-������� ���� ����� ������ strokeStyle ��� ������ ��-���������, ���� �������� �� �������
+Обводит весь холст цветом strokeStyle или цветом по-умолчанию, если аргумент не передан
 
-#### ������
+#### Пример
 
 	context.strokeAll('rgb(255, 245, 200)');
 
-## ����� clearAll
+## Метод clearAll
 
 	[this] clearAll()
 
-������� �����
+Очищает холст
 
-#### ������
+#### Пример
 
 	context.clearAll();
 
-## ����� fill
+## Метод fill
 
 	[this] fill()
 	[this] fill(string fillStyle)
 	[this] fill(Shape shape)
 	[this] fill(Shape shape, string fillStyle)
 
-�������� ������ ��� ������� ���� ������ fillStyle ��� ������ ��-���������, ���� �������� �� �������
+Заливает фигуру или текущий путь цветом fillStyle или цветом по-умолчанию, если аргумент не передан
 
-#### ������
+#### Пример
 
 	context.fill(new Circle(50, 50, 20), 'red');
 
-## ����� stroke
+## Метод stroke
 
 	[this] stroke()
 	[this] stroke(string fillStyle)
 	[this] stroke(Shape shape)
 	[this] stroke(Shape shape, string fillStyle)
 
-������� ������ ��� ������� ���� ������ strokeStyle ��� ������ ��-���������, ���� �������� �� �������
+Обводит фигуру или текущий путь цветом strokeStyle или цветом по-умолчанию, если аргумент не передан
 
-#### ������
+#### Пример
 
 	context.stroke(new Circle(50, 50, 20), 'red');
 
-## ����� clear
+## Метод clear
 
 	[this] clear(Shape shape)
 
-������� ������, ���������� ������ ����������. (����������� - ���������!)
+Очищает фигуру, переданную первым аргументом. (сглаживание - выключено!)
 
-## ����� fillRect
+## Метод fillRect
 	[this] fillRect(LibCanvas.Shapes.Rectangle rectangle)
 	[this] fillRect(int fromX, int fromY, int width, int height)
 
-## ����� strokeRect
+## Метод strokeRect
 	[this] strokeRect(LibCanvas.Shapes.Rectangle rectangle)
 	[this] strokeRect(int fromX, int fromY, int width, int height)
 
-## ����� clearRect
+## Метод clearRect
 	[this] clearRect(LibCanvas.Shapes.Rectangle rectangle)
 	[this] clearRect(int fromX, int fromY, int width, int height)
 
-#### ������
+#### Пример
 
 	context.clear(new Circle(50, 50, 20));
 
-## ������ save/restore
+## Методы save/restore
 
 	[this] save()
 
-��������� ��������� ������ � ����
+Сохраняет настройки холста в стек
 
 	[this] restore()
 
-��������������� ��������� ���������� ��������� ������
+Восстанавливает последние сохранённые настройки холста
 
-#### ������
+#### Пример
 	context.set({ fillStyle: 'blue' });
 	context.save();
 		context.set({ fillStyle: 'red' });
-		context.fillAll(); // �������� �� ������� ������
+		context.fillAll(); // заливаем всё красным цветом
 	context.restore();
-	context.fillAll(); // �������� �� ����� ������
+	context.fillAll(); // заливаем всё синим цветом
 
-# �������� ����
+# Создание пути
 
-## ����� beginPath
+## Метод beginPath
 
 	[this] beginPath()
 	[this] beginPath(point)
 	[this] beginPath(int x, int y)
 
-��������� ����. ���� ���� ���������, �� �������� ����� `moveTo`
+Открывает путь. Если есть аргументы, то вызывает метод `moveTo`
 
-## ����� closePath
+## Метод closePath
 
 	[this] closePath()
 	[this] closePath(LibCanvas.Point point)
 	[this] closePath(int x, int y)
 
-��������� ����. ���� ���� ���������, �� �������� ����� `lineTo`
+Закрывает путь. Если есть аргументы, то вызывает метод `lineTo`
 
-## ����� moveTo
+## Метод moveTo
 
 	[this] moveTo(LibCanvas.Point point);
 	[this] moveTo(int x, int y);
 
-���������� ��������� ���� � ����� point
+Перемещает указатель пути в точку point
 
-## ����� lineTo
+## Метод lineTo
 
 	[this] lineTo(LibCanvas.Point point);
 	[this] lineTo(int x, int y);
 
-������������ ����� � ����� point
+Прокладывает линию в точку point
 
-## ����� arc
+## Метод arc
 
 	[this] lineTo(object params);
 
-��������� ����
+Проложить дугу
 
-#### �����
+#### Опции
 
-`circle`    (*LibCanvas.Shapes.Circle*) - ����, �� ������� ���������� ������������ ����
+`circle`    (*LibCanvas.Shapes.Circle*) - круг, по котором необходимо отрисовывать дугу
 
-`angle`     (*object*) - ����, ������� ���� ������������. ���������� ��� �� ���� ����������:
+`angle`     (*object*) - угол, который дуга отрисовывает. Необходимо два из трех параметров:
 
-* `start`  (*int*) - ������ ���� ���������� (� ��������)
-* `end`    (*int*) - ��� ���� ������������� (� ��������)
-* `size`   (*int*) - ������ ���� (� ��������)
+* `start`  (*int*) - откуда дуга начинается (в радианах)
+* `end`    (*int*) - где дуга заканчивается (в радианах)
+* `size`   (*int*) - размер дуги (в радианах)
 
-���� ������� ������ �� ���� ���������, �� ��������������, ��� ������ - ��� start, � ������ - end
+Если передан массив из двух элементов, то предполагается, что первый - это start, а второй - end
 
-`anticlockwise` ��� `acw` - ���� ������� � true, �� ����������� �������� ������ ������� �������
+`anticlockwise` или `acw` - если указано в true, то направление движения против часовой стрелки
 
-#### ������
+#### Пример
 
 	context.arc({
 		circle: new LibCanvas.Shapes.Circle(50, 50, 25),
 		angle : [(30).degree(), (60).degree()]
 	});
 
-## ����� curveTo
+## Метод curveTo
 
 	[this] curveTo(object params);
 
-������������ ������ ����� �� ����������� ������.
+Отрисовывает кривую Безье по контрольным точкам.
 
-#### �����
+#### Опции
 
-`to`    (*LibCanvas.Point*) - ���� ��������� ������
+`to`    (*LibCanvas.Point*) - куда проложить кривую
 
-`point` (*LibCanvas.Point[]*) - ������ ����������� �����. ����� ���� ���, ���� ��� �� ����.
+`point` (*LibCanvas.Point[]*) - массив контрольных точек. Может быть две, одна или не быть.
 
-#### ������
+#### Пример
 
 	context.curveTo({
 		to: [100, 100],
@@ -272,49 +272,49 @@ LibCanvas.Context2D
 		]
 	});
 
-	// �����������
+	// равносильно
 
 	context.bezierCurveTo(80, 30, 20, 90, 100, 100);
 
-## ����� isPointInPath
+## Метод isPointInPath
 
 	boolean isPointInPath(LibCanvas.Point point);
 	boolean isPointInPath(int x, int y);
 
-���������, ��������� �� ������ ����� � �������� ������������� ����
+Проверяет, находится ли данная точка в пределах отрисованного пути
 
-#### ������
+#### Пример
 
 	context.isPointInPath([15, 20]);
 
-## ����� clip
+## Метод clip
 
 	[this] clip();
 	[this] clip(LibCanvas.Shape shape);
 
-������������ ��������� � ����� ����������� ��������.
-���� �������� `shape` �� �������, �� ����� �������������� ������� ����
+Ограничивает отрисовку в холст определённым участком.
+Если аргумент `shape` не передан, то будет использоваться текущий путь
 
-#### ������
-	// ��, ��� �� ��������� ����� - �� ����������
+#### Пример
+	// всё, что за пределами круга - не отрисуется
 	context.clip(new Circle(100, 100, 50));
 	context.fillRect(100, 100, 100, 100);
 
-## ����� rotate
+## Метод rotate
 
 	[this] rotate(number angle);
 	[this] rotate(number angle, LibCanvas.Point pivot);
 
-## ����� translate
+## Метод translate
 
 	[this] translate (LibCanvas.Point point)
 	[this] translate (LibCanvas.Point point, boolean reverse)
 	[this] translate (int x, int y)
 
-## ����� text
+## Метод text
 	[this] text(object params)
 
-#### �����
+#### Опции
 
 `text`       (*string*)
 
@@ -322,50 +322,50 @@ LibCanvas.Context2D
 
 `wrap`       (*string*) no|normal
 
-`to`         (*LibCanvas.Shapes.Rectangle*) ��-��������� ���������� ����� this.getFullRectangle
+`to`         (*LibCanvas.Shapes.Rectangle*) по-умолчанию вызывается метод this.getFullRectangle
 
 `align`      (*string*) center|left|right
 
-`size`       (*int, ��-��������� = 16*)
+`size`       (*int, по-умолчанию = 16*)
 
 `weigth`     (*string*) bold|normal
 
 `style`      (*string*) italic|normal
 
-`family`     (*string*, ��-��������� = sans-serif)
+`family`     (*string*, по-умолчанию = sans-serif)
 
 `lineHeight` (*int*)
 
-`overflow`   (*string*, ��-��������� = visible) hidden|visible
+`overflow`   (*string*, по-умолчанию = visible) hidden|visible
 
-`padding`    (*int|int[]*, ��-��������� = 0) [topBottom, leftRight]
+`padding`    (*int|int[]*, по-умолчанию = 0) [topBottom, leftRight]
 
-## ����� drawImage
+## Метод drawImage
 	[this] drawImage(element image)
 	[this] drawImage(object params)
 
 
-#### �����
+#### Опции
 
-��������� ������ ���� �� ����� `from`, `center`, `draw`
+Требуется только одна из опций `from`, `center`, `draw`
 
-`image`  (*element*) ��������, ������� �� ���������� ������������
+`image`  (*element*) картинка, которую вы собираетес отрисовывать
 
-`from`   (*LibCanvas.Point*) ������� ����� �����, ������ ������������ ��������
+`from`   (*LibCanvas.Point*) верхняя левая точка, откуда отрисовывать картинку
 
-`center` (*LibCanvas.Point*) ����������� �����, ������ ������������ ��������
+`center` (*LibCanvas.Point*) центральная точка, откуда отрисовывать картинку
 
-`draw`   (*LibCanvas.Shapes.Rectangle*) �������������, � ������� ���������� ��������. �������� ��������� �� �������� ��������������.
+`draw`   (*LibCanvas.Shapes.Rectangle*) прямоугольник, в который отрисовать картинку. Картинка скейлится до размеров многоугольника.
 
-`crop`   (*LibCanvas.Shapes.Rectangle*) �������������, ������� ��������� �� ����� ��������, ������� ����� �������� (����������� ������ ��� ������������� draw)
+`crop`   (*LibCanvas.Shapes.Rectangle*) прямоугольник, который указывает на часть картинки, которую нужно вырезать (применяется только при использовании draw)
 
-`angle`  (*int*) ���� ������� �������� � ��������
+`angle`  (*int*) угол наклона картинки в радианах
 
-`scale`  (*LibCanvas.Point*) ������ ��������. ����� �������������� ��� ��������� �������� �� ��������� ��� ������������
+`scale`  (*LibCanvas.Point*) ресайз картинки. Может использоваться для отражения картинки по вертикали или горизонатали
 
-������� ������� - ���� ���� `draw` � `crop`, �� ������� ����������� `crop` � ��������, ����� ��� ����������� �������� `from|center|draw`, ����� ��������������� ������ ������ �� ���� angle �� ������� ������� � ��� ��������������.
+Принцип простой - если есть `draw` и `crop`, то сначала применяется `crop` к картинке, потом она размещается согласно `from|center|draw`, потом разворачивается вокруг центра на угол angle по часовой стрелке и так отрисовывается.
 
-#### ������
+#### Пример
 	context.drawImage({
 		image : this.image,
 		center: this.position,
@@ -384,18 +384,18 @@ LibCanvas.Context2D
 		scale: new Point(-1, 1) // flipX
 	});
 
-## ����� projectiveImage
+## Метод projectiveImage
 ###### testing
 
 	[this] projectiveImage(object params)
 
-## ����� getPixel
+## Метод getPixel
 	[this] getPixel(LibCanvas.Point point)
 
-���������� �������� ����� ������� � ����� point � ������� {r: [0, 255], g: [0, 255], b: [0, 255], a: [0, 1]}
-�������� ����� �������� ������������ Color.
+Возвращает значение цвета пикселя в точке point в формате {r: [0, 255], g: [0, 255], b: [0, 255], a: [0, 1]}
+Аргумент можно передать конструктору Color.
 
-#### ������
+#### Пример
 
 	mouse.events.add( 'click', function () {
 		var pixel = ctx.getPixel( mouse.point );
@@ -406,16 +406,16 @@ LibCanvas.Context2D
 		var pixel = ctx.getPixel( mouse.point );
 
 		pixel.a > 0.1 ?
-			alert('������� �����')  :
-			alert('������� �������');
+			alert('Пиксель видим')  :
+			alert('Пиксель невидим');
 	});
 
-## ����� createGradient
+## Метод createGradient
 	[RadialGradient] createGradient(Circle from, Circle to, Object colors)
 	[LinearGradient] createGradient(Point  from, Point  to, Object colors)
 	[LinearGradient] createGradient(Rectangle rect, Object colors)
 
-������ � ���������� ���������� ��� ��������� �������� � ����-�������, ���������� � colors
+Создаёт и возвращает радиальный или линеарный градиент с стоп-цветами, указанными в colors
 
 	context.createGradient( context.rectangle, {
 		'0.0': 'red',
@@ -431,11 +431,11 @@ LibCanvas.Context2D
 			'1.0': 'green'
 		});
 
-## ����� createRectangleGradient
+## Метод createRectangleGradient
 
 	//// todo
 
-# ��������� ������ ��������� ������ �� ������������� ���������:
+# Следующие методы повторяют методы из оригинального контекста:
  * scale
  * transform
  * setTransform

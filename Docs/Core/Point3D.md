@@ -1,55 +1,55 @@
 LibCanvas.Point3D
 =================
 
-`LibCanvas.Point3D` - �����, ������� ��������� ����� � ��������� ������������.
+`LibCanvas.Point3D` - класс, который описывает точку в трёхмерном пространстве.
 
 #### Global
 
-����� ������ LibCanvas.extract() ����� ������������ �������� ����� "Point3D"
+После вызова LibCanvas.extract() можно использовать короткий алиас "Point3D"
 
-## �������� ���������� LibCanvas.Point3D
+## Создание экземпляра LibCanvas.Point3D
 
 	
-������� ��������� ������ `LibCanvas.Point` ����� ����� �� ��������� ��������:
+Создать экземпляр класса `LibCanvas.Point` можно одним из следующих способов:
 
 	var xCoord = 15, yCoord = 20, zCoord = 25;
 
-	// ������� � ����������� ����������
+	// передав в конструктор координаты
 	var point = new LibCanvas.Point3D( xCoord, yCoord, zCoord );
 
-	// ������ ���������
+	// массив координат
 	var point = new LibCanvas.Point3D([xCoord, yCoord, zCoord]);
 
-	// ������ ���������
+	// объект координат
 	var point = new LibCanvas.Point3D({ x : xCoord, y : yCoord, z: zCoord });
 
-	// ������ ������ LibCanvas.Point3D
+	// Другой объект LibCanvas.Point3D
 	var point = new LibCanvas.Point3D(anotherPoint);
 	
-	// ��� ����������� �
+	// что равнозначно с
 	var point = anotherPoint.clone();
 
-	// ����� ������������� LibCanvas.extract():
+	// после использования LibCanvas.extract():
 	var point = new Point3D( xCoord, yCoord, zCoord );
 
 
-## ����� equals
+## Метод equals
 
 	boolean equals(LibCanvas.Point3D to, int accuracy)
 
-����� ���������� ��� ����� �� �� �������
+Метод сравнивает две точки не по ссылкам
 
-#### �������� `accuracy`
-	���� ������, �� �������� ���������� ������, � ��������� ������� ����� ����������� ����� (��� ��������� ���������)
+#### аргумент `accuracy`
+	Если указан, то означает количество знаков, с точностью которых будут сравниватся точки (для неточного сравнения)
 
-#### ������
+#### Пример
 	var bar = new LibCanvas.Point3D(15, 15, 10);
 	var foo = new LibCanvas.Point3D(15, 15, 10);
 
 	trace(bar == foo);      // false
 	trace(bar.equals(foo)); // true
 
-#### ������ � accuracy
+#### Пример с accuracy
 	var bar = new LibCanvas.Point3D(7, 12.88888324, 15.1111127);
 	var foo = new LibCanvas.Point3D(7, 12.88888115, 15.1111093);
  
@@ -58,48 +58,48 @@ LibCanvas.Point3D
 	console.log(bar.equals(foo, 8)); // false
 	console.log(bar.equals(foo, 4)); // true
 
-## ����� clone
+## Метод clone
 
 	LibCanvas.Point3D clone()
 
-���������� ����� � ������ �� ������������
+Возвращает точку с такими же координатами
 
-#### ������
+#### Пример
 	var point = new LibCanvas.Point3D(15, 15, 10);
 	var clone = point.clone();
 	console.log(point == clone); // false
 	console.log(point.equals(clone)); // true
 	
-## ����� move
+## Метод move
 
 	LibCanvas.Point move(LibCanvas.Point point3d)
 
-#### ������
+#### Пример
 	var point    = new LibCanvas.Point3D(10, 10, 10);
 	var distance = new LibCanvas.Point3D( 5, -3,  1);
 	
 	point.move(distance); // Point3D(15, 7, 11)
 
-## ����� diff
+## Метод diff
 
 	LibCanvas.Point3D diff(LibCanvas.Point3D point)
 
-���� ����� �������� �������� ��������� :
-�� ������� ���� ���������� �����, ����� ��� ��������� �� ����� ���, ������� �������� ������ ����������
+Этот метод означает примерно следующее :
+на сколько надо сдвинуться точке, чтобы она оказалась на месте той, которая передана первым аргументом
 
-#### ������
+#### Пример
 	var pO = new LibCanvas.Point3D(10, 10, 7);
 	var pA = new LibCanvas.Point3D(15, 18, 7);
 
 	pA.diff(pO); // Point3D(-5, -8, 0)
 
-## ����� map
+## Метод map
 
 	LibCanvas.Point3D map(callback, context)
 
-�������� �������� ����� �������� ���������� ������ callback
+Изменяет значения точки согласно результату вызова callback
 
-#### ������
+#### Пример
 	var point = new LibCanvas.Point3D(1, 2, 3);
 	
 	point.map(function (value, coord, point) {
@@ -108,26 +108,26 @@ LibCanvas.Point3D
 	
 	atom.trace( point ); // Point3D(1, 4, 9)
 	
-## ����� add
+## Метод add
 
 	LibCanvas.Point3D add(value)
 
-��������� �������� ���� ��������� ����� �� `value`
+Увеличить значение всех координат точки на `value`
 
-#### ������
+#### Пример
 	var point = new LibCanvas.Point3D(1, 2, 3);
 	
 	point.add(5);
 	
 	atom.trace( point ); // Point3D(6, 7, 8)
 	
-## ����� mul
+## Метод mul
 
 	LibCanvas.Point3D mul(value)
 
-�������� �������� ���� ��������� ����� �� `value`
+Умножить значение всех координат точки на `value`
 
-#### ������
+#### Пример
 	var point = new LibCanvas.Point3D(1, 2, 3);
 	
 	point.mul(5);
