@@ -3,38 +3,38 @@ LibCanvas.Shapes.Line
 
 #### Global
 
-����� ������ LibCanvas.extract() ����� ������������ �������� ����� "Line"
+После вызова LibCanvas.extract() можно использовать короткий алиас "Line"
 
-## �������� ���������� LibCanvas.Shapes.Line
+## Создание экземпляра LibCanvas.Shapes.Line
 
-	// ��� ����� LibCanvas.Point - ������ � ����
+	// две точки LibCanvas.Point - откуда и куда
 	var line = new LibCanvas.Shapes.Line( fromPoint, toPoint );
 
-	// ������ ����������
+	// объект параметров
 	var line = new LibCanvas.Shapes.Line({
 		from : fromPoint,
 		to   : toPoint
 	});
 
-�� ���������, ��� ����� ���������� �� ������, ������ ���� �� �������� line ����� ��� ����� �� ��� ��������� ����� ������ ����� ����� ������� � ������������ �����.
+Не забывайте, что точки передаются по ссылке, потому если вы объявили line через две точки то при изменении точки внутри линии будут менятся и оригинальные точки.
 
 	var line = new Line( fromPoint, toPoint );
 	line.from.x = 100;
 	alert(fromPoint.x); // 100
 
-���� ����������, ������ ��������� ����� ��������, ��������� ����� �����
+Если необходимо, такого поведения можно избежать, передавая клоны точек
 	var line = new LibCanvas.Shapes.Line( fromPoint.clone(), toPoint.clone() );
 
-��� �������� �����:
+Или клонируя линию:
 	var line = new LibCanvas.Shapes.Line( fromPoint, toPoint ).clone();
 
-## ��������
+## Свойства
 
 ### length (get)
-�������� ����� �����
+Получить длину линии
 
 ### center (get)
-������� ����� ����� � ������������, ������� ������������� ������ �����
+Создает новую точку с координатами, которые соотвутствуют центру линии
 
 	var line = new Line({
 		from : [10, 10],
@@ -42,13 +42,13 @@ LibCanvas.Shapes.Line
 	});
 	line.center; // Point(15, 15)
 
-## ����� hasPoint
+## Метод hasPoint
 
 	bool hasPoint(LibCanvas.Point point);
 
-���������� true ���� ����� ��������� �� �����
+Возвращает true если точка находится на линии
 
-#### ������
+#### Пример
 	var line = new LibCanvas.Shapes.Line({
 		from : [4, 4],
 		to   : [8, 8]
@@ -56,13 +56,13 @@ LibCanvas.Shapes.Line
 	line.hasPoint( [6, 6] ); // true
 	line.hasPoint( [2, 5] ); // false
 
-## ����� move
+## Метод move
 
 	LibCanvas.Shapes.Line move(LibCanvas.Point distance, bool reverse);
 
-�������� ����� move � ����� �����
+Вызывает метод move у обоих точек
 
-#### ������
+#### Пример
 	var line = new LibCanvas.Shapes.Line({
 		from : [4, 4],
 		to   : [8, 8]
@@ -71,50 +71,50 @@ LibCanvas.Shapes.Line
 	// line.from == Point( 6,  7)
 	// line.to   == Point(10, 11)
 
-#### ���������� `this`
+#### Возвращает `this`
 
-## ����� processPath
+## Метод processPath
 
 	LibCanvas.Context2D processPath(LibCanvas.Context2D ctx, bool noWrap = false)
 
-������������ ���� � ������� � ����� `from` � ������� `ctx.moveTo` � ����� `to` � ������� `ctx.lineTo`
+Прокладывает путь с помощью с точки `from` с помощью `ctx.moveTo` в точку `to` с помощью `ctx.lineTo`
 
-#### �������� `noWrap`
-���� ������ � false(�� ���������), �� ��������� � ������� beginPath, endPath
+#### аргумент `noWrap`
+если указан в false(по умолчанию), то обрамляет с помощью beginPath, endPath
 
-#### ������
+#### Пример
 	LibCanvas.Shapes.Line({
 		from : [4, 4],
 		to   : [8, 8]
 	}).processPath(ctx);
 
-	// ����������� c:
+	// равносильно c:
 	ctx.beginPath()
 	   .moveTo(4, 4) // line.from
 	   .lineTo(8, 8) // line.to
 	   .closePath();
 
-#### ���������� `this`
+#### Возвращает `this`
 
-## ����� perpendicular
+## Метод perpendicular
 
 	LibCanvas.Point perpendicular(LibCanvas.Point point)
 
-���������� ������������� ����� `point` �� ������� ������
+Возвращает перпендикуляр точки `point` на текущую прямую
 
-#### ������
+#### Пример
 	var line  = new LibCanvas.Shapes.Line( [0,3], [4,0] );
 	var point = new LibCanvas.Point( 0, 0 );
 
 	line.perpendicular( point ); // Point(1.44, 1.92)
 
 
-## ����� intersect
+## Метод intersect
 
 	bool intersect(LibCanvas.Shapes.Line line)
 	LibCanvas.Point intersect(LibCanvas.Shapes.Line line, true)
 
-���������� ����������� ����� � ������ ������. ���� �������� `point` ����� `true`, �� ������� ����� ����������� ��� `null`, ���� ����������� - ������� `true` ��� `false`.
+Определяет пересечение линии с другой линией. Если параметр `point` равен `true`, то вернётся точка пересечения или `null`, если отсутствует - вернётся `true` или `false`.
 
    var first  = new Line([10, 10], [20, 20]);
    var second = new Line([10, 20], [20, 10]);
@@ -123,11 +123,11 @@ LibCanvas.Shapes.Line
    trace( first.intersect(second, true) ); // Point(15, 15)
 
 
-## ����� distanceTo
+## Метод distanceTo
 
 	Number distanceTo(LibCanvas.Point point, boolean asInfinitiveLine)
 
-���������� ���������� ����� ������ � ������ `point`. ���� `asInfinitiveLine=true`, �� ����� ����� ���������� ����������� ������, ����� - ��������.
+Определяет расстояние между линией и точкой `point`. Если `asInfinitiveLine=true`, то линия будет считатьтся бесконечной прямой, иначе - отрезком.
 
 	var line  = new Line (10, 10, 20, 20),
 	    point = new Point(41, 40);
@@ -136,10 +136,10 @@ LibCanvas.Shapes.Line
 	line.distanceTo(point, true); // 0.7071
 
 
-## ����� equals
+## Метод equals
 	bool equals(LibCanvas.Shapes.Line line, int accuracy)
 
-���������� ����� ����� ������� LibCanvas.Point.equals
+Сравнивает точки линий методом LibCanvas.Point.equals
 
 	var foo = new LibCanvas.Shapes.Line(15, 20, 10, 5);
 	var bar = new LibCanvas.Shapes.Line(15, 20, 10, 5);
@@ -147,10 +147,10 @@ LibCanvas.Shapes.Line
 	trace(bar == foo);      // false
 	trace(bar.equals(foo)); // true
 
-## ����� clone
+## Метод clone
 	LibCanvas.Shapes.Line clone()
 
-���������� ����� � ������ �� ������������
+Возвращает линию с такими же координатами
 
 	var line  = new LibCanvas.Shapes.Line(15, 20, 10, 5);
 	var clone = line.clone();
