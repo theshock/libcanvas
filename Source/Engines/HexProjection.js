@@ -22,6 +22,11 @@ provides: Engines.HexProjection
 
 /** @class HexProjection */
 LibCanvas.declare( 'LibCanvas.Engines.HexProjection', 'HexProjection', {
+	multipliers: {
+		height: Math.cos( Math.PI / 6 ) * 2,
+		chord : 1/2 // Math.sin( Math.PI / 6 )
+	},
+
 	/**
 	 * @param {object} settings
 	 * @param {int} settings.baseLength  - length of top and bottom lines
@@ -29,12 +34,19 @@ LibCanvas.declare( 'LibCanvas.Engines.HexProjection', 'HexProjection', {
 	 * @param {int} settings.hexHeight   - height of the hex (length between top and bottom lines)
 	 */
 	initialize: function (settings) {
-		this.settings = new Settings({
+		settings = this.settings = new Settings({
 			baseLength : 0,
-			chordLength: 0,
-			hexHeight  : 0,
+			chordLength: null,
+			hexHeight  : null,
 			start      : new Point(0, 0)
 		}).set(settings);
+
+		if (settings.get('chordLength') == null) {
+			settings.set({
+				chordLength: settings.get('baseLength') * this.multipliers.chord,
+				hexHeight  : settings.get('hexHeight' ) * this.multipliers.height
+			});
+		}
 	},
 
 	/**
@@ -42,7 +54,7 @@ LibCanvas.declare( 'LibCanvas.Engines.HexProjection', 'HexProjection', {
 	 * @return LibCanvas.Engines.HexProjection.Sizes
 	 */
 	sizes: function (padding) {
-		return LibCanvas.Engines.HexProjection.Sizes(this, padding);
+		return new LibCanvas.Engines.HexProjection.Sizes(this, padding);
 	},
 
 	/**
