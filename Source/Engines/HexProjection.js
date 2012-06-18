@@ -47,6 +47,14 @@ LibCanvas.declare( 'LibCanvas.Engines.HexProjection', 'HexProjection', {
 
 	/**
 	 * @param {int[]} coordinates
+	 * @return {bool}
+	 */
+	isZero: function (c) {
+		return c[0] === 0 && c[1] === 0 && c[2] === 0;
+	},
+
+	/**
+	 * @param {int[]} coordinates
 	 * @return Point
 	 */
 	rgbToPoint: function (coordinates) {
