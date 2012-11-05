@@ -156,6 +156,9 @@ var Point = LibCanvas.declare( 'LibCanvas.Point', 'Point', Geometry, {
 	toObject: function () {
 		return { x: this.x, y: this.y };
 	},
+	toArray: function () {
+		return [ this.x, this.y ];
+	},
 	/** @returns {Point} */
 	invoke: function (method) {
 		this.x = this.x[method]();
