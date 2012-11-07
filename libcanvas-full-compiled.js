@@ -1,4 +1,3 @@
-
 /*
 ---
 
@@ -1453,6 +1452,10 @@ var Point = LibCanvas.declare( 'LibCanvas.Point', 'Point', Geometry, {
 	/** @returns {object} */
 	toObject: function () {
 		return { x: this.x, y: this.y };
+	},
+	/** @returns {array} */
+	toArray: function () {
+		return [ this.x, this.y ];
 	},
 	/** @returns {Point} */
 	invoke: function (method) {
@@ -6807,6 +6810,7 @@ var TileEngine = LibCanvas.declare( 'LibCanvas.Engines.Tile', 'TileEngine', {
 	},
 
 	getCellByIndex: function (point) {
+		point = new Point(point);
 		return this.isIndexOutOfBounds(point) ? null:
 			this.cells[ this.width * point.y + point.x ];
 	},
@@ -6816,6 +6820,8 @@ var TileEngine = LibCanvas.declare( 'LibCanvas.Engines.Tile', 'TileEngine', {
 			settings   = this.settings,
 			cellSize   = settings.get('cellSize'),
 			cellMargin = settings.get('cellMargin');
+
+		point = new Point(point);
 
 		return this.getCellByIndex(new Point(
 			parseInt(point.x / (cellSize.width  + cellMargin.x)),
