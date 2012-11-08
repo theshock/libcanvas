@@ -65,6 +65,7 @@ var TileEngine = LibCanvas.declare( 'LibCanvas.Engines.Tile', 'TileEngine', {
 	},
 
 	getCellByIndex: function (point) {
+		point = new Point(point);
 		return this.isIndexOutOfBounds(point) ? null:
 			this.cells[ this.width * point.y + point.x ];
 	},
@@ -74,7 +75,8 @@ var TileEngine = LibCanvas.declare( 'LibCanvas.Engines.Tile', 'TileEngine', {
 			settings   = this.settings,
 			cellSize   = settings.get('cellSize'),
 			cellMargin = settings.get('cellMargin');
-
+		point = new Point(point);
+		
 		return this.getCellByIndex(new Point(
 			parseInt(point.x / (cellSize.width  + cellMargin.x)),
 			parseInt(point.y / (cellSize.height + cellMargin.y))
