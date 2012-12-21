@@ -4,8 +4,13 @@
 
 #### [Examples](http://libcanvas.github.com/)
 
-This library gives the developer a lot of tools for creating web applications & games by expanding canvas-2d context existing methods and providing new ones.
+Current objectives of the project:
 
+* Full documentation
+* Translation to English
 
-This project is in beta, that's why there may be some bugs, but developing still goes on and your questions will be answered quickly.
+For consultation, write to shocksilien@gmail.com
 
+## Переход на новую версию
+
+21 декабря 2012-ого года была публично переведена в "master" главной ветка "declare"
