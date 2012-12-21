@@ -1,11 +1,11 @@
 <?php
 
-require dirname(__FILE__) . '/Packager/packager.php';
+require dirname(__FILE__) . '/../Packager/packager.php';
 
 class LibCanvasBuilder
 {
 	const NAME = 'LibCanvas';
-	const SRC  = '/Source';
+	const SRC  = '/../Source';
 	private $_files = array();
 	private $_result;
 	private $_packager;
