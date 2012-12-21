@@ -11,6 +11,41 @@ Current objectives of the project:
 
 For consultation, write to shocksilien@gmail.com
 
+## Возможности LibCanvas
+
+LibCanvas - библиотека для создания интерактивных приложений и игр на html5. Основные возможности:
+
+* [Расширенный 2d Context](https://github.com/theshock/libcanvas/blob/master/Docs/Ru/Core/Context2D.md):
+** Method chaining
+** Фигуры в качестве аргументов
+** Дополнительные методы
+** Именнованные аргументы
+
+* [Геометрия](https://github.com/theshock/libcanvas/tree/master/Docs/Ru/Shapes)
+** [Действия с точками](https://github.com/theshock/libcanvas/blob/master/Docs/Ru/Core/Point.md)
+** Изменения фигуры
+** Пересечения
+** Базовые математические операции
+
+* Фреймворк LibCanvas.App
+** Отрисовка только изменившихся частей холста
+** События мыши
+** Draggable/Droppable
+** Слои, внутренний zIndex
+** Быстрое смещение слоёв
+
+* Игровые движки
+** Тайловый
+** [Изометрический](https://github.com/theshock/libcanvas/blob/master/Docs/Ru/Engines/Isometric/Projection.md)
+** [Гексагональный](https://github.com/theshock/libcanvas/blob/master/Docs/Ru/Engines/Hex/Projection.md)
+
+* Дополнительные возможности (плагины)
+** Спрайтовые анимации
+** Спрайтовые шрифты
+** Математическая модель кривых Безье (для построения путей)
+** Кривые с динамической шириной и цветом
+** Рендеринг текстуры в проекции
+
 ## Переход на новую версию
 
 21 декабря 2012-ого года была публично переведена в "master" главной ветка "declare".
