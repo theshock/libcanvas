@@ -22,24 +22,10 @@ provides: Shapes.Rectangle
 ...
 */
 
-/** @name Rectangle */
-var Rectangle = LibCanvas.Shapes.Rectangle = Class(
-/**
- * @lends LibCanvas.Shapes.Rectangle.prototype
- * @augments LibCanvas.Shape.prototype
- */
-{
-	Extends: Shape,
-	/**
-	 * @constructs
-	 * @param {number} fromX
-	 * @param {number} fromY
-	 * @param {number} width
-	 * @param {number} height
-	 * @returns {LibCanvas.Shapes.Rectangle}
-	 */
+/** @class Rectangle */
+var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Shape, {
 	set : function () {
-		var a = Array.pickFrom(arguments);
+		var a = atom.array.pickFrom(arguments);
 
 		if (a.length == 4) {
 			this.from = new Point(a[0], a[1]);
@@ -59,18 +45,18 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class(
 				this.from = new Point(a.x, a.y);
 			}
 			if (a.to) this.to = Point(a.to);
-		
+
 			if (!a.from || !a.to) {
 				var as = a.size,
-					sizeX = (as ? [as.w, as[0], as.width ] : [ a.w, a.width  ]).pick(),
-					sizeY = (as ? [as.h, as[1], as.height] : [ a.h, a.height ]).pick();
+					sizeX = atom.array.pick(as ? [as.w, as[0], as.width ] : [ a.w, a.width  ]),
+					sizeY = atom.array.pick(as ? [as.h, as[1], as.height] : [ a.h, a.height ]);
 				if (this.from) {
 					this.to   = new Point(this.from.x + sizeX, this.from.y + sizeY);
 				} else {
 					this.from = new Point(this.to.x   - sizeX, this.to.y   - sizeY);
 				}
 			}
-		
+
 		}
 		return this;
 	},
@@ -82,49 +68,27 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class(
 		return this.to.y - this.from.y;
 	},
 	set width (width) {
-		this.to.moveTo({ x : this.from.x + width, y : this.to.y });
+		this.to.x = this.from.x + width;
 	},
 	set height (height) {
-		this.to.moveTo({ x : this.to.x, y : this.from.y + height });
+		this.to.y = this.from.y + height;
 	},
 	get size () {
-		return {
-			width : this.width,
-			height: this.height
-		};
+		return new Size( this.width, this.height );
 	},
 	set size (size) {
 		if (size.width != this.width || size.height != this.height) {
-			this.to.moveTo([ this.from.x + size.width, this.from.y + size.height ]);
+			this.to.set(this.from.x + size.width, this.from.y + size.height);
 		}
-	},
-	// @deprecated 
-	getWidth : function () {
-		return this.width;
-	},
-	// @deprecated
-	getHeight : function () {
-		return this.height;
-	},
-	// @deprecated 
-	setWidth : function (width) {
-		this.width = width;
-		return this;
-	},
-	// @deprecated
-	setHeight : function (height) {
-		this.height = height;
-		return this;
 	},
 	/** @returns {boolean} */
 	hasPoint : function (point, padding) {
 		point   = Point(arguments);
 		padding = padding || 0;
 		return point.x != null && point.y != null
-			&& point.x.between(Math.min(this.from.x, this.to.x) + padding, Math.max(this.from.x, this.to.x) - padding, 1)
-			&& point.y.between(Math.min(this.from.y, this.to.y) + padding, Math.max(this.from.y, this.to.y) - padding, 1);
+			&& atom.number.between(point.x, Math.min(this.from.x, this.to.x) + padding, Math.max(this.from.x, this.to.x) - padding, 1)
+			&& atom.number.between(point.y, Math.min(this.from.y, this.to.y) + padding, Math.max(this.from.y, this.to.y) - padding, 1);
 	},
-	/** @returns {LibCanvas.Shapes.Rectangle} */
 	align: function (rect, sides) {
 		if (sides == null) sides = 'center middle';
 
@@ -164,8 +128,8 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class(
 		ctx.original(type + 'Rect', [
 			Math.min(this.from.x, this.to.x),
 			Math.min(this.from.y, this.to.y),
-			this.width .abs(),
-			this.height.abs()
+			Math.abs(this.width ),
+			Math.abs(this.height)
 		]);
 		return this;
 	},
@@ -178,7 +142,7 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class(
 	},
 	/** @returns {boolean} */
 	intersect : function (obj) {
-		if (obj.self != this.self) {
+		if (obj.prototype != this.constructor) {
 			if (obj.getBoundingRectangle) {
 				obj = obj.getBoundingRectangle();
 			} else return false;
@@ -193,8 +157,8 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class(
 	getRandomPoint : function (margin) {
 		margin = margin || 0;
 		return new Point(
-			Number.random(margin, this.width  - margin),
-			Number.random(margin, this.height - margin)
+			atom.number.random(margin, this.width  - margin),
+			atom.number.random(margin, this.height - margin)
 		);
 	},
 	/** @returns {LibCanvas.Shapes.Rectangle} */
@@ -208,11 +172,11 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class(
 	/** @returns {LibCanvas.Shapes.Rectangle} */
 	fillToPixel: function () {
 		var from = this.from, to = this.to,
-			point = function (method, invoke) {
+			point = function (side, round) {
 				return new Point(
-					Math[method](from.x, to.x),
-					Math[method](from.y, to.y)
-				).invoke( invoke );
+					Math[round](Math[side](from.x, to.x)),
+					Math[round](Math[side](from.y, to.y))
+				);
 			};
 
 		return new Rectangle(
@@ -228,14 +192,12 @@ var Rectangle = LibCanvas.Shapes.Rectangle = Class(
 	},
 	/** @returns {string} */
 	dump: function (name) {
-		return this.parent(name || 'Rectangle');
+		return Shape.prototype.dump.call(this, name || 'Rectangle');
 	},
 	/** @returns {LibCanvas.Shapes.Polygon} */
 	toPolygon: function () {
 		return new Polygon(
 			this.from.clone(), this.topRight, this.to.clone(), this.bottomLeft
 		);
-	},
-	/** @returns {string} */
-	toString: Function.lambda('[object LibCanvas.Shapes.Rectangle]')
+	}
 });

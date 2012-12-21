@@ -22,12 +22,10 @@ provides: Shapes.Circle
 ...
 */
 
-var Circle = LibCanvas.Shapes.Circle = Class(
-/** @lends {LibCanvas.Shapes.Circle.prototype} */
-{
-	Extends: Shape,
+/** @class Circle */
+var Circle = LibCanvas.declare( 'LibCanvas.Shapes.Circle', 'Circle', Shape, {
 	set : function () {
-		var a = Array.pickFrom(arguments);
+		var a = atom.array.pickFrom(arguments);
 
 		if (a.length >= 3) {
 			this.center = new Point(a[0], a[1]);
@@ -37,7 +35,7 @@ var Circle = LibCanvas.Shapes.Circle = Class(
 			this.radius = a[1];
 		} else {
 			a = a[0];
-			this.radius = [a.r, a.radius].pick();
+			this.radius = a.r == null ? a.radius : a.r;
 			if ('x' in a && 'y' in a) {
 				this.center = new Point(a.x, a.y);
 			} else if ('center' in a) {
@@ -74,16 +72,14 @@ var Circle = LibCanvas.Shapes.Circle = Class(
 		return this.center;
 	},
 	intersect : function (obj) {
-		if (obj instanceof this.self) {
+		if (obj instanceof this.constructor) {
 			return this.center.distanceTo(obj.center) < this.radius + obj.radius;
 		} else {
 			return this.getBoundingRectangle().intersect( obj );
 		}
 	},
 	move : function (distance, reverse) {
-		distance = this.invertDirection(distance, reverse);
-		this.center.move(distance);
-		this.fireEvent('move', [distance]);
+		this.center.move(distance, reverse);
 		return this;
 	},
 	processPath : function (ctx, noWrap) {
@@ -91,21 +87,21 @@ var Circle = LibCanvas.Shapes.Circle = Class(
 		if (this.radius) {
 			ctx.arc({
 				circle : this,
-				angle  : [0, (360).degree()]
+				angle  : [0, Math.PI * 2]
 			});
 		}
 		if (!noWrap) ctx.closePath();
 		return ctx;
 	},
 	getBoundingRectangle: function () {
-		var shift = new Point( this.radius, this.radius );
-		return new Rectangle({
-			from: this.center.clone().move( shift, true ),
-			to  : this.center.clone().move( shift )
-		});
+		var r = this.radius, center = this.center;
+		return new Rectangle(
+			new Point(center.x - r, center.y - r),
+			new Point(center.x + r, center.y + r)
+		);
 	},
 	clone : function () {
-		return new this.self(this.center.clone(), this.radius);
+		return new this.constructor(this.center.clone(), this.radius);
 	},
 	getPoints : function () {
 		return { center : this.center };
@@ -117,6 +113,5 @@ var Circle = LibCanvas.Shapes.Circle = Class(
 	},
 	dump: function () {
 		return '[shape Circle(center['+this.center.x+', '+this.center.y+'], '+this.radius+')]';
-	},
-	toString: Function.lambda('[object LibCanvas.Shapes.Circle]')
+	}
 });

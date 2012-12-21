@@ -21,11 +21,8 @@ provides: Point3D
 ...
 */
 
-var Point3D = LibCanvas.Point3D = atom.Class(
-/** @lends LibCanvas.Point3D# */
-{
-	Static: { invoke: LibCanvas.Geometry.invoke },
-
+/** @class Point3D */
+var Point3D = LibCanvas.declare( 'LibCanvas.Point3D', 'Point3D', Geometry, {
 	x: 0,
 	y: 0,
 	z: 0,
@@ -34,21 +31,14 @@ var Point3D = LibCanvas.Point3D = atom.Class(
 	coordinatesArray: ['x', 'y', 'z'],
 
 	/**
+	 * @constructs
 	 * @param {Number} x
 	 * @param {Number} y
 	 * @param {Number} z
-	 * @returns {LibCanvas.Point3D}
-	 */
-	initialize: LibCanvas.Geometry.prototype.initialize,
-
-	/**
-	 * @param {Number} x
-	 * @param {Number} y
-	 * @param {Number} z
-	 * @returns {LibCanvas.Point3D}
+	 * @returns {Point3D}
 	 */
 	set: function (x, y, z) {
-		if ( arguments.length === 3 || arguments.length === 2 ) {
+		if ( arguments.length > 1 ) {
 			this.x = Number(x) || 0;
 			this.y = Number(y) || 0;
 			this.z = Number(z) || 0;
@@ -57,7 +47,6 @@ var Point3D = LibCanvas.Point3D = atom.Class(
 		} else if ( x && typeof x[0] === 'number' ) {
 			this.set( x[0], x[1], x[2] );
 		} else {
-			console.log( 'Wrong arguments in Isometric.Point3D', arguments );
 			throw new Error( 'Wrong arguments in Isometric.Point3D' );
 		}
 		return this;
@@ -66,20 +55,20 @@ var Point3D = LibCanvas.Point3D = atom.Class(
 	/**
 	 * You can pass callback (function( value, axis, point ){})
 	 * @param {function} fn
-	 * @param {object} bind
-	 * @returns {LibCanvas.Point3D}
+	 * @param {object} [context=null]
+	 * @returns {Point3D}
 	 */
-	map: function (fn, bind) {
+	map: function (fn, context) {
 		var point = this;
 		point.coordinatesArray.forEach(function (axis) {
-			point[axis] = fn.call( bind || point, point[axis], axis, point );
+			point[axis] = fn.call( context || point, point[axis], axis, point );
 		});
 		return this;
 	},
 
 	/**
 	 * @param {Number} factor
-	 * @returns {LibCanvas.Point3D}
+	 * @returns {Point3D}
 	 */
 	add: function (factor) {
 		return this.map(function (c) { return c+factor });
@@ -87,19 +76,19 @@ var Point3D = LibCanvas.Point3D = atom.Class(
 
 	/**
 	 * @param {Number} factor
-	 * @returns {LibCanvas.Point3D}
+	 * @returns {Point3D}
 	 */
 	mul: function (factor) {
 		return this.map(function (c) { return c*factor });
 	},
 
 	/**
-	 * @param {LibCanvas.Point3D} point3d
-	 * @returns {LibCanvas.Point3D}
+	 * @param {Point3D} point3d
+	 * @returns {Point3D}
 	 */
 	diff: function (point3d) {
-		point3d = LibCanvas.Point3D( point3d );
-		return new this.self(
+		point3d = this.cast( point3d );
+		return new this.constructor(
 			point3d.x - this.x,
 			point3d.y - this.y,
 			point3d.z - this.z
@@ -107,11 +96,11 @@ var Point3D = LibCanvas.Point3D = atom.Class(
 	},
 
 	/**
-	 * @param {LibCanvas.Point3D} point3d
-	 * @returns {LibCanvas.Point3D}
+	 * @param {Point3D} point3d
+	 * @returns {Point3D}
 	 */
 	move: function (point3d) {
-		point3d = LibCanvas.Point3D( arguments );
+		point3d = this.cast( arguments );
 		this.x += point3d.x;
 		this.y += point3d.y;
 		this.z += point3d.z;
@@ -119,7 +108,7 @@ var Point3D = LibCanvas.Point3D = atom.Class(
 	},
 
 	/**
-	 * @param {LibCanvas.Point3D}p oint3d
+	 * @param {Point3D} point3d
 	 * @param {Number} accuracy
 	 * @returns {boolean}
 	 */
@@ -129,9 +118,9 @@ var Point3D = LibCanvas.Point3D = atom.Class(
 		       point3d.z.equals( this.z, accuracy );
 	},
 
-	/** @returns {LibCanvas.Point3D} */
+	/** @returns {Point3D} */
 	clone: function () {
-		return new this.self( this );
+		return new this.constructor( this );
 	},
 
 	/** @returns Array */

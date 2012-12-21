@@ -24,21 +24,16 @@ provides: Shape
 
 var shapeTestBuffer = function () {
 	if (!shapeTestBuffer.buffer) {
-		return shapeTestBuffer.buffer = Buffer(1, 1, true);
+		return shapeTestBuffer.buffer = LibCanvas.buffer(1, 1, true);
 	}
 	return shapeTestBuffer.buffer;
 };
 
-var Shape = LibCanvas.Shape = Class(
-/**
- * @lends LibCanvas.Shape.prototype
- * @augments LibCanvas.Geometry.prototype
- */
-{
-	Extends    : Geometry,
-	set        : Class.abstractMethod,
-	hasPoint   : Class.abstractMethod,
-	processPath: Class.abstractMethod,
+/** @class Shape */
+var Shape = declare( 'LibCanvas.Shape', Geometry, {
+	set        : 'abstract',
+	hasPoint   : 'abstract',
+	processPath: 'abstract',
 	draw : function (ctx, type) {
 		this.processPath(ctx)[type]();
 		return this;
@@ -52,38 +47,30 @@ var Shape = LibCanvas.Shape = Class(
 		if (typeof size == 'number') {
 			size = new Point(size/2, size/2);
 		} else {
-			size = new Point(size);
-			size.x /= 2;
-			size.y /= 2;
+			size = new Point(size.x/2, size.y/2);
 		}
 
 		this.from.move(size, true);
 		this. to .move(size);
 		return this;
 	},
-	get x () {
-		return this.getCoords().x;
-	},
-	get y () {
-		return this.getCoords().y;
-	},
+	get x () { return this.from.x },
+	get y () { return this.from.y },
 	set x (x) {
-		return this.move({ x : x - this.x, y : 0 });
+		return this.move(new Point(x - this.x, 0));
 	},
 	set y (y) {
-		return this.move({ x : 0, y : y - this.y });
+		return this.move(new Point(0, y - this.y));
 	},
 	get bottomLeft () {
 		return new Point(this.from.x, this.to.y);
 	},
-	get topRight () {
+	get topRight() {
 		return new Point(this.to.x, this.from.y);
 	},
-	get center () {
-		return new Point(
-			(this.from.x + this.to.x) / 2,
-			(this.from.y + this.to.y) / 2
-		);
+	get center() {
+		var from = this.from, to = this.to;
+		return new Point( (from.x + to.x) / 2, (from.y + to.y) / 2 );
 	},
 	getBoundingRectangle: function () {
 		return new Rectangle( this.from, this.to );
@@ -92,27 +79,23 @@ var Shape = LibCanvas.Shape = Class(
 		return this.center;
 	},
 	move : function (distance, reverse) {
-		distance = this.invertDirection(distance, reverse);
-		this.fireEvent('beforeMove', distance);
-		this.from.move(distance);
-		this. to .move(distance);
-		return this.parent(distance);
+		this.from.move(distance, reverse);
+		this. to .move(distance, reverse);
+		return this;
 	},
 	equals : function (shape, accuracy) {
-		return shape instanceof this.self &&
+		return shape instanceof this.constructor &&
 			shape.from.equals(this.from, accuracy) &&
 			shape.to  .equals(this.to  , accuracy);
 	},
 	clone : function () {
-		return new this.self(this.from.clone(), this.to.clone());
+		return new this.constructor(this.from.clone(), this.to.clone());
 	},
-	getPoints : function () {
-		return { from : this.from, to : this.to };
+	dumpPoint: function (point) {
+		return '[' + point.x + ', ' + point.y + ']';
 	},
 	dump: function (shape) {
 		if (!shape) return this.toString();
-		var p = function (p) { return '[' + p.x + ', ' + p.y + ']'; };
-		return '[shape ' + shape + '(from'+p(this.from)+', to'+p(this.to)+')]';
-	},
-	toString: Function.lambda('[object LibCanvas.Shape]')
+		return '[shape '+shape+'(from'+this.dumpPoint(this.from)+', to'+this.dumpPoint(this.to)+')]';
+	}
 });

@@ -20,38 +20,17 @@ provides: Geometry
 ...
 */
 
-var Geometry = LibCanvas.Geometry = Class(
-/**
- * @lends LibCanvas.Geometry.prototype
- * @augments Class.Events.prototype
- */
-{
-	Implements: Class.Events,
-	Static: {
-		invoke: function (obj) {
-			if (obj == null) throw new TypeError( 'element is not geometry' );
-
-			return (typeof obj == 'object' && obj[0] instanceof this) ?
-				obj[0] : (obj instanceof this ? obj : new this(obj));
-		},
-		from : function (obj) {
-			return this(obj);
-		}
-	},
+/** @class Geometry */
+var Geometry = declare( 'LibCanvas.Geometry', {
 	initialize : function () {
 		if (arguments.length) this.set.apply(this, arguments);
 	},
-	invertDirection: function (distance, reverse) {
-		distance = Point( distance );
-		var multi = reverse ? -1 : 1;
-		return {
-			x : distance.x * multi,
-			y : distance.y * multi
-		};
-	},
-	move : function (distance, reverse) {
-		this.fireEvent('move', [this.invertDirection(distance, reverse)]);
-		return this;
-	},
-	toString: Function.lambda('[object LibCanvas.Geometry]')
+	cast: function (args) {
+		return this.constructor.castArguments(args);
+	}
+}).own({
+	invoke: declare.castArguments,
+	from : function (obj) {
+		return this(obj);
+	}
 });

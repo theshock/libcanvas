@@ -23,24 +23,23 @@ provides: Shapes.Polygon
 ...
 */
 
-var Polygon = LibCanvas.Shapes.Polygon = Class(
-/** @lends {LibCanvas.Shapes.Polygon.prototype} */
-{
-	Extends: Shape,
+/** @class Polygon */
+var Polygon = LibCanvas.declare( 'LibCanvas.Shapes.Polygon', 'Polygon', Shape, {
 	initialize: function () {
 		this.points = [];
 		this._lines = [];
-		this.parent.apply(this, arguments);
+		Shape.prototype.initialize.apply(this, arguments);
 	},
 	set : function (poly) {
-		this.points.empty().append(
-			Array.pickFrom(arguments)
-				.map(function (elem) {
-					if (elem) return Point(elem);
-				})
-				.clean()
+		this.points.length = 0;
+		atom.array.append( this.points,
+			atom.array.clean(
+				atom.array
+					.pickFrom(arguments)
+					.map(function (elem) { if (elem) return Point(elem) })
+			)
 		);
-		this._lines.empty();
+		this._lines.length = 0;
 		return this;
 	},
 	get length () {
@@ -60,15 +59,15 @@ var Polygon = LibCanvas.Shapes.Polygon = Class(
 		return this.points[index];
 	},
 	hasPoint : function (point) {
-		point = Point(Array.pickFrom(arguments));
+		point = Point(atom.array.pickFrom(arguments));
 
 		var result = false, points = this.points;
 		for (var i = 0, l = this.length; i < l; i++) {
 			var k = (i || l) - 1, I = points[i], K = points[k];
 			if (
-				(point.y.between(I.y , K.y, "L") || point.y.between(K.y , I.y, "L"))
-					&&
-				 point.x < (K.x - I.x) * (point.y -I.y) / (K.y - I.y) + I.x
+				(atom.number.between(point.y, I.y , K.y, "L")
+				|| atom.number.between(point.y, K.y , I.y, "L")
+				) && point.x < (K.x - I.x) * (point.y -I.y) / (K.y - I.y) + I.x
 			) {
 				result = !result;
 			}
@@ -88,9 +87,7 @@ var Polygon = LibCanvas.Shapes.Polygon = Class(
 		return ctx;
 	},
 	move : function (distance, reverse) {
-		distance = this.invertDirection(distance, reverse);
-		this.points.invoke('move', distance);
-		this.fireEvent('move', [distance]);
+		atom.array.invoke( this.points, 'move', distance, reverse);
 		return this;
 	},
 	grow: function () {
@@ -110,16 +107,16 @@ var Polygon = LibCanvas.Shapes.Polygon = Class(
 		return new Rectangle( from, to );
 	},
 	rotate : function (angle, pivot) {
-		this.points.invoke('rotate', angle, pivot);
+		atom.array.invoke( this.points, 'rotate', angle, pivot );
 		return this;
 	},
 	scale : function (power, pivot) {
-		this.points.invoke('scale', power, pivot);
+		atom.array.invoke( this.points, 'scale', power, pivot );
 		return this;
 	},
 	// #todo: cache
 	intersect : function (poly) {
-		if (poly.self != this.self) {
+		if (poly.constructor != this.constructor) {
 			return this.getBoundingRectangle().intersect( poly );
 		}
 		var tL = this.lines, pL = poly.lines, i = tL.length, k = pL.length;
@@ -133,10 +130,9 @@ var Polygon = LibCanvas.Shapes.Polygon = Class(
 	},
 
 	getPoints : function () {
-		return Array.toHash(this.points);
+		return atom.array.toHash(this.points);
 	},
 	clone: function () {
-		return new this.self(this.points.invoke('clone'));
-	},
-	toString: Function.lambda('[object LibCanvas.Shapes.Polygon]')
+		return new this.constructor( atom.array.invoke(this.points, 'clone') );
+	}
 });

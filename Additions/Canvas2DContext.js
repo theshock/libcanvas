@@ -20,66 +20,69 @@ provides: Canvas2DContext
 
 new function () {
 
-
 var object = {
 	initialize: function (canvas) {
 		if (canvas instanceof CanvasRenderingContext2D) {
-			this.ctx    = canvas;
+			this.ctx2d  = canvas;
 			this.canvas = this.ctx2d.canvas;
 		} else {
 			this.canvas = canvas;
-			this.ctx    = canvas.getOriginalContext('2d');
+			this.ctx2d  = canvas.getOriginalContext('2d');
 		}
 	},
-	get width () { return this.canvas.width; },
-	get height() { return this.canvas.height; },
-	set width (width)  { this.canvas.width  = width; },
-	set height(height) { this.canvas.height = height;},
-
-	toString: Function.lambda('[object LibCanvas.Canvas2DContext]')
+	get width () { return this.canvas.width  },
+	get height() { return this.canvas.height  },
+	set width (width)  { this.canvas.width  = width  },
+	set height(height) { this.canvas.height = height }
 },
 
-methods = ['arc','arcTo','beginPath','bezierCurveTo','clearRect','clip',
-	'closePath','drawImage','fill','fillRect','fillText','lineTo','moveTo',
-	'quadraticCurveTo','rect','restore','rotate','save','scale','setTransform',
-	'stroke','strokeRect','strokeText','transform','translate'],
+methods =
+	'arc arcTo beginPath bezierCurveTo clearRect clip ' +
+	'closePath drawImage fill fillRect fillText lineTo moveTo ' +
+	'quadraticCurveTo rect restore rotate save scale setTransform ' +
+	'stroke strokeRect strokeText transform translate'
+	.split(' '),
 
-getterMethods = ['createPattern','drawFocusRing','isPointInPath','measureText',
-	'createImageData','createLinearGradient',
-	'createRadialGradient', 'getImageData','putImageData'],
+getterMethods = 
+	'createPattern drawFocusRing isPointInPath measureText ' +
+	'createImageData createLinearGradient ' +
+	'createRadialGradient getImageData putImageData'
+	.split(' '),
 
-properties = ['fillStyle','font','globalAlpha','globalCompositeOperation','lineCap',
-	'lineJoin','lineWidth','miterLimit','shadowOffsetX','shadowOffsetY',
-	'shadowBlur','shadowColor','strokeStyle','textAlign','textBaseline' ];
+properties =
+	'fillStyle font globalAlpha globalCompositeOperation lineCap ' +
+	'lineJoin lineWidth miterLimit shadowOffsetX shadowOffsetY ' +
+	'shadowBlur shadowColor strokeStyle textAlign textBaseline'
+	.split(' ');
 
 properties.forEach(function (property) {
 	atom.accessors.define(object, property, {
 		set: function (value) {
 			try {
-				this.ctx[property] = value;
+				this.ctx2d[property] = value;
 			} catch (e) {
 				throw TypeError('Exception while setting «' + property + '» to «' + value + '»: ' + e.message);
 			}
 		},
 		get: function () {
-			return this.ctx[property];
+			return this.ctx2d[property];
 		}
 	})
 });
 
 methods.forEach(function (method) {
 	object[method] = function () {
-		this.ctx[method].apply(this.ctx, arguments);
+		this.ctx2d[method].apply(this.ctx, arguments);
 		return this;
 	};
 });
 
 getterMethods.forEach(function (method) {
 	object[method] = function () {
-		return this.ctx[method].apply(this.ctx, arguments);
+		return this.ctx2d[method].apply(this.ctx, arguments);
 	};
 });
 
-LibCanvas.Canvas2DContext = atom.Class(object);
+atom.declare( 'LibCanvas.Canvas2DContext', object );
 
 };

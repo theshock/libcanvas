@@ -22,18 +22,21 @@ provides: Shapes.Line
 ...
 */
 
-var Line = LibCanvas.Shapes.Line = function () {
+var Line = function () {
 
 var between = function (x, a, b, accuracy) {
-	return x.equals(a, accuracy) || x.equals(b, accuracy) || (a < x && x < b) || (b < x && x < a);
+	return atom.number.equals(x, a, accuracy)
+		|| atom.number.equals(x, b, accuracy)
+		|| (a < x && x < b)
+		|| (b < x && x < a);
 };
 
-return Class(
-/** @lends {LibCanvas.Shapes.Line.prototype} */
-{
-	Extends: Shape,
+var halfPi = Math.PI/2;
+
+/** @class Line */
+return LibCanvas.declare( 'LibCanvas.Shapes.Line', 'Line', Shape, {
 	set : function (from, to) {
-		var a = Array.pickFrom(arguments);
+		var a = atom.array.pickFrom(arguments);
 
 		if (a.length === 4) {
 			this.from = new Point( a[0], a[1] );
@@ -53,24 +56,27 @@ return Class(
 			px = point.x,
 			py = point.y;
 
-		if (!( point.x.between(Math.min(fx, tx), Math.max(fx, tx))
-		    && point.y.between(Math.min(fy, ty), Math.max(fy, ty))
+		if (!( atom.number.between(point.x, Math.min(fx, tx), Math.max(fx, tx))
+		    && atom.number.between(point.y, Math.min(fy, ty), Math.max(fy, ty))
 		)) return false;
 
 		// if triangle square is zero - points are on one line
-		return ((fx-px)*(ty-py)-(tx-px)*(fy-py)).round(6) == 0;
+		return atom.number.round(((fx-px)*(ty-py)-(tx-px)*(fy-py)), 6) == 0;
+	},
+	getBoundingRectangle: function () {
+		return new Rectangle(this.from, this.to).fillToPixel().grow(2);
 	},
 	intersect: function (line, point, accuracy) {
-		if (line.self != this.self) {
+		if (line.constructor != this.constructor) {
 			return this.getBoundingRectangle().intersect( line );
 		}
 		var a = this.from, b = this.to, c = line.from, d = line.to, x, y, FALSE = point ? null : false;
-		if (d.x.equals(c.x, accuracy)) { // DC == vertical line
-			if (b.x.equals(a.x, accuracy)) {
-				if (a.x.equals(d.x, accuracy)) {
-					if (a.y.between(c.y, d.y)) {
+		if (atom.number.equals(d.x, c.x, accuracy)) { // DC == vertical line
+			if (atom.number.equals(b.x, a.x, accuracy)) {
+				if (atom.number.equals(a.x, d.x, accuracy)) {
+					if (atom.number.between(a.y, c.y, d.y)) {
 						return a.clone();
-					} else if (b.y.between(c.y, d.y)) {
+					} else if (atom.number.between(b.y, c.y, d.y)) {
 						return b.clone();
 					} else {
 						return FALSE;
@@ -112,25 +118,25 @@ return Class(
 	},
 	distanceTo: function (p, asInfiniteLine) {
 		p = Point(p);
-		var f = this.from, t = this.to, degree, s, x, y;
-			
+		var f = this.from, t = this.to, angle, s, x, y;
+
 		if (!asInfiniteLine) {
-			degree = Math.atan2(p.x - t.x, p.y - t.y).getDegree();
-			if ( degree.between(-90, 90) ) {
+			angle = Math.atan2(p.x - t.x, p.y - t.y);
+			if ( atom.number.between(angle, -halfPi, halfPi) ) {
 				return t.distanceTo( p );
 			}
 
-			degree = Math.atan2(f.x - p.x, f.y - p.y).getDegree();
-			if ( degree.between(-90, 90) ) {
+			angle = Math.atan2(f.x - p.x, f.y - p.y);
+			if ( atom.number.between(angle, -halfPi, halfPi) ) {
 				return f.distanceTo( p );
 			}
 		}
 
-		s = (
+		s = Math.abs(
 			f.x * (t.y - p.y) +
 			t.x * (p.y - f.y) +
 			p.x * (f.y - t.y)
-		).abs() / 2;
+		) / 2;
 
 		x = f.x - t.x;
 		y = f.y - t.y;
@@ -149,9 +155,8 @@ return Class(
 		return ctx;
 	},
 	dump: function () {
-		return this.parent('Line');
-	},
-	toString: Function.lambda('[object LibCanvas.Shapes.Line]')
+		return Shape.prototype.dump.call(this, 'Line');
+	}
 });
 
 }();

@@ -22,27 +22,23 @@ provides: Shapes.Ellipse
 ...
 */
 
-var Ellipse = LibCanvas.Shapes.Ellipse = Class(
-/** @lends {LibCanvas.Shapes.Ellipse.prototype} */
-{
-	Extends: Rectangle,
-	set : function () {
-		this.parent.apply(this, arguments);
-		var update = function () {
-			this.updateCache = true;
-		}.bind(this);
-		this.from.addEvent('move', update);
-		this. to .addEvent('move', update);
+/** @class Ellipse */
+var Ellipse = LibCanvas.declare( 'LibCanvas.Shapes.Ellipse', 'Ellipse', Rectangle, {
+	set: function () {
+		this.bindMethods( 'update' );
+		Rectangle.prototype.set.apply(this, arguments);
 	},
 	_angle : 0,
 	get angle () {
 		return this._angle;
 	},
 	set angle (a) {
-		if (this._angle != a) {
-			this._angle = a.normalizeAngle();
-			this.updateCache = true;
-		}
+		if (this._angle == a) return;
+		this._angle = atom.math.normalizeAngle(a);
+		this.updateCache = true;
+	},
+	update: function () {
+		this.updateCache = true;
 	},
 	rotate : function (degree) {
 		this.angle += degree;
@@ -98,14 +94,13 @@ var Ellipse = LibCanvas.Shapes.Ellipse = Class(
 		return ctx;
 	},
 	equals : function (shape, accuracy) {
-		return this.parent( shape, accuracy ) && shape.angle == this.angle;
+		return Rectangle.prototype.equals.call( this, shape, accuracy ) && shape.angle == this.angle;
 	},
 	draw : function (ctx, type) {
 		this.processPath(ctx)[type]();
 		return this;
 	},
 	dump: function (name) {
-		return this.parent(name || 'Ellipse');
-	},
-	toString: Function.lambda('[object LibCanvas.Shapes.Ellipse]')
+		return Rectangle.prototype.dump.call(this, name || 'Ellipse');
+	}
 });

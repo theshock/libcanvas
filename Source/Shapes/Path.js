@@ -21,12 +21,11 @@ provides: Shapes.Path
 
 ...
 */
-var Path = LibCanvas.Shapes.Path = Class(
-/** @lends {LibCanvas.Shapes.Path.prototype} */
-{
-	Extends: Shape,
 
+/** @class Path */
+var Path = LibCanvas.declare( 'LibCanvas.Shapes.Path', 'Path', Shape, {
 	getCoords: null,
+	builder  : null,
 	set : function (builder) {
 		this.builder = builder;
 		builder.path = this;
@@ -41,7 +40,7 @@ var Path = LibCanvas.Shapes.Path = Class(
 		return ctx;
 	},
 	intersect: function (obj) {
-		return this.getBoundingRectangle( obj );
+		return this.getBoundingRectangle( obj ).intersect( this.getBoundingRectangle() );
 	},
 	each: function (fn) {
 		this.builder.parts.forEach(function (part) {
@@ -53,9 +52,9 @@ var Path = LibCanvas.Shapes.Path = Class(
 		var points = [];
 		this.each(function (method, args) {
 			if (method == 'arc') {
-				points.include(args[0].circle.center);
+				atom.array.include(points, args[0].circle.center);
 			} else for (var i = 0, l = args.length; i < l; i++) {
-				points.include(args[i]);
+				atom.array.include(points, args[i]);
 			}
 		});
 		return points;
@@ -78,13 +77,13 @@ var Path = LibCanvas.Shapes.Path = Class(
 	move : function (distance, reverse) {
 		this.builder.changed = true;
 
-		this.allPoints.invoke( 'move', distance, reverse );
+		atom.array.invoke( this.allPoints, 'move', distance, reverse );
 		return this;
 	},
 	scale: function (power, pivot) {
 		this.builder.changed = true;
 
-		this.allPoints.invoke( 'scale', power, pivot );
+		atom.array.invoke( this.allPoints, 'scale', power, pivot );
 		return this;
 	},
 	grow: function () {
@@ -93,13 +92,13 @@ var Path = LibCanvas.Shapes.Path = Class(
 	rotate: function (angle, pivot) {
 		this.builder.changed = true;
 
-		this.allPoints.invoke( 'rotate', angle, pivot );
+		atom.array.invoke( this.allPoints, 'rotate', angle, pivot );
 
 		this.each(function (method, args) {
 			if (method == 'arc') {
 				var a = args[0].angle;
-				a.start = (a.start + angle).normalizeAngle();
-				a.end   = (a.end   + angle).normalizeAngle();
+				a.start = atom.math.normalizeAngle(a.start + angle);
+				a.end   = atom.math.normalizeAngle(a.end   + angle);
 			}
 		}.bind(this));
 		return this;
@@ -120,13 +119,13 @@ var Path = LibCanvas.Shapes.Path = Class(
 	},
 	clone: function () {
 		var builder = new Path.Builder;
-		builder.parts.append( this.builder.parts.clone() );
+		atom.core.append( builder.parts, this.builder.parts.clone() );
 		return builder.build();
-	},
-	toString: Function.lambda('[object LibCanvas.Shapes.Path]')
+	}
 });
 
-Path.Builder = LibCanvas.Shapes.Path.Builder = Class({
+/** @class Path.Builder */
+declare( 'LibCanvas.Shapes.Path.Builder', {
 	initialize: function (str) {
 		this.update = this.update.bind( this );
 		this.parts  = [];
@@ -148,15 +147,10 @@ Path.Builder = LibCanvas.Shapes.Path.Builder = Class({
 			if (part.method == 'arc') {
 				a[0].circle.center.snapToPixel();
 			} else {
-				a.invoke('snapToPixel');
+				atom.array.invoke( a, 'snapToPixel' );
 			}
 		});
 		return this;
-	},
-	listenPoint: function (p) {
-		return Point( p )
-			.removeEvent( 'move', this.update )
-			.   addEvent( 'move', this.update );
 	},
 
 	// queue/stack
@@ -180,13 +174,13 @@ Path.Builder = LibCanvas.Shapes.Path.Builder = Class({
 
 	// methods
 	move : function () {
-		return this.push('moveTo', [ this.listenPoint(arguments) ]);
+		return this.push('moveTo', [ Point(arguments) ]);
 	},
 	line : function () {
-		return this.push('lineTo', [ this.listenPoint(arguments) ]);
+		return this.push('lineTo', [ Point(arguments) ]);
 	},
 	curve : function (to, p1, p2) {
-		var args = Array.pickFrom(arguments);
+		var args = atom.array.pickFrom(arguments);
 
 		if (args.length == 6) {
 			args = [
@@ -201,10 +195,10 @@ Path.Builder = LibCanvas.Shapes.Path.Builder = Class({
 			];
 		}
 
-		return this.push('curveTo', args.map( this.listenPoint.bind( this ) ));
+		return this.push('curveTo', args.map( Point ));
 	},
 	arc : function (circle, angle, acw) {
-		var a = Array.pickFrom(arguments);
+		var a = atom.array.pickFrom(arguments);
 
 		if (a.length >= 6) {
 			a = {
@@ -217,7 +211,7 @@ Path.Builder = LibCanvas.Shapes.Path.Builder = Class({
 			a.angle  = angle;
 			a.acw    = acw;
 		} else if (circle instanceof Circle) {
-			a = { circle: circle, angle: [0, (360).degree()] };
+			a = { circle: circle, angle: [0, Math.PI * 2] };
 		} else {
 			a = a[0];
 		}
@@ -231,16 +225,16 @@ Path.Builder = LibCanvas.Shapes.Path.Builder = Class({
 			};
 		}
 
-		this.listenPoint( a.circle.center );
+		Point( a.circle.center );
 
 		a.acw = !!(a.acw || a.anticlockwise);
 		return this.push('arc', [a]);
 	},
-	
+
 	// stringing
 	stringify : function (sep) {
 		if (!sep) sep = ' ';
-		var p = function (p) { return sep + p.x.round(2) + sep + p.y.round(2); };
+		var p = function (p) { return sep + p.x.toFixed(2) + sep + p.y.toFixed(2); };
 		return this.parts.map(function (part) {
 			var a = part.args[0];
 			switch(part.method) {
@@ -248,8 +242,8 @@ Path.Builder = LibCanvas.Shapes.Path.Builder = Class({
 				case 'lineTo' : return 'L' + p(a);
 				case 'curveTo': return 'C' + part.args.map(p).join('');
 				case 'arc'    : return 'A' +
-					p( a.circle.center ) + sep + a.circle.radius.round(2) + sep +
-					a.angle.start.round(2) + sep + a.angle.end.round(2) + sep + (a.acw ? 1 : 0);
+					p( a.circle.center ) + sep + a.circle.radius.toFixed(2) + sep +
+					a.angle.start.toFixed(2) + sep + a.angle.end.toFixed(2) + sep + (a.acw ? 1 : 0);
 			}
 		}).join(sep);
 	},
@@ -259,11 +253,11 @@ Path.Builder = LibCanvas.Shapes.Path.Builder = Class({
 
 		parts.forEach(function (part) {
 			if (!part.length) return;
-			
+
 			if (isNaN(part)) {
 				full.push({ method : part, args : [] });
 			} else if (full.length) {
-				full.last.args.push( Number(part) );
+				full[full.length-1].args.push( Number(part) );
 			}
 		});
 
@@ -273,7 +267,5 @@ Path.Builder = LibCanvas.Shapes.Path.Builder = Class({
 		}.bind(this));
 
 		return this;
-	},
-
-	toString: Function.lambda('[object LibCanvas.Shapes.Path]')
+	}
 });
