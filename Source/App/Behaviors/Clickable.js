@@ -37,10 +37,17 @@ return declare( 'LibCanvas.App.Behaviors.Clickable', Behavior, {
 
 	callbacks: {
 		'mouseover'   : setValueFn('hover' , true ),
-		'mouseout'    : setValueFn('hover' , false),
+		'mouseout'    : (function () {
+			var dehover  = setValueFn('hover' , false),
+				deactive = setValueFn('active', false);
+
+			return function (e) {
+				dehover .call(this, e);
+				deactive.call(this, e);
+			};
+		})(),
 		'mousedown'   : setValueFn('active', true ),
-		'mouseup'     : setValueFn('active', false),
-		'away:mouseup': setValueFn('active', false)
+		'mouseup'     : setValueFn('active', false)
 	},
 
 	initialize: function (behaviors, args) {
