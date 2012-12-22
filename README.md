@@ -1,5 +1,7 @@
 ## LibCanvas Javascript Framework (previous)
 
+This is first version of LibCanvas & it isn't supported now. Please, move to [new version](https://github.com/theshock/libcanvas)
+
 *LibCanvas* is a free javascript library, based on [AtomJS framework](/theshock/atomjs) and available under [LGPL License](http://www.gnu.org/copyleft/lgpl.html).
 
 #### [Examples](http://libcanvas.github.com/)
