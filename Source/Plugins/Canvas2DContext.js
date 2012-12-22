@@ -36,24 +36,24 @@ var object = {
 	set height(height) { this.canvas.height = height }
 },
 
-methods =
+methods = (
 	'arc arcTo beginPath bezierCurveTo clearRect clip ' +
 	'closePath drawImage fill fillRect fillText lineTo moveTo ' +
 	'quadraticCurveTo rect restore rotate save scale setTransform ' +
 	'stroke strokeRect strokeText transform translate'
-	.split(' '),
+).split(' '),
 
-getterMethods = 
+getterMethods = (
 	'createPattern drawFocusRing isPointInPath measureText ' +
 	'createImageData createLinearGradient ' +
 	'createRadialGradient getImageData putImageData'
-	.split(' '),
+).split(' '),
 
-properties =
+properties = (
 	'fillStyle font globalAlpha globalCompositeOperation lineCap ' +
 	'lineJoin lineWidth miterLimit shadowOffsetX shadowOffsetY ' +
 	'shadowBlur shadowColor strokeStyle textAlign textBaseline'
-	.split(' ');
+).split(' ');
 
 properties.forEach(function (property) {
 	atom.accessors.define(object, property, {
