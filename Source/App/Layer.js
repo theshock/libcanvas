@@ -80,7 +80,7 @@ declare( 'LibCanvas.App.Layer', {
 
 	/** @private */
 	draw: function () {
-		var i, elem,
+		var i,
 			ctx = this.dom.canvas.ctx,
 			redraw = this.redraw,
 			clear  = this.clear,
@@ -94,28 +94,29 @@ declare( 'LibCanvas.App.Layer', {
 		atom.array.sortBy( redraw, 'zIndex' );
 
 		if (this.shouldRedrawAll) {
-			for (i = clear.length; i--;) {
-				clear[i].clearPrevious( ctx, resources );
-			}
+			atom.array.invoke(clear, 'clearPrevious', ctx, resources);
 		}
+
+		atom.array.invoke(redraw, 'clearPrevious', ctx, resources);
 
 		for (i = redraw.length; i--;) {
-			redraw[i].clearPrevious( ctx, resources );
+			this.drawElement(redraw[i], ctx, resources);
 		}
 
-		for (i = redraw.length; i--;) {
-			elem = redraw[i];
-			if (elem.layer == this) {
-				elem.redrawRequested = false;
-				if (elem.isVisible()) {
-					elem.renderToWrapper( ctx, resources );
-					elem.saveCurrentBoundingShape();
-				}
-			}
-		}
-
-		if (!this.shouldRedrawAll) {
+		if (this.shouldRedrawAll) {
+			clear.length = 0;
+		} else {
 			redraw.length = 0;
+		}
+	},
+
+	drawElement: function (elem, ctx, resources) {
+		if (elem.layer == this) {
+			elem.redrawRequested = false;
+			if (elem.isVisible()) {
+				elem.renderToWrapper( ctx, resources );
+				elem.saveCurrentBoundingShape();
+			}
 		}
 	},
 
