@@ -662,8 +662,12 @@ declare( 'LibCanvas.App.Element', {
 		return this.shape.hasPoint( point );
 	},
 
-	hasMousePoint: function (point) {
-		return this.hasPoint(point);
+	isTriggerPoint: function (point) {
+		if (this.hasMousePoint) {
+			return this.hasMousePoint(point);
+		} else {
+			return this.hasPoint(point);
+		}
 	},
 
 	addShift: function (shift) {
@@ -752,7 +756,7 @@ declare( 'LibCanvas.App.ElementsMouseSearch', {
 
 	findByPoint: function (point) {
 		var e = this.elements, i = e.length, result = [];
-		while (i--) if (e[i].hasMousePoint( point )) {
+		while (i--) if (e[i].isTriggerPoint( point )) {
 			result.push(e[i]);
 		}
 		return result;

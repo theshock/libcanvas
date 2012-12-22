@@ -71,8 +71,12 @@ declare( 'LibCanvas.App.Element', {
 		return this.shape.hasPoint( point );
 	},
 
-	hasMousePoint: function (point) {
-		return this.hasPoint(point);
+	isTriggerPoint: function (point) {
+		if (this.hasMousePoint) {
+			return this.hasMousePoint(point);
+		} else {
+			return this.hasPoint(point);
+		}
 	},
 
 	addShift: function (shift) {

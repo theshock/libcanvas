@@ -40,7 +40,7 @@ declare( 'LibCanvas.App.ElementsMouseSearch', {
 
 	findByPoint: function (point) {
 		var e = this.elements, i = e.length, result = [];
-		while (i--) if (e[i].hasMousePoint( point )) {
+		while (i--) if (e[i].isTriggerPoint( point )) {
 			result.push(e[i]);
 		}
 		return result;
