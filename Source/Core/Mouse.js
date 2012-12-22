@@ -97,11 +97,7 @@ var Mouse = LibCanvas.declare( 'LibCanvas.Mouse', 'Mouse', {
 	/** @private */
 	eventActions: {
 		wheel: function (e) {
-			e.delta =
-				// IE, Opera, Chrome
-				e.wheelDelta ? e.wheelDelta > 0 ? 1 : -1 :
-				// Fx
-				e.detail     ? e.detail     < 0 ? 1 : -1 : null;
+			this.constructor.addWheelDelta(e);
 		},
 
 		move: function (e) {
@@ -143,6 +139,15 @@ var Mouse = LibCanvas.declare( 'LibCanvas.Mouse', 'Mouse', {
 	}
 }).own({
 	prevent: function (e) {e.preventDefault()},
+	addWheelDelta: function (e) {
+		e.delta =
+			// IE, Opera, Chrome
+			e.wheelDelta ? e.wheelDelta > 0 ? 1 : -1 :
+			// Fx
+			e.detail     ? e.detail     < 0 ? 1 : -1 : null;
+
+		return e;
+	},
 	eventSource: function (e) {
 		return e.changedTouches ? e.changedTouches[0] : e;
 	},
