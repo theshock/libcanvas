@@ -842,36 +842,40 @@ declare( 'LibCanvas.App.Layer', {
 
 	/** @private */
 	draw: function () {
-		var i,
+		var
 			ctx = this.dom.canvas.ctx,
-			redraw = this.redraw,
-			clear  = this.clear,
 			resources = this.app.resources;
 
 		if (this.settings.get('intersection') === 'auto') {
 			this.addIntersections();
 		}
 
-		// draw elements with the lower zIndex first
-		atom.array.sortBy( redraw, 'zIndex' );
-
 		if (this.shouldRedrawAll) {
-			atom.array.invoke(clear, 'clearPrevious', ctx, resources);
+			atom.array.invoke(this.clear, 'clearPrevious', ctx, resources);
 		}
 
-		atom.array.invoke(redraw, 'clearPrevious', ctx, resources);
+		atom.array.invoke(this.redraw, 'clearPrevious', ctx, resources);
 
-		for (i = redraw.length; i--;) {
-			this.drawElement(redraw[i], ctx, resources);
-		}
+		this.drawElements(this.redraw, ctx, resources);
 
 		if (this.shouldRedrawAll) {
-			clear.length = 0;
+			this.clear.length = 0;
 		} else {
-			redraw.length = 0;
+			this.redraw.length = 0;
 		}
 	},
 
+	/** @private */
+	drawElements: function (elements, ctx, resources) {
+		// draw elements with the lower zIndex first
+		atom.array.sortBy( elements, 'zIndex' );
+
+		for (var i = elements.length; i--;) {
+			this.drawElement(elements[i], ctx, resources);
+		}
+	},
+
+	/** @private */
 	drawElement: function (elem, ctx, resources) {
 		if (elem.layer == this) {
 			elem.redrawRequested = false;
