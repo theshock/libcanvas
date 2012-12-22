@@ -81,7 +81,8 @@ declare( 'LibCanvas.App.Element', {
 
 	addShift: function (shift) {
 		this.shape.move( shift );
-		this.previousBoundingShape.move( shift );
+		if (this.previousBoundingShape)
+			this.previousBoundingShape.move( shift );
 		return this;
 	},
 
