@@ -38,6 +38,11 @@ declare( 'LibCanvas.App.ElementsMouseSearch', {
 		return this;
 	},
 
+	removeAll: function () {
+		this.elements.length = 0;
+		return this;
+	},
+
 	findByPoint: function (point) {
 		var e = this.elements, i = e.length, result = [];
 		while (i--) if (e[i].isTriggerPoint( point )) {
