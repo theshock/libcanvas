@@ -22,6 +22,12 @@ LibCanvas.Mouse
 Определяет положение мыши относительно элемента
 
 	var offset = Mouse.getOffset( event, canvas );
+
+#### метод addWheelDelta
+
+	MouseEvent addWheelDelta( MouseEvent e )
+
+Добавляет кроссбраузерное свойство `delta` в объект события, которое обозначает направление движения колёсика мыши
 	
 ## Создание экземпляра LibCanvas.Mouse
 
