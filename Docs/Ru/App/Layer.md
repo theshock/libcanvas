@@ -67,3 +67,27 @@ LibCanvas.App.Layer start()
 ```js
 layer.start()
 ```
+
+#### hide
+
+```js
+LibCanvas.App.Layer hide()
+```
+
+Временно скрыть слой
+
+```js
+layer.hide()
+```
+
+#### show
+
+```js
+LibCanvas.App.Layer show()
+```
+
+Снова показать слой
+
+```js
+layer.show()
+```
