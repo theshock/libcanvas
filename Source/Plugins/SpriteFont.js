@@ -177,8 +177,11 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.Render', {
 			color: 'black',
 			align: 'left',
 			lines: null,
+			noWrap: false,
 			letterSpacing: 0
 		}, options);
+
+		this.options.text = String( this.options.text );
 
 		var steps = new SpriteFont.Steps(this, new SpriteFont.Lexer(
 			this.options.text, this.options.tags
@@ -187,16 +190,30 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.Render', {
 		steps.countSizes(this.options.font, this.options.letterSpacing);
 
 		var lines = this.options.lines;
-		if (!lines) lines = new SpriteFont.LinesEnRu( this.options.font );
+		if (!lines) lines = new SpriteFont.LinesEnRu( this.options.font, this.options.noWrap );
 
 		this.render( lines.run( steps.steps, this.options.shape.width ) );
 	},
 
 	render: function (lines) {
-		var x, y, l, i, from = this.options.shape.from;
+		var x, y, w, l, i, from = this.options.shape.from;
 
-		for (l = 0, y = from.y; l < lines.length; l++) {
-			for (i = 0, x = from.x; i < lines[l].length; i++) {
+		for (l = 0, y = from.y.floor(); l < lines.length; l++) {
+			x = from.x.floor();
+
+			if (this.options.align != 'left') {
+				w = lines[l].reduce(function (current, elem) { return current + elem.width }, 0);
+
+				if (this.options.align == 'center') {
+					x += parseInt((this.options.shape.width - w) / 2);
+				}
+
+				if (this.options.align == 'right') {
+					x += this.options.shape.width - w;
+				}
+			}
+
+			for (i = 0; i < lines[l].length; i++) {
 				this.ctx.drawImage( lines[l][i].image, x, y );
 				x += lines[l][i].width;
 			}
@@ -316,8 +333,7 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.Lexer', {
 			last,
 			symbol = '',
 			result = [],
-			length = string.length,
-			startTag = false;
+			length = string.length;
 
 		for (; i < length; i++) {
 			symbol = string[i];
@@ -388,15 +404,23 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.Lexer', {
 atom.declare( 'LibCanvas.Plugins.SpriteFont.LinesEnRu', {
 	vowels: 'AEIOUYaeiouyАОУЮИЫЕЭЯЁаоуюиыеэяёьЄІЇЎєіїў',
 
-	initialize: function (font) {
-		this.font = font;
+	initialize: function (font, noWrap) {
+		this.font   = font;
+		this.noWrap = noWrap;
 	},
 
 	run: function (steps, maxWidth) {
+		var i, line = [], morphemes = [], tmpMark = false;
 
-		var i, line = [], morphemes = [];
 		for (i = 0; i < steps.length; i++) {
+
+			if (steps[i].type == 'icon') tmpMark = true;
+
 			if (steps[i].type == 'nl' || i == steps.length - 1) {
+				if (steps[i].type != 'nl') {
+					line.push(steps[i]);
+				}
+
 				morphemes.push( this.findMorphemes(line) );
 				line = [];
 			} else {
@@ -427,7 +451,7 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.LinesEnRu', {
 					throw new Error('Morpheme too long');
 				}
 
-				if (width + mWidth > maxWidth || (i == 0 && l > 0)) {
+				if (!this.noWrap && (width + mWidth > maxWidth || (i == 0 && l > 0))) {
 					lines.push(line);
 					line  = [];
 					width = 0;
@@ -436,6 +460,8 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.LinesEnRu', {
 				add(mLines[l][i]);
 			}
 		}
+
+		if (line.length > 0) lines.push(line);
 
 		lines.forEach(function (l) {
 			l.height = 0;
@@ -479,9 +505,30 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.LinesEnRu', {
 	findMorphemes: function (line) {
 		var i = 0, c, morphemes = [], lastStr = '', last = [], prev;
 
+		var pushLast = function () {
+			prev = morphemes[ morphemes.length - 1 ];
+			if (Array.isArray(prev)) {
+				atom.array.append( prev, last );
+			} else {
+				morphemes.push(last);
+			}
+			last = [];
+			lastStr = '';
+
+			if (!this.isLetter(c)) {
+				morphemes.push( line[i] );
+			}
+		}.bind(this);
+
 		for (; i < line.length; i++) {
 			c = line[i].content;
-			if (line[i].type == 'symbol' && this.isLetter(c)) {
+
+			if (line[i].type == 'icon') {
+				morphemes.push(last);
+				last = [];
+				lastStr = '';
+				morphemes.push( line[i] );
+			} else if (line[i].type == 'symbol' && this.isLetter(c)) {
 				lastStr += c;
 				last.push(line[i]);
 				if (this.isMorpheme(lastStr)) {
@@ -490,22 +537,13 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.LinesEnRu', {
 					lastStr = '';
 				}
 			} else if (lastStr) {
-				prev = morphemes[ morphemes.length - 1 ];
-				if (Array.isArray(prev)) {
-					atom.array.append( prev, last );
-				} else {
-					morphemes.push(last);
-				}
-				last = [];
-				lastStr = '';
-
-				if (!this.isLetter(c)) {
-					morphemes.push( line[i] );
-				}
+				pushLast();
 			} else {
 				morphemes.push( line[i] );
 			}
 		}
+
+		if (lastStr) pushLast();
 
 		return morphemes;
 	}
