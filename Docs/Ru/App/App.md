@@ -39,6 +39,7 @@ LibCanvas.App.Layer createLayer( object settings )
 
 ```js
 var layer = app.createLayer({ name: 'units' });
+```
 
 Создаёт и возвращает слой LibCanvas.App
 

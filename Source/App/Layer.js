@@ -110,6 +110,7 @@ declare( 'LibCanvas.App.Layer', {
 		}
 	},
 
+	/** @private */
 	drawElement: function (elem, ctx, resources) {
 		if (elem.layer == this) {
 			elem.redrawRequested = false;
