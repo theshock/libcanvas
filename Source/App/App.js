@@ -35,6 +35,12 @@ LibCanvas.declare( 'LibCanvas.App', 'App', {
 		atom.frame.add( this.tick );
 	},
 
+	destroy: function () {
+		atom.array.invoke( this.layers, 'destroy' );
+		atom.frame.remove( this.tick );
+		this.container.destroy();
+	},
+
 	get rectangle () {
 		return this.container.rectangle;
 	},

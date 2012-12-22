@@ -35,13 +35,23 @@ var app = new App({
 LibCanvas.App.Layer createLayer( object settings )
 ```
 
-#### Пример
+Создаёт и возвращает слой LibCanvas.App
 
 ```js
 var layer = app.createLayer({ name: 'units' });
 ```
 
-Создаёт и возвращает слой LibCanvas.App
+#### destroy
+
+```js
+LibCanvas.App destroy( )
+```
+
+Уничтожает приложение
+
+```js
+app.destroy();
+```
 
 #### zIndexCompare
 
