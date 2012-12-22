@@ -1066,9 +1066,8 @@ declare( 'LibCanvas.App.MouseHandler', {
 	},
 
 	fall: function () {
-		var value = this.falling;
-		this.falling = false;
-		return value;
+		this.falling = true;
+		return this;
 	},
 
 	getOverElements: function () {
@@ -1127,6 +1126,7 @@ declare( 'LibCanvas.App.MouseHandler', {
 			// о mouseover, mousedown, click, если необходимо
 			if (!stopped) {
 				if (this.fireElem( type, elem, eventArgs )) {
+					stopped = true;
 					if (!isChangeCoordEvent) break;
 				}
 			// предыдущий элемент принял событие на себя
