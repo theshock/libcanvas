@@ -47,6 +47,21 @@ declare( 'LibCanvas.App.Layer', {
 	/** @private */
 	stopped: false,
 
+	destroy: function () {
+		atom.array.invoke( this.elements, 'destroy' );
+		this.dom.destroy();
+	},
+
+	hide: function () {
+		this.dom.element.css({ display: 'none' });
+		return this.stop();
+	},
+
+	show: function () {
+		this.dom.element.css({ display: null });
+		return this.stop();
+	},
+
 	start: function () {
 		this.stopped = false;
 		return this;
