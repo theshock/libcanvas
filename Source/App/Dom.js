@@ -69,6 +69,11 @@ declare( 'LibCanvas.App.Dom', {
 		return this.currentSize;
 	},
 
+	destroy: function () {
+		this.element.destroy();
+		this.size = new Size(0,0);
+	},
+
 	/**
 	 * @param {Point} shift
 	 * @returns {App.Dom}

@@ -55,6 +55,11 @@ declare( 'LibCanvas.App.Container', {
 		return this.currentSize;
 	},
 
+	destroy: function () {
+		this.wrapper.destroy();
+		return this;
+	},
+
 	createDom: function (settings) {
 		var dom = new App.Dom( this, settings );
 		this.doms.push(dom);
