@@ -82,6 +82,12 @@ declare( 'LibCanvas.App.MouseHandler', {
 		return this;
 	},
 
+	unsubscribeAll: function () {
+		this.subscribers.length = 0;
+		this.search.removeAll();
+		return this;
+	},
+
 	fall: function () {
 		this.falling = true;
 		return this;
