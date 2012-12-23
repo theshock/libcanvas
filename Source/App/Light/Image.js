@@ -14,7 +14,7 @@ authors:
 
 requires:
 	- LibCanvas
-	- App.Light.Vector
+	- App.Light.Element
 
 provides: App.Light.Image
 
@@ -22,7 +22,7 @@ provides: App.Light.Image
 */
 
 /** @class App.Light.Image */
-App.Light.Image = atom.declare( 'LibCanvas.App.Light.Image', App.Light.Vector, {
+App.Light.Image = atom.declare( 'LibCanvas.App.Light.Image', App.Light.Element, {
 	get currentBoundingShape () {
 		return this.shape.clone().fillToPixel();
 	},

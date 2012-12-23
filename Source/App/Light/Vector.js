@@ -13,9 +13,7 @@ authors:
 	- "Shock <shocksilien@gmail.com>"
 
 requires:
-	- LibCanvas
-	- App
-	- App.Light
+	- App.Light.Element
 
 provides: App.Light.Vector
 
@@ -23,24 +21,16 @@ provides: App.Light.Vector
 */
 
 /** @class App.Light.Vector */
-App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', App.Element, {
-	configure: function () {
-		var behaviors = this.settings.get('behaviors');
+App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', App.Light.Element, {
+	active: false,
+	hover : false,
+
+	configure: function method () {
+		method.previous.call(this);
 
 		this.style       = {};
 		this.styleActive = {};
 		this.styleHover  = {};
-
-		this.animate = new atom.Animatable(this).animate;
-		Behaviors.attach( this, [ 'Draggable', 'Clickable' ], this.redraw );
-		if (this.settings.get('mouse') !== false) {
-			this.listenMouse();
-		}
-	},
-
-	move: function (point) {
-		this.shape.move(point);
-		this.redraw();
 	},
 
 	setStyle: function (key, values) {
@@ -59,27 +49,12 @@ App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', App.Element, {
 
 		var
 			active = (this.active || null) && this.styleActive[type],
-			hover  = (this.hover || null)  && this.styleHover [type],
+			hover  = (this.hover  || null)  && this.styleHover [type],
 			plain  = this.style[type];
 
 		return active != null ? active :
 		       hover  != null ? hover  :
 		       plain  != null ? plain  : null;
-	},
-
-	/**
-	 * Override by Animatable method
-	 */
-	animate: function(){},
-
-	listenMouse: function (unsubscribe) {
-		var method = unsubscribe ? 'unsubscribe' : 'subscribe';
-		return this.layer.app.resources.get('mouseHandler')[method](this);
-	},
-
-	destroy: function method () {
-		this.listenMouse(true);
-		return method.previous.call(this);
 	},
 
 	get currentBoundingShape () {
@@ -101,7 +76,7 @@ App.Light.Vector = atom.declare( 'LibCanvas.App.Light.Vector', App.Element, {
 		ctx.save();
 		if (opacity) ctx.globalAlpha = atom.number.round(opacity, 3);
 		if (fill) ctx.fill(this.shape, fill);
-		if (stroke ) {
+		if (stroke) {
 			ctx.lineWidth = lineW || 1;
 			ctx.stroke(this.shape, stroke);
 		}
