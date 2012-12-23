@@ -96,13 +96,16 @@ declare( 'LibCanvas.App.MouseHandler', {
 	getOverElements: function () {
 		if (!this.mouse.inside) return [];
 
-		var elements = this.search.findByPoint( this.mouse.point );
+		var
+			elements = this.search.findByPoint( this.mouse.point ),
+			i = elements.length;
 
-		try {
-			return elements.sort( this.compareFunction );
-		} catch (e) {
-			throw new Error('Element binded to mouse, but without layer, check elements');
+		while (i--) if (!elements[i].layer) {
+			this.unsubscribe(elements[i]);
+			elements.splice(i, 1);
 		}
+
+		return elements.sort( this.compareFunction );
 	},
 
 	/** @private */
