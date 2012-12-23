@@ -1097,6 +1097,8 @@ declare( 'LibCanvas.App.MouseHandler', {
 		var index = this.subscribers.indexOf(elem);
 		if (index != -1) {
 			this.subscribers.splice(index, 1);
+			this.lastMouseDown.erase(elem);
+			this.lastMouseMove.erase(elem);
 			this.search.remove(elem);
 		}
 		return this;
@@ -1116,13 +1118,16 @@ declare( 'LibCanvas.App.MouseHandler', {
 	getOverElements: function () {
 		if (!this.mouse.inside) return [];
 
-		var elements = this.search.findByPoint( this.mouse.point );
+		var
+			elements = this.search.findByPoint( this.mouse.point ),
+			i = elements.length;
 
-		try {
-			return elements.sort( this.compareFunction );
-		} catch (e) {
-			throw new Error('Element binded to mouse, but without layer, check elements');
+		while (i--) if (!elements[i].layer) {
+			this.unsubscribe(elements[i]);
+			elements.splice(i, 1);
 		}
+
+		return elements.sort( this.compareFunction );
 	},
 
 	/** @private */
@@ -6238,8 +6243,7 @@ declare( 'LibCanvas.App.Behaviors.Draggable', Behavior, {
 	},
 
 	bindMouse: function (method) {
-		var mouse = this.behaviors.getMouse(), stop = this.stopDrag;
-		if (!mouse) throw new Error('No mouse in element');
+		var mouse = this.mouse, stop = this.stopDrag;
 
 		mouse.events
 			[method]( 'move', this.onDrag )
@@ -6251,6 +6255,8 @@ declare( 'LibCanvas.App.Behaviors.Draggable', Behavior, {
 	start: function () {
 		if (!this.changeStatus(true)) return this;
 
+		this.mouse = this.behaviors.getMouse();
+		if (!this.mouse) throw new Error('No mouse in element');
 		this.eventArgs(arguments, 'moveDrag');
 		this.events.add( 'mousedown', this.onStart );
 	},
@@ -6271,16 +6277,21 @@ declare( 'LibCanvas.App.Behaviors.Draggable', Behavior, {
 
 	/** @private */
 	onDrag: function (e) {
+		if (!this.element.layer) {
+			return this.onStop(e, true);
+		}
+
 		var delta = this.behaviors.getMouse().delta;
 		this.element.move( delta );
 		this.events.fire('moveDrag', [delta, e]);
 	},
 
 	/** @private */
-	onStop: function (e) {
-		if (e.button !== 0) return;
-		this.bindMouse('remove');
-		this.events.fire('stopDrag', [ e ]);
+	onStop: function (e, forced) {
+		if (e.button === 0 || forced === true) {
+			this.bindMouse('remove');
+			this.events.fire('stopDrag', [ e ]);
+		}
 	}
 }).own({ index: 'draggable' });
 
