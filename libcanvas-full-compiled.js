@@ -1065,7 +1065,7 @@ declare( 'LibCanvas.App.MouseHandler', {
 		};
 		handler.search =
 			handler.settings.get('search') ||
-			new App.ElementsMouseSearch(handler.subscribers);
+			new App.ElementsMouseSearch();
 
 
 		this.events.forEach(function (type) {
@@ -1097,8 +1097,8 @@ declare( 'LibCanvas.App.MouseHandler', {
 		var index = this.subscribers.indexOf(elem);
 		if (index != -1) {
 			this.subscribers.splice(index, 1);
-			this.lastMouseDown.erase(elem);
-			this.lastMouseMove.erase(elem);
+			atom.core.eraseOne(this.lastMouseDown, elem);
+			atom.core.eraseOne(this.lastMouseMove, elem);
 			this.search.remove(elem);
 		}
 		return this;
