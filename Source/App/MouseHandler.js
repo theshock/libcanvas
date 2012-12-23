@@ -24,7 +24,7 @@ provides: App.MouseHandler
 /** @class App.MouseHandler */
 declare( 'LibCanvas.App.MouseHandler', {
 
-	events: [ 'down', 'up', 'move', 'out', 'dblclick', 'contextmenu', 'wheel' ],
+	events: 'down up move out dblclick contextmenu wheel'.split(' '),
 
 	/** @private */
 	mouse: null,
@@ -46,7 +46,6 @@ declare( 'LibCanvas.App.MouseHandler', {
 		handler.search =
 			handler.settings.get('search') ||
 			new App.ElementsMouseSearch();
-
 
 		this.events.forEach(function (type) {
 			handler.mouse.events.add( type, function (e) {
