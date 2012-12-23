@@ -77,6 +77,8 @@ declare( 'LibCanvas.App.MouseHandler', {
 		var index = this.subscribers.indexOf(elem);
 		if (index != -1) {
 			this.subscribers.splice(index, 1);
+			this.lastMouseDown.erase(elem);
+			this.lastMouseMove.erase(elem);
 			this.search.remove(elem);
 		}
 		return this;
