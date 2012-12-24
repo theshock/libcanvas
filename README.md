@@ -15,7 +15,7 @@ For consultation, write to shocksilien@gmail.com
 
 LibCanvas - библиотека для создания интерактивных приложений и игр на html5. Основные возможности:
 
-* [Расширенный 2d Context](https://github.com/theshock/libcanvas/blob/master/Docs/Ru/Core/Context2D.md):
+* [Расширенный 2D Context](https://github.com/theshock/libcanvas/blob/master/Docs/Ru/Core/Context2D.md):
   *  Method chaining
   *  Фигуры в качестве аргументов
   *  Дополнительные методы
