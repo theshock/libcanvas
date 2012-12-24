@@ -47,7 +47,6 @@ declare( 'LibCanvas.App.Light', {
 
 	createVector: function (shape, settings) {
 		settings = atom.core.append({ shape:shape }, settings || {});
-
 		return new App.Light.Vector(this.layer, settings);
 	},
 

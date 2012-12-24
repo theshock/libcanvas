@@ -24,8 +24,12 @@ provides: App.Light.Text
 
 /** @class App.Light.Text */
 atom.declare( 'LibCanvas.App.Light.Text', App.Element, {
+	get style () {
+		return this.settings.get('style') || {};
+	},
+
 	get content () {
-		return this.settings.get('content') || '';
+		return this.style.text || '';
 	},
 
 	set content (c) {
@@ -33,18 +37,17 @@ atom.declare( 'LibCanvas.App.Light.Text', App.Element, {
 
 		if (c != this.content) {
 			this.redraw();
-			this.settings.set('content', String(c) || '');
+			this.style.text = String(c) || '';
 		}
 	},
 
 	renderTo: function (ctx) {
 		var
-			style = this.settings.get('style') || {},
+			style = this.style,
 			bg    = this.settings.get('background');
 		ctx.save();
 		if (bg) ctx.fill( this.shape, bg );
 		ctx.text(atom.core.append({
-			text: this.content,
 			to  : this.shape
 		}, style));
 		ctx.restore();
