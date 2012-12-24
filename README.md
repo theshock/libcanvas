@@ -11,4 +11,3 @@ This library gives the developer a lot of tools for creating web applications & 
 There are tools for work with mouse events, such behaviors as draggable and droppable, class for easy image preloading and so on.
 
 This project is in beta, that's why there may be some bugs, but developing still goes on and your questions will be answered quickly.
-
