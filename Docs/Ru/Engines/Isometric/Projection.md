@@ -16,7 +16,7 @@ IsometricEngine.Projection
 
 Координаты транслируются очень просто. Положительный сдвиг по оси Х смещает точку вверх-вправо, а положительный сдвиг по оси У - вниз-вправо. Положительный сдвиг по оси Z перемещает точку точно вверх.
 
-![Изометрическая карта](/theshock/libcanvas/raw/declare/Docs/Ru/Engines/Isometric/iso.png)
+![Изометрическая карта](https://raw.github.com/theshock/libcanvas/master/Docs/Ru/Engines/Isometric/iso.png)
 
 #### Размер пикселя
 
@@ -150,4 +150,4 @@ atom.dom(function () {
 });
 ```
 
-![Результат выполнения кода](/theshock/libcanvas/raw/declare/Docs/Ru/Engines/Isometric/iso-result.png)
+![Результат выполнения кода](https://raw.github.com/theshock/libcanvas/master/Docs/Ru/Engines/Isometric/iso-result.png)
