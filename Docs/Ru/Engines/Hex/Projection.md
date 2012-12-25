@@ -22,7 +22,7 @@ Engines.Hex.Projection
 r + g + b = 0
 ```
 
-![Пример сетки координат](/theshock/libcanvas/raw/declare/Docs/Ru/Engines/Hex/hex-coords.png)
+![Пример сетки координат](https://raw.github.com/theshock/libcanvas/master/Docs/Ru/Engines/Hex/hex-coords.png)
 
 #### Размер ячейки
 
@@ -32,7 +32,7 @@ r + g + b = 0
 * `hexHeight  ` - высота гекса
 * `chordLength` - ширина бокового трехугольника
 
-![Размеры гекса](/theshock/libcanvas/raw/declare/Docs/Ru/Engines/Hex/hex-sizes.png)
+![Размеры гекса](https://raw.github.com/theshock/libcanvas/master/Docs/Ru/Engines/Hex/hex-sizes.png)
 
 При необходимости  получить равносторонний гекс с длиной стороны K мы получаем следующие значения:
 
