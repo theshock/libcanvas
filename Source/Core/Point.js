@@ -202,6 +202,11 @@ var Point = LibCanvas.declare( 'LibCanvas.Point', 'Point', Geometry, {
 	}
 });
 
+/** @private */
+Point.from = function (object) {
+	return object instanceof Point ? object : new Point(object);
+};
+
 Point.shifts = atom.object.map({
 	top    : [ 0, -1],
 	right  : [ 1,  0],
