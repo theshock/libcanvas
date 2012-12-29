@@ -2900,6 +2900,7 @@ if (atom.core.isFunction(HTMLCanvasElement.addContext)) {
 }
 
 return Context2D;
+
 }();
 
 /*
