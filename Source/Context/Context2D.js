@@ -179,7 +179,8 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 		this.helpers = {
 			image    : new LibCanvas.Context.DrawImage(this),
 			gradients: new LibCanvas.Context.Gradients(this),
-			pixels   : new LibCanvas.Context.Pixels   (this)
+			pixels   : new LibCanvas.Context.Pixels   (this),
+			text     : new LibCanvas.Context.Text     (this)
 		};
 	},
 	get width () { return this.canvas.width; },
@@ -514,147 +515,30 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 		return office.rect.call(this, 'clearRect', arguments);
 	},
 
-	// text
+	// === helpers.text === //
+
 	/** @returns {Context2D} */
 	fillText : function (text, x, y, maxWidth) {
-		var type = typeof x;
-		if (type != 'number' && type != 'string') {
-			maxWidth = y;
-			x = Point( x );
-			y = x.y;
-			x = x.x;
-		}
-		var args = [text, x, y];
-		if (maxWidth) args.push( maxWidth );
-		return this.original('fillText', args);
+		return this.helpers.text.fillText(text, x, y, maxWidth);
 	},
 	/** @returns {Context2D} */
 	strokeText : function (text, x, y, maxWidth) {
-		var type = typeof x;
-		if (type != 'number' && type != 'string') {
-			maxWidth = y;
-			x = Point( x );
-			y = x.y;
-			x = x.x;
-		}
-		var args = [text, x, y];
-		if (maxWidth) args.push( maxWidth );
-		return this.original('strokeText', args);
+		return this.helpers.text.strokeText(text, x, y, maxWidth);
 	},
 	/** @returns {object} */
 	measureText : function (textToMeasure) {
-		return this.original('measureText', arguments, true);
+		return this.helpers.text.measureText(arguments);
 	},
 	/** @returns {Context2D} */
 	text : function (cfg) {
-		if (!this.ctx2d.fillText) return this;
-
-		cfg = atom.core.append({
-			text   : '',
-			color  : null, /* @color */
-			wrap   : 'normal', /* no|normal */
-			to     : null,
-			align  : 'left', /* center|left|right */
-			size   : 16,
-			weight : 'normal', /* bold|normal */
-			style  : 'normal', /* italic|normal */
-			family : 'arial,sans-serif', /* @fontFamily */
-			lineHeight : null,
-			overflow   : 'visible', /* hidden|visible */
-			padding : [0,0],
-			shadow : null
-		}, cfg);
-
-		this.save();
-		if (atom.typeOf(cfg.padding) == 'number') {
-			cfg.padding = [cfg.padding, cfg.padding];
-		}
-		var to = cfg.to ? Rectangle(cfg.to) : this.rectangle;
-		var lh = Math.round(cfg.lineHeight || (cfg.size * 1.15));
-		this.set('font', atom.string.substitute(
-			'{style}{weight}{size}px {family}', {
-				style  : cfg.style == 'italic' ? 'italic ' : '',
-				weight : cfg.weight == 'bold'  ? 'bold '   : '',
-				size   : cfg.size,
-				family : cfg.family
-			})
-		);
-		if (cfg.shadow) this.shadow = cfg.shadow;
-		if (cfg.color) this.set({ fillStyle: cfg.color });
-		if (cfg.overflow == 'hidden') this.clip(to);
-
-		var xGet = function (lineWidth) {
-			var al = cfg.align, pad = cfg.padding[1];
-			return Math.round(
-				al == 'left'  ? to.from.x + pad :
-				al == 'right' ? to.to.x - lineWidth - pad :
-					to.from.x + (to.width - lineWidth)/2
-			);
-		};
-		var lines = String(cfg.text).split('\n');
-
-		var measure = function (text) { return Number(this.measureText(text).width); }.bind(this);
-		if (cfg.wrap == 'no') {
-			lines.forEach(function (line, i) {
-				if (!line) return;
-
-				this.fillText(line, xGet(cfg.align == 'left' ? 0 : measure(line)), to.from.y + (i+1)*lh);
-			}.bind(this));
-		} else {
-			var lNum = 0;
-			lines.forEach(function (line) {
-				if (!line) {
-					lNum++;
-					return;
-				}
-
-				var words = (line || ' ').match(/.+?(\s|$)/g);
-				if (!words) {
-					lNum++;
-					return;
-				}
-				var L  = '';
-				var Lw = 0;
-				for (var i = 0; i <= words.length; i++) {
-					var last = i == words.length;
-					if (!last) {
-						var text = words[i];
-						// @todo too slow. 2-4ms for 50words
-						var wordWidth = measure(text);
-						if (!Lw || Lw + wordWidth < to.width) {
-							Lw += wordWidth;
-							L  += text;
-							continue;
-						}
-					}
-					if (Lw) {
-						this.fillText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
-						if (last) {
-							L  = '';
-							Lw = 0;
-						} else {
-							L  = text;
-							Lw = wordWidth;
-						}
-					}
-				}
-				if (Lw) {
-					this.fillText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
-					L  = '';
-					Lw = 0;
-				}
-			}.bind(this));
-
-		}
-		return this.restore();
+		return this.helpers.text.text(cfg);
 	},
 
 	// === helpers.drawImage === //
 
 	/** @returns {Context2D} */
 	drawImage : function () {
-		this.helpers.image.drawImage(arguments);
-		return this;
+		return this.helpers.image.drawImage(arguments);
 	},
 
 	// === helpers.pixels === //
