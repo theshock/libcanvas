@@ -203,6 +203,6 @@ var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Sh
 });
 
 /** @private */
-Rectangle.from = function () {
+Rectangle.from = function (object) {
 	return object instanceof Rectangle ? object : new Rectangle(object);
 };
