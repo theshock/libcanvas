@@ -1254,70 +1254,6 @@ declare( 'LibCanvas.App.MouseHandler', {
 /*
 ---
 
-name: "Core.Canvas"
-
-description: "Provides some Canvas extensions"
-
-license:
-	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
-	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
-
-authors:
-	- "Shock <shocksilien@gmail.com>"
-
-requires:
-	- LibCanvas
-
-provides: Core.Canvas
-
-...
-*/
-
-atom.core.append(HTMLCanvasElement,
-/** @lends HTMLCanvasElement */
-{
-	/** @private */
-	_newContexts: {},
-	/** @returns {HTMLCanvasElement} */
-	addContext: function (name, ctx) {
-		this._newContexts[name] = ctx;
-		return this;
-	},
-	/** @returns {Context2D} */
-	getContext: function (name) {
-		return this._newContexts[name] || null;
-	}
-});
-
-atom.core.append(HTMLCanvasElement.prototype,
-/** @lends HTMLCanvasElement.prototype */
-{
-	getOriginalContext: HTMLCanvasElement.prototype.getContext,
-	/** @returns {Context2D} */
-	getContext: function (type) {
-		if (!this.contextsList) {
-			this.contextsList = {};
-		}
-
-		if (!this.contextsList[type]) {
-			var ctx = HTMLCanvasElement.getContext(type);
-			if (ctx) {
-				ctx = new ctx(this);
-			} else try {
-				ctx = this.getOriginalContext.apply(this, arguments);
-			} catch (e) {
-				throw (!e.toString().match(/NS_ERROR_ILLEGAL_VALUE/)) ? e :
-					new TypeError('Wrong Context Type: «' + type + '»');
-			}
-			this.contextsList[type] = ctx;
-		}
-		return this.contextsList[type];
-	}
-});
-
-/*
----
-
 name: "Geometry"
 
 description: "Base for such things as Point and Shape"
@@ -1555,6 +1491,11 @@ var Point = LibCanvas.declare( 'LibCanvas.Point', 'Point', Geometry, {
 		return '[Point(' + this.x + ', ' + this.y + ')]';
 	}
 });
+
+/** @private */
+Point.from = function (object) {
+	return object instanceof Point ? object : new Point(object);
+};
 
 Point.shifts = atom.object.map({
 	top    : [ 0, -1],
@@ -1923,6 +1864,11 @@ var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Sh
 	}
 });
 
+/** @private */
+Rectangle.from = function (object) {
+	return object instanceof Rectangle ? object : new Rectangle(object);
+};
+
 /*
 ---
 
@@ -2044,6 +1990,242 @@ var Circle = LibCanvas.declare( 'LibCanvas.Shapes.Circle', 'Circle', Shape, {
 /*
 ---
 
+name: "Core.Canvas"
+
+description: "Provides some Canvas extensions"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+
+provides: Core.Canvas
+
+...
+*/
+
+atom.core.append(HTMLCanvasElement,
+/** @lends HTMLCanvasElement */
+{
+	/** @private */
+	_newContexts: {},
+	/** @returns {HTMLCanvasElement} */
+	addContext: function (name, ctx) {
+		this._newContexts[name] = ctx;
+		return this;
+	},
+	/** @returns {Context2D} */
+	getContext: function (name) {
+		return this._newContexts[name] || null;
+	}
+});
+
+atom.core.append(HTMLCanvasElement.prototype,
+/** @lends HTMLCanvasElement.prototype */
+{
+	getOriginalContext: HTMLCanvasElement.prototype.getContext,
+	/** @returns {Context2D} */
+	getContext: function (type) {
+		if (!this.contextsList) {
+			this.contextsList = {};
+		}
+
+		if (!this.contextsList[type]) {
+			var ctx = HTMLCanvasElement.getContext(type);
+			if (ctx) {
+				ctx = new ctx(this);
+			} else try {
+				ctx = this.getOriginalContext.apply(this, arguments);
+			} catch (e) {
+				throw (!e.toString().match(/NS_ERROR_ILLEGAL_VALUE/)) ? e :
+					new TypeError('Wrong Context Type: «' + type + '»');
+			}
+			this.contextsList[type] = ctx;
+		}
+		return this.contextsList[type];
+	}
+});
+
+/*
+---
+
+name: "Context.DrawImage"
+
+description: "LibCanvas.Context2D adds new canvas context '2d-libcanvas'"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+
+provides: Context.DrawImage
+
+...
+*/
+
+new function () {
+
+var toPoint = Point.from, toRectangle = Rectangle.from;
+
+/** @class LibCanvas.Context.DrawImage */
+LibCanvas.declare( 'LibCanvas.Context.DrawImage', {
+	initialize: function (context) {
+		this.context = context;
+		this.ctx2d   = context.ctx2d;
+	},
+
+	drawImage: function (args) {
+		var a, center, from, draw, crop, scale, image, pivot, angle;
+
+		if (this.checkNonObject(args)) return;
+
+		a = args[0];
+
+		image  = a.image;
+		angle  = a.angle;
+		scale  = a.scale  && toPoint(a.scale);
+		center = a.center && toPoint(a.center);
+		from   = a.from   && toPoint(a.from);
+		draw   = a.draw   && toRectangle(a.draw);
+		crop   = a.crop   && toRectangle(a.crop);
+
+		if (! atom.dom.isElement(image) ) throw new TypeError('Wrong image in Context.DrawImage');
+		if (! (center || from || draw)  ) throw new TypeError('Wrong arguments in Context.DrawImage');
+
+		pivot = this.getTransformPivot(
+			angle, scale, image,
+			center, from, draw
+		);
+
+		if (pivot) this.transform(pivot, angle, scale);
+		draw ?
+			this.drawRect (image, draw, crop  , a.optimize) :
+			this.drawPoint(image, from, center, a.optimize);
+		if (pivot) this.ctx2d.restore();
+	},
+
+	run: function (array) {
+		this.ctx2d.drawImage.apply( this.ctx2d, array );
+	},
+
+	transform: function (center, angle, scale) {
+		this.ctx2d.save();
+		if (angle) this.context.rotate(angle, center);
+		if (scale) this.context.scale (scale, center);
+	},
+
+	checkNonObject: function (args) {
+		var image = args[0], length = args.length, target;
+		if (length > 2) {
+			this.run(args);
+			return true;
+		}
+		if (length == 2) {
+			target = args[1];
+
+			if (target instanceof Point) {
+				this.drawPoint(image, target);
+				return true;
+			}
+			if (target instanceof Rectangle) {
+				this.drawRect(image, target);
+				return true;
+			}
+
+			throw new Error('Unknown second argument in Context.DrawImage');
+		}
+
+		if (length == 0) {
+			throw new Error('Empty arguments in Context.DrawImage');
+		}
+
+		if (atom.dom.isElement(image)) {
+			this.ctx2d.drawImage(image, 0, 0);
+			return true;
+		}
+
+		return false;
+	},
+
+	drawPoint: function (image, from, center, optimize) {
+		var
+			point = center || from,
+			fromX = point.x,
+			fromY = point.y;
+
+		if (center) {
+			fromX -= image.width  / 2;
+			fromY -= image.height / 2;
+		}
+
+		if (optimize) {
+			fromX = Math.round(fromX);
+			fromY = Math.round(fromY);
+		}
+
+		this.ctx2d.drawImage(image, fromX, fromY);
+	},
+
+	drawRect: function (image, rect, crop, optimize) {
+		var deltaX, deltaY, fromX, fromY;
+
+		if (crop) {
+			this.ctx2d.drawImage( image,
+				crop.from.x, crop.from.y, crop.width, crop.height,
+				rect.from.x, rect.from.y, rect.width, rect.height
+			);
+			return;
+		}
+
+		if (optimize) {
+			fromX  = Math.round(rect.from.x);
+			fromY  = Math.round(rect.from.y);
+			deltaX = Math.abs(rect.width  - image.width );
+			deltaY = Math.abs(rect.height - image.width );
+
+			if (deltaX < 1.1 && deltaY < 1.1) {
+				this.ctx2d.drawImage(image, fromX, fromY);
+			} else {
+				this.ctx2d.drawImage(image, fromX, fromY,
+					Math.round(rect.width),
+					Math.round(rect.height)
+				);
+			}
+			return;
+		}
+
+		this.ctx2d.drawImage( image,
+			rect.from.x, rect.from.y,
+			rect.width , rect.height
+		);
+	},
+
+	getTransformPivot: function (angle, scale, image, center, from, draw) {
+		if ( !angle && (!scale || (scale.x == 1 && scale.y == 1)) ) return null;
+
+		if (center) return center;
+		if ( draw ) return draw.center;
+
+		return new Point(from.x + image.width/2, from.y + image.height/2);
+	}
+});
+
+};
+
+
+/*
+---
+
 name: "Context2D"
 
 description: "LibCanvas.Context2D adds new canvas context '2d-libcanvas'"
@@ -2062,6 +2244,7 @@ requires:
 	- Shapes.Rectangle
 	- Shapes.Circle
 	- Core.Canvas
+	- Context.DrawImage
 
 provides: Context2D
 
@@ -2074,6 +2257,8 @@ provides: Context2D
  * @name LibCanvas.Context2D
  */
 var Context2D = function () {
+
+var toRectangle = Rectangle.from, toPoint = Point.from;
 
 var office = {
 	all : function (type, style) {
@@ -2214,6 +2399,8 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 				canvas.getOriginalContext('2d') :
 				canvas.getContext('2d');
 		}
+
+		this.imageDrawer = new LibCanvas.Context.DrawImage(this);
 	},
 	get width () { return this.canvas.width; },
 	get height() { return this.canvas.height; },
@@ -2326,8 +2513,8 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 		return office.all.call(this, 'stroke', style);
 	},
 	/** @returns {Context2D} */
-	clearAll : function (style) {
-		return office.all.call(this, 'clear', style);
+	clearAll : function () {
+		return this.ctx2d.clearRect(0,0,this.canvas.width,this.canvas.height);
 	},
 
 	// Save/Restore
@@ -2684,78 +2871,9 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 
 	// image
 	/** @returns {Context2D} */
-	drawImage : function (a) {
-		if (arguments.length > 2) return this.original('drawImage', arguments);
-		if (arguments.length == 2) {
-			a = { image: a, draw: arguments[1] };
-		} else if (atom.typeOf(a) == 'element') {
-			return this.original('drawImage', [a, 0, 0]);
-		}
-
-		if (!a.image) throw new TypeError('No image');
-		var center, from = a.center || a.from;
-
-		var scale = a.scale ? Point(a.scale) : null;
-
-		var transform = function (a, center) {
-			if (a.angle) this.rotate(a.angle, center);
-			if (scale  ) this.scale( scale, center );
-		}.bind(this);
-
-		var needTransform = a.angle || (scale && (scale.x != 1 || scale.y != 1));
-
-		this.save();
-		if (from) {
-			from = Point(from);
-			if (a.center) from = {
-				x : from.x - a.image.width/2,
-				y : from.y - a.image.height/2
-			};
-			if (needTransform) {
-				center = a.center || {
-					x : from.x + a.image.width/2,
-					y : from.y + a.image.height/2
-				};
-				transform(a, center);
-			} else if (a.optimize) {
-				from = { x: Math.round(from.x), y: Math.round(from.y) }
-			}
-			this.original('drawImage', [
-				a.image, from.x, from.y
-			]);
-		} else if (a.draw) {
-			var draw = Rectangle(a.draw);
-			if (needTransform) transform(a, draw.center);
-
-			if (a.crop) {
-				var crop = Rectangle(a.crop);
-				this.original('drawImage', [
-					a.image,
-					crop.from.x, crop.from.y, crop.width, crop.height,
-					draw.from.x, draw.from.y, draw.width, draw.height
-				]);
-			} else if (a.optimize) {
-				var size = draw.size, dSize = {
-					x: Math.abs(size.width  - a.image.width ),
-					y: Math.abs(size.height - a.image.height)
-				};
-				from = { x:Math.round(draw.from.x), y: Math.round(draw.from.y) };
-				if (dSize.x <= 1.1 && dSize.y <= 1.1 ) {
-					this.original('drawImage', [ a.image, from.x, from.y ]);
-				} else {
-					this.original('drawImage', [
-						a.image, from.x, from.y, Math.round(size.width), Math.round(size.height)
-					]);
-				}
-			} else {
-				this.original('drawImage', [
-					a.image, draw.from.x, draw.from.y, draw.width, draw.height
-				]);
-			}
-		} else {
-			throw new TypeError('Wrong Args in Context.drawImage');
-		}
-		return this.restore();
+	drawImage : function () {
+		this.imageDrawer.drawImage(arguments);
+		return this;
 	},
 
 	// image data

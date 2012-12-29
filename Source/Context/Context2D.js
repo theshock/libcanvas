@@ -19,6 +19,7 @@ requires:
 	- Shapes.Rectangle
 	- Shapes.Circle
 	- Core.Canvas
+	- Context.DrawImage
 
 provides: Context2D
 
@@ -31,6 +32,8 @@ provides: Context2D
  * @name LibCanvas.Context2D
  */
 var Context2D = function () {
+
+var toRectangle = Rectangle.from, toPoint = Point.from;
 
 var office = {
 	all : function (type, style) {
@@ -171,6 +174,8 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 				canvas.getOriginalContext('2d') :
 				canvas.getContext('2d');
 		}
+
+		this.imageDrawer = new LibCanvas.Context.DrawImage(this);
 	},
 	get width () { return this.canvas.width; },
 	get height() { return this.canvas.height; },
@@ -283,8 +288,8 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 		return office.all.call(this, 'stroke', style);
 	},
 	/** @returns {Context2D} */
-	clearAll : function (style) {
-		return office.all.call(this, 'clear', style);
+	clearAll : function () {
+		return this.ctx2d.clearRect(0,0,this.canvas.width,this.canvas.height);
 	},
 
 	// Save/Restore
@@ -641,78 +646,9 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 
 	// image
 	/** @returns {Context2D} */
-	drawImage : function (a) {
-		if (arguments.length > 2) return this.original('drawImage', arguments);
-		if (arguments.length == 2) {
-			a = { image: a, draw: arguments[1] };
-		} else if (atom.typeOf(a) == 'element') {
-			return this.original('drawImage', [a, 0, 0]);
-		}
-
-		if (!a.image) throw new TypeError('No image');
-		var center, from = a.center || a.from;
-
-		var scale = a.scale ? Point(a.scale) : null;
-
-		var transform = function (a, center) {
-			if (a.angle) this.rotate(a.angle, center);
-			if (scale  ) this.scale( scale, center );
-		}.bind(this);
-
-		var needTransform = a.angle || (scale && (scale.x != 1 || scale.y != 1));
-
-		this.save();
-		if (from) {
-			from = Point(from);
-			if (a.center) from = {
-				x : from.x - a.image.width/2,
-				y : from.y - a.image.height/2
-			};
-			if (needTransform) {
-				center = a.center || {
-					x : from.x + a.image.width/2,
-					y : from.y + a.image.height/2
-				};
-				transform(a, center);
-			} else if (a.optimize) {
-				from = { x: Math.round(from.x), y: Math.round(from.y) }
-			}
-			this.original('drawImage', [
-				a.image, from.x, from.y
-			]);
-		} else if (a.draw) {
-			var draw = Rectangle(a.draw);
-			if (needTransform) transform(a, draw.center);
-
-			if (a.crop) {
-				var crop = Rectangle(a.crop);
-				this.original('drawImage', [
-					a.image,
-					crop.from.x, crop.from.y, crop.width, crop.height,
-					draw.from.x, draw.from.y, draw.width, draw.height
-				]);
-			} else if (a.optimize) {
-				var size = draw.size, dSize = {
-					x: Math.abs(size.width  - a.image.width ),
-					y: Math.abs(size.height - a.image.height)
-				};
-				from = { x:Math.round(draw.from.x), y: Math.round(draw.from.y) };
-				if (dSize.x <= 1.1 && dSize.y <= 1.1 ) {
-					this.original('drawImage', [ a.image, from.x, from.y ]);
-				} else {
-					this.original('drawImage', [
-						a.image, from.x, from.y, Math.round(size.width), Math.round(size.height)
-					]);
-				}
-			} else {
-				this.original('drawImage', [
-					a.image, draw.from.x, draw.from.y, draw.width, draw.height
-				]);
-			}
-		} else {
-			throw new TypeError('Wrong Args in Context.drawImage');
-		}
-		return this.restore();
+	drawImage : function () {
+		this.imageDrawer.drawImage(arguments);
+		return this;
 	},
 
 	// image data
