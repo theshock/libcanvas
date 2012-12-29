@@ -20,6 +20,7 @@ requires:
 	- Shapes.Circle
 	- Core.Canvas
 	- Context.DrawImage
+	- Context.Gradients
 
 provides: Context2D
 
@@ -175,7 +176,10 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 				canvas.getContext('2d');
 		}
 
-		this.imageDrawer = new LibCanvas.Context.DrawImage(this);
+		this.helpers = {
+			image: new LibCanvas.Context.DrawImage(this),
+			gradients: new LibCanvas.Context.Gradients(this)
+		};
 	},
 	get width () { return this.canvas.width; },
 	get height() { return this.canvas.height; },
@@ -647,7 +651,7 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 	// image
 	/** @returns {Context2D} */
 	drawImage : function () {
-		this.imageDrawer.drawImage(arguments);
+		this.helpers.image.drawImage(arguments);
 		return this;
 	},
 
@@ -760,66 +764,21 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 		return new atom.Color(data);
 	},
 
-
 	/** @returns {CanvasGradient} */
 	createGradient: function (from, to, colors) {
-		var gradient;
-		if ( from instanceof Rectangle ) {
-			colors   = to;
-			gradient = this.createLinearGradient( from );
-		} else if (from instanceof Circle) {
-			gradient = this.createRadialGradient( from, to );
-		} else if (from instanceof Point) {
-			gradient = this.createLinearGradient( from, to, colors );
-		} else {
-			throw new Error('Unknown arguments');
-		}
-		if (typeof colors == 'object') gradient.addColorStop( colors );
-		return gradient;
+		return this.helpers.gradients.createGradient(from, to, colors);
 	},
 	/** @returns {CanvasGradient} */
 	createRectangleGradient: function (rectangle, colors) {
-		rectangle = Rectangle( rectangle );
-
-		var from = rectangle.from, line = new Line( rectangle.bottomLeft, rectangle.topRight );
-
-		return this.createGradient( from, line.perpendicular(from).scale(2, from), colors );
+		return this.helpers.gradients.createRectangleGradient(rectangle, colors);
 	},
 	/** @returns {CanvasGradient} */
-	createLinearGradient : function (from, to) {
-		var a = arguments;
-		if (a.length != 4) {
-			if (a.length == 2) {
-				to   = Point(to);
-				from = Point(from);
-			} else if (a.length == 1) {
-				// wee
-				to   = Point(a[0].to);
-				from = Point(a[0].from);
-			}
-			a = [from.x, from.y, to.x, to.y];
-		}
-		return fixGradient( this.original('createLinearGradient', a, true) );
+	createLinearGradient : function () {
+		return this.helpers.gradients.createLinearGradient(arguments);
 	},
 	/** @returns {CanvasGradient} */
 	createRadialGradient: function () {
-		var points, c1, c2, a = arguments;
-		if (a.length == 1 || a.length == 2) {
-			if (a.length == 2) {
-				c1 = Circle( a[0] );
-				c2 = Circle( a[1] );
-			} else {
-				c1 = Circle( a.start );
-				c2 = Circle( a.end   );
-			}
-			points = [c1.center.x, c1.center.y, c1.radius, c2.center.x, c2.center.y, c2.radius];
-		} else if (a.length == 6) {
-			points = a;
-		} else {
-			throw new TypeError('Wrong args number in the Context.createRadialGradient');
-		}
-
-		return fixGradient( this.original('createRadialGradient', points, true) );
+		return this.helpers.gradients.createRadialGradient(arguments);
 	},
 
 	/** @returns {CanvasPattern} */
@@ -849,31 +808,6 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 		}
 	})
 });
-
-var addColorStop = function () {
-	var orig = document
-		.createElement('canvas')
-		.getContext('2d')
-		.createLinearGradient(0,0,1,1)
-		.addColorStop;
-		
-	return function (colors) {
-		if (typeof colors == 'object') {
-			for (var position in colors) {
-				orig.call( this, parseFloat(position), colors[position] );
-			}
-		} else {
-			orig.apply( this, arguments );
-		}
-		return this;
-	};
-}();
-
-
-var fixGradient = function (grad) {
-	grad.addColorStop = addColorStop;
-	return grad;
-};
 
 Context2D.office = office;
 
