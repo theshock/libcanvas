@@ -14,6 +14,10 @@ authors:
 
 requires:
 	- LibCanvas
+	- Point
+	- Size
+	- Shapes.Rectangle
+	- Shapes.Circle
 
 provides: Context.Gradients
 

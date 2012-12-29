@@ -14,6 +14,10 @@ authors:
 
 requires:
 	- LibCanvas
+	- Point
+	- Size
+	- Shapes.Rectangle
+	- Shapes.Circle
 
 provides: Context.DrawImage
 
@@ -59,18 +63,21 @@ LibCanvas.declare( 'LibCanvas.Context.DrawImage', {
 			this.drawRect (image, draw, crop  , a.optimize) :
 			this.drawPoint(image, from, center, a.optimize);
 		if (pivot) this.ctx2d.restore();
+
+		return this.context;
 	},
 
+	/** @private */
 	run: function (array) {
 		this.ctx2d.drawImage.apply( this.ctx2d, array );
 	},
-
+	/** @private */
 	transform: function (center, angle, scale) {
 		this.ctx2d.save();
 		if (angle) this.context.rotate(angle, center);
 		if (scale) this.context.scale (scale, center);
 	},
-
+	/** @private */
 	checkNonObject: function (args) {
 		var image = args[0], length = args.length, target;
 		if (length > 2) {
@@ -103,7 +110,7 @@ LibCanvas.declare( 'LibCanvas.Context.DrawImage', {
 
 		return false;
 	},
-
+	/** @private */
 	drawPoint: function (image, from, center, optimize) {
 		var
 			point = center || from,
@@ -122,7 +129,7 @@ LibCanvas.declare( 'LibCanvas.Context.DrawImage', {
 
 		this.ctx2d.drawImage(image, fromX, fromY);
 	},
-
+	/** @private */
 	drawRect: function (image, rect, crop, optimize) {
 		var deltaX, deltaY, fromX, fromY;
 
@@ -156,7 +163,7 @@ LibCanvas.declare( 'LibCanvas.Context.DrawImage', {
 			rect.width , rect.height
 		);
 	},
-
+	/** @private */
 	getTransformPivot: function (angle, scale, image, center, from, draw) {
 		if ( !angle && (!scale || (scale.x == 1 && scale.y == 1)) ) return null;
 
