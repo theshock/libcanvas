@@ -2398,8 +2398,6 @@ provides: Context2D
  */
 var Context2D = function () {
 
-var toRectangle = Rectangle.from, toPoint = Point.from;
-
 var office = {
 	all : function (type, style) {
 		this.save();
@@ -2434,8 +2432,6 @@ var office = {
 		return this.original(func, [point.x, point.y]);
 	}
 };
-
-var size1 = new Size(1,1);
 
 /* In some Mobile browsers shadowY should be inverted (bug) */
 var shadowBug = function () {
@@ -2544,7 +2540,8 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 			image    : new LibCanvas.Context.DrawImage(this),
 			gradients: new LibCanvas.Context.Gradients(this),
 			pixels   : new LibCanvas.Context.Pixels   (this),
-			text     : new LibCanvas.Context.Text     (this)
+			text     : new LibCanvas.Context.Text     (this),
+			path     : new LibCanvas.Context.Path     (this)
 		};
 	},
 	get width () { return this.canvas.width; },
@@ -2612,14 +2609,8 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 	},
 	/** @returns {Context2D} */
 	original : function (method, args, returnResult) {
-		try {
-			var result = this.ctx2d[method].apply(this.ctx2d, args || []);
-			if (returnResult) return result;
-		} catch (e) {
-			console.log('Error in context2d.original(', method, ',', (args || []), ')');
-			throw e;
-		}
-		return this;
+		var result = this.ctx2d[method].apply(this.ctx2d, args || []);
+		return returnResult ? result: this;
 	},
 	/** @returns {HTMLCanvasElement} */
 	getClone : function (width, height) {
@@ -2665,11 +2656,13 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 	// Save/Restore
 	/** @returns {Context2D} */
 	save : function () {
-		return this.original('save');
+		this.ctx2d.save();
+		return this;
 	},
 	/** @returns {Context2D} */
 	restore : function () {
-		return this.original('restore');
+		this.ctx2d.restore();
+		return this;
 	},
 
 	// Fill/Stroke
@@ -2689,7 +2682,7 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 				.set({ globalCompositeOperation: Context2D.COMPOSITE.DESTINATION_OUT })
 				[stroke ? 'stroke' : 'fill']( shape )
 				.restore() :
-			this.clearRect( Rectangle(arguments) );
+			this.clearRect( Rectangle.from(shape) );
 	},
 
 	// Path
@@ -2712,104 +2705,29 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 	lineTo : function (point) {
 		return office.originalPoint.call(this, 'lineTo', arguments);
 	},
-
 	/** @returns {Context2D} */
 	arc : function (x, y, r, startAngle, endAngle, anticlockwise) {
-		var a = atom.array.pickFrom(arguments), circle, angle, acw;
-		if (a.length > 1) {
-			return this.original('arc', a);
-		} else if ('circle' in a[0]) {
-			circle = Circle(a[0].circle);
-			angle  = Array.isArray(a[0].angle) ?
-				atom.array.associate(a[0].angle, ['start', 'end']) :
-				atom.object.collect(a[0].angle, ['start', 'end', 'size']);
-
-			if (Array.isArray(angle)) {
-				angle = atom.array.associate(angle, ['start', 'end']);
-			} else if (angle.size != null) {
-				if ('end' in angle) {
-					angle.end = angle.size + angle.start;
-				} else if ('start' in angle) {
-					angle.start = angle.end - angle.size;
-				}
-			}
-			acw = !!(a[0].anticlockwise || a[0].acw);
-		} else {
-			throw new TypeError('Wrong arguments in CanvasContext.arc');
-		}
-		return this.original('arc', [
-			circle.center.x, circle.center.y, circle.radius, angle.start, angle.end, acw
-		]);
+		return this.helpers.path.arc(arguments);
 	},
-
 	/** @returns {Context2D} */
 	arcTo : function () {
-		// @todo Beauty arguments
-		return this.original('arcTo', arguments);
+		return this.helpers.path.arcTo(arguments);
 	},
 	/** @returns {Context2D} */
 	curveTo: function (curve) {
-		var p, l, to;
-
-		if (typeof curve == 'number') {
-			if (arguments.length === 4) {
-				return this.original('quadraticCurveTo', arguments);
-			} else if (arguments.length === 6) {
-				return this.original('bezierCurveTo', arguments);
-			}
-		} else if (arguments.length > 1) {
-			p  = atom.array.from( arguments ).map(Point);
-			to = p.shift()
-		} else {
-			p  = atom.array.from( curve.points ).map(Point);
-			to = Point(curve.to);
-		}
-
-		l = p.length;
-
-		if (l == 2) {
-			this.original('bezierCurveTo', [
-				p[0].x, p[0].y, p[1].x, p[1].y, to.x, to.y
-			]);
-		} else if (l == 1) {
-			this.original('quadraticCurveTo', [
-				p[0].x, p[0].y, to.x, to.y
-			]);
-		} else {
-			this.original('lineTo', [to]);
-		}
-		return this;
+		return this.helpers.path.curveTo(arguments);
 	},
 	/** @returns {Context2D} */
 	quadraticCurveTo : function () {
-		var a = arguments;
-		if (a.length == 4) {
-			return this.original('bezierCurveTo', arguments);
-		} else {
-			a = a.length == 2 ? atom.array.associate(a, ['p', 'to']) : a[0];
-			return this.curveTo({
-				to: a.to,
-				points: [a.p]
-			});
-		}
+		return this.helpers.path.quadraticCurveTo(arguments);
 	},
 	/** @returns {Context2D} */
 	bezierCurveTo : function () {
-		var a = arguments;
-		if (a.length == 6) {
-			return this.original('bezierCurveTo', arguments);
-		} else {
-			a = a.length == 3 ? {p1:a[0], p2:a[1], to:a[2]} : a[0];
-			return this.curveTo({
-				to: a.to,
-				points: [a.p1, a.p2]
-			});
-		}
+		return this.helpers.path.bezierCurveTo(arguments);
 	},
 	/** @returns {boolean} */
 	isPointInPath : function (x, y) {
-		var point = Point(arguments);
-		return this.original('isPointInPath', [point.x, point.y], true);
+		return this.helpers.path.isPointInPath(x, y);
 	},
 	/** @returns {Context2D} */
 	clip : function (shape) {
@@ -2983,6 +2901,159 @@ if (atom.core.isFunction(HTMLCanvasElement.addContext)) {
 
 return Context2D;
 }();
+
+/*
+---
+
+name: "Context.Path"
+
+description: "LibCanvas.Context2D adds new canvas context '2d-libcanvas'"
+
+license:
+	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+	- "[MIT License](http://opensource.org/licenses/mit-license.php)"
+
+authors:
+	- "Shock <shocksilien@gmail.com>"
+
+requires:
+	- LibCanvas
+	- Point
+	- Size
+	- Shapes.Circle
+
+provides: Context.Path
+
+...
+*/
+
+new function () {
+
+var toPoint = Point.from, toCircle = Circle.from;
+
+
+/** @class LibCanvas.Context.Path */
+LibCanvas.declare( 'LibCanvas.Context.Path', {
+	initialize: function (context) {
+		this.context = context;
+		this.ctx2d   = context.ctx2d;
+	},
+
+
+	/** @returns {Context2D} */
+	arc : function (a) {
+
+		if (a.length > 1) {
+			return this.ctx2d.arc.apply(this.ctx2d, a);
+		} else if (!a[0].circle) {
+			throw new TypeError('Wrong arguments in CanvasContext.arc');
+		}
+
+		var f = a[0], circle, angle, angleStart, angleEnd, angleSize;
+		circle = toCircle(f.circle);
+		angle = f.angle;
+
+		if (Array.isArray(angle)) {
+			angleStart = angle[0];
+			angleEnd   = angle[1];
+		} else {
+			angleStart = angle.start;
+			angleEnd   = angle.end;
+			angleSize  = angle.size;
+
+			if (angleSize == null) {
+				// do nothing
+			} else if (angleEnd == null) {
+				angleEnd = angleSize + angleStart;
+			} else if (angleStart == null) {
+				angleStart = angleEnd - angleSize;
+			}
+		}
+		this.ctx2d.arc(
+			circle.center.x, circle.center.y, circle.radius,
+			angleStart, angleEnd, !!(f.anticlockwise || f.acw)
+		);
+		return this.context;
+	},
+
+	/** @returns {Context2D} */
+	arcTo : function () {
+		// @todo Beauty arguments
+		this.ctx2d.arcTo.apply(this.ctx2d, arguments);
+		return this.context;
+	},
+	/** @returns {Context2D} */
+	curveTo: function (a) {
+		var p, l, to, curve = a[0];
+
+		if (typeof curve == 'number') {
+			if (a.length === 4) {
+				return this.quadraticCurveTo(a);
+			} else if (a.length === 6) {
+				return this.bezierCurveTo(a);
+			}
+		} else if (a.length > 1) {
+			p  = atom.array.from( a ).map(toPoint);
+			to = p.shift()
+		} else {
+			p  = atom.array.from( curve.points ).map(toPoint);
+			to = toPoint(curve.to);
+		}
+
+		l = p.length;
+
+		if (l == 2) {
+			this.ctx2d.bezierCurveTo(
+				p[0].x, p[0].y, p[1].x, p[1].y, to.x, to.y
+			);
+		} else if (l == 1) {
+			this.ctx2d.quadraticCurveTo(
+				p[0].x, p[0].y, to.x, to.y
+			);
+		} else {
+			this.ctx2d.lineTo(to.x, to.y);
+		}
+		return this.context;
+	},
+	/** @returns {Context2D} */
+	quadraticCurveTo : function (a) {
+		if (a.length == 4) {
+			this.ctx2d.quadraticCurveTo.apply(this.ctx2d, a);
+			return this.context;
+		} else {
+			a = a.length == 2 ? {p:a[0], to:a[1]} : a[0];
+			return this.curveTo([{
+				to: a.to,
+				points: [a.p]
+			}]);
+		}
+	},
+	/** @returns {Context2D} */
+	bezierCurveTo : function (a) {
+		if (a.length == 6) {
+			this.ctx2d.bezierCurveTo.apply(this.ctx2d, a);
+			return this.context;
+		} else {
+			a = a.length == 3 ? {p1:a[0], p2:a[1], to:a[2]} : a[0];
+			return this.curveTo([{
+				to: a.to,
+				points: [a.p1, a.p2]
+			}]);
+		}
+	},
+	isPointInPath: function (x, y) {
+		if (y == null) {
+			x = toPoint(x);
+			y = x.y;
+			x = x.x;
+		}
+		return this.ctx2d.isPointInPath(x, y);
+	}
+
+});
+
+};
+
 
 /*
 ---
