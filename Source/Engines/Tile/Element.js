@@ -40,6 +40,7 @@ declare( 'LibCanvas.Engines.Tile.Element', App.Element, {
 }).own({
 	app: function (app, engine, from) {
 		return new this( app.createLayer({
+			name: 'tile-engine',
 			intersection: 'manual',
 			invoke: false
 		}), {
