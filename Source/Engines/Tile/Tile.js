@@ -128,6 +128,7 @@ var TileEngine = LibCanvas.declare( 'LibCanvas.Engines.Tile', 'TileEngine', {
 		return this;
 	},
 
+	/** @private */
 	createMatrixCell: function (point, size, margin, value) {
 		var shape = this.createCellRectangle(point, size, margin);
 
