@@ -90,7 +90,7 @@ declare( 'LibCanvas.Engines.Tile.Mouse', {
 
 	/** @private */
 	fire: function (event, cell) {
-		return this.events.fire( event, [ cell, this ]);
+		return this.events.fire( event, [ cell ]);
 	},
 
 	/** @private */
