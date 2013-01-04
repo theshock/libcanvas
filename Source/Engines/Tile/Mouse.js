@@ -19,47 +19,58 @@ provides: Engines.Tile.Mouse
 */
 /** @class TileEngine.Mouse */
 declare( 'LibCanvas.Engines.Tile.Mouse', {
+	eventsList: 'mousemove mouseout mousedown mouseup contextmenu'
+		.split(' '),
+
 	initialize: function (element, mouse) {
-		var handler = this;
+		this.bindMethods(this.eventsList);
 
-		handler.mouse    = mouse;
-		handler.element  = element;
-		handler.events   = new Events(handler);
-		handler.previous = null;
-		handler.lastDown = null;
+		this.mouse    = mouse;
+		this.element  = element;
+		this.events   = new Events(this);
+		this.previous = null;
+		this.lastDown = null;
 
-		element.events.add({
-			mousemove: function () {
-				var cell = handler.get();
-				if (handler.previous != cell) {
-					handler.outCell();
-					handler.fire( 'over', cell );
-					handler.previous = cell;
-				}
-			},
-			mouseout: function () {
-				handler.outCell();
-			},
-			mousedown: function () {
-				var cell = handler.get();
-				handler.fire( 'down', cell );
-				handler.lastDown = cell;
-			},
-			mouseup: function () {
-				var cell = handler.get();
-				handler.fire( 'up', cell );
-				if (cell != null && cell == handler.lastDown) {
-					handler.fire( 'click', cell );
-				}
-				handler.lastDown = null;
-			},
-			contextmenu: function () {
-				var cell = handler.get();
-				if (cell != null) {
-					handler.fire( 'contextmenu', cell );
-				}
-			}
-		});
+		this.subscribe(false);
+	},
+
+	subscribe: function (un) {
+		var events = atom.object.collect(this, this.eventsList, null);
+
+		this.element.events
+			[ un ? 'remove' : 'add' ]
+			(events);
+	},
+
+	mousemove: function () {
+		var cell = this.get();
+		if (this.previous != cell) {
+			this.outCell();
+			this.fire( 'over', cell );
+			this.previous = cell;
+		}
+	},
+	mouseout: function () {
+		this.outCell();
+	},
+	mousedown: function () {
+		var cell = this.get();
+		this.fire( 'down', cell );
+		this.lastDown = cell;
+	},
+	mouseup: function () {
+		var cell = this.get();
+		this.fire( 'up', cell );
+		if (cell != null && cell == this.lastDown) {
+			this.fire( 'click', cell );
+		}
+		this.lastDown = null;
+	},
+	contextmenu: function () {
+		var cell = this.get();
+		if (cell != null) {
+			this.fire( 'contextmenu', cell );
+		}
 	},
 
 	/** @private */
