@@ -25,15 +25,20 @@ declare( 'LibCanvas.Engines.Tile.Mouse', {
 	initialize: function (element, mouse) {
 		this.bindMethods(this.eventsList);
 
-		this.mouse    = mouse;
-		this.element  = element;
 		this.events   = new Events(this);
-		this.previous = null;
-		this.lastDown = null;
 
+		/** @private */
+		this.mouse    = mouse;
+		/** @private */
+		this.element  = element;
+		/** @private */
+		this.previous = null;
+		/** @private */
+		this.lastDown = null;
 		this.subscribe(false);
 	},
 
+	/** @private */
 	subscribe: function (un) {
 		var events = atom.object.collect(this, this.eventsList, null);
 
@@ -41,7 +46,7 @@ declare( 'LibCanvas.Engines.Tile.Mouse', {
 			[ un ? 'remove' : 'add' ]
 			(events);
 	},
-
+	/** @private */
 	mousemove: function () {
 		var cell = this.get();
 		if (this.previous != cell) {
@@ -50,14 +55,17 @@ declare( 'LibCanvas.Engines.Tile.Mouse', {
 			this.previous = cell;
 		}
 	},
+	/** @private */
 	mouseout: function () {
 		this.outCell();
 	},
+	/** @private */
 	mousedown: function () {
 		var cell = this.get();
 		this.fire( 'down', cell );
 		this.lastDown = cell;
 	},
+	/** @private */
 	mouseup: function () {
 		var cell = this.get();
 		this.fire( 'up', cell );
@@ -66,13 +74,13 @@ declare( 'LibCanvas.Engines.Tile.Mouse', {
 		}
 		this.lastDown = null;
 	},
+	/** @private */
 	contextmenu: function () {
 		var cell = this.get();
 		if (cell != null) {
 			this.fire( 'contextmenu', cell );
 		}
 	},
-
 	/** @private */
 	get: function () {
 		return this.element.engine.getCellByPoint(
