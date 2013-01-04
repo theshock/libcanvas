@@ -515,7 +515,7 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 
 [ 'fillStyle','font','globalAlpha','globalCompositeOperation','lineCap',
   'lineJoin','lineWidth','miterLimit','shadowOffsetX','shadowColor',
-	'strokeStyle','textAlign','textBaseline'
+  'strokeStyle','textAlign','textBaseline'
 	// we'll set this values manually because of bug in Mobile Phones
 	// 'shadowOffsetY','shadowBlur'
 ].forEach(function (property) {

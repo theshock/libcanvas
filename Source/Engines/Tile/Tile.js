@@ -32,24 +32,21 @@ var TileEngine = LibCanvas.declare( 'LibCanvas.Engines.Tile', 'TileEngine', {
 	 * @param {Size} settings.cellMargin
 	 */
 	initialize: function (settings) {
-		this.cells    = [];
-		this.methods  = {};
+		this.cells   = [];
+		this.methods = {};
 		this.cellsUpdate = [];
 
 		this.events   = new Events(this);
 		this.settings = new Settings(settings).addEvents(this.events);
-
 		this.createMatrix();
 	},
 
 	setMethod: atom.core.overloadSetter(function (name, method) {
-		var type = typeof method;
-
-		if (type != 'function' && type != 'string' && !atom.dom.isElement(method)) {
-			throw new TypeError( 'Unknown method: «' + method + '»' );
+		if (this.isValidMethod(method)) {
+			this.methods[ name ] = method;
+		} else {
+			throw new TypeError( 'Unknown method: «' + name + '»' );
 		}
-
-		this.methods[ name ] = method;
 	}),
 
 	countSize: function () {
@@ -65,7 +62,7 @@ var TileEngine = LibCanvas.declare( 'LibCanvas.Engines.Tile', 'TileEngine', {
 	},
 
 	getCellByIndex: function (point) {
-		point = new Point(point);
+		point = Point.from(point);
 		return this.isIndexOutOfBounds(point) ? null:
 			this.cells[ this.width * point.y + point.x ];
 	},
@@ -75,7 +72,8 @@ var TileEngine = LibCanvas.declare( 'LibCanvas.Engines.Tile', 'TileEngine', {
 			settings   = this.settings,
 			cellSize   = settings.get('cellSize'),
 			cellMargin = settings.get('cellMargin');
-		point = new Point(point);
+
+		point = Point.from(point);
 		
 		return this.getCellByIndex(new Point(
 			parseInt(point.x / (cellSize.width  + cellMargin.x)),
@@ -107,8 +105,17 @@ var TileEngine = LibCanvas.declare( 'LibCanvas.Engines.Tile', 'TileEngine', {
 	},
 
 	/** @private */
+	isValidMethod: function (method) {
+		var type = typeof method;
+
+		return type == 'function'
+			|| type == 'string'
+			|| atom.dom.isElement(method);
+	},
+
+	/** @private */
 	createMatrix : function () {
-		var x, y, cell, point, shape,
+		var x, y,
 			settings   = this.settings,
 			size       = settings.get('size'),
 			value      = settings.get('defaultValue'),
@@ -116,13 +123,20 @@ var TileEngine = LibCanvas.declare( 'LibCanvas.Engines.Tile', 'TileEngine', {
 			cellMargin = settings.get('cellMargin');
 
 		for (y = 0; y < size.height; y++) for (x = 0; x < size.width; x++) {
-			point = new Point(x, y);
-			shape = this.createCellRectangle(point, cellSize, cellMargin);
-			cell  = new TileEngine.Cell( this, point, shape, value );
-
-			this.cells.push( cell );
+			this.createMatrixCell(new Point(x, y), cellSize, cellMargin, value);
 		}
 		return this;
+	},
+
+	createMatrixCell: function (point, size, margin, value) {
+		var shape = this.createCellRectangle(point, size, margin);
+
+		this.cells.push(this.createCell(point, shape, value));
+	},
+
+	/** @private */
+	createCell: function (point, shape, value) {
+		return new TileEngine.Cell( this, point, shape, value );
 	},
 
 	/** @private */
