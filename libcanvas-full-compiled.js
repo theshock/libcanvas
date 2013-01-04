@@ -6878,15 +6878,12 @@ atom.declare( 'LibCanvas.App.Light.Text', App.Element, {
 	},
 
 	renderTo: function (ctx) {
-		var
-			style = this.style,
-			bg    = this.settings.get('background');
-		ctx.save();
+		var bg    = this.settings.get('background');
+
 		if (bg) ctx.fill( this.shape, bg );
 		ctx.text(atom.core.append({
 			to  : this.shape
-		}, style));
-		ctx.restore();
+		}, this.style));
 	}
 });
 
