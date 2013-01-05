@@ -17,6 +17,7 @@ provides:
 - Plugins.Animation.Image
 
 requires:
+- LibCanvas
 - Plugins.Animation.Core
 
 ...
@@ -45,8 +46,10 @@ atom.declare( 'LibCanvas.Plugins.Animation.Image', {
 
 	/** @private */
 	update: function (image) {
-		this.buffer.ctx.clearAll();
-		if (image) this.buffer.ctx.drawImage(image);
+		var ctx = this.buffer.ctx;
+
+		ctx.clearAll();
+		if (image) ctx.drawImage(image);
 	}
 }).own({
 	element: function (animation) {

@@ -7445,8 +7445,11 @@ requires:
 
 /** @class Animation */
 var Animation = LibCanvas.declare( 'LibCanvas.Plugins.Animation', 'Animation', {
+	/** @private */
 	ownStartTime: null,
+	/** @private */
 	timeoutId   : 0,
+	/** @private */
 	synchronizedWith: null,
 
 	initialize: function (settings) {
@@ -7455,26 +7458,6 @@ var Animation = LibCanvas.declare( 'LibCanvas.Plugins.Animation', 'Animation', {
 		this.events = new atom.Events(this);
 		this.settings = new atom.Settings(settings).addEvents(this.events);
 		this.run();
-	},
-
-	get sheet () {
-		return this.settings.get('sheet');
-	},
-
-	set sheet (sheet) {
-		return this.settings.set('sheet', sheet);
-	},
-
-	set startTime (time) {
-		this.ownStartTime = time;
-	},
-
-	get startTime () {
-		if (this.synchronizedWith) {
-			return this.synchronizedWith.startTime;
-		} else {
-			return this.ownStartTime;
-		}
 	},
 
 	stop: function () {
@@ -7494,6 +7477,30 @@ var Animation = LibCanvas.declare( 'LibCanvas.Plugins.Animation', 'Animation', {
 
 	get: function () {
 		return this.sheet.get(this.startTime);
+	},
+
+	/** @private */
+	get sheet () {
+		return this.settings.get('sheet');
+	},
+
+	/** @private */
+	set sheet (sheet) {
+		return this.settings.set('sheet', sheet);
+	},
+
+	/** @private */
+	set startTime (time) {
+		this.ownStartTime = time;
+	},
+
+	/** @private */
+	get startTime () {
+		if (this.synchronizedWith) {
+			return this.synchronizedWith.startTime;
+		} else {
+			return this.ownStartTime;
+		}
 	},
 
 	/** @private */
@@ -7545,6 +7552,7 @@ requires:
 
 /** @class Animation.Frames */
 atom.declare( 'LibCanvas.Plugins.Animation.Frames', {
+	/** @private */
 	sprites: [],
 
 	initialize: function (image, width, height) {
@@ -7558,6 +7566,16 @@ atom.declare( 'LibCanvas.Plugins.Animation.Frames', {
 		);
 
 		this.prepare();
+	},
+
+	get: function (id) {
+		var sprite = this.sprites[id];
+
+		if (!sprite) {
+			throw new Error('No sprite with such id: ' + id);
+		}
+
+		return sprite;
 	},
 
 	get length () {
@@ -7582,6 +7600,7 @@ atom.declare( 'LibCanvas.Plugins.Animation.Frames', {
 		}
 	},
 
+	/** @private */
 	makeSprite: function (from) {
 		var
 			size = this.size,
@@ -7594,16 +7613,6 @@ atom.declare( 'LibCanvas.Plugins.Animation.Frames', {
 		});
 
 		return buffer;
-	},
-
-	get: function (id) {
-		var sprite = this.sprites[id];
-
-		if (!sprite) {
-			throw new Error('No sprite with such id: ' + id);
-		}
-
-		return sprite;
 	}
 });
 
@@ -7626,6 +7635,7 @@ provides:
 - Plugins.Animation.Image
 
 requires:
+- LibCanvas
 - Plugins.Animation.Core
 
 ...
@@ -7633,6 +7643,7 @@ requires:
 
 /** @name Animation.Image */
 atom.declare( 'LibCanvas.Plugins.Animation.Image', {
+	/** @private */
 	initialize: function (animation) {
 		this.bindMethods('update');
 
@@ -7651,9 +7662,12 @@ atom.declare( 'LibCanvas.Plugins.Animation.Image', {
 		animation.events.add( 'update', this.update );
 	},
 
+	/** @private */
 	update: function (image) {
-		this.buffer.ctx.clearAll();
-		if (image) this.buffer.ctx.drawImage(image);
+		var ctx = this.buffer.ctx;
+
+		ctx.clearAll();
+		if (image) ctx.drawImage(image);
 	}
 }).own({
 	element: function (animation) {
@@ -7700,17 +7714,20 @@ atom.declare( 'LibCanvas.Plugins.Animation.Sheet', {
 		}
 	},
 
+	/** @private */
 	get size () {
 		return this.frames.size;
 	},
 
+	/** @private */
 	get: function (startTime) {
-		if (startTime == null) return startTime;
+		if (startTime == null) return null;
 
 		var id = this.getFrameId(this.countFrames(startTime));
 		return id == null ? id : this.frames.get( id );
 	},
 
+	/** @private */
 	getCurrentDelay: function (startTime) {
 		var frames, switchTime;
 
@@ -7723,7 +7740,7 @@ atom.declare( 'LibCanvas.Plugins.Animation.Sheet', {
 		// когда был включён текущий кадр
 		switchTime = frames * this.delay + startTime;
 
-		// до следующего кадра - задержка минус время, которое показывается текущий
+		// до следующего кадра - задержка минус время, которое уже показывается текущий
 		return this.delay - ( Date.now() - switchTime );
 	},
 
@@ -7774,6 +7791,14 @@ atom.declare( 'LibCanvas.Plugins.Curve', {
 	step: 0.0001,
 
 	initialize: function (data) {
+		var Class = this.constructor.classes[data.points.length];
+
+		if (Class) return new Class(data);
+
+		this.setData(data);
+	},
+
+	setData: function (data) {
 		this.from = data.from;
 		this.to   = data.to;
 		this.cp   = data.points;
@@ -7792,6 +7817,12 @@ atom.declare( 'LibCanvas.Plugins.Curve', {
 		return this.getPoint(t).angleTo(this.getPoint(f));
 	}
 
+}).own({
+	classes: {},
+
+	addClass: function (points, Class) {
+		this.classes[points] = Class;
+	}
 });
 
 /*
@@ -7821,6 +7852,10 @@ requires:
 /** @name LibCanvas.Plugins.Curve.Quadratic */
 atom.declare( 'LibCanvas.Plugins.Curve.Quadratic', LibCanvas.Plugins.Curve, {
 
+	initialize: function (data) {
+		this.setData(data);
+	},
+
 	getPoint: function (t) {
 		var
 			from = this.from,
@@ -7835,6 +7870,8 @@ atom.declare( 'LibCanvas.Plugins.Curve.Quadratic', LibCanvas.Plugins.Curve, {
 	}
 
 });
+
+LibCanvas.Plugins.Curve.addClass(1, LibCanvas.Plugins.Curve.Quadratic);
 
 /*
 ---
@@ -7863,6 +7900,10 @@ requires:
 /** @name LibCanvas.Plugins.Curve.Qubic */
 atom.declare( 'LibCanvas.Plugins.Curve.Qubic', LibCanvas.Plugins.Curve, {
 
+	initialize: function (data) {
+		this.setData(data);
+	},
+
 	getPoint: function (t) {
 		var
 			from = this.from,
@@ -7877,5 +7918,7 @@ atom.declare( 'LibCanvas.Plugins.Curve.Qubic', LibCanvas.Plugins.Curve, {
 	}
 
 });
+
+LibCanvas.Plugins.Curve.addClass(2, LibCanvas.Plugins.Curve.Qubic);
 
 }).call(typeof window == 'undefined' ? exports : window, atom, Math);
