@@ -33,8 +33,8 @@ atom.declare( 'LibCanvas.Plugins.Animation.Frames', {
 		this.sprites = [];
 		this.image   = image;
 		this.size    = new Size(
-			width  == null ? image.width  : width ,
-			height == null ? image.height : height
+			Math.round( width  == null ? image.width  : width  ),
+			Math.round( height == null ? image.height : height )
 		);
 
 		this.prepare();
@@ -53,13 +53,27 @@ atom.declare( 'LibCanvas.Plugins.Animation.Frames', {
 
 		for     (y = 0; y <= im.height - h; y += h) {
 			for (x = 0; x <= im.width  - w; x += w) {
-				this.sprites.push( UtilsImage.sprite(im, new Rectangle(x, y, w, h)) );
+				this.sprites.push( this.makeSprite(new Point(x, y)) );
 			}
 		}
 
 		if (!this.sprites.length) {
 			throw new TypeError('Animation is empty');
 		}
+	},
+
+	makeSprite: function (from) {
+		var
+			size = this.size,
+			buffer = LibCanvas.buffer(size, true);
+
+		buffer.ctx.drawImage({
+			image: this.image,
+			draw : buffer.ctx.rectangle,
+			crop : new Rectangle(from, size)
+		});
+
+		return buffer;
 	},
 
 	get: function (id) {
