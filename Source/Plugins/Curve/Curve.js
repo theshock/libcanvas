@@ -27,6 +27,14 @@ atom.declare( 'LibCanvas.Plugins.Curve', {
 	step: 0.0001,
 
 	initialize: function (data) {
+		var Class = this.constructor.classes[data.points.length];
+
+		if (Class) return new Class(data);
+
+		this.setData(data);
+	},
+
+	setData: function (data) {
 		this.from = data.from;
 		this.to   = data.to;
 		this.cp   = data.points;
@@ -45,4 +53,10 @@ atom.declare( 'LibCanvas.Plugins.Curve', {
 		return this.getPoint(t).angleTo(this.getPoint(f));
 	}
 
+}).own({
+	classes: {},
+
+	addClass: function (points, Class) {
+		this.classes[points] = Class;
+	}
 });

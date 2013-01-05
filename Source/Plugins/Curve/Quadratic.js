@@ -25,6 +25,10 @@ requires:
 /** @name LibCanvas.Plugins.Curve.Quadratic */
 atom.declare( 'LibCanvas.Plugins.Curve.Quadratic', LibCanvas.Plugins.Curve, {
 
+	initialize: function (data) {
+		this.setData(data);
+	},
+
 	getPoint: function (t) {
 		var
 			from = this.from,
@@ -39,3 +43,5 @@ atom.declare( 'LibCanvas.Plugins.Curve.Quadratic', LibCanvas.Plugins.Curve, {
 	}
 
 });
+
+LibCanvas.Plugins.Curve.addClass(1, LibCanvas.Plugins.Curve.Quadratic);
