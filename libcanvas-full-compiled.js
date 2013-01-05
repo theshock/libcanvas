@@ -7285,7 +7285,7 @@ provides: Engines.Tile.Element
 declare( 'LibCanvas.Engines.Tile.Element', App.Element, {
 	configure: function () {
 		this.shape = new Rectangle(
-			this.settings.get('from'),
+			this.settings.get('from') || new Point(0, 0),
 			this.engine.countSize()
 		);
 		this.engine.events.add( 'update', this.redraw );
@@ -7308,7 +7308,7 @@ declare( 'LibCanvas.Engines.Tile.Element', App.Element, {
 			invoke: false
 		}), {
 			engine: engine,
-			from: from || new Point(0, 0)
+			from: from
 		});
 	}
 });
@@ -7512,8 +7512,8 @@ var Animation = LibCanvas.declare( 'LibCanvas.Plugins.Animation', 'Animation', {
 		if (delay == null || this.startTime == null) {
 			this.events.fire('stop');
 		} else {
-			this.events.fire('update', [ this.get() ]);
 			this.timeoutId = setTimeout( this.update, delay );
+			this.events.fire('update', [ this.get() ]);
 		}
 		return this;
 	},
@@ -7595,7 +7595,7 @@ atom.declare( 'LibCanvas.Plugins.Animation.Frames', {
 			}
 		}
 
-		if (!this.sprites.length) {
+		if (!this.length) {
 			throw new TypeError('Animation is empty');
 		}
 	},

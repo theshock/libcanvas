@@ -22,7 +22,7 @@ provides: Engines.Tile.Element
 declare( 'LibCanvas.Engines.Tile.Element', App.Element, {
 	configure: function () {
 		this.shape = new Rectangle(
-			this.settings.get('from'),
+			this.settings.get('from') || new Point(0, 0),
 			this.engine.countSize()
 		);
 		this.engine.events.add( 'update', this.redraw );
@@ -45,7 +45,7 @@ declare( 'LibCanvas.Engines.Tile.Element', App.Element, {
 			invoke: false
 		}), {
 			engine: engine,
-			from: from || new Point(0, 0)
+			from: from
 		});
 	}
 });
