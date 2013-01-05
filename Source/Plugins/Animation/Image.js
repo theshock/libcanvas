@@ -24,6 +24,7 @@ requires:
 
 /** @name Animation.Image */
 atom.declare( 'LibCanvas.Plugins.Animation.Image', {
+	/** @private */
 	initialize: function (animation) {
 		this.bindMethods('update');
 
@@ -42,6 +43,7 @@ atom.declare( 'LibCanvas.Plugins.Animation.Image', {
 		animation.events.add( 'update', this.update );
 	},
 
+	/** @private */
 	update: function (image) {
 		this.buffer.ctx.clearAll();
 		if (image) this.buffer.ctx.drawImage(image);

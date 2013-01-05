@@ -25,6 +25,7 @@ requires:
 
 /** @class Animation.Frames */
 atom.declare( 'LibCanvas.Plugins.Animation.Frames', {
+	/** @private */
 	sprites: [],
 
 	initialize: function (image, width, height) {
@@ -38,6 +39,16 @@ atom.declare( 'LibCanvas.Plugins.Animation.Frames', {
 		);
 
 		this.prepare();
+	},
+
+	get: function (id) {
+		var sprite = this.sprites[id];
+
+		if (!sprite) {
+			throw new Error('No sprite with such id: ' + id);
+		}
+
+		return sprite;
 	},
 
 	get length () {
@@ -62,6 +73,7 @@ atom.declare( 'LibCanvas.Plugins.Animation.Frames', {
 		}
 	},
 
+	/** @private */
 	makeSprite: function (from) {
 		var
 			size = this.size,
@@ -74,15 +86,5 @@ atom.declare( 'LibCanvas.Plugins.Animation.Frames', {
 		});
 
 		return buffer;
-	},
-
-	get: function (id) {
-		var sprite = this.sprites[id];
-
-		if (!sprite) {
-			throw new Error('No sprite with such id: ' + id);
-		}
-
-		return sprite;
 	}
 });

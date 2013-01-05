@@ -37,17 +37,20 @@ atom.declare( 'LibCanvas.Plugins.Animation.Sheet', {
 		}
 	},
 
+	/** @private */
 	get size () {
 		return this.frames.size;
 	},
 
+	/** @private */
 	get: function (startTime) {
-		if (startTime == null) return startTime;
+		if (startTime == null) return null;
 
 		var id = this.getFrameId(this.countFrames(startTime));
 		return id == null ? id : this.frames.get( id );
 	},
 
+	/** @private */
 	getCurrentDelay: function (startTime) {
 		var frames, switchTime;
 
@@ -60,7 +63,7 @@ atom.declare( 'LibCanvas.Plugins.Animation.Sheet', {
 		// когда был включён текущий кадр
 		switchTime = frames * this.delay + startTime;
 
-		// до следующего кадра - задержка минус время, которое показывается текущий
+		// до следующего кадра - задержка минус время, которое уже показывается текущий
 		return this.delay - ( Date.now() - switchTime );
 	},
 

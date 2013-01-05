@@ -24,8 +24,11 @@ requires:
 
 /** @class Animation */
 var Animation = LibCanvas.declare( 'LibCanvas.Plugins.Animation', 'Animation', {
+	/** @private */
 	ownStartTime: null,
+	/** @private */
 	timeoutId   : 0,
+	/** @private */
 	synchronizedWith: null,
 
 	initialize: function (settings) {
@@ -34,26 +37,6 @@ var Animation = LibCanvas.declare( 'LibCanvas.Plugins.Animation', 'Animation', {
 		this.events = new atom.Events(this);
 		this.settings = new atom.Settings(settings).addEvents(this.events);
 		this.run();
-	},
-
-	get sheet () {
-		return this.settings.get('sheet');
-	},
-
-	set sheet (sheet) {
-		return this.settings.set('sheet', sheet);
-	},
-
-	set startTime (time) {
-		this.ownStartTime = time;
-	},
-
-	get startTime () {
-		if (this.synchronizedWith) {
-			return this.synchronizedWith.startTime;
-		} else {
-			return this.ownStartTime;
-		}
 	},
 
 	stop: function () {
@@ -73,6 +56,30 @@ var Animation = LibCanvas.declare( 'LibCanvas.Plugins.Animation', 'Animation', {
 
 	get: function () {
 		return this.sheet.get(this.startTime);
+	},
+
+	/** @private */
+	get sheet () {
+		return this.settings.get('sheet');
+	},
+
+	/** @private */
+	set sheet (sheet) {
+		return this.settings.set('sheet', sheet);
+	},
+
+	/** @private */
+	set startTime (time) {
+		this.ownStartTime = time;
+	},
+
+	/** @private */
+	get startTime () {
+		if (this.synchronizedWith) {
+			return this.synchronizedWith.startTime;
+		} else {
+			return this.ownStartTime;
+		}
 	},
 
 	/** @private */
