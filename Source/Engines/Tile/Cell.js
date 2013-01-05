@@ -1,7 +1,7 @@
 /*
 ---
 
-name: "Tile Engine Cell"
+name: "TileEngine.Cell"
 
 license:
 	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"

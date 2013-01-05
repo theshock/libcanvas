@@ -1,7 +1,7 @@
 /*
 ---
 
-name: "Tile Engine App Element Mouse Handler"
+name: "TileEngine.Mouse"
 
 license:
 	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
