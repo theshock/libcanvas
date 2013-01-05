@@ -1,25 +1,25 @@
 /*
- ---
+---
 
- name: "Plugins.Curve"
+name: "Plugins.Curve"
 
- description: "Provides math base for bezier curves"
+description: "Provides math base for bezier curves"
 
- license:
- - "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
- - "[MIT License](http://opensource.org/licenses/mit-license.php)"
+license:
+- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
+- "[MIT License](http://opensource.org/licenses/mit-license.php)"
 
- authors:
- - Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
+authors:
+- Pavel Ponomarenko aka Shock <shocksilien@gmail.com>
 
- provides: Plugins.Curve
+provides: Plugins.Curve.Core
 
- requires:
- - LibCanvas
- - Point
+requires:
+- LibCanvas
+- Point
 
- ...
- */
+...
+*/
 
 /** @name LibCanvas.Plugins.Curve */
 atom.declare( 'LibCanvas.Plugins.Curve', {
