@@ -7,7 +7,7 @@ Plugins.Curve
 
 ```js
 // Quadratic curve, one control point
-var curve = new LibCanvas.Plugins.Curve.Quadratic({
+var curve = new LibCanvas.Plugins.Curve({
 	from: new Point(100, 100),
 	to  : new Point(200, 300),
 	points: [
@@ -16,7 +16,7 @@ var curve = new LibCanvas.Plugins.Curve.Quadratic({
 });
 
 // Qubic curve, two control points
-var curve = new LibCanvas.Plugins.Curve.Quadratic({
+var curve = new LibCanvas.Plugins.Curve({
 	from: new Point(100, 100),
 	to  : new Point(200, 300),
 	points: [
