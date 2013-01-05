@@ -68,7 +68,7 @@ atom.declare( 'LibCanvas.Plugins.Animation.Frames', {
 			}
 		}
 
-		if (!this.sprites.length) {
+		if (!this.length) {
 			throw new TypeError('Animation is empty');
 		}
 	},
