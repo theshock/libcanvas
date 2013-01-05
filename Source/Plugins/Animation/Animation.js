@@ -91,8 +91,8 @@ var Animation = LibCanvas.declare( 'LibCanvas.Plugins.Animation', 'Animation', {
 		if (delay == null || this.startTime == null) {
 			this.events.fire('stop');
 		} else {
-			this.events.fire('update', [ this.get() ]);
 			this.timeoutId = setTimeout( this.update, delay );
+			this.events.fire('update', [ this.get() ]);
 		}
 		return this;
 	},
