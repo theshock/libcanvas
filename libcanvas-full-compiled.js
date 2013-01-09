@@ -819,11 +819,12 @@ declare( 'LibCanvas.App.Layer', {
 			intersection: 'auto' // auto|manual|all
 		}).set(settings);
 
-		this.shouldRedrawAll = this.settings.get('intersection') === 'all';
+		this.intersection = this.settings.get('intersection');
+		this.redrawAll    = this.intersection === 'all' || this.intersection === 'full';
 
 		this.app      = app;
 		this.elements = [];
-		this.redraw   = this.shouldRedrawAll ? this.elements : [];
+		this.redraw   = this.redrawAll ? this.elements : [];
 		this.clear    = [];
 		this.createDom();
 	},
@@ -861,9 +862,6 @@ declare( 'LibCanvas.App.Layer', {
 	},
 
 	/** @private */
-	shouldRedrawAll: false,
-
-	/** @private */
 	tick: function (time) {
 		if (this.stopped) return this;
 
@@ -884,24 +882,27 @@ declare( 'LibCanvas.App.Layer', {
 	/** @private */
 	draw: function () {
 		var
-			ctx = this.dom.canvas.ctx,
-			resources = this.app.resources;
+			intersection = this.intersection,
+			ctx          = this.dom.canvas.ctx,
+			resources    = this.app.resources;
 
-		if (this.settings.get('intersection') === 'auto') {
-			this.addIntersections();
+		if (intersection === 'full') {
+			ctx.clearAll();
+		} else {
+			if (intersection === 'auto') {
+				this.addIntersections();
+			} else if (intersection === 'all') {
+				atom.array.invoke(this.clear, 'clearPrevious', ctx, resources);
+			}
+
+			atom.array.invoke(this.redraw, 'clearPrevious', ctx, resources);
 		}
-
-		if (this.shouldRedrawAll) {
-			atom.array.invoke(this.clear, 'clearPrevious', ctx, resources);
-		}
-
-		atom.array.invoke(this.redraw, 'clearPrevious', ctx, resources);
 
 		this.drawElements(this.redraw, ctx, resources);
 
-		if (this.shouldRedrawAll) {
+		if (intersection === 'all') {
 			this.clear.length = 0;
-		} else {
+		} else if (intersection !== 'full') {
 			this.redraw.length = 0;
 		}
 	},
@@ -922,7 +923,9 @@ declare( 'LibCanvas.App.Layer', {
 			elem.redrawRequested = false;
 			if (elem.isVisible()) {
 				elem.renderToWrapper( ctx, resources );
-				elem.saveCurrentBoundingShape();
+				if (this.intersection !== 'full') {
+					elem.saveCurrentBoundingShape();
+				}
 			}
 		}
 	},
@@ -950,6 +953,10 @@ declare( 'LibCanvas.App.Layer', {
 	/** @private */
 	addElement: function (element) {
 		if (element.layer != this) {
+			if (element.layer) {
+				element.layer.rmElement( element );
+			}
+
 			element.layer = this;
 			this.elements.push( element );
 			this.redrawElement( element );
@@ -960,13 +967,13 @@ declare( 'LibCanvas.App.Layer', {
 	/** @private */
 	rmElement: function (element) {
 		if (element.layer == this) {
-			if (this.shouldRedrawAll) {
+			if (this.intersection === 'all') {
 				this.needUpdate = true;
 				this.clear.push(element);
 			} else {
 				this.redrawElement( element );
 			}
-			atom.array.erase( this.elements, element );
+			atom.core.eraseOne( this.elements, element );
 			element.layer = null;
 		}
 		return this;
@@ -977,7 +984,7 @@ declare( 'LibCanvas.App.Layer', {
 		if (element.layer == this && !element.redrawRequested) {
 			this.needUpdate = true;
 			element.redrawRequested = true;
-			if (!this.shouldRedrawAll) {
+			if (!this.redrawAll) {
 				this.redraw.push( element );
 			}
 		}
