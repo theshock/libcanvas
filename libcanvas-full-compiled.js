@@ -1951,7 +1951,19 @@ var Circle = LibCanvas.declare( 'LibCanvas.Shapes.Circle', 'Circle', Shape, {
 	},
 	intersect : function (obj) {
 		if (obj instanceof this.constructor) {
-			return this.center.distanceTo(obj.center) < this.radius + obj.radius;
+			var
+				tC = this.center,
+				oC = obj .center,
+				minDist = this.radius + obj.radius,
+				deltaX  = Math.abs(tC.x - oC.x),
+				deltaY;
+
+			if (deltaX >= minDist) return false;
+
+			deltaY = Math.abs(tC.y - oC.y);
+			if (deltaY >= minDist) return false;
+
+			return deltaX*deltaY < minDist*minDist;
 		} else {
 			return this.getBoundingRectangle().intersect( obj );
 		}
