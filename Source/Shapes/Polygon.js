@@ -25,31 +25,40 @@ provides: Shapes.Polygon
 
 /** @class Polygon */
 var Polygon = LibCanvas.declare( 'LibCanvas.Shapes.Polygon', 'Polygon', Shape, {
-	initialize: function () {
+	initialize: function method () {
 		this.points = [];
 		this._lines = [];
-		Shape.prototype.initialize.apply(this, arguments);
+		method.previous.apply(this, arguments);
 	},
 	set : function (poly) {
 		this.points.length = 0;
+
+		var source = Array.isArray(poly) ? poly : atom.core.toArray(arguments);
+
 		atom.array.append( this.points,
-			atom.array.clean(
-				atom.array
-					.pickFrom(arguments)
-					.map(function (elem) { if (elem) return Point(elem) })
-			)
+			source
+				.filter(Boolean)
+				.map(Point)
 		);
+
 		this._lines.length = 0;
+
 		return this;
 	},
 	get length () {
 		return this.points.length;
 	},
 	get lines () {
-		var lines = this._lines, p = this.points, l = p.length, i = 0;
+		var
+			lines = this._lines,
+			p = this.points,
+			l = p.length,
+			i = 0;
+
 		if (lines.length != l) for (;i < l; i++) {
 			lines.push( new Line( p[i], i+1 == l ? p[0] : p[i+1] ) );
 		}
+
 		return this._lines;
 	},
 	get center () {
@@ -58,8 +67,79 @@ var Polygon = LibCanvas.declare( 'LibCanvas.Shapes.Polygon', 'Polygon', Shape, {
 	get: function (index) {
 		return this.points[index];
 	},
+	getCoords : function () {
+		return this.points[0];
+	},
+	processPath : function (ctx, noWrap) {
+		var p = this.points, i = 0, l = p.length;
+
+		if (!noWrap) ctx.beginPath();
+		for (; i <= l; i++) {
+			if (i == 0) {
+				ctx.moveTo(p[i]);
+			} else {
+				ctx.lineTo(p[i == l ? 0 : i]);
+			}
+		}
+		if (!noWrap) ctx.closePath();
+
+		return ctx;
+	},
+
+	grow: function () { return this; },
+
+	getBoundingRectangle: function () {
+		var p = this.points, l = p.length, from, to;
+
+		if (l == 0) {
+			throw new Error('Polygon is empty');
+		}
+
+		while (l--) {
+
+			if (from) {
+				from.x = Math.min( from.x, p[l].x );
+				from.y = Math.min( from.y, p[l].y );
+				  to.x = Math.max(   to.x, p[l].x );
+				  to.y = Math.max(   to.y, p[l].y );
+			} else {
+				from = p[l].clone();
+				to   = p[l].clone();
+			}
+
+		}
+
+		return new Rectangle( from, to );
+	},
+
+	// points invoking
+	move : function (distance, reverse) {
+		return this.invoke('move', distance, reverse)
+	},
+	rotate : function (angle, pivot) {
+		return this.invoke('rotate', angle, pivot)
+	},
+	scale : function (power, pivot) {
+		return this.invoke('scale', power, pivot)
+	},
+	invoke: function (method, args) {
+		args = Array.prototype.slice.call(arguments, 1);
+
+		this.points.map(function (point) {
+			point[method].apply(point, args);
+		});
+		return this;
+	},
+	forEach : function (fn) {
+		this.points.forEach(fn);
+		return this;
+	},
+	each: function (fn, context) {
+		return this.forEach(context ? fn.bind(context) : fn);
+	},
+
 	hasPoint : function (point) {
-		point = Point(atom.array.pickFrom(arguments));
+		point = Point.from(point);
 
 		var result = false, points = this.points;
 		for (var i = 0, l = this.length; i < l; i++) {
@@ -74,61 +154,17 @@ var Polygon = LibCanvas.declare( 'LibCanvas.Shapes.Polygon', 'Polygon', Shape, {
 		}
 		return result;
 	},
-	getCoords : function () {
-		return this.points[0];
-	},
-	processPath : function (ctx, noWrap) {
-		if (!noWrap) ctx.beginPath();
-		for (var i = 0, l = this.points.length; i < l; i++) {
-			var point = this.points[i];
-			ctx[i > 0 ? 'lineTo' : 'moveTo'](point.x, point.y);
-		}
-		if (!noWrap) ctx.closePath();
-		return ctx;
-	},
-	move : function (distance, reverse) {
-		atom.array.invoke( this.points, 'move', distance, reverse);
-		return this;
-	},
-	grow: function () {
-		return this;
-	},
-	getBoundingRectangle: function () {
-		var p = this.points, from, to;
-		if (p.length == 0) throw new Error('Polygon is empty');
-
-		from = p[0].clone(), to = p[0].clone();
-		for (var l = p.length; l--;) {
-			from.x = Math.min( from.x, p[l].x );
-			from.y = Math.min( from.y, p[l].y );
-			  to.x = Math.max(   to.x, p[l].x );
-			  to.y = Math.max(   to.y, p[l].y );
-		}
-		return new Rectangle( from, to );
-	},
-	rotate : function (angle, pivot) {
-		atom.array.invoke( this.points, 'rotate', angle, pivot );
-		return this;
-	},
-	scale : function (power, pivot) {
-		atom.array.invoke( this.points, 'scale', power, pivot );
-		return this;
-	},
-	// #todo: cache
 	intersect : function (poly) {
 		if (poly.constructor != this.constructor) {
 			return this.getBoundingRectangle().intersect( poly );
 		}
+
 		var tL = this.lines, pL = poly.lines, i = tL.length, k = pL.length;
 		while (i-- > 0) for (k = pL.length; k-- > 0;) {
 			if (tL[i].intersect(pL[k])) return true;
 		}
 		return false;
 	},
-	each : function (fn, context) {
-		return this.points.forEach(context ? fn.bind(context) : fn);
-	},
-
 	getPoints : function () {
 		return atom.array.toHash(this.points);
 	},
