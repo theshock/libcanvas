@@ -14,11 +14,15 @@ LibCanvas.Shapes.RoundedRectangle
 
 ## Метод setRadius
 
-	LibCanvas.Shapes.RoundedRectangle setRadius(int radius);
+```js
+LibCanvas.Shapes.RoundedRectangle setRadius(int radius);
+```
 
 Устанавливает радиус фигуры. Всего-лишь удобный алиас для `shape.radius = radius`.
 
-	var roundedRectangle = new RoundedRectangle( 20, 20, 50, 60 ).setRadius( 5 );
+```js
+var roundedRectangle = new RoundedRectangle( 20, 20, 50, 60 ).setRadius( 5 );
+```
 
 #### Возвращает `this`
 
