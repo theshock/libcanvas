@@ -25,6 +25,13 @@ var rect = new LibCanvas.Shapes.Rectangle({
 	to   : toPoint,
 	size : size
 });
+
+// Альтернативный способ - через центр и размер:
+var rect = new LibCanvas.Shapes.Rectangle({
+	center: new Point(80, 95),
+	size  : new Size(20, 10)
+}); // == new Rectangle(70, 90, 20, 10);
+
 ```
 
 Вы можете экспериментировать с видом аргументов, LibCanvas очень гибкий и будет подстраиватся под то, что вы пишете. Но будьте осторожны с этим:
