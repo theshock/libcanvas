@@ -204,6 +204,8 @@ var Point = LibCanvas.declare( 'LibCanvas.Point', 'Point', Geometry, {
 
 /** @private */
 Point.from = function (object) {
+	if (object == null) return null;
+
 	return object instanceof Point ? object : new Point(object);
 };
 

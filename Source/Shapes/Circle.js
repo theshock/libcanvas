@@ -130,5 +130,7 @@ var Circle = LibCanvas.declare( 'LibCanvas.Shapes.Circle', 'Circle', Shape, {
 
 /** @private */
 Circle.from = function (object) {
+	if (object == null) return null;
+
 	return object instanceof Circle ? object : new Circle(object);
 };

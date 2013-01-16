@@ -1501,6 +1501,8 @@ var Point = LibCanvas.declare( 'LibCanvas.Point', 'Point', Geometry, {
 
 /** @private */
 Point.from = function (object) {
+	if (object == null) return null;
+
 	return object instanceof Point ? object : new Point(object);
 };
 
@@ -1544,14 +1546,14 @@ provides: Size
 
 /** @class Size */
 var Size = LibCanvas.declare( 'LibCanvas.Size', 'Size', Point, {
-	set: function (size) {
+	set: function method (size) {
 		if (typeof size == 'object' && size.width != null) {
 			this.x = Number(size.width);
 			this.y = Number(size.height);
 
 			return this;
 		}
-		return Point.prototype.set.apply( this, arguments );
+		return method.previous.apply( this, arguments );
 	},
 
 	get width  ( ) { return this.x },
@@ -1564,6 +1566,13 @@ var Size = LibCanvas.declare( 'LibCanvas.Size', 'Size', Point, {
 		return { width: this.x, height: this.y };
 	}
 });
+
+/** @private */
+Size.from = function (object) {
+	if (object == null) return null;
+
+	return object instanceof Size ? object : new Size(object);
+};
 
 /*
 ---
@@ -1692,9 +1701,15 @@ provides: Shapes.Rectangle
 */
 
 /** @class Rectangle */
+var MinusOnePoint = new Point(-1, -1);
+
 var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Shape, {
 	set : function () {
-		var a = atom.array.pickFrom(arguments);
+		var
+			center,
+			size,
+			a = atom.array.pickFrom(arguments),
+			first = a[0];
 
 		if (a.length == 4) {
 			this.from = new Point(a[0], a[1]);
@@ -1703,30 +1718,30 @@ var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Sh
 			if ('width' in a[1] && 'height' in a[1]) {
 				this.set({ from: a[0], size: a[1] });
 			} else {
-				this.from = Point(a[0]);
-				this.to   = Point(a[1]);
+				this.from = Point.from(a[0]);
+				this.to   = Point.from(a[1]);
 			}
-		} else {
-			a = a[0];
-			if (a.from) {
-				this.from = Point(a.from);
-			} else if ('x' in a && 'y' in a) {
-				this.from = new Point(a.x, a.y);
-			}
-			if (a.to) this.to = Point(a.to);
+		} else if (first.center && first.size) {
+			center = Point.from(first.center);
+			size   = Size.from(first.size);
 
-			if (!a.from || !a.to) {
-				var as = a.size,
-					sizeX = atom.array.pick(as ? [as.w, as[0], as.width ] : [ a.w, a.width  ]),
-					sizeY = atom.array.pick(as ? [as.h, as[1], as.height] : [ a.h, a.height ]);
+			this.from = new Point(center.x - size.x/2, center.y - size.y/2);
+			this.to   = new Point(center.x + size.x/2, center.y + size.y/2);
+		} else {
+			if (first.from) this.from = Point.from(first.from);
+			if (first.to  ) this.to   = Point.from(first.to);
+
+			if (!this.from || !this.to && first.size) {
+				size = Size.from(first.size);
+
 				if (this.from) {
-					this.to   = new Point(this.from.x + sizeX, this.from.y + sizeY);
+					this.to   = new Point(this.from.x + size.x, this.from.y + size.y);
 				} else {
-					this.from = new Point(this.to.x   - sizeX, this.to.y   - sizeY);
+					this.from = new Point(this.to.x   - size.x, this.to.y   - size.y);
 				}
 			}
-
 		}
+
 		return this;
 	},
 
@@ -1746,13 +1761,11 @@ var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Sh
 		return new Size( this.width, this.height );
 	},
 	set size (size) {
-		if (size.width != this.width || size.height != this.height) {
-			this.to.set(this.from.x + size.width, this.from.y + size.height);
-		}
+		this.to.set(this.from.x + size.width, this.from.y + size.height);
 	},
 	/** @returns {boolean} */
 	hasPoint : function (point, padding) {
-		point   = Point(arguments);
+		point   = Point.from(arguments);
 		padding = padding || 0;
 		return point.x != null && point.y != null
 			&& atom.number.between(point.x, Math.min(this.from.x, this.to.x) + padding, Math.max(this.from.x, this.to.x) - padding, 1)
@@ -1831,14 +1844,6 @@ var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Sh
 		);
 	},
 	/** @returns {LibCanvas.Shapes.Rectangle} */
-	translate : function (point, fromRect) {
-		var diff = fromRect.from.diff(point);
-		return new Point({
-			x : (diff.x / fromRect.width ) * this.width,
-			y : (diff.y / fromRect.height) * this.height
-		});
-	},
-	/** @returns {LibCanvas.Shapes.Rectangle} */
 	fillToPixel: function () {
 		var from = this.from, to = this.to,
 			point = function (side, round) {
@@ -1856,12 +1861,12 @@ var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Sh
 	/** @returns {LibCanvas.Shapes.Rectangle} */
 	snapToPixel: function () {
 		this.from.snapToPixel();
-		this.to.snapToPixel().move(new Point(-1, -1));
+		this.to.snapToPixel().move(MinusOnePoint);
 		return this;
 	},
 	/** @returns {string} */
-	dump: function (name) {
-		return Shape.prototype.dump.call(this, name || 'Rectangle');
+	dump: function method (name) {
+		return method.previous.dump.call(this, name || 'Rectangle');
 	},
 	/** @returns {LibCanvas.Shapes.Polygon} */
 	toPolygon: function () {
@@ -1873,6 +1878,8 @@ var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Sh
 
 /** @private */
 Rectangle.from = function (object) {
+	if (object == null) return null;
+
 	return object instanceof Rectangle ? object : new Rectangle(object);
 };
 
@@ -2008,6 +2015,8 @@ var Circle = LibCanvas.declare( 'LibCanvas.Shapes.Circle', 'Circle', Shape, {
 
 /** @private */
 Circle.from = function (object) {
+	if (object == null) return null;
+
 	return object instanceof Circle ? object : new Circle(object);
 };
 
