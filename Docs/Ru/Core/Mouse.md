@@ -13,19 +13,27 @@ LibCanvas.Mouse
 
 Может использовать, чтобы заглушить событие мыши по-умолчанию:
 
-	window.onclick = Mouse.prevent;
+```js
+window.onclick = Mouse.prevent;
+```
 
 #### метод getOffset
 
-	LibCanvas.Point getOffset( MouseEvent e, DOMElement element )
+```js
+LibCanvas.Point getOffset( MouseEvent e, DOMElement element )
+```
 
 Определяет положение мыши относительно элемента
 
-	var offset = Mouse.getOffset( event, canvas );
+```js
+var offset = Mouse.getOffset( event, canvas );
+```
 
 #### метод addWheelDelta
 
-	MouseEvent addWheelDelta( MouseEvent e )
+```js
+MouseEvent addWheelDelta( MouseEvent e )
+```
 
 Добавляет кроссбраузерное свойство `delta` в объект события, которое обозначает направление движения колёсика мыши
 	
@@ -33,8 +41,9 @@ LibCanvas.Mouse
 
 Первым аргументом принимает элемент, события которого надо слушать. 
 
-	var mouse = new LibCanvas.Mouse( myCanvas );
-	
+```js
+var mouse = new LibCanvas.Mouse( myCanvas );
+```
 
 ## Свойства
 
@@ -60,12 +69,14 @@ LibCanvas.Mouse
 
 #### Пример
 
-	mouse.events.add( 'click', function (event, mouse) {
-		// нарисует круг радиусом 10 пикселей в точке клика:
-		canvas.ctx.fill(
-			new Circle( mouse.point, 10 )
-		);
-	});
+```js
+mouse.events.add( 'click', function (event, mouse) {
+	// нарисует круг радиусом 10 пикселей в точке клика:
+	canvas.ctx.fill(
+		new Circle( mouse.point, 10 )
+	);
+});
+```
 
 #### Особенности
 
