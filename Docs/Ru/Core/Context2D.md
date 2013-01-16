@@ -3,9 +3,11 @@ LibCanvas.Context2D
 
 `LibCanvas.Context2D` - значительно расширенный стандартный 2d-контекст, который можно получить так:
 
-	var context = canvas.getContext('2d-libcanvas');
-	// alternate syntax:
-	var context = new LibCanvas.Context2D(canvas);
+```js
+var context = canvas.getContext('2d-libcanvas');
+// alternate syntax:
+var context = new LibCanvas.Context2D(canvas);
+```
 
 Основная его идея - все методы, если не требуется иного возвращают ссылку на контекст для использования в цепочках вызовов, возможность использования именованных аргументов и использование объектов LibCanvas.
 
@@ -32,200 +34,268 @@ LibCanvas.Context2D
 
 #### Пример
 
-	if (context.rectangle.hasPoint(somePoint)) {
-		// Точка находится в пределах холста
-		doSmth();
-	}
+```js
+if (context.rectangle.hasPoint(somePoint)) {
+	// Точка находится в пределах холста
+	doSmth();
+}
 
-	// Изменяем прямоугольник
-	var clone = context.rectangle.clone();
+// Изменяем прямоугольник
+var clone = context.rectangle.clone();
 
-	clone.height /= 2;
-	clone.width  /= 2;
+clone.height /= 2;
+clone.width  /= 2;
 
-	context.fillAll( clone, 'red' );
+context.fillAll( clone, 'red' );
+```
 
 ### shadow (get/set)
 Позволяет получить/установить свойства shadowOffsetX, shadowOffsetY, shadowBlur и shadowColor лаконичным способом
 
 #### Пример
-	context.shadow = '1 2 3 black';
 
-	// Аналог:
-	context.shadowOffsetX = 1;
-	context.shadowOffsetY = 2;
-	context.shadowBlur    = 3;
-	context.shadowColor   = 'black;
+```js
+context.shadow = '1 2 3 black';
 
+// Аналог:
+context.shadowOffsetX = 1;
+context.shadowOffsetY = 2;
+context.shadowBlur    = 3;
+context.shadowColor   = 'black;
+```
 
 ## Метод getClone
 
-	HTMLCanvasElement getClone(int width, int height)
+```js
+HTMLCanvasElement getClone(int width, int height)
+```
 
 Возвращает холст, равный по изображению и с измененным размером, если указаны width и height
 Может применятся для создания копии текущего слоя, маленькой иконки, итд.
 
 #### Пример
-	context.drawImage(context.getClone(64, 48));
+
+```js
+context.drawImage(context.getClone(64, 48));
+```
 
 ## Метод set
 
-	[this] set(object properties)
-	[this] set(string propertyName, string propertyValue)
+```js
+[this] set(object properties)
+[this] set(string propertyName, string propertyValue)
+```
 
 Указывает свойства холста
 
 #### Пример
 
-	context
-		.set({
-			fillStyle  : black,
-			strokeStyle: blue
-		})
-		.set('globalOpacity', 0.5);
+```js
+context
+	.set({
+		fillStyle  : 'black',
+		strokeStyle: 'blue'
+	})
+	.set('globalOpacity', 0.5);
+```
 
 ## Метод get
 
-	string get(string propertyName)
+```js
+string get(string propertyName)
+```
 
 Получить значения свойства
 
 #### Пример
-	context.get('fillStyle');
+
+```js
+context.get('fillStyle');
+```
 
 ## Метод fillAll
 
-	[this] fillAll()
-	[this] fillAll(string fillStyle)
+```js
+[this] fillAll()
+[this] fillAll(string fillStyle)
+```
 
 Заливает весь холст цветом fillStyle или цветом по-умолчанию, если аргумент не передан
 
 #### Пример
 
-	context.fillAll('red');
+```js
+context.fillAll('red');
+```
 
 ## Метод strokeAll
 
-	[this] strokeAll()
-	[this] strokeAll(string strokeStyle)
+```js
+[this] strokeAll()
+[this] strokeAll(string strokeStyle)
+```
 
 Обводит весь холст цветом strokeStyle или цветом по-умолчанию, если аргумент не передан
 
 #### Пример
 
-	context.strokeAll('rgb(255, 245, 200)');
+```js
+context.strokeAll('rgb(255, 245, 200)');
+```
 
 ## Метод clearAll
 
-	[this] clearAll()
+```js
+[this] clearAll()
+```
 
 Очищает холст
 
 #### Пример
 
-	context.clearAll();
+```js
+context.clearAll();
+```
 
 ## Метод fill
 
-	[this] fill()
-	[this] fill(string fillStyle)
-	[this] fill(Shape shape)
-	[this] fill(Shape shape, string fillStyle)
+```js
+[this] fill()
+[this] fill(string fillStyle)
+[this] fill(Shape shape)
+[this] fill(Shape shape, string fillStyle)
+```
 
 Заливает фигуру или текущий путь цветом fillStyle или цветом по-умолчанию, если аргумент не передан
 
 #### Пример
 
-	context.fill(new Circle(50, 50, 20), 'red');
+```js
+context.fill(new Circle(50, 50, 20), 'red');
+```
 
 ## Метод stroke
 
-	[this] stroke()
-	[this] stroke(string fillStyle)
-	[this] stroke(Shape shape)
-	[this] stroke(Shape shape, string fillStyle)
+```js
+[this] stroke()
+[this] stroke(string fillStyle)
+[this] stroke(Shape shape)
+[this] stroke(Shape shape, string fillStyle)
+```
 
 Обводит фигуру или текущий путь цветом strokeStyle или цветом по-умолчанию, если аргумент не передан
 
 #### Пример
 
-	context.stroke(new Circle(50, 50, 20), 'red');
+```js
+context.stroke(new Circle(50, 50, 20), 'red');
+```
 
 ## Метод clear
 
-	[this] clear(Shape shape)
+```js
+[this] clear(Shape shape)
+```
 
 Очищает фигуру, переданную первым аргументом. (сглаживание - выключено!)
 
 ## Метод fillRect
-	[this] fillRect(LibCanvas.Shapes.Rectangle rectangle)
-	[this] fillRect(int fromX, int fromY, int width, int height)
+
+```js
+[this] fillRect(LibCanvas.Shapes.Rectangle rectangle)
+[this] fillRect(int fromX, int fromY, int width, int height)
+```
 
 ## Метод strokeRect
-	[this] strokeRect(LibCanvas.Shapes.Rectangle rectangle)
-	[this] strokeRect(int fromX, int fromY, int width, int height)
+
+```js
+[this] strokeRect(LibCanvas.Shapes.Rectangle rectangle)
+[this] strokeRect(int fromX, int fromY, int width, int height)
+```
 
 ## Метод clearRect
-	[this] clearRect(LibCanvas.Shapes.Rectangle rectangle)
-	[this] clearRect(int fromX, int fromY, int width, int height)
+
+```js
+[this] clearRect(LibCanvas.Shapes.Rectangle rectangle)
+[this] clearRect(int fromX, int fromY, int width, int height)
+```
 
 #### Пример
 
-	context.clear(new Circle(50, 50, 20));
+```js
+context.clear(new Circle(50, 50, 20));
+```
 
 ## Методы save/restore
 
-	[this] save()
+```js
+[this] save()
+```
 
 Сохраняет настройки холста в стек
 
-	[this] restore()
+```js
+[this] restore()
+```
 
 Восстанавливает последние сохранённые настройки холста
 
 #### Пример
-	context.set({ fillStyle: 'blue' });
-	context.save();
-		context.set({ fillStyle: 'red' });
-		context.fillAll(); // заливаем всё красным цветом
-	context.restore();
-	context.fillAll(); // заливаем всё синим цветом
+
+```js
+context.set({ fillStyle: 'blue' });
+context.save();
+	context.set({ fillStyle: 'red' });
+	context.fillAll(); // заливаем всё красным цветом
+context.restore();
+context.fillAll(); // заливаем всё синим цветом
+```
 
 # Создание пути
 
 ## Метод beginPath
 
-	[this] beginPath()
-	[this] beginPath(point)
-	[this] beginPath(int x, int y)
+```js
+[this] beginPath()
+[this] beginPath(point)
+[this] beginPath(int x, int y)
+```
 
 Открывает путь. Если есть аргументы, то вызывает метод `moveTo`
 
 ## Метод closePath
 
-	[this] closePath()
-	[this] closePath(LibCanvas.Point point)
-	[this] closePath(int x, int y)
+```js
+[this] closePath()
+[this] closePath(LibCanvas.Point point)
+[this] closePath(int x, int y)
+```
 
 Закрывает путь. Если есть аргументы, то вызывает метод `lineTo`
 
 ## Метод moveTo
 
-	[this] moveTo(LibCanvas.Point point);
-	[this] moveTo(int x, int y);
+```js
+[this] moveTo(LibCanvas.Point point);
+[this] moveTo(int x, int y);
+```
 
 Перемещает указатель пути в точку point
 
 ## Метод lineTo
 
-	[this] lineTo(LibCanvas.Point point);
-	[this] lineTo(int x, int y);
+```js
+[this] lineTo(LibCanvas.Point point);
+[this] lineTo(int x, int y);
+```
 
 Прокладывает линию в точку point
 
 ## Метод arc
 
-	[this] lineTo(object params);
+```js
+[this] lineTo(object params);
+```
 
 Проложить дугу
 
@@ -245,14 +315,18 @@ LibCanvas.Context2D
 
 #### Пример
 
-	context.arc({
-		circle: new LibCanvas.Shapes.Circle(50, 50, 25),
-		angle : [(30).degree(), (60).degree()]
-	});
+```js
+context.arc({
+	circle: new LibCanvas.Shapes.Circle(50, 50, 25),
+	angle : [(30).degree(), (60).degree()]
+});
+```
 
 ## Метод curveTo
 
-	[this] curveTo(object params);
+```js
+[this] curveTo(object params);
+```
 
 Отрисовывает кривую Безье по контрольным точкам.
 
@@ -264,55 +338,74 @@ LibCanvas.Context2D
 
 #### Пример
 
-	context.curveTo({
-		to: [100, 100],
-		points : [
-			[80, 30],
-			[20, 90]
-		]
-	});
-
+```js
+context.curveTo({
+	to: [100, 100],
+	points : [
+		[80, 30],
+		[20, 90]
+	]
+});
+```
 	// равносильно
 
-	context.bezierCurveTo(80, 30, 20, 90, 100, 100);
+```js
+context.bezierCurveTo(80, 30, 20, 90, 100, 100);
+```
 
 ## Метод isPointInPath
 
-	boolean isPointInPath(LibCanvas.Point point);
-	boolean isPointInPath(int x, int y);
+```js
+boolean isPointInPath(LibCanvas.Point point);
+boolean isPointInPath(int x, int y);
+```
 
 Проверяет, находится ли данная точка в пределах отрисованного пути
 
 #### Пример
 
-	context.isPointInPath([15, 20]);
+```js
+context.isPointInPath([15, 20]);
+```
 
 ## Метод clip
 
-	[this] clip();
-	[this] clip(LibCanvas.Shape shape);
+```js
+[this] clip();
+[this] clip(LibCanvas.Shape shape);
+```
 
 Ограничивает отрисовку в холст определённым участком.
 Если аргумент `shape` не передан, то будет использоваться текущий путь
 
 #### Пример
-	// всё, что за пределами круга - не отрисуется
-	context.clip(new Circle(100, 100, 50));
-	context.fillRect(100, 100, 100, 100);
+
+```js
+// всё, что за пределами круга - не отрисуется
+context.clip(new Circle(100, 100, 50));
+context.fillRect(100, 100, 100, 100);
+```
 
 ## Метод rotate
 
-	[this] rotate(number angle);
-	[this] rotate(number angle, LibCanvas.Point pivot);
+```js
+[this] rotate(number angle);
+[this] rotate(number angle, LibCanvas.Point pivot);
+```
 
 ## Метод translate
 
-	[this] translate (LibCanvas.Point point)
-	[this] translate (LibCanvas.Point point, boolean reverse)
-	[this] translate (int x, int y)
+```js
+[this] translate (LibCanvas.Point point)
+[this] translate (LibCanvas.Point point, boolean reverse)
+[this] translate (int x, int y)
+```
 
 ## Метод text
-	[this] text(object params)
+
+```js
+[this] text(object params)
+```
 
 #### Опции
 
@@ -341,9 +434,11 @@ LibCanvas.Context2D
 `padding`    (*int|int[]*, по-умолчанию = 0) [topBottom, leftRight]
 
 ## Метод drawImage
-	[this] drawImage(element image)
-	[this] drawImage(object params)
 
+```js
+[this] drawImage(element image)
+[this] drawImage(object params)
+```
 
 #### Опции
 
@@ -366,70 +461,85 @@ LibCanvas.Context2D
 Принцип простой - если есть `draw` и `crop`, то сначала применяется `crop` к картинке, потом она размещается согласно `from|center|draw`, потом разворачивается вокруг центра на угол angle по часовой стрелке и так отрисовывается.
 
 #### Пример
-	context.drawImage({
-		image : this.image,
-		center: this.position,
-		angle : this.angle
-	});
 
-	context.drawImage({
-		image: canvas,
-		crop : [100, 100, 50, 50],
-		draw : [250, 250, 50, 50]
-	});
+```js
+context.drawImage({
+	image : this.image,
+	center: this.position,
+	angle : this.angle
+});
 
-	context.drawImage({
-		image: this.image,
-		from : this.from,
-		scale: new Point(-1, 1) // flipX
-	});
+context.drawImage({
+	image: canvas,
+	crop : [100, 100, 50, 50],
+	draw : [250, 250, 50, 50]
+});
+
+context.drawImage({
+	image: this.image,
+	from : this.from,
+	scale: new Point(-1, 1) // flipX
+});
+```
 
 ## Метод projectiveImage
 ###### testing
 
-	[this] projectiveImage(object params)
+```js
+[this] projectiveImage(object params)
+```
 
 ## Метод getPixel
-	[this] getPixel(LibCanvas.Point point)
+
+```js
+[this] getPixel(LibCanvas.Point point)
+```
 
 Возвращает значение цвета пикселя в точке point в формате {r: [0, 255], g: [0, 255], b: [0, 255], a: [0, 1]}
 Аргумент можно передать конструктору Color.
 
 #### Пример
 
-	mouse.events.add( 'click', function () {
-		var pixel = ctx.getPixel( mouse.point );
-		trace( new atom.Color( pixel ) );
-	});
+```js
+mouse.events.add( 'click', function () {
+	var pixel = ctx.getPixel( mouse.point );
+	trace( new atom.Color( pixel ) );
+});
 
-	mouse.events.add( 'click', function () {
-		var pixel = ctx.getPixel( mouse.point );
+mouse.events.add( 'click', function () {
+	var pixel = ctx.getPixel( mouse.point );
 
-		pixel.a > 0.1 ?
-			alert('Пиксель видим')  :
-			alert('Пиксель невидим');
-	});
+	pixel.a > 0.1 ?
+		alert('Пиксель видим')  :
+		alert('Пиксель невидим');
+});
+```
 
 ## Метод createGradient
-	[RadialGradient] createGradient(Circle from, Circle to, Object colors)
-	[LinearGradient] createGradient(Point  from, Point  to, Object colors)
-	[LinearGradient] createGradient(Rectangle rect, Object colors)
+
+```js
+[RadialGradient] createGradient(Circle from, Circle to, Object colors)
+[LinearGradient] createGradient(Point  from, Point  to, Object colors)
+[LinearGradient] createGradient(Rectangle rect, Object colors)
+```
 
 Создаёт и возвращает радиальный или линеарный градиент с стоп-цветами, указанными в colors
 
-	context.createGradient( context.rectangle, {
+```js
+context.createGradient( context.rectangle, {
+	'0.0': 'red',
+	'0.5': 'blue',
+	'1.0': 'green'
+});
+
+context.createGradient(
+	new Circle(50, 50, 10),
+	new Circle(50, 50, 20), {
 		'0.0': 'red',
 		'0.5': 'blue',
 		'1.0': 'green'
 	});
-
-	context.createGradient(
-		new Circle(50, 50, 10),
-		new Circle(50, 50, 20), {
-			'0.0': 'red',
-			'0.5': 'blue',
-			'1.0': 'green'
-		});
+```
 
 ## Метод createRectangleGradient
 
