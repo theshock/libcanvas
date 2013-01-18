@@ -92,7 +92,7 @@ var Polygon = LibCanvas.declare( 'LibCanvas.Shapes.Polygon', 'Polygon', Shape, {
 		var p = this.points, l = p.length, from, to;
 
 		if (l == 0) {
-			throw new Error('Polygon is empty');
+			throw new Error('Shape is empty');
 		}
 
 		while (l--) {
