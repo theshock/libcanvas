@@ -60,17 +60,6 @@ LibCanvas.Shapes.Center move(LibCanvas.Point distance, bool reverse);
 
 Вызывает метод move у центра
 
-#### События
-
-```js
-circle.addEvent('move', function (distance) {
-	alert('Круг передвинулся на '
-		+ distance.x + ' по оси X и на '
-		+ distance.y + ' по оси Y'
-	);
-});
-```
-
 #### Пример
 
 ```js
