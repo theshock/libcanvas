@@ -218,7 +218,7 @@ rectFrom.to  ; // Point(25, 25);
 ## Метод processPath
 
 ```js
-LibCanvas.Context2D processPath(LibCanvas.Context2D ctx, bool noWrap = false)
+LibCanvas.Shapes.Rectangle processPath(LibCanvas.Context2D ctx, bool noWrap = false)
 ```
 .
 Проходит путь с помощью `ctx.moveTo`, `ctx.lineTo` начиная с точки `from` по часовой стрелке
