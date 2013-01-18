@@ -1,5 +1,6 @@
 Polygon
 =======
+
 `LibCanvas.Shapes.Polygon` - описывает многоугольник через множество точек.
 
 #### Global
@@ -24,10 +25,26 @@ var polygon = new Polygon([
 ]);
 
 var triangle = new Polygon([
-   new Point(300, 300),
-   new Point(400, 300),
-   new Point(320, 390)
+	new Point(300, 300),
+	new Point(400, 300),
+	new Point(320, 390)
 ]);
+```
+
+## get length
+
+Возвращает количество точек многоугольника:
+
+#### Пример
+
+```js
+var triangle = new Polygon([
+	new Point(300, 300),
+	new Point(400, 300),
+	new Point(320, 390)
+]);
+
+console.log( triangle.length ); // 3
 ```
 
 ## get center
@@ -38,9 +55,9 @@ var triangle = new Polygon([
 
 ```js
 var triangle = new Polygon([
-   new Point(300, 300),
-   new Point(400, 300),
-   new Point(320, 390)
+	new Point(300, 300),
+	new Point(400, 300),
+	new Point(320, 390)
 ]);
 
 console.log( triangle.center ); // Point(340, 330);
@@ -58,9 +75,9 @@ LibCanvas.Point get(int index);
 
 ```js
 var triangle = new Polygon([
-   new Point(300, 300),
-   new Point(400, 300),
-   new Point(320, 390)
+	new Point(300, 300),
+	new Point(400, 300),
+	new Point(320, 390)
 ]);
 triangle.get(2); // Point(300, 400)
 ```
@@ -77,9 +94,9 @@ bool hasPoint(LibCanvas.Point point);
 
 ```js
 var triangle = new Polygon([
-   new Point(300, 300),
-   new Point(400, 300),
-   new Point(320, 390)
+	new Point(300, 300),
+	new Point(400, 300),
+	new Point(320, 390)
 ]);
 triangle.hasPoint( new Point(305, 305) ); // true
 triangle.hasPoint( new Point(188, 212) ); // false
@@ -97,9 +114,9 @@ Polygon move(LibCanvas.Point distance, bool reverse);
 
 ```js
 var triangle = new Polygon([
-   new Point(300, 300),
-   new Point(400, 300),
-   new Point(320, 390)
+	new Point(300, 300),
+	new Point(400, 300),
+	new Point(320, 390)
 ]);
 triangle.move( new Point(42, 13) );
 ```
@@ -118,9 +135,9 @@ Polygon rotate(number angle, LibCanvas.Point pivot);
 
 ```js
 var triangle = new Polygon([
-   new Point(300, 300),
-   new Point(400, 300),
-   new Point(320, 390)
+	new Point(300, 300),
+	new Point(400, 300),
+	new Point(320, 390)
 ]);
 
 // вращаем трехугольник вокруг центра
@@ -144,9 +161,9 @@ Polygon scale(number power, LibCanvas.Point pivot);
 
 ```js
 var triangle = new Polygon([
-   new Point(300, 300),
-   new Point(400, 300),
-   new Point(320, 390)
+	new Point(300, 300),
+	new Point(400, 300),
+	new Point(320, 390)
 ]);
 
 triangle.scale( 0.5, triangle.center );
@@ -161,3 +178,146 @@ triangle.scale( 0.5, triangle.center );
 ```
 
 #### Возвращает `this`
+
+
+## Метод draw
+
+```js
+Polygon draw(LibCanvas.Context2D ctx, String type);
+```
+
+Отрисовывает многоугольник в контекст, используя текущие настройки
+
+#### аргумент `type`
+Способ отрисовки. Может принимать значения `fill`, `stroke`, `clear`
+
+#### Пример
+
+```js
+var poly = new Polygon([
+	new Point(300, 300),
+	new Point(400, 300),
+	new Point(320, 390)
+]);
+var ctx  = canvasElem
+	.getContext('2d-libcanvas')
+	.set({
+		'fillStyle': 'red',
+		'strokeStyle': 'black'
+	});
+// Зальем красным многоугольник в контексте
+poly.draw(ctx, 'fill');
+// Обведем черным многоугольник в контексте
+poly.draw(ctx, 'stroke');
+```
+
+Но такой способ рекомендуется использовать только если по какой либо причине не доступен следующий:
+
+```js
+var ctx  = canvasElem
+	.getContext('2d-libcanvas')
+	.fill  (poly, 'red')
+	.stroke(poly, 'black');
+```
+
+#### Возвращает `this`
+
+## Метод processPath
+
+```js
+LibCanvas.Shapes.Polygon processPath(LibCanvas.Context2D ctx, bool noWrap = false)
+```
+
+Проходит путь с помощью `ctx.moveTo`, `ctx.lineTo` начиная с первой точки по часовой стрелке
+
+#### аргумент `noWrap`
+если указан в false(по умолчанию), то обрамляет с помощью `beginPath`, `endPath`
+
+#### Пример
+
+```js
+var poly = new Polygon([
+	new Point(300, 300),
+	new Point(400, 300),
+	new Point(320, 390)
+]);
+poly.processPath(ctx);
+
+// равносильно:
+
+ctx
+	.beginPath()
+	.moveTo(new Point(300, 300))
+	.lineTo(new Point(400, 300))
+	.lineTo(new Point(320, 390))
+	.closePath();
+```
+
+## Метод invoke
+
+```js
+LibCanvas.Shapes.Polygon invoke(string method, mixed args [..])
+```
+
+Вызывает у всех точек многоугольника метод `method` с параметрами из остальных аргументов функции
+
+#### Пример
+
+```js
+var poly = new Polygon([
+	new Point(300, 300),
+	new Point(400, 300),
+	new Point(320, 390)
+]);
+// Округляем все координаты
+poly.invoke('map', function (value) {
+	return Math.round(value);
+});
+```
+
+#### Возвращает `this`
+
+## Метод clone
+
+```js
+LibCanvas.Shapes.Polygon clone()
+```
+
+Возвращает новый полигон с склонированными точками
+
+#### Пример
+
+```js
+var poly = new Polygon([
+	new Point(299.6, 300.3),
+	new Point(400.2, 300.4),
+	new Point(319.8, 390.1)
+]);
+
+var polyClone = poly.clone();
+```
+
+## Метод intersect
+
+```js
+LibCanvas.Shapes.Polygon intersect(shape)
+```
+
+Проверяет, пересекается ли фигура `shape` с текущим полигоном. Полигоны сравнивает через пересечение прямых, остальные фигуры - через пересечение `boundingShape`
+
+#### Пример
+
+```js
+var poly1 = new Polygon([
+	new Point(300, 300),
+	new Point(400, 300),
+	new Point(320, 390)
+]);
+var poly2 = new Polygon([
+	new Point(250, 250),
+	new Point(350, 300),
+	new Point(300, 400)
+]);
+
+console.log( poly1.intersect(poly2) ); // true
+```
