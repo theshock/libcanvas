@@ -63,13 +63,12 @@ LibCanvas.Shapes.Center move(LibCanvas.Point distance, bool reverse);
 #### Пример
 
 ```js
-var line = new LibCanvas.Shapes.Line({
-	from : [4, 4],
-	to   : [8, 8]
+var circle = new LibCanvas.Shapes.Circle({
+   center : [25, 25],
+   radius : 15
 });
-line.move({ x : 2, y : 3 });
-// line.from == Point( 6,  7)
-// line.to   == Point(10, 11)
+circle.move({ x : 2, y : 3 });
+// circle.center == Point(27, 28)
 ```
 
 #### Возвращает `this`
