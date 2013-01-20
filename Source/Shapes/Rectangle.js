@@ -87,7 +87,7 @@ var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Sh
 	},
 	/** @returns {boolean} */
 	hasPoint : function (point, padding) {
-		point   = Point.from(arguments);
+		point   = Point.from(point);
 		padding = padding || 0;
 		return point.x != null && point.y != null
 			&& atom.number.between(point.x, Math.min(this.from.x, this.to.x) + padding, Math.max(this.from.x, this.to.x) - padding, 1)
@@ -188,7 +188,7 @@ var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Sh
 	},
 	/** @returns {string} */
 	dump: function method (name) {
-		return method.previous.dump.call(this, name || 'Rectangle');
+		return method.previous.call(this, name || 'Rectangle');
 	},
 	/** @returns {LibCanvas.Shapes.Polygon} */
 	toPolygon: function () {
