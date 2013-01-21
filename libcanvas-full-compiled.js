@@ -5855,6 +5855,8 @@ provides: Shapes.Path
  * [empty] grow()
  */
 var Path = LibCanvas.declare( 'LibCanvas.Shapes.Path', 'Path', Polygon, {
+	parts: [],
+
 	initialize : function (parts) {
 		this.parts = [];
 
@@ -5882,8 +5884,8 @@ var Path = LibCanvas.declare( 'LibCanvas.Shapes.Path', 'Path', Polygon, {
 	lineTo: function (point) {
 		return this.push('lineTo', [ Point.from(point) ]);
 	},
-	curveTo: function (to, p1, p2) {
-		var points = atom.array.from(arguments).map(Point);
+	curveTo: function (to, cp1, cp2) {
+		var points = atom.array.pickFrom(arguments).map(Point);
 		return this.push('curveTo', points);
 	},
 
@@ -5929,7 +5931,7 @@ var Path = LibCanvas.declare( 'LibCanvas.Shapes.Path', 'Path', Polygon, {
 		var points = [];
 		this.forEach(function (part) {
 			for (var i = 0, l = part.points.length; i < l; i++) {
-				points.include(part.points[i]);
+				atom.array.include(points, part.points[i]);
 			}
 		});
 		return points;
