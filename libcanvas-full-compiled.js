@@ -1373,6 +1373,22 @@ var Point = LibCanvas.declare( 'LibCanvas.Point', 'Point', Geometry, {
 		var diff = this.cast(point).diff(this);
 		return atom.math.hypotenuse(diff.x, diff.y);
 	},
+	/** @returns {Boolean} */
+	checkDistanceTo : function (point, distance, equals) {
+		var deltaX, deltaY, realDistanceSq, maxDistanceSq;
+
+		deltaX = Math.abs(this.x - point.x);
+		if (deltaX > distance) return false;
+
+		deltaY = Math.abs(this.y - point.y);
+		if (deltaY > distance) return false;
+
+		realDistanceSq = deltaX*deltaX + deltaY*deltaY;
+		maxDistanceSq  = distance*distance;
+
+		return (realDistanceSq < maxDistanceSq) ||
+			(equals && realDistanceSq == maxDistanceSq)
+	},
 	/** @returns {Point} */
 	diff : function (point) {
 		return new this.constructor(point).move(this, true);
@@ -1798,7 +1814,7 @@ var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Sh
 		if (rect instanceof Point) {
 			this.move( this.from.diff(rect) );
 		} else {
-			rect = Rectangle(arguments);
+			rect = Rectangle.from(rect);
 			this.from.moveTo(rect.from);
 			this.  to.moveTo(rect.to);
 		}
@@ -1910,30 +1926,36 @@ provides: Shapes.Circle
 /** @class Circle */
 var Circle = LibCanvas.declare( 'LibCanvas.Shapes.Circle', 'Circle', Shape, {
 	set : function () {
-		var a = atom.array.pickFrom(arguments);
+		var
+			center, radius,
+			a = atom.array.pickFrom(arguments);
 
 		if (a.length >= 3) {
-			this.center = new Point(a[0], a[1]);
-			this.radius = a[2];
+			center = new Point(a[0], a[1]);
+			radius = a[2];
 		} else if (a.length == 2) {
-			this.center = Point(a[0]);
-			this.radius = a[1];
+			center = Point.from(a[0]);
+			radius = a[1];
 		} else {
 			a = a[0];
-			this.radius = a.r == null ? a.radius : a.r;
+			radius = a.r == null ? a.radius : a.r;
 			if ('x' in a && 'y' in a) {
-				this.center = new Point(a.x, a.y);
+				center = new Point(a.x, a.y);
 			} else if ('center' in a) {
-				this.center = Point(a.center);
+				center = Point.from(a.center);
 			} else if ('from' in a) {
-				this.center = new Point(a.from).move({
+				center = new Point(a.from).move({
 					x: this.radius,
 					y: this.radius
 				});
 			}
 		}
-		if (this.center == null) throw new TypeError('center is null');
-		if (this.radius == null) throw new TypeError('radius is null');
+
+		this.center = center;
+		this.radius = radius;
+
+		if (center == null) throw new TypeError('center is null');
+		if (radius == null) throw new TypeError('radius is null');
 	},
 	// we need accessors to redefine parent "get center"
 	get center ( ) { return this._center; },
@@ -1946,7 +1968,7 @@ var Circle = LibCanvas.declare( 'LibCanvas.Shapes.Circle', 'Circle', Shape, {
 		return this.center;
 	},
 	hasPoint : function (point) {
-		return this.center.distanceTo(point) <= this.radius;
+		return this.center.checkDistanceTo(point, this.radius, true);
 	},
 	scale : function (factor, pivot) {
 		if (pivot) this.center.scale(factor, pivot);
@@ -1958,19 +1980,7 @@ var Circle = LibCanvas.declare( 'LibCanvas.Shapes.Circle', 'Circle', Shape, {
 	},
 	intersect : function (obj) {
 		if (obj instanceof this.constructor) {
-			var
-				tC = this.center,
-				oC = obj .center,
-				minDist = this.radius + obj.radius,
-				deltaX  = Math.abs(tC.x - oC.x),
-				deltaY;
-
-			if (deltaX >= minDist) return false;
-
-			deltaY = Math.abs(tC.y - oC.y);
-			if (deltaY >= minDist) return false;
-
-			return deltaX*deltaX + deltaY*deltaY < minDist * minDist;
+			return this.center.checkDistanceTo(obj.center, this.radius + obj.radius, true);
 		} else {
 			return this.getBoundingRectangle().intersect( obj );
 		}

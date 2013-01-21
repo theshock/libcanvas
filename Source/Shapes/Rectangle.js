@@ -120,7 +120,7 @@ var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Sh
 		if (rect instanceof Point) {
 			this.move( this.from.diff(rect) );
 		} else {
-			rect = Rectangle(arguments);
+			rect = Rectangle.from(rect);
 			this.from.moveTo(rect.from);
 			this.  to.moveTo(rect.to);
 		}
