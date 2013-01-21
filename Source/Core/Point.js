@@ -76,6 +76,22 @@ var Point = LibCanvas.declare( 'LibCanvas.Point', 'Point', Geometry, {
 		var diff = this.cast(point).diff(this);
 		return atom.math.hypotenuse(diff.x, diff.y);
 	},
+	/** @returns {Boolean} */
+	checkDistanceTo : function (point, distance, equals) {
+		var deltaX, deltaY, realDistanceSq, maxDistanceSq;
+
+		deltaX = Math.abs(this.x - point.x);
+		if (deltaX > distance) return false;
+
+		deltaY = Math.abs(this.y - point.y);
+		if (deltaY > distance) return false;
+
+		realDistanceSq = deltaX*deltaX + deltaY*deltaY;
+		maxDistanceSq  = distance*distance;
+
+		return (realDistanceSq < maxDistanceSq) ||
+			(equals && realDistanceSq == maxDistanceSq)
+	},
 	/** @returns {Point} */
 	diff : function (point) {
 		return new this.constructor(point).move(this, true);

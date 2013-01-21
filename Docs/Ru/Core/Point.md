@@ -254,3 +254,30 @@ var bar = new LibCanvas.Point(12, 15);
 var foo = bar.toObject();
 // аналогично foo = { x : 12, y : 15 }
 ```
+
+## Метод checkDistanceTo
+
+```js
+boolean checkDistanceTo(Point point, number distance, boolean equals = false)
+```
+
+Проверяет, что расстояние до точки меньше `distance` или равно, если `equals = true`.
+Метод является более быстрым аналогом проверки через `distanceTo`:
+
+#### Пример
+
+```js
+// Расстояние равно 5
+var foo = new LibCanvas.Point(12, 15);
+var bar = new LibCanvas.Point(16, 18);
+
+// Строгая проверка
+foo.checkDistanceTo( bar, 5 ); // false
+// аналог:
+foo.distanceTo( bar ) < 5 // false
+
+// Нестрогая проверка
+foo.checkDistanceTo( bar, 5, true ); // false
+// аналог:
+foo.distanceTo( bar ) <= 5 // true
+```
