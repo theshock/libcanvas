@@ -118,6 +118,7 @@ atom.declare( 'Unit', App.Element, {
 	}
 });
 ```
+
 #### clearPrevious
 
 ```js
@@ -125,3 +126,11 @@ void clearPrevious( LibCanvas.Context2D ctx )
 ```
 
 Очищает предыдущее расположение элемента в ctx. По-умолчанию - стирает `this.previousBoundingShape`
+
+#### distanceMove
+
+```js
+void distanceMove( LibCanvas.Point point )
+```
+
+Смещает элемент на расстояние `point`. Используется, например, в `App.Draggable`.
