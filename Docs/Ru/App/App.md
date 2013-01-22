@@ -17,6 +17,7 @@ Settings может содержать следующие параметры:
 
 * `appendTo` - элемент, в который необходимо добавить приложение. По-умолчанию `body`
 * `size` - размеры окна приложения, объект LibCanvas.Size
+* `simple` - если `true`, то сгенерирует упрощённую вёрстку - из одного холста, но без возможности создавать и сдвигать слои
 
 #### Пример
 
@@ -25,6 +26,24 @@ var app = new App({
 	appendTo: '#container',
 	size: new Size(800, 500)
 })
+```
+
+#### Обычная разметка для трёх слоёв:
+
+```html
+<div style="width: 1200px; height: 800px;" class="libcanvas-app">
+	<div style="overflow: hidden; position: absolute; width: 1200px; height: 800px;">
+		<canvas width="1200" height="800" data-name="bg"  style="position: absolute; z-index: 0;"></canvas>
+		<canvas width="1200" height="800" data-name="foo" style="position: absolute; z-index: 1;"></canvas>
+		<canvas width="1200" height="800" data-name="bar" style="position: absolute; z-index: 2;"></canvas>
+	</div>
+</div>
+```
+
+#### Упрощённая разметка (макс. 1 слой):
+
+```html
+<canvas width="391" height="71" class="libcanvas-app-simple"></canvas>
 ```
 
 ### Методы
