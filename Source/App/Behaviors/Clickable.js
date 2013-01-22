@@ -33,7 +33,7 @@ function setValueFn (name, val) {
 	};
 }
 
-return declare( 'LibCanvas.App.Behaviors.Clickable', Behavior, {
+return declare( 'LibCanvas.App.Behaviors.Clickable', App.Behaviors.Behavior, {
 
 	callbacks: {
 		'mouseover'   : setValueFn('hover' , true ),

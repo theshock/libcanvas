@@ -80,7 +80,7 @@ var Behaviors = declare( 'LibCanvas.App.Behaviors', {
 });
 
 
-var Behavior = declare( 'LibCanvas.App.Behaviors.Behavior', {
+declare( 'LibCanvas.App.Behaviors.Behavior', {
 	started: false,
 
 	/** @private */

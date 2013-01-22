@@ -21,7 +21,7 @@ provides: App.Behaviors.Draggable
 ...
 */
 
-declare( 'LibCanvas.App.Behaviors.Draggable', Behavior, {
+declare( 'LibCanvas.App.Behaviors.Draggable', App.Behaviors.Behavior, {
 	stopDrag: [ 'up', 'out' ],
 
 	initialize: function (behaviors, args) {
