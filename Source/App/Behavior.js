@@ -52,10 +52,16 @@ var Behavior = declare( 'LibCanvas.App.Behavior', {
 	},
 
 	/** @private */
-	getMouse: function (handler) {
-		return this.element.layer.app.resources.get(
+	getMouse: function (handler, strict) {
+		var mouse = this.element.layer.app.resources.get(
 			handler ? 'mouseHandler' : 'mouse'
 		);
+
+		if (strict && !mouse) {
+			throw new Error('No mouse in element');
+		}
+
+		return mouse;
 	}
 
 });
