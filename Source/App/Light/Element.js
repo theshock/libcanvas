@@ -24,12 +24,21 @@ provides: App.Light.Element
 
 /** @class App.Light.Vector */
 App.Light.Element = atom.declare( 'LibCanvas.App.Light.Element', App.Element, {
+
+	get behaviors () {
+		throw new Error( 'Please, use `element.clickable` & `element.draggable` instead' );
+	},
+
+	clickable : null,
+	draggable : null,
+	animatable: null,
+
 	configure: function () {
-		var behaviors = this.settings.get('behaviors');
+		this.clickable  = new App.Clickable(this, this.redraw);
+		this.draggable  = new App.Draggable(this, this.redraw);
+		this.animatable = new atom.Animatable(this);
+		this.animate    = this.animatable.animate;
 
-		this.animate = new atom.Animatable(this).animate;
-
-		Behaviors.attach( this, [ 'Draggable', 'Clickable' ], this.redraw );
 		if (this.settings.get('mouse') !== false) {
 			this.listenMouse();
 		}

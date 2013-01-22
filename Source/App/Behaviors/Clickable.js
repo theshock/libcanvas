@@ -3,7 +3,7 @@
 
 name: "App.Behaviors.Clickable"
 
-description: "Provides interface for clickable canvas objects"
+description: "DEPRECATED"
 
 license:
 	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"

@@ -3,7 +3,7 @@
 
 name: "App.Draggable"
 
-description: "When object implements LibCanvas.Behaviors.Draggable interface dragging made possible"
+description: "When object implements LibCanvas.Draggable interface dragging made possible"
 
 license:
 	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
@@ -21,6 +21,7 @@ provides: App.Draggable
 ...
 */
 
+/** @class App.Draggable */
 declare( 'LibCanvas.App.Draggable', App.Behavior, {
 
 	eventName: 'moveDrag',

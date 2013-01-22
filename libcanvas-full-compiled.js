@@ -281,6 +281,7 @@ provides: App.Clickable
 ...
 */
 
+/** @class App.Clickable */
 var Clickable = declare( 'LibCanvas.App.Clickable', App.Behavior, {
 
 	eventName: 'statusChange',
@@ -541,7 +542,7 @@ declare( 'LibCanvas.App.Dom', {
 
 name: "App.Draggable"
 
-description: "When object implements LibCanvas.Behaviors.Draggable interface dragging made possible"
+description: "When object implements LibCanvas.Draggable interface dragging made possible"
 
 license:
 	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
@@ -559,6 +560,7 @@ provides: App.Draggable
 ...
 */
 
+/** @class App.Draggable */
 declare( 'LibCanvas.App.Draggable', App.Behavior, {
 
 	eventName: 'moveDrag',
@@ -6274,7 +6276,7 @@ var RoundedRectangle = LibCanvas.declare(
 
 name: "App.Behaviors"
 
-description: ""
+description: "DEPRECATED"
 
 license:
 	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
@@ -6377,7 +6379,7 @@ declare( 'LibCanvas.App.Behaviors.Behavior', {
 
 name: "App.Behaviors.Clickable"
 
-description: "Provides interface for clickable canvas objects"
+description: "DEPRECATED"
 
 license:
 	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
@@ -6451,7 +6453,7 @@ return declare( 'LibCanvas.App.Behaviors.Clickable', App.Behaviors.Behavior, {
 
 name: "App.Behaviors.Draggable"
 
-description: "When object implements LibCanvas.Behaviors.Draggable interface dragging made possible"
+description: "DEPRECATED"
 
 license:
 	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
@@ -6632,12 +6634,21 @@ provides: App.Light.Element
 
 /** @class App.Light.Vector */
 App.Light.Element = atom.declare( 'LibCanvas.App.Light.Element', App.Element, {
+
+	get behaviors () {
+		throw new Error( 'Please, use `element.clickable` & `element.draggable` instead' );
+	},
+
+	clickable : null,
+	draggable : null,
+	animatable: null,
+
 	configure: function () {
-		var behaviors = this.settings.get('behaviors');
+		this.clickable  = new App.Clickable(this, this.redraw);
+		this.draggable  = new App.Draggable(this, this.redraw);
+		this.animatable = new atom.Animatable(this);
+		this.animate    = this.animatable.animate;
 
-		this.animate = new atom.Animatable(this).animate;
-
-		Behaviors.attach( this, [ 'Draggable', 'Clickable' ], this.redraw );
 		if (this.settings.get('mouse') !== false) {
 			this.listenMouse();
 		}

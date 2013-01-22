@@ -21,6 +21,7 @@ provides: App.Clickable
 ...
 */
 
+/** @class App.Clickable */
 var Clickable = declare( 'LibCanvas.App.Clickable', App.Behavior, {
 
 	eventName: 'statusChange',

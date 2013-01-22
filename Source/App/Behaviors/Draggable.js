@@ -3,7 +3,7 @@
 
 name: "App.Behaviors.Draggable"
 
-description: "When object implements LibCanvas.Behaviors.Draggable interface dragging made possible"
+description: "DEPRECATED"
 
 license:
 	- "[GNU Lesser General Public License](http://opensource.org/licenses/lgpl-license.php)"
