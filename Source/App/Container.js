@@ -32,11 +32,19 @@ declare( 'LibCanvas.App.Container', {
 	/** @property {App.Dom[]} */
 	doms: [],
 
+	wrapper: null,
+	bounds : null,
+
 	initialize: function (settings) {
 		this.doms        = [];
 		this.settings    = new Settings(settings);
 		this.currentSize = new Size(this.settings.get('size') || [0,0]);
-		this.createWrappers();
+
+		this.isSimple = this.settings.get('simple');
+
+		if (!this.isSimple) {
+			this.createWrappers();
+		}
 	},
 
 	get rectangle () {
@@ -45,10 +53,13 @@ declare( 'LibCanvas.App.Container', {
 	},
 
 	set size(size) {
-		size = this.currentSize.set(size).toObject();
-
-		this.wrapper.css(size);
-		this.bounds .css(size);
+		if (this.isSimple) {
+			this.doms[0].size = size;
+		} else {
+			size = this.currentSize.set(size).toObject();
+			this.wrapper.css(size);
+			this.bounds .css(size);
+		}
 	},
 
 	get size() {
@@ -56,13 +67,21 @@ declare( 'LibCanvas.App.Container', {
 	},
 
 	destroy: function () {
-		this.wrapper.destroy();
+		if (!this.isSimple) {
+			this.wrapper.destroy();
+		}
 		return this;
 	},
 
 	createDom: function (settings) {
 		var dom = new App.Dom( this, settings );
 		this.doms.push(dom);
+
+		if (this.isSimple) {
+			this.bounds  = dom.element;
+			this.wrapper = dom.element;
+		}
+
 		return dom;
 	},
 
@@ -73,17 +92,19 @@ declare( 'LibCanvas.App.Container', {
 
 	/** @private */
 	createWrappers: function () {
-		this.bounds = atom.dom.create('div').css({
-			overflow: 'hidden',
-			position: 'absolute'
-		})
-		.css(this.currentSize.toObject());
-		
-		this.wrapper = atom.dom.create('div')
-			.css(this.currentSize.toObject())
-			.addClass('libcanvas-app');
+		var size = this.currentSize.toObject();
 
-		this.bounds .appendTo(this.wrapper);
-		this.wrapper.appendTo(this.settings.get( 'appendTo' ));
+		this.wrapper = atom.dom.create('div')
+			.css(size)
+			.addClass('libcanvas-app')
+			.appendTo(this.settings.get( 'appendTo' ));
+
+		this.bounds = atom.dom.create('div')
+			.css({
+				overflow: 'hidden',
+				position: 'absolute'
+			})
+			.css(size)
+			.appendTo(this.wrapper);
 	}
 });

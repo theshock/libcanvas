@@ -28,7 +28,7 @@ LibCanvas.declare( 'LibCanvas.App', 'App', {
 		this.layers    = [];
 		this.settings  = new Settings({ appendTo: 'body' }).set(settings);
 		this.container = new App.Container(
-			this.settings.subset(['size', 'appendTo'])
+			this.settings.subset(['simple', 'size', 'appendTo'])
 		);
 		this.resources = new Registry();
 
@@ -54,7 +54,7 @@ LibCanvas.declare( 'LibCanvas.App', 'App', {
 	zIndexCompare: function (left, right, inverted) {
 		var leftZ, rightZ, factor = inverted ? -1 : +1;
 
-		if (!left  || !left.layer ) throw new TypeError( 'Wrong left element'  );
+		if (!left  || !left .layer) throw new TypeError( 'Wrong left element'  );
 		if (!right || !right.layer) throw new TypeError( 'Wrong right element' );
 
 
@@ -74,6 +74,10 @@ LibCanvas.declare( 'LibCanvas.App', 'App', {
 	},
 
 	createLayer: function (settings) {
+		if (this.settings.get('simple') && this.layers.length) {
+			throw new Error('You can create only one layer in "Simple" mode');
+		}
+
 		var layer = new App.Layer(this, settings);
 		this.layers.push(layer);
 		return layer;

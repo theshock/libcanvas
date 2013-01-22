@@ -24,6 +24,7 @@ provides: App.Element
 /** @class App.Element */
 declare( 'LibCanvas.App.Element', {
 
+	layer   : null,
 	zIndex  : 0,
 	renderer: null,
 	settings: {},

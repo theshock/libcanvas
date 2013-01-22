@@ -35,7 +35,7 @@ declare( 'LibCanvas.App.Light', {
 			appendTo: 'body',
 			intersection: 'auto'
 		}).set(settings || {});
-		this.app   = new App( this.settings.subset(['size', 'appendTo']) );
+		this.app   = new App( this.settings.subset(['size', 'appendTo', 'simple']) );
 		this.layer = this.app.createLayer(this.settings.subset(['name','invoke','intersection']));
 		if (this.settings.get('mouse') === true) {
 			mouse = new Mouse(this.app.container.bounds);

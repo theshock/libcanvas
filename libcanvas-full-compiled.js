@@ -132,7 +132,7 @@ LibCanvas.declare( 'LibCanvas.App', 'App', {
 		this.layers    = [];
 		this.settings  = new Settings({ appendTo: 'body' }).set(settings);
 		this.container = new App.Container(
-			this.settings.subset(['size', 'appendTo'])
+			this.settings.subset(['simple', 'size', 'appendTo'])
 		);
 		this.resources = new Registry();
 
@@ -158,7 +158,7 @@ LibCanvas.declare( 'LibCanvas.App', 'App', {
 	zIndexCompare: function (left, right, inverted) {
 		var leftZ, rightZ, factor = inverted ? -1 : +1;
 
-		if (!left  || !left.layer ) throw new TypeError( 'Wrong left element'  );
+		if (!left  || !left .layer) throw new TypeError( 'Wrong left element'  );
 		if (!right || !right.layer) throw new TypeError( 'Wrong right element' );
 
 
@@ -178,6 +178,10 @@ LibCanvas.declare( 'LibCanvas.App', 'App', {
 	},
 
 	createLayer: function (settings) {
+		if (this.settings.get('simple') && this.layers.length) {
+			throw new Error('You can create only one layer in "Simple" mode');
+		}
+
 		var layer = new App.Layer(this, settings);
 		this.layers.push(layer);
 		return layer;
@@ -363,11 +367,19 @@ declare( 'LibCanvas.App.Container', {
 	/** @property {App.Dom[]} */
 	doms: [],
 
+	wrapper: null,
+	bounds : null,
+
 	initialize: function (settings) {
 		this.doms        = [];
 		this.settings    = new Settings(settings);
 		this.currentSize = new Size(this.settings.get('size') || [0,0]);
-		this.createWrappers();
+
+		this.isSimple = this.settings.get('simple');
+
+		if (!this.isSimple) {
+			this.createWrappers();
+		}
 	},
 
 	get rectangle () {
@@ -376,10 +388,13 @@ declare( 'LibCanvas.App.Container', {
 	},
 
 	set size(size) {
-		size = this.currentSize.set(size).toObject();
-
-		this.wrapper.css(size);
-		this.bounds .css(size);
+		if (this.isSimple) {
+			this.doms[0].size = size;
+		} else {
+			size = this.currentSize.set(size).toObject();
+			this.wrapper.css(size);
+			this.bounds .css(size);
+		}
 	},
 
 	get size() {
@@ -387,13 +402,21 @@ declare( 'LibCanvas.App.Container', {
 	},
 
 	destroy: function () {
-		this.wrapper.destroy();
+		if (!this.isSimple) {
+			this.wrapper.destroy();
+		}
 		return this;
 	},
 
 	createDom: function (settings) {
 		var dom = new App.Dom( this, settings );
 		this.doms.push(dom);
+
+		if (this.isSimple) {
+			this.bounds  = dom.element;
+			this.wrapper = dom.element;
+		}
+
 		return dom;
 	},
 
@@ -404,18 +427,20 @@ declare( 'LibCanvas.App.Container', {
 
 	/** @private */
 	createWrappers: function () {
-		this.bounds = atom.dom.create('div').css({
-			overflow: 'hidden',
-			position: 'absolute'
-		})
-		.css(this.currentSize.toObject());
-		
-		this.wrapper = atom.dom.create('div')
-			.css(this.currentSize.toObject())
-			.addClass('libcanvas-app');
+		var size = this.currentSize.toObject();
 
-		this.bounds .appendTo(this.wrapper);
-		this.wrapper.appendTo(this.settings.get( 'appendTo' ));
+		this.wrapper = atom.dom.create('div')
+			.css(size)
+			.addClass('libcanvas-app')
+			.appendTo(this.settings.get( 'appendTo' ));
+
+		this.bounds = atom.dom.create('div')
+			.css({
+				overflow: 'hidden',
+				position: 'absolute'
+			})
+			.css(size)
+			.appendTo(this.wrapper);
 	}
 });
 
@@ -500,8 +525,7 @@ declare( 'LibCanvas.App.Dom', {
 	 * @returns {App.Dom}
 	 */
 	addShift: function ( shift ) {
-		shift = Point( shift );
-		var newShift = this.shift.move( shift );
+		var newShift = this.getShift().move( shift );
 		this.element.css({
 			marginLeft: newShift.x,
 			marginTop : newShift.y
@@ -519,21 +543,44 @@ declare( 'LibCanvas.App.Dom', {
 
 	/** @returns {Point} */
 	getShift: function () {
+		if (this.container.isSimple) {
+			throw new Error('Shift not available in Simple mode');
+		}
+
 		return this.shift;
 	},
 
 	/** @private */
 	createSize: function () {
-		this.currentSize = this.settings.get('size') || this.container.size.clone();
+		var size = this.settings.get('size');
+
+		if (this.container.isSimple) {
+			this.currentSize = this.container.size;
+			if (size) {
+				this.currentSize.set(size);
+			}
+		} else {
+			this.currentSize = size || this.container.size.clone();
+		}
+
+
 	},
 
 	/** @private */
 	createElement: function () {
 		this.canvas  = new LibCanvas.Buffer(this.size, true);
-		this.element = atom.dom(this.canvas)
-			.attr({ 'data-name': this.name  })
-			.css ({ 'position' : 'absolute' })
-			.appendTo( this.container.bounds );
+		this.element = atom.dom(this.canvas);
+
+		if (this.container.isSimple) {
+			this.element
+				.addClass('libcanvas-app-simple')
+				.appendTo( this.container.settings.get('appendTo') );
+		} else {
+			this.element
+				.attr({ 'data-name': this.name  })
+				.css ({ 'position' : 'absolute' })
+				.appendTo( this.container.bounds );
+		}
 	}
 });
 
@@ -861,6 +908,7 @@ provides: App.Element
 /** @class App.Element */
 declare( 'LibCanvas.App.Element', {
 
+	layer   : null,
 	zIndex  : 0,
 	renderer: null,
 	settings: {},
@@ -6577,7 +6625,7 @@ declare( 'LibCanvas.App.Light', {
 			appendTo: 'body',
 			intersection: 'auto'
 		}).set(settings || {});
-		this.app   = new App( this.settings.subset(['size', 'appendTo']) );
+		this.app   = new App( this.settings.subset(['size', 'appendTo', 'simple']) );
 		this.layer = this.app.createLayer(this.settings.subset(['name','invoke','intersection']));
 		if (this.settings.get('mouse') === true) {
 			mouse = new Mouse(this.app.container.bounds);

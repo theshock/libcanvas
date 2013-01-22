@@ -79,8 +79,7 @@ declare( 'LibCanvas.App.Dom', {
 	 * @returns {App.Dom}
 	 */
 	addShift: function ( shift ) {
-		shift = Point( shift );
-		var newShift = this.shift.move( shift );
+		var newShift = this.getShift().move( shift );
 		this.element.css({
 			marginLeft: newShift.x,
 			marginTop : newShift.y
@@ -98,20 +97,43 @@ declare( 'LibCanvas.App.Dom', {
 
 	/** @returns {Point} */
 	getShift: function () {
+		if (this.container.isSimple) {
+			throw new Error('Shift not available in Simple mode');
+		}
+
 		return this.shift;
 	},
 
 	/** @private */
 	createSize: function () {
-		this.currentSize = this.settings.get('size') || this.container.size.clone();
+		var size = this.settings.get('size');
+
+		if (this.container.isSimple) {
+			this.currentSize = this.container.size;
+			if (size) {
+				this.currentSize.set(size);
+			}
+		} else {
+			this.currentSize = size || this.container.size.clone();
+		}
+
+
 	},
 
 	/** @private */
 	createElement: function () {
 		this.canvas  = new LibCanvas.Buffer(this.size, true);
-		this.element = atom.dom(this.canvas)
-			.attr({ 'data-name': this.name  })
-			.css ({ 'position' : 'absolute' })
-			.appendTo( this.container.bounds );
+		this.element = atom.dom(this.canvas);
+
+		if (this.container.isSimple) {
+			this.element
+				.addClass('libcanvas-app-simple')
+				.appendTo( this.container.settings.get('appendTo') );
+		} else {
+			this.element
+				.attr({ 'data-name': this.name  })
+				.css ({ 'position' : 'absolute' })
+				.appendTo( this.container.bounds );
+		}
 	}
 });
