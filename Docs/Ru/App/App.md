@@ -40,7 +40,7 @@ var app = new App({
 </div>
 ```
 
-#### Упрощённая разметка (макс. 1 слой):
+#### Упрощённая разметка (максимум один слой):
 
 ```html
 <canvas width="391" height="71" class="libcanvas-app-simple"></canvas>
