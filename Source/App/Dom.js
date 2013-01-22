@@ -46,12 +46,13 @@ declare( 'LibCanvas.App.Dom', {
 		this.name  = this.settings.get('name') || '';
 		this.createSize();
 		this.createElement();
-		this.zIndex = this.settings.get('zIndex') || 0;
 	},
 
 	set zIndex (z) {
 		this.z = z;
-		this.element.css('zIndex', z);
+		if (!this.container.isSimple) {
+			this.element.css('zIndex', z);
+		}
 	},
 
 	get zIndex () {
@@ -134,6 +135,8 @@ declare( 'LibCanvas.App.Dom', {
 				.attr({ 'data-name': this.name  })
 				.css ({ 'position' : 'absolute' })
 				.appendTo( this.container.bounds );
+
+			this.zIndex = this.settings.get('zIndex') || 0;
 		}
 	}
 });

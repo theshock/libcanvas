@@ -28,13 +28,15 @@ declare( 'LibCanvas.App.Light', {
 		var mouse, mouseHandler;
 
 		this.settings = new Settings({
-			size    : Size(size),
+			size    : Size.from(size),
 			name    : 'main',
 			mouse   : true,
 			invoke  : false,
+			simple  : true,
 			appendTo: 'body',
 			intersection: 'auto'
 		}).set(settings || {});
+
 		this.app   = new App( this.settings.subset(['size', 'appendTo', 'simple']) );
 		this.layer = this.app.createLayer(this.settings.subset(['name','invoke','intersection']));
 		if (this.settings.get('mouse') === true) {

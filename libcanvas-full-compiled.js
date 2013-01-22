@@ -492,12 +492,13 @@ declare( 'LibCanvas.App.Dom', {
 		this.name  = this.settings.get('name') || '';
 		this.createSize();
 		this.createElement();
-		this.zIndex = this.settings.get('zIndex') || 0;
 	},
 
 	set zIndex (z) {
 		this.z = z;
-		this.element.css('zIndex', z);
+		if (!this.container.isSimple) {
+			this.element.css('zIndex', z);
+		}
 	},
 
 	get zIndex () {
@@ -580,6 +581,8 @@ declare( 'LibCanvas.App.Dom', {
 				.attr({ 'data-name': this.name  })
 				.css ({ 'position' : 'absolute' })
 				.appendTo( this.container.bounds );
+
+			this.zIndex = this.settings.get('zIndex') || 0;
 		}
 	}
 });
@@ -6618,13 +6621,15 @@ declare( 'LibCanvas.App.Light', {
 		var mouse, mouseHandler;
 
 		this.settings = new Settings({
-			size    : Size(size),
+			size    : Size.from(size),
 			name    : 'main',
 			mouse   : true,
 			invoke  : false,
+			simple  : true,
 			appendTo: 'body',
 			intersection: 'auto'
 		}).set(settings || {});
+
 		this.app   = new App( this.settings.subset(['size', 'appendTo', 'simple']) );
 		this.layer = this.app.createLayer(this.settings.subset(['name','invoke','intersection']));
 		if (this.settings.get('mouse') === true) {
