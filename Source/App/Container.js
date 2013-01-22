@@ -42,7 +42,9 @@ declare( 'LibCanvas.App.Container', {
 
 		this.isSimple = this.settings.get('simple');
 
-		if (!this.isSimple) {
+		if (this.isSimple) {
+			this.wrapper = this.bounds = LibCanvas.buffer(0,0,true);
+		} else {
 			this.createWrappers();
 		}
 	},
@@ -76,12 +78,6 @@ declare( 'LibCanvas.App.Container', {
 	createDom: function (settings) {
 		var dom = new App.Dom( this, settings );
 		this.doms.push(dom);
-
-		if (this.isSimple) {
-			this.bounds  = dom.element;
-			this.wrapper = dom.element;
-		}
-
 		return dom;
 	},
 

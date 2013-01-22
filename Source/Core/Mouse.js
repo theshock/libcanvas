@@ -56,6 +56,10 @@ var Mouse = LibCanvas.declare( 'LibCanvas.Mouse', 'Mouse', {
 	initialize : function (elem, offsetElem) {
 		this.bindMethods( 'onEvent' );
 
+		if (elem == null) {
+			throw new TypeError('`elem` is undefined');
+		}
+
 		this.elem       = atom.dom(elem);
 		this.offsetElem = offsetElem ? atom.dom(offsetElem) : this.elem;
 

@@ -123,20 +123,37 @@ declare( 'LibCanvas.App.Dom', {
 
 	/** @private */
 	createElement: function () {
+		if (this.container.isSimple) {
+			this.createElementSimple();
+		} else {
+			this.createElementNormal();
+		}
+	},
+
+	/** @private */
+	createElementNormal: function () {
 		this.canvas  = new LibCanvas.Buffer(this.size, true);
+
 		this.element = atom.dom(this.canvas);
 
-		if (this.container.isSimple) {
-			this.element
-				.addClass('libcanvas-app-simple')
-				.appendTo( this.container.settings.get('appendTo') );
-		} else {
-			this.element
-				.attr({ 'data-name': this.name  })
-				.css ({ 'position' : 'absolute' })
-				.appendTo( this.container.bounds );
+		this.element
+			.attr({ 'data-name': this.name  })
+			.css ({ 'position' : 'absolute' })
+			.appendTo( this.container.bounds );
 
-			this.zIndex = this.settings.get('zIndex') || 0;
-		}
+		this.zIndex = this.settings.get('zIndex') || 0;
+	},
+
+	/** @private */
+	createElementSimple: function () {
+		this.canvas  = this.container.wrapper;
+		this.canvas.width  = this.size.width;
+		this.canvas.height = this.size.height;
+
+		this.element = atom.dom(this.canvas);
+
+		this.element
+			.addClass('libcanvas-app-simple')
+			.appendTo( this.container.settings.get('appendTo') );
 	}
 });

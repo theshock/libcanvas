@@ -377,7 +377,9 @@ declare( 'LibCanvas.App.Container', {
 
 		this.isSimple = this.settings.get('simple');
 
-		if (!this.isSimple) {
+		if (this.isSimple) {
+			this.wrapper = this.bounds = LibCanvas.buffer(0,0,true);
+		} else {
 			this.createWrappers();
 		}
 	},
@@ -411,12 +413,6 @@ declare( 'LibCanvas.App.Container', {
 	createDom: function (settings) {
 		var dom = new App.Dom( this, settings );
 		this.doms.push(dom);
-
-		if (this.isSimple) {
-			this.bounds  = dom.element;
-			this.wrapper = dom.element;
-		}
-
 		return dom;
 	},
 
@@ -569,21 +565,38 @@ declare( 'LibCanvas.App.Dom', {
 
 	/** @private */
 	createElement: function () {
+		if (this.container.isSimple) {
+			this.createElementSimple();
+		} else {
+			this.createElementNormal();
+		}
+	},
+
+	/** @private */
+	createElementNormal: function () {
 		this.canvas  = new LibCanvas.Buffer(this.size, true);
+
 		this.element = atom.dom(this.canvas);
 
-		if (this.container.isSimple) {
-			this.element
-				.addClass('libcanvas-app-simple')
-				.appendTo( this.container.settings.get('appendTo') );
-		} else {
-			this.element
-				.attr({ 'data-name': this.name  })
-				.css ({ 'position' : 'absolute' })
-				.appendTo( this.container.bounds );
+		this.element
+			.attr({ 'data-name': this.name  })
+			.css ({ 'position' : 'absolute' })
+			.appendTo( this.container.bounds );
 
-			this.zIndex = this.settings.get('zIndex') || 0;
-		}
+		this.zIndex = this.settings.get('zIndex') || 0;
+	},
+
+	/** @private */
+	createElementSimple: function () {
+		this.canvas  = this.container.wrapper;
+		this.canvas.width  = this.size.width;
+		this.canvas.height = this.size.height;
+
+		this.element = atom.dom(this.canvas);
+
+		this.element
+			.addClass('libcanvas-app-simple')
+			.appendTo( this.container.settings.get('appendTo') );
 	}
 });
 
@@ -3749,6 +3762,10 @@ var Mouse = LibCanvas.declare( 'LibCanvas.Mouse', 'Mouse', {
 
 	initialize : function (elem, offsetElem) {
 		this.bindMethods( 'onEvent' );
+
+		if (elem == null) {
+			throw new TypeError('`elem` is undefined');
+		}
 
 		this.elem       = atom.dom(elem);
 		this.offsetElem = offsetElem ? atom.dom(offsetElem) : this.elem;
