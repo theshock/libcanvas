@@ -378,7 +378,7 @@ declare( 'LibCanvas.App.Container', {
 		this.isSimple = this.settings.get('simple');
 
 		if (this.isSimple) {
-			this.wrapper = this.bounds = LibCanvas.buffer(0,0,true);
+			this.createWrappersSimple();
 		} else {
 			this.createWrappers();
 		}
@@ -419,6 +419,18 @@ declare( 'LibCanvas.App.Container', {
 	appendTo: function (element) {
 		if (element) this.wrapper.appendTo( element );
 		return this;
+	},
+
+	/** @private */
+	createWrappersSimple: function () {
+		var size = this.currentSize.toObject();
+
+		this.wrapper = atom.dom(LibCanvas.buffer(size,true));
+		this.bounds  = this.wrapper;
+
+		this.wrapper
+			.addClass('libcanvas-app-simple')
+			.appendTo( this.settings.get('appendTo') )
 	},
 
 	/** @private */
@@ -588,15 +600,11 @@ declare( 'LibCanvas.App.Dom', {
 
 	/** @private */
 	createElementSimple: function () {
-		this.canvas  = this.container.wrapper;
+		this.element = this.container.wrapper;
+
+		this.canvas  = this.element.first;
 		this.canvas.width  = this.size.width;
 		this.canvas.height = this.size.height;
-
-		this.element = atom.dom(this.canvas);
-
-		this.element
-			.addClass('libcanvas-app-simple')
-			.appendTo( this.container.settings.get('appendTo') );
 	}
 });
 

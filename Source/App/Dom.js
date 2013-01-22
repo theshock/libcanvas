@@ -146,14 +146,10 @@ declare( 'LibCanvas.App.Dom', {
 
 	/** @private */
 	createElementSimple: function () {
-		this.canvas  = this.container.wrapper;
+		this.element = this.container.wrapper;
+
+		this.canvas  = this.element.first;
 		this.canvas.width  = this.size.width;
 		this.canvas.height = this.size.height;
-
-		this.element = atom.dom(this.canvas);
-
-		this.element
-			.addClass('libcanvas-app-simple')
-			.appendTo( this.container.settings.get('appendTo') );
 	}
 });
