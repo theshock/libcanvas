@@ -571,10 +571,6 @@ declare( 'LibCanvas.App.Draggable', App.Behavior, {
 		this.bindMethods([ 'onStop', 'onDrag', 'onStart' ]);
 
 		method.previous.call( this, element, callback );
-
-		if (!atom.core.isFunction(this.element.move)) {
-			throw new TypeError( 'Element ' + this.element + ' must has «move» method' );
-		}
 	},
 
 	start: function (callback) {
@@ -618,8 +614,8 @@ declare( 'LibCanvas.App.Draggable', App.Behavior, {
 			return this.onStop(e, true);
 		}
 
-		var delta = this.getMouse().delta;
-		this.element.move( delta );
+		var delta = this.mouse.delta;
+		this.element.distanceMove( delta );
 		this.events.fire('moveDrag', [delta, e]);
 	},
 
@@ -905,6 +901,11 @@ declare( 'LibCanvas.App.Element', {
 
 	destroy: function () {
 		this.layer.rmElement( this );
+		return this;
+	},
+
+	distanceMove: function (point) {
+		this.shape.move(point);
 		return this;
 	},
 
@@ -6604,6 +6605,10 @@ declare( 'LibCanvas.App.Light', {
 
 	get mouse () {
 		return this.app.resources.get( 'mouse' );
+	},
+
+	get mouseHandler () {
+		return this.app.resources.get( 'mouseHandler' );
 	}
 
 });
@@ -6652,11 +6657,6 @@ App.Light.Element = atom.declare( 'LibCanvas.App.Light.Element', App.Element, {
 		if (this.settings.get('mouse') !== false) {
 			this.listenMouse();
 		}
-	},
-
-	move: function (point) {
-		this.shape.move(point);
-		this.redraw();
 	},
 
 	/**

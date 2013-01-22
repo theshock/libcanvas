@@ -63,6 +63,10 @@ declare( 'LibCanvas.App.Light', {
 
 	get mouse () {
 		return this.app.resources.get( 'mouse' );
+	},
+
+	get mouseHandler () {
+		return this.app.resources.get( 'mouseHandler' );
 	}
 
 });

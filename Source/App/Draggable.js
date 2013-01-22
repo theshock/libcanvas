@@ -32,10 +32,6 @@ declare( 'LibCanvas.App.Draggable', App.Behavior, {
 		this.bindMethods([ 'onStop', 'onDrag', 'onStart' ]);
 
 		method.previous.call( this, element, callback );
-
-		if (!atom.core.isFunction(this.element.move)) {
-			throw new TypeError( 'Element ' + this.element + ' must has «move» method' );
-		}
 	},
 
 	start: function (callback) {
@@ -79,8 +75,8 @@ declare( 'LibCanvas.App.Draggable', App.Behavior, {
 			return this.onStop(e, true);
 		}
 
-		var delta = this.getMouse().delta;
-		this.element.move( delta );
+		var delta = this.mouse.delta;
+		this.element.distanceMove( delta );
 		this.events.fire('moveDrag', [delta, e]);
 	},
 

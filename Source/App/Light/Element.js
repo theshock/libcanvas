@@ -44,11 +44,6 @@ App.Light.Element = atom.declare( 'LibCanvas.App.Light.Element', App.Element, {
 		}
 	},
 
-	move: function (point) {
-		this.shape.move(point);
-		this.redraw();
-	},
-
 	/**
 	 * Override by Animatable method
 	 */

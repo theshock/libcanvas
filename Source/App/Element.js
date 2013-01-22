@@ -67,6 +67,11 @@ declare( 'LibCanvas.App.Element', {
 		return this;
 	},
 
+	distanceMove: function (point) {
+		this.shape.move(point);
+		return this;
+	},
+
 	hasPoint: function (point) {
 		return this.shape.hasPoint( point );
 	},
