@@ -2029,46 +2029,44 @@ var MinusOnePoint = new Point(-1, -1);
 var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Shape, {
 	set : function () {
 		var
-			from,
-			to,
 			center,
 			size,
 			a = atom.array.pickFrom(arguments),
 			first = a[0];
 
+		this.from = null;
+		this.to   = null;
+
 		if (a.length == 4) {
-			from = new Point(a[0], a[1]);
-			to   = new Point(a[0]+a[2], a[1]+a[3]);
+			this.from = new Point(a[0], a[1]);
+			this.to   = new Point(a[0]+a[2], a[1]+a[3]);
 		} else if (a.length == 2) {
 			if ('width' in a[1] && 'height' in a[1]) {
 				this.set({ from: a[0], size: a[1] });
 			} else {
-				from = Point.from(a[0]);
-				to   = Point.from(a[1]);
+				this.from = Point.from(a[0]);
+				this.to   = Point.from(a[1]);
 			}
 		} else if (first.center && first.size) {
 			center = Point.from(first.center);
-			size   = Size .from(first.size);
+			size   = Size.from(first.size);
 
-			from = new Point(center.x - size.x/2, center.y - size.y/2);
-			to   = new Point(center.x + size.x/2, center.y + size.y/2);
+			this.from = new Point(center.x - size.x/2, center.y - size.y/2);
+			this.to   = new Point(center.x + size.x/2, center.y + size.y/2);
 		} else {
-			if (first.from) from = Point.from(first.from);
-			if (first.to  ) to   = Point.from(first.to);
+			if (first.from) this.from = Point.from(first.from);
+			if (first.to  ) this.to   = Point.from(first.to);
 
-			if (!from || !to && first.size) {
+			if (!this.from || !this.to && first.size) {
 				size = Size.from(first.size);
 
-				if (from) {
-					to   = new Point(from.x + size.x, from.y + size.y);
+				if (this.from) {
+					this.to   = new Point(this.from.x + size.x, this.from.y + size.y);
 				} else {
-					from = new Point(to.x   - size.x, to.y   - size.y);
+					this.from = new Point(this.to.x   - size.x, this.to.y   - size.y);
 				}
 			}
 		}
-
-		this.from = from;
-		this.to   = to;
 
 		return this;
 	},
