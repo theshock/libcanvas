@@ -417,6 +417,77 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.Lexer', {
 	}
 });
 
+/** @class SpriteFont.MorphemesFinder */
+atom.declare( 'LibCanvas.Plugins.SpriteFont.MorphemesFinder', {
+	vowels: 'AEIOUYaeiouyАОУЮИЫЕЭЯЁаоуюиыеэяёьЄІЇЎєіїў',
+
+	initialize: function () {
+	},
+
+	isLetter: function(str) {
+		return (str >= 'a' && str <= 'z') || (str >= 'A' && str <= 'я') ||
+			(str >= 'A' && str <= 'Z') || (str >= '\u00c0' && str <= '\u02a8') ||
+			(str >= '0' && str <= '9') || (str >= '\u0386' && str <= '\u04ff');
+	},
+
+	isVowel: function(str) {
+		return str && str.length == 1 && this.vowels.indexOf(str) > -1;
+	},
+
+	isMorpheme: function (str) {
+		if (!str || str.length <= 1) return false;
+
+		for (var i = str.length; i--;) if (this.isVowel(str[i])) return true;
+
+		return false;
+	},
+
+	findMorphemes: function (line) {
+		var i = 0, c, morphemes = [], lastStr = '', last = [], prev;
+
+		var pushLast = function () {
+			prev = morphemes[ morphemes.length - 1 ];
+			if (Array.isArray(prev)) {
+				atom.array.append( prev, last );
+			} else {
+				morphemes.push(last);
+			}
+			last = [];
+			lastStr = '';
+
+			if (!this.isLetter(c)) {
+				morphemes.push( line[i] );
+			}
+		}.bind(this);
+
+		for (; i < line.length; i++) {
+			c = line[i].content;
+
+			if (line[i].type == 'icon') {
+				morphemes.push(last);
+				last = [];
+				lastStr = '';
+				morphemes.push( line[i] );
+			} else if (line[i].type == 'symbol' && this.isLetter(c)) {
+				lastStr += c;
+				last.push(line[i]);
+				if (this.isMorpheme(lastStr)) {
+					morphemes.push(last);
+					last = [];
+					lastStr = '';
+				}
+			} else if (lastStr) {
+				pushLast();
+			} else {
+				morphemes.push( line[i] );
+			}
+		}
+
+		if (lastStr) pushLast();
+
+		return morphemes;
+	}
+});
 
 /** @class SpriteFont.LinesEnRu */
 atom.declare( 'LibCanvas.Plugins.SpriteFont.LinesEnRu', {
