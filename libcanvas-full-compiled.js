@@ -1,3 +1,4 @@
+
 /*
 ---
 
@@ -5489,7 +5490,6 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.Lexer', {
 			symbol = '',
 			result = [],
 			length = string.length;
-			startTag = false;
 
 		for (; i < length; i++) {
 			symbol = string[i];
@@ -5554,7 +5554,6 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.Lexer', {
 		return tags;
 	}
 });
-
 
 /** @class SpriteFont.MorphemesFinder */
 atom.declare( 'LibCanvas.Plugins.SpriteFont.MorphemesFinder', {
@@ -5720,7 +5719,6 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.LinesEnRu', {
 		}
 	}
 });
-
 
 
 /*
