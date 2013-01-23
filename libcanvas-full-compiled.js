@@ -1,4 +1,3 @@
-
 /*
 ---
 
@@ -5311,11 +5310,27 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.Render', {
 			align: 'left',
 			lines: null,
 			noWrap: false,
-			letterSpacing: 0
+			letterSpacing: 0,
+			autoRender: true
 		}, options);
 
 		this.options.text = String( this.options.text );
 
+		if (this.options.autoRender) {
+			var completeLines = this.parseAndGetLines();
+			this.render(completeLines);
+		}
+	},
+
+	getLinesHeight: function(lines) {
+		var height = 0;
+		for (var idx = 0; idx < lines.length; idx++) {
+			height += lines[idx].height;
+		}
+		return height;
+	},
+
+	parseAndGetLines: function() {
 		var steps = new SpriteFont.Steps(this, new SpriteFont.Lexer(
 			this.options.text, this.options.tags
 		));
@@ -5325,7 +5340,7 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.Render', {
 		var lines = this.options.lines;
 		if (!lines) lines = new SpriteFont.LinesEnRu( this.options.font, this.options.noWrap );
 
-		this.render( lines.run( steps.steps, this.options.shape.width ) );
+		return lines.run( steps.steps, this.options.shape.width );
 	},
 
 	render: function (lines) {
