@@ -2060,9 +2060,9 @@ var Rectangle = LibCanvas.declare( 'LibCanvas.Shapes.Rectangle', 'Rectangle', Sh
 				size = Size.from(first.size);
 
 				if (from) {
-					to   = new Point(this.from.x + size.x, this.from.y + size.y);
+					to   = new Point(from.x + size.x, from.y + size.y);
 				} else {
-					from = new Point(this.to.x   - size.x, this.to.y   - size.y);
+					from = new Point(to.x   - size.x, to.y   - size.y);
 				}
 			}
 		}
