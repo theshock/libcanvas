@@ -179,7 +179,8 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.Render', {
 			lines: null,
 			noWrap: false,
 			letterSpacing: 0,
-			autoRender: true
+			autoRender: true,
+			forceSplit: false
 		}, options);
 
 		this.options.text = String( this.options.text );
@@ -206,7 +207,8 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.Render', {
 		steps.countSizes(this.options.font, this.options.letterSpacing);
 
 		var lines = this.options.lines;
-		if (!lines) lines = new SpriteFont.LinesEnRu( this.options.font, this.options.noWrap );
+		if (!lines) lines = new SpriteFont.LinesEnRu();
+		lines.setConfig(this.options.font, this.options.noWrap, this.options.forceSplit);
 
 		return lines.run( steps.steps, this.options.shape.width );
 	},
@@ -418,11 +420,11 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.Lexer', {
 
 /** @class SpriteFont.LinesEnRu */
 atom.declare( 'LibCanvas.Plugins.SpriteFont.LinesEnRu', {
-	vowels: 'AEIOUYaeiouyАОУЮИЫЕЭЯЁаоуюиыеэяёьЄІЇЎєіїў',
-
-	initialize: function (font, noWrap) {
-		this.font   = font;
+	setConfig: function (font, noWrap, forceSplit) {
+		this.font = font;
 		this.noWrap = noWrap;
+		this.forceSplit = forceSplit;
+		this.morphemesFinder = new SpriteFont.MorphemesFinder();
 	},
 
 	run: function (steps, maxWidth) {
@@ -430,18 +432,26 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.LinesEnRu', {
 
 		for (i = 0; i < steps.length; i++) {
 
-			if (steps[i].type == 'icon') tmpMark = true;
+			if (this.forceSplit) {
+				line.push(steps[i]);
+			} else {
+				if (steps[i].type == 'icon') tmpMark = true;
 
-			if (steps[i].type == 'nl' || i == steps.length - 1) {
-				if (steps[i].type != 'nl') {
+				if (steps[i].type == 'nl' || i == steps.length - 1) {
+					if (steps[i].type != 'nl') {
+						line.push(steps[i]);
+					}
+
+					morphemes.push( this.morphemesFinder.findMorphemes(line) );
+					line = [];
+				} else {
 					line.push(steps[i]);
 				}
-
-				morphemes.push( this.findMorphemes(line) );
-				line = [];
-			} else {
-				line.push(steps[i]);
 			}
+		}
+
+		if (this.forceSplit) {
+			morphemes.push(line);
 		}
 
 		return this.countLines(morphemes, maxWidth);
@@ -498,69 +508,5 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.LinesEnRu', {
 		} else {
 			return m.width;
 		}
-	},
-
-	isLetter: function(str) {
-		return (str >= 'a' && str <= 'z') || (str >= 'A' && str <= 'я') ||
-		       (str >= 'A' && str <= 'Z') || (str >= '\u00c0' && str <= '\u02a8') ||
-		       (str >= '0' && str <= '9') || (str >= '\u0386' && str <= '\u04ff');
-	},
-
-	isVowel: function(str) {
-		return str && str.length == 1 && this.vowels.indexOf(str) > -1;
-	},
-
-	isMorpheme: function (str) {
-		if (!str || str.length <= 1) return false;
-
-		for (var i = str.length; i--;) if (this.isVowel(str[i])) return true;
-
-		return false;
-	},
-
-	findMorphemes: function (line) {
-		var i = 0, c, morphemes = [], lastStr = '', last = [], prev;
-
-		var pushLast = function () {
-			prev = morphemes[ morphemes.length - 1 ];
-			if (Array.isArray(prev)) {
-				atom.array.append( prev, last );
-			} else {
-				morphemes.push(last);
-			}
-			last = [];
-			lastStr = '';
-
-			if (!this.isLetter(c)) {
-				morphemes.push( line[i] );
-			}
-		}.bind(this);
-
-		for (; i < line.length; i++) {
-			c = line[i].content;
-
-			if (line[i].type == 'icon') {
-				morphemes.push(last);
-				last = [];
-				lastStr = '';
-				morphemes.push( line[i] );
-			} else if (line[i].type == 'symbol' && this.isLetter(c)) {
-				lastStr += c;
-				last.push(line[i]);
-				if (this.isMorpheme(lastStr)) {
-					morphemes.push(last);
-					last = [];
-					lastStr = '';
-				}
-			} else if (lastStr) {
-				pushLast();
-			} else {
-				morphemes.push( line[i] );
-			}
-		}
-
-		if (lastStr) pushLast();
-
-		return morphemes;
 	}
 });
