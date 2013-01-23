@@ -1,4 +1,3 @@
-
 /*
 ---
 
@@ -5316,11 +5315,28 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.Render', {
 			align: 'left',
 			lines: null,
 			noWrap: false,
-			letterSpacing: 0
+			letterSpacing: 0,
+			autoRender: true,
+			forceSplit: false
 		}, options);
 
 		this.options.text = String( this.options.text );
 
+		if (this.options.autoRender) {
+			var completeLines = this.parseAndGetLines();
+			this.render(completeLines);
+		}
+	},
+
+	getLinesHeight: function(lines) {
+		var height = 0;
+		for (var idx = 0; idx < lines.length; idx++) {
+			height += lines[idx].height;
+		}
+		return height;
+	},
+
+	parseAndGetLines: function() {
 		var steps = new SpriteFont.Steps(this, new SpriteFont.Lexer(
 			this.options.text, this.options.tags
 		));
@@ -5328,9 +5344,10 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.Render', {
 		steps.countSizes(this.options.font, this.options.letterSpacing);
 
 		var lines = this.options.lines;
-		if (!lines) lines = new SpriteFont.LinesEnRu( this.options.font, this.options.noWrap );
+		if (!lines) lines = new SpriteFont.LinesEnRu();
+		lines.setConfig(this.options.font, this.options.noWrap, this.options.forceSplit);
 
-		this.render( lines.run( steps.steps, this.options.shape.width ) );
+		return lines.run( steps.steps, this.options.shape.width );
 	},
 
 	render: function (lines) {
@@ -5472,6 +5489,7 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.Lexer', {
 			symbol = '',
 			result = [],
 			length = string.length;
+			startTag = false;
 
 		for (; i < length; i++) {
 			symbol = string[i];
@@ -5538,94 +5556,17 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.Lexer', {
 });
 
 
-/** @class SpriteFont.LinesEnRu */
-atom.declare( 'LibCanvas.Plugins.SpriteFont.LinesEnRu', {
+/** @class SpriteFont.MorphemesFinder */
+atom.declare( 'LibCanvas.Plugins.SpriteFont.MorphemesFinder', {
 	vowels: 'AEIOUYaeiouyАОУЮИЫЕЭЯЁаоуюиыеэяёьЄІЇЎєіїў',
 
-	initialize: function (font, noWrap) {
-		this.font   = font;
-		this.noWrap = noWrap;
-	},
-
-	run: function (steps, maxWidth) {
-		var i, line = [], morphemes = [], tmpMark = false;
-
-		for (i = 0; i < steps.length; i++) {
-
-			if (steps[i].type == 'icon') tmpMark = true;
-
-			if (steps[i].type == 'nl' || i == steps.length - 1) {
-				if (steps[i].type != 'nl') {
-					line.push(steps[i]);
-				}
-
-				morphemes.push( this.findMorphemes(line) );
-				line = [];
-			} else {
-				line.push(steps[i]);
-			}
-		}
-
-		return this.countLines(morphemes, maxWidth);
-
-	},
-
-	countLines: function (mLines, maxWidth) {
-		var lines = [], l, i, line = [], width = 0, mWidth;
-
-		function add (data) {
-			if (!Array.isArray(data)) data = [ data ];
-			for (var i = 0; i < data.length; i++) {
-				line.push(data[i]);
-				width += data[i].width;
-			}
-		}
-
-		for (l = 0; l < mLines.length; l++) {
-			for (i = 0; i < mLines[l].length; i++) {
-				mWidth = this.countLength(mLines[l][i]);
-
-				if (mWidth > maxWidth) {
-					throw new Error('Morpheme too long');
-				}
-
-				if (!this.noWrap && (width + mWidth > maxWidth || (i == 0 && l > 0))) {
-					lines.push(line);
-					line  = [];
-					width = 0;
-				}
-
-				add(mLines[l][i]);
-			}
-		}
-
-		if (line.length > 0) lines.push(line);
-
-		lines.forEach(function (l) {
-			l.height = 0;
-
-			l.forEach(function (obj) {
-				l.height = Math.max( l.height, obj.height );
-			});
-		});
-
-		return lines;
-	},
-
-	countLength: function (m) {
-		if (Array.isArray(m)) {
-			return atom.array.reduce(
-				m, function (value, sym) { return value + sym.width }, 0
-			);
-		} else {
-			return m.width;
-		}
+	initialize: function () {
 	},
 
 	isLetter: function(str) {
 		return (str >= 'a' && str <= 'z') || (str >= 'A' && str <= 'я') ||
-		       (str >= 'A' && str <= 'Z') || (str >= '\u00c0' && str <= '\u02a8') ||
-		       (str >= '0' && str <= '9') || (str >= '\u0386' && str <= '\u04ff');
+			(str >= 'A' && str <= 'Z') || (str >= '\u00c0' && str <= '\u02a8') ||
+			(str >= '0' && str <= '9') || (str >= '\u0386' && str <= '\u04ff');
 	},
 
 	isVowel: function(str) {
@@ -5686,6 +5627,100 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.LinesEnRu', {
 		return morphemes;
 	}
 });
+
+/** @class SpriteFont.LinesEnRu */
+atom.declare( 'LibCanvas.Plugins.SpriteFont.LinesEnRu', {
+	setConfig: function (font, noWrap, forceSplit) {
+		this.font = font;
+		this.noWrap = noWrap;
+		this.forceSplit = forceSplit;
+		this.morphemesFinder = new SpriteFont.MorphemesFinder();
+	},
+
+	run: function (steps, maxWidth) {
+		var i, line = [], morphemes = [], tmpMark = false;
+
+		for (i = 0; i < steps.length; i++) {
+
+			if (this.forceSplit) {
+				line.push(steps[i]);
+			} else {
+				if (steps[i].type == 'icon') tmpMark = true;
+
+				if (steps[i].type == 'nl' || i == steps.length - 1) {
+					if (steps[i].type != 'nl') {
+						line.push(steps[i]);
+					}
+
+					morphemes.push( this.morphemesFinder.findMorphemes(line) );
+					line = [];
+				} else {
+					line.push(steps[i]);
+				}
+			}
+		}
+
+		if (this.forceSplit) {
+			morphemes.push(line);
+		}
+
+		return this.countLines(morphemes, maxWidth);
+
+	},
+
+	countLines: function (mLines, maxWidth) {
+		var lines = [], l, i, line = [], width = 0, mWidth;
+
+		function add (data) {
+			if (!Array.isArray(data)) data = [ data ];
+			for (var i = 0; i < data.length; i++) {
+				line.push(data[i]);
+				width += data[i].width;
+			}
+		}
+
+		for (l = 0; l < mLines.length; l++) {
+			for (i = 0; i < mLines[l].length; i++) {
+				mWidth = this.countLength(mLines[l][i]);
+
+				if (mWidth > maxWidth) {
+					throw new Error('Morpheme too long');
+				}
+
+				if (!this.noWrap && (width + mWidth > maxWidth || (i == 0 && l > 0))) {
+					lines.push(line);
+					line  = [];
+					width = 0;
+				}
+
+				add(mLines[l][i]);
+			}
+		}
+
+		if (line.length > 0) lines.push(line);
+
+		lines.forEach(function (l) {
+			l.height = 0;
+
+			l.forEach(function (obj) {
+				l.height = Math.max( l.height, obj.height );
+			});
+		});
+
+		return lines;
+	},
+
+	countLength: function (m) {
+		if (Array.isArray(m)) {
+			return atom.array.reduce(
+				m, function (value, sym) { return value + sym.width }, 0
+			);
+		} else {
+			return m.width;
+		}
+	}
+});
+
 
 
 /*
