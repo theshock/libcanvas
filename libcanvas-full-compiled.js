@@ -4514,7 +4514,7 @@ var ImageBuilder = LibCanvas.declare(
 		},
 		/** @private */
 		countShape: function (xDir, yDir) {
-			var w, h,
+			var
 				size = this.shape.size,
 				from = new Point(0,0),
 				to   = new Point(0,0);
@@ -4632,11 +4632,13 @@ atom.declare( 'LibCanvas.Plugins.ImageBuilder.Horisontal', ImageBuilder, {
 			images  = [],
 			widths  = data.widths;
 
+		this.height = data.source.height;
+
 		for (x = 0, w = 0; w < widths.length; w++) {
 			width = widths[w];
 
 			images.push(this.createCroppedImage( data.source,
-				new Rectangle(x,0,width,data.source.height)
+				new Rectangle(x,0,width,this.height)
 			));
 
 			x += width;
@@ -4675,11 +4677,13 @@ atom.declare( 'LibCanvas.Plugins.ImageBuilder.Vertical', ImageBuilder, {
 			images  = [],
 			heights = data.heights;
 
+		this.width = data.source.width;
+
 		for (y = 0, h = 0; h < heights.length; h++) {
 			height = heights[h];
 
 			images.push(this.createCroppedImage( data.source,
-				new Rectangle(0,y,data.source.width,height)
+				new Rectangle(0,y,this.width,height)
 			));
 
 			y += height;
