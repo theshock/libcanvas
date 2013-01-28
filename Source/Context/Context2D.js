@@ -184,6 +184,16 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 	get height() { return this.canvas.height; },
 	set width (width)  { this.canvas.width  = width; },
 	set height(height) { this.canvas.height = height;},
+	
+	get size () { 
+		return new Size(this.width, this.height);
+	},
+	set size (size) {
+		size = Size.from(size);
+		this.width  = size.width;
+		this.height = size.height;
+	},
+	
 
 	get shadow () {
 		return [this.shadowOffsetX, this.shadowOffsetY, this.shadowBlur, this.shadowColor].join( ' ' );
