@@ -92,3 +92,15 @@ LibCanvas.App.Layer show()
 ```js
 layer.show()
 ```
+
+#### redrawAll
+
+```js
+LibCanvas.App.Layer redrawAll()
+```
+
+Перерисовывает все элементы слоя
+
+```js
+layer.redrawAll()
+```
