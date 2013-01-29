@@ -1117,6 +1117,7 @@ provides: App.Layer
 ...
 */
 
+
 /** @class App.Layer */
 declare( 'LibCanvas.App.Layer', {
 
@@ -1126,12 +1127,12 @@ declare( 'LibCanvas.App.Layer', {
 			intersection: 'auto' // auto|manual|all
 		}).set(settings);
 
-		this.intersection = this.settings.get('intersection');
-		this.redrawAll    = this.intersection === 'all' || this.intersection === 'full';
+		this.intersection  = this.settings.get('intersection');
+		this.redrawAllMode = this.intersection === 'all' || this.intersection === 'full';
 
 		this.app      = app;
 		this.elements = [];
-		this.redraw   = this.redrawAll ? this.elements : [];
+		this.redraw   = this.redrawAllMode ? this.elements : [];
 		this.clear    = [];
 		this.createDom();
 	},
@@ -1165,6 +1166,11 @@ declare( 'LibCanvas.App.Layer', {
 
 	stop: function () {
 		this.stopped = true;
+		return this;
+	},
+
+	redrawAll: function () {
+		this.elements.invoke('redraw');
 		return this;
 	},
 
@@ -1291,7 +1297,7 @@ declare( 'LibCanvas.App.Layer', {
 		if (element.layer == this && !element.redrawRequested) {
 			this.needUpdate = true;
 			element.redrawRequested = true;
-			if (!this.redrawAll) {
+			if (!this.redrawAllMode) {
 				this.redraw.push( element );
 			}
 		}
@@ -1331,6 +1337,7 @@ declare( 'LibCanvas.App.Layer', {
 	}
 
 });
+
 
 /*
 ---
@@ -2897,6 +2904,16 @@ var Context2D = LibCanvas.declare( 'LibCanvas.Context2D', 'Context2D',
 	get height() { return this.canvas.height; },
 	set width (width)  { this.canvas.width  = width; },
 	set height(height) { this.canvas.height = height;},
+	
+	get size () { 
+		return new Size(this.width, this.height);
+	},
+	set size (size) {
+		size = Size.from(size);
+		this.width  = size.width;
+		this.height = size.height;
+	},
+	
 
 	get shadow () {
 		return [this.shadowOffsetX, this.shadowOffsetY, this.shadowBlur, this.shadowColor].join( ' ' );
@@ -3251,6 +3268,7 @@ if (atom.core.isFunction(HTMLCanvasElement.addContext)) {
 return Context2D;
 
 }();
+
 
 /*
 ---
