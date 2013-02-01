@@ -46,6 +46,15 @@ var app = new App({
 <canvas width="391" height="71" class="libcanvas-app-simple"></canvas>
 ```
 
+#### Изменение размера приложения:
+
+Изменится только размер приложения, размер каждого из слоёв останется прежним.
+
+```js
+app.container.size = new Size( 1500, 1200 );
+```
+
+
 ### Методы
 
 #### createLayer
