@@ -7705,38 +7705,38 @@ declare( 'LibCanvas.Engines.Tile.Mouse', {
 			(events);
 	},
 	/** @private */
-	mousemove: function () {
+	mousemove: function (e) {
 		var cell = this.get();
 		if (this.previous != cell) {
-			this.outCell();
-			this.fire( 'over', cell );
+			this.outCell(e);
+			this.fire( 'over', cell, e );
 			this.previous = cell;
 		}
 	},
 	/** @private */
-	mouseout: function () {
-		this.outCell();
+	mouseout: function (e) {
+		this.outCell(e);
 	},
 	/** @private */
-	mousedown: function () {
+	mousedown: function (e) {
 		var cell = this.get();
-		this.fire( 'down', cell );
+		this.fire( 'down', cell, e );
 		this.lastDown = cell;
 	},
 	/** @private */
-	mouseup: function () {
+	mouseup: function (e) {
 		var cell = this.get();
-		this.fire( 'up', cell );
+		this.fire( 'up', cell, e );
 		if (cell != null && cell == this.lastDown) {
-			this.fire( 'click', cell );
+			this.fire( 'click', cell, e );
 		}
 		this.lastDown = null;
 	},
 	/** @private */
-	contextmenu: function () {
+	contextmenu: function (e) {
 		var cell = this.get();
 		if (cell != null) {
-			this.fire( 'contextmenu', cell );
+			this.fire( 'contextmenu', cell, e );
 		}
 	},
 	/** @private */
@@ -7747,14 +7747,14 @@ declare( 'LibCanvas.Engines.Tile.Mouse', {
 	},
 
 	/** @private */
-	fire: function (event, cell) {
-		return this.events.fire( event, [ cell ]);
+	fire: function (event, cell, e) {
+		return this.events.fire( event, [ cell, e ]);
 	},
 
 	/** @private */
-	outCell: function () {
+	outCell: function (e) {
 		if (this.previous) {
-			this.fire( 'out', this.previous );
+			this.fire( 'out', this.previous, e );
 			this.previous = null;
 		}
 	}
