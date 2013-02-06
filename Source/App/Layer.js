@@ -164,7 +164,7 @@ declare( 'LibCanvas.App.Layer', {
 	/** @private */
 	createDom: function () {
 		this.dom = this.app.container.createDom(
-			this.settings.subset([ 'name', 'zIndex' ])
+			this.settings.subset([ 'name', 'zIndex', 'size' ])
 		);
 	},
 
