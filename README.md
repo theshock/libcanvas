@@ -1,6 +1,6 @@
 ## LibCanvas Javascript Framework
 
-*LibCanvas* is a free javascript library, based on [AtomJS framework](/theshock/atomjs) and available under [LGPL](http://www.gnu.org/copyleft/lgpl.html)/[MIT](http://opensource.org/licenses/mit-license.php) License.
+*LibCanvas* is a free javascript library, based on [AtomJS framework](https://github.com/theshock/atomjs) and available under [LGPL](http://www.gnu.org/copyleft/lgpl.html)/[MIT](http://opensource.org/licenses/mit-license.php) License.
 
 #### [Examples](http://libcanvas.github.com/)
 
