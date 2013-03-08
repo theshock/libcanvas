@@ -21,6 +21,9 @@ requires:
 	- Core.Canvas
 	- Context.DrawImage
 	- Context.Gradients
+	- Context.Path
+	- Context.Pixels
+	- Context.Text
 
 provides: Context2D
 

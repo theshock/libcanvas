@@ -14,7 +14,9 @@ authors:
 
 requires:
 	- LibCanvas
+	- Mouse
 	- App
+	- App.PointSearch
 
 provides: App.MouseHandler
 
@@ -45,7 +47,7 @@ declare( 'LibCanvas.App.MouseHandler', {
 		};
 		handler.search =
 			handler.settings.get('search') ||
-			new App.ElementsMouseSearch();
+			new App.PointSearch();
 
 		this.events.forEach(function (type) {
 			handler.mouse.events.add( type, function (e) {

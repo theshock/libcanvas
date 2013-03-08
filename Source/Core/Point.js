@@ -15,7 +15,6 @@ authors:
 requires:
 	- LibCanvas
 	- Geometry
-	- Utils.Math
 
 provides: Point
 

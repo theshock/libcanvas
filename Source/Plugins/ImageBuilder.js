@@ -17,7 +17,7 @@
  requires:
  - LibCanvas
  - Point
- - Rectangle
+ - Shapes.Rectangle
 
  ...
  */

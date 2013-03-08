@@ -1,7 +1,7 @@
 /*
 ---
 
-name: "App.ElementsMouseSearch"
+name: "App.PointSearch"
 
 description: "LibCanvas.App.ElementsMouseSearch"
 
@@ -16,13 +16,13 @@ requires:
 	- LibCanvas
 	- App
 
-provides: App.ElementsMouseSearch
+provides: App.PointSearch
 
 ...
 */
 
-/** @class App.ElementsMouseSearch */
-declare( 'LibCanvas.App.ElementsMouseSearch', {
+/** @class App.PointSearch */
+declare( 'LibCanvas.App.PointSearch', {
 
 	initialize: function () {
 		this.elements = [];
@@ -52,3 +52,6 @@ declare( 'LibCanvas.App.ElementsMouseSearch', {
 	}
 
 });
+
+/** @deprecated */
+App.ElementsMouseSearch = App.PointSearch;
