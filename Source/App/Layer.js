@@ -60,7 +60,7 @@ declare( 'LibCanvas.App.Layer', {
 	},
 
 	show: function () {
-		this.dom.element.css({ display: null });
+		this.dom.element.css({ display: '' });
 		return this.stop();
 	},
 
