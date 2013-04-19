@@ -3290,13 +3290,14 @@ LibCanvas.declare( 'LibCanvas.Context.Text', {
 			padding : [0,0],
 			shadow : null,
 			stroke : null,
-			lineWidth : null,
+			lineWidth : null
 		}, cfg);
 
 		ctx.save();
 		if (typeof cfg.padding == 'number') {
 			cfg.padding = [cfg.padding, cfg.padding];
 		}
+		var method = cfg.stroke ? 'strokeText' : 'fillText';
 		var to = cfg.to ? toRectangle(cfg.to) : this.context.rectangle;
 		var lh = Math.round(cfg.lineHeight || (cfg.size * 1.15));
 		this.context.set('font', atom.string.substitute(
@@ -3307,13 +3308,9 @@ LibCanvas.declare( 'LibCanvas.Context.Text', {
 				family : cfg.family
 			})
 		);
-		
+
 		if (cfg.color) {
-			if (cfg.stroke) {
-				this.context.set({ strokeStyle: cfg.color });
-			} else {
-				this.context.set({ fillStyle: cfg.color });
-			}
+			this.context.set(cfg.stroke ? 'strokeStyle' : 'fillStyle', cfg.color);
 		}
 
 		if (cfg.shadow) this.context.shadow = cfg.shadow;
@@ -3337,11 +3334,7 @@ LibCanvas.declare( 'LibCanvas.Context.Text', {
 			lines.forEach(function (line, i) {
 				if (!line) return;
 
-				if (cfg.stroke) {
-					ctx.strokeText(line, xGet(cfg.align == 'left' ? 0 : measure(line)), to.from.y + (i+1)*lh);
-				} else {
-					ctx.fillText(line, xGet(cfg.align == 'left' ? 0 : measure(line)), to.from.y + (i+1)*lh);
-				}
+				ctx[method](line, xGet(cfg.align == 'left' ? 0 : measure(line)), to.from.y + (i+1)*lh);
 			});
 		} else {
 			var lNum = 0;
@@ -3371,11 +3364,7 @@ LibCanvas.declare( 'LibCanvas.Context.Text', {
 						}
 					}
 					if (Lw) {
-						if (cfg.stroke) {
-							ctx.strokeText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
-						} else {
-							ctx.fillText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
-						}
+						ctx[method](L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
 						if (last) {
 							L  = '';
 							Lw = 0;
@@ -3386,11 +3375,7 @@ LibCanvas.declare( 'LibCanvas.Context.Text', {
 					}
 				}
 				if (Lw) {
-					if (cfg.stroke) {
-						ctx.strokeText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
-					} else {
-						ctx.fillText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
-					}
+					ctx[method](L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
 				}
 			});
 
