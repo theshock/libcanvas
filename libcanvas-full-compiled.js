@@ -6019,6 +6019,12 @@ return LibCanvas.declare( 'LibCanvas.Shapes.Line', 'Line', Shape, {
 	getLength : function () {
 		return this.length;
 	},
+	draw : function (ctx, type) {
+		ctx.beginPath();
+		this.processPath(ctx, true)[type]();
+		ctx.closePath();
+		return this;
+	},
 	processPath : function (ctx, noWrap) {
 		if (!noWrap) ctx.beginPath();
 		ctx.moveTo(this.from).lineTo(this.to);
