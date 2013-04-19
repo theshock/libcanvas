@@ -3288,7 +3288,9 @@ LibCanvas.declare( 'LibCanvas.Context.Text', {
 			lineHeight : null,
 			overflow   : 'visible', /* hidden|visible */
 			padding : [0,0],
-			shadow : null
+			shadow : null,
+			stroke : null,
+			lineWidth : null,
 		}, cfg);
 
 		ctx.save();
@@ -3305,9 +3307,18 @@ LibCanvas.declare( 'LibCanvas.Context.Text', {
 				family : cfg.family
 			})
 		);
+		
+		if (cfg.color) {
+			if (cfg.stroke) {
+				this.context.set({ strokeStyle: cfg.color });
+			} else {
+				this.context.set({ fillStyle: cfg.color });
+			}
+		}
+
 		if (cfg.shadow) this.context.shadow = cfg.shadow;
-		if (cfg.color) this.context.set({ fillStyle: cfg.color });
 		if (cfg.overflow == 'hidden') this.context.clip(to);
+		if (cfg.lineWidth) this.context.set({ lineWidth: cfg.lineWidth });
 
 		function xGet (lineWidth) {
 			var al = cfg.align, pad = cfg.padding[1];
@@ -3326,7 +3337,11 @@ LibCanvas.declare( 'LibCanvas.Context.Text', {
 			lines.forEach(function (line, i) {
 				if (!line) return;
 
-				ctx.fillText(line, xGet(cfg.align == 'left' ? 0 : measure(line)), to.from.y + (i+1)*lh);
+				if (cfg.stroke) {
+					ctx.strokeText(line, xGet(cfg.align == 'left' ? 0 : measure(line)), to.from.y + (i+1)*lh);
+				} else {
+					ctx.fillText(line, xGet(cfg.align == 'left' ? 0 : measure(line)), to.from.y + (i+1)*lh);
+				}
 			});
 		} else {
 			var lNum = 0;
@@ -3356,7 +3371,11 @@ LibCanvas.declare( 'LibCanvas.Context.Text', {
 						}
 					}
 					if (Lw) {
-						ctx.fillText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
+						if (cfg.stroke) {
+							ctx.strokeText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
+						} else {
+							ctx.fillText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
+						}
 						if (last) {
 							L  = '';
 							Lw = 0;
@@ -3366,7 +3385,13 @@ LibCanvas.declare( 'LibCanvas.Context.Text', {
 						}
 					}
 				}
-				if (Lw) ctx.fillText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
+				if (Lw) {
+					if (cfg.stroke) {
+						ctx.strokeText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
+					} else {
+						ctx.fillText(L, xGet(Lw), to.from.y + (++lNum)*lh + cfg.padding[0]);
+					}
+				}
 			});
 
 		}
