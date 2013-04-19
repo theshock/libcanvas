@@ -150,7 +150,7 @@ return LibCanvas.declare( 'LibCanvas.Shapes.Line', 'Line', Shape, {
 	},
 	processPath : function (ctx, noWrap) {
 		if (!noWrap) ctx.beginPath();
-		ctx.moveTo(this.from).lineTo(this.to);
+		ctx.moveTo(this.from).lineTo(this.to).moveTo(this.to);
 		if (!noWrap) ctx.closePath();
 		return ctx;
 	},
