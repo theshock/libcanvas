@@ -63,8 +63,17 @@ declare( 'LibCanvas.App.Element', {
 		return this.shape.getBoundingRectangle().fillToPixel();
 	},
 
+	redraw: function () {
+		if (this.layer) {
+			this.layer.redrawElement( this );
+		}
+		return this;
+	},
+
 	destroy: function () {
-		this.layer.rmElement( this );
+		if (this.layer) {
+			this.layer.rmElement( this );
+		}
 		return this;
 	},
 
@@ -94,11 +103,6 @@ declare( 'LibCanvas.App.Element', {
 
 	isVisible: function () {
 		return !this.settings.get('hidden');
-	},
-
-	redraw: function () {
-		this.layer.redrawElement( this );
-		return this;
 	},
 
 	onUpdate: function (time) {
