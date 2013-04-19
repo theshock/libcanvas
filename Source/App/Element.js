@@ -28,6 +28,8 @@ declare( 'LibCanvas.App.Element', {
 	zIndex  : 0,
 	renderer: null,
 	settings: {},
+	opacity : 1,
+	opacityThreshold: 0.01,
 
 	/** @constructs */
 	initialize: function (layer, settings) {
@@ -102,7 +104,7 @@ declare( 'LibCanvas.App.Element', {
 	},
 
 	isVisible: function () {
-		return !this.settings.get('hidden');
+		return !this.settings.get('hidden') || this.opacity > this.opacityThreshold;
 	},
 
 	onUpdate: function (time) {
@@ -122,7 +124,15 @@ declare( 'LibCanvas.App.Element', {
 	},
 
 	renderToWrapper: function (ctx, resources) {
+		if (this.opacity < this.opacityThreshold) {
+			return;
+		}
+		ctx.save();
+		if (this.opacity + this.opacityThreshold < 1) {
+			ctx.set({ globalAlpha: this.opacity });
+		}
 		this.renderTo(ctx, resources);
+		ctx.restore();
 		return this;
 	},
 
