@@ -420,6 +420,14 @@ context.fillRect(100, 100, 100, 100);
 
 `color`      (*string*)
 
+`stroke`     (*bool, по-умолчанию = false*) если параметр = true то вместо canvas.fillStyle() вызывается canvas.strokeStyle,
+то есть включается режим "обводки текста" при этом сам текст остается прозрачным. Если надо нарисовать и текст,
+и обводку текста то надо сначала вызвать метод text со stroke=true, а потом ещё раз со stroke=false.
+
+`lineWidth`  (*int*) указывает толщину линии обводки текста при stroke = true, при этом надо внимательно проверять
+результат -- некоторые браузеры рендерят обводку сложных букв (w,m,n, etc) с артефактами и, возможно, прийдётся поиграть
+с толщиной обводки/ размером текста
+
 `wrap`       (*string*) no|normal
 
 `to`         (*LibCanvas.Shapes.Rectangle*) по-умолчанию вызывается метод this.getFullRectangle
@@ -439,6 +447,9 @@ context.fillRect(100, 100, 100, 100);
 `overflow`   (*string*, по-умолчанию = visible) hidden|visible
 
 `padding`    (*int|int[]*, по-умолчанию = 0) [topBottom, leftRight]
+
+`shadow`     (*string*) включает режим рендеринга тени для текста. Формат как в канвасе: `'shadowOffsetX, shadowOffsetY, shadowBlur, shadowColor'`. 
+Например: `shadow: '0 -1 3 #616161'`. Не забывайте цвет указывать с символом '#". Хром то покажет, а вот остальные браузеры нет :).
 
 ## Метод drawImage
 
