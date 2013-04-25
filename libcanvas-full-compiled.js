@@ -6433,6 +6433,13 @@ var RoundedRectangle = LibCanvas.declare(
 			return ctx;
 		},
 
+
+		clone: function method () {
+			return method.previous
+				.apply(this, arguments)
+				.setRadius(this.radius);
+		},
+
 		equals: function (shape, accuracy) {
 			return Rectangle.prototype.equals.call( this, shape, accuracy ) && shape.radius == this.radius;
 		},
