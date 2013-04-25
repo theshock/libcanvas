@@ -104,7 +104,7 @@ declare( 'LibCanvas.App.Element', {
 	},
 
 	isVisible: function () {
-		return !this.settings.get('hidden') || this.opacity > this.opacityThreshold;
+		return !this.settings.get('hidden') && this.opacity > this.opacityThreshold;
 	},
 
 	onUpdate: function (time) {
