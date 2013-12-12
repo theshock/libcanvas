@@ -5405,8 +5405,8 @@ atom.declare( 'LibCanvas.Plugins.SpriteFont.Render', {
 	render: function (lines) {
 		var x, y, w, l, i, from = this.options.shape.from;
 
-		for (l = 0, y = from.y.floor(); l < lines.length; l++) {
-			x = from.x.floor();
+		for (l = 0, y = Math.floor(from.y); l < lines.length; l++) {
+			x = Math.floor(from.x);
 
 			if (this.options.align != 'left') {
 				w = lines[l].reduce(function (current, elem) { return current + elem.width }, 0);
