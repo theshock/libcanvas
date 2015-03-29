@@ -3267,7 +3267,7 @@ LibCanvas.declare( 'LibCanvas.Context.Text', {
 	},
 	/** @returns {object} */
 	measureText : function (args) {
-		return this.ctx2d.measureText.call(this.ctx2d, args)
+		return this.ctx2d.measureText.apply(this.ctx2d, args)
 	},
 	/** @returns {Context2D} */
 	text : function (cfg) {
