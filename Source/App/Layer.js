@@ -75,7 +75,7 @@ declare( 'LibCanvas.App.Layer', {
 	},
 
 	redrawAll: function () {
-		this.elements.invoke('redraw');
+		atom.array.invoke( this.elements, 'redraw' );
 		return this;
 	},
 
