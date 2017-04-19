@@ -1,0 +1,19 @@
+atom.declare( 'Mines.View', {
+	initialize: function (controller, fieldSize) {
+		this.images = controller.images;
+
+		this.engine = new TileEngine({
+			size: fieldSize,
+			cellSize: new Size(24, 24),
+			cellMargin: new Size(0, 0),
+			defaultValue: 'closed'
+		})
+		.setMethod( this.createMethods() );
+
+		this.app = new App({
+			size  : this.engine.countSize(),
+			simple: true
+		});
+
+		this.element = TileEngine.Element.app( this.app, this.engine );
+	},
