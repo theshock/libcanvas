@@ -11,58 +11,57 @@ Current objectives of the project:
 
 For consultation, write to shocksilien@gmail.com
 
-## Возможности LibCanvas
+## Features of LibCanvas
 
-LibCanvas - библиотека для создания интерактивных приложений и игр на html5. Основные возможности:
+LibCanvas is a library for creating interactive applications and games on html5. Main features:
 
-* [Расширенный 2D Context](https://github.com/theshock/libcanvas/blob/master/Docs/Ru/Core/Context2D.md):
-  *  Method chaining
-  *  Фигуры в качестве аргументов
-  *  Дополнительные методы
-  *  Именованные аргументы
+* [Advanced 2D Context](https://github.com/theshock/libcanvas/blob/master/Docs/Ru/Core/Context2D.md):
+  * Method chaining
+  * Figures as arguments
+  * Additional methods
+  * Named arguments
 
-* [Геометрия](https://github.com/theshock/libcanvas/tree/master/Docs/Ru/Shapes)
-  *  [Действия с точками](https://github.com/theshock/libcanvas/blob/master/Docs/Ru/Core/Point.md)
-  *  Изменения фигуры
-  *  Пересечения
-  *  Базовые математические операции
-
-
-* [Фреймворк LibCanvas.App](https://github.com/theshock/libcanvas/tree/master/Docs/Ru/App)
-  *  Отрисовка только изменившихся частей холста
-  *  События мыши
-  *  Draggable/Droppable
-  *  Слои, внутренний zIndex
-  *  Быстрое смещение слоёв
+* [Geometry](https://github.com/theshock/libcanvas/tree/master/Docs/Ru/Shapes)
+  * [Actions with points](https://github.com/theshock/libcanvas/blob/master/Docs/Ru/Core/Point.md)
+  * Changing the shape
+  * Intersections
+  * Basic mathematical operations
 
 
-* Игровые движки
-  *  [Тайловый](https://github.com/theshock/libcanvas/blob/master/Docs/Ru/Engines/Tile/)
-  *  [Изометрический](https://github.com/theshock/libcanvas/blob/master/Docs/Ru/Engines/Isometric/Projection.md)
-  *  [Гексагональный](https://github.com/theshock/libcanvas/blob/master/Docs/Ru/Engines/Hex/Projection.md)
+* [LibCanvas.App Framework](https://github.com/theshock/libcanvas/tree/master/Docs/Ru/App)
+  * Drawing only the changed parts of the canvas
+  * Mouse events
+  * Draggable / Droppable
+  * Layers, internal zIndex
+  * Fast layer displacement
 
 
-* Дополнительные возможности (плагины)
-  *  [Спрайтовые анимации](https://github.com/theshock/libcanvas/tree/master/Docs/Ru/Plugins/Animation)
-  *  [Математическая модель кривых Безье](https://github.com/theshock/libcanvas/blob/master/Docs/Ru/Plugins/Curve.md) (для построения путей)
-  *  [Кривые с динамической шириной и цветом](https://github.com/theshock/libcanvas/blob/master/Docs/Ru/Plugins/Curves.md)
-  *  Спрайтовые шрифты
-  *  Рендеринг текстуры в проекции
+* Game engines
+  * [Cache](https://github.com/theshock/libcanvas/blob/master/Docs/Ru/Engines/Tile/)
+  * [Isometric](https://github.com/theshock/libcanvas/blob/master/Docs/Ru/Engines/Isometric/Projection.md)
+  * [Hexagonal](https://github.com/theshock/libcanvas/blob/master/Docs/Ru/Engines/Hex/Projection.md)
 
-## Интеграция
 
-* [Gem для Ruby on Rails](https://github.com/tanraya/libcanvas-rails)
+* Additional features (plugins)
+  * [Sprite animations](https://github.com/theshock/libcanvas/tree/master/Docs/Ru/Plugins/Animation)
+  * [Mathematical model of Bezier curves](https://github.com/theshock/libcanvas/blob/master/Docs/Ru/Plugins/Curve.md) (for building paths)
+  * [Curves with dynamic width and color](https://github.com/theshock/libcanvas/blob/master/Docs/Ru/Plugins/Curves.md)
+  * Sprite fonts
+  * Rendering texture in projection
 
-## Переход на новую версию
+## Integration
 
-21 декабря 2012-ого года была публично переведена в "master" главной ветка "declare".
+* [Gem for Ruby on Rails](https://github.com/tanraya/libcanvas-rails)
 
-Предыдущая версия всё ещё доступна [в ветке previous](https://github.com/theshock/libcanvas/tree/previous), но больше не разрабатывается.
+## Switching to the new version
 
-Основные изменения в новой версии:
+On December 21, 2012, the main branch "declare" was publicly translated into "master".
 
-* Основательно переписан код, убраны основные баги архитектуры и неочевидные вещи
-* Повышена производительность основных компонентов библиотеки
-* Более не требуется расширение прототипов. Оно всё ещё поддерживается, но теперь полностью на совести пользователя - библиотека не требует расширенных при помощи atom прототипов
-* Используется atom.declare вместо atom.Class в целях повышения производительности и облечения дебага
+The previous version is still available [in the previous branch](https://github.com/theshock/libcanvas/tree/previous), but is no longer being developed.
 
+Major changes in the new version:
+
+* Completely rewritten code, removed the main architecture bugs and non-obvious things
+* Improved performance of the main components of the library
+* No longer requires prototype expansion. It is still supported, but now completely on the conscience of the user - the library does not require atom-extended prototypes
+* Used atom.declare instead of atom.Class in order to improve performance and investment debug
