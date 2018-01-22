@@ -7,7 +7,6 @@
 Current objectives of the project:
 
 * Full documentation
-* Translation to English
 
 For consultation, write to shocksilien@gmail.com
 
